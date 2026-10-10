@@ -1,0 +1,182 @@
+/* ==========================================================================
+   Daihatsu Vehicle Logistics Tracker - Custom Stylesheet
+   Author: IT Engineering & Logistics Systems
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Global & Reset
+   -------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #0F172A;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-color: #E2E8F0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Scroll Containers & Scrollbar Utilities
+   -------------------------------------------------------------------------- */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* --------------------------------------------------------------------------
+   Floating Glass Navigation Bar
+   -------------------------------------------------------------------------- */
+.floating-glass-bar {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Nav Item Interaction States */
+.nav-btn {
+  color: #94A3B8;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 16px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.nav-btn:active {
+  transform: scale(0.92);
+}
+
+.nav-btn.active {
+  color: #2563EB !important;
+  background-color: rgba(37, 99, 235, 0.12) !important;
+}
+
+.nav-btn.active .nav-icon {
+  color: #2563EB !important;
+  transform: translateY(-1px) scale(1.08);
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.35));
+}
+
+.nav-btn.active .nav-text {
+  font-weight: 800 !important;
+  color: #2563EB !important;
+}
+
+.nav-btn .nav-dot {
+  width: 0px;
+  height: 3px;
+  border-radius: 9999px;
+  background-color: transparent;
+  transition: all 0.22s ease-in-out;
+  margin-top: 2px;
+}
+
+.nav-btn.active .nav-dot {
+  width: 14px;
+  background-color: #2563EB;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   Floating Action Button (FAB) Scanner Aura
+   -------------------------------------------------------------------------- */
+@keyframes pulseAura {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+.fab-aura {
+  animation: pulseAura 2.2s infinite ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   Optical Barcode Scanner Animations
+   -------------------------------------------------------------------------- */
+@keyframes scanLaser {
+  0% {
+    top: 10%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 85%;
+    opacity: 1;
+  }
+  100% {
+    top: 10%;
+    opacity: 0.8;
+  }
+}
+
+.laser-line {
+  animation: scanLaser 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes scanLockedGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.scanner-locked {
+  animation: scanLockedGlow 0.8s ease-out;
+  border-color: #10B981 !important;
+}
+
+/* --------------------------------------------------------------------------
+   UI Utilities: Loading Spinners & Shimmer
+   -------------------------------------------------------------------------- */
+.spinner-rotate {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

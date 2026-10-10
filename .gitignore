@@ -1,0 +1,30 @@
+# Environment variables (SANGAT RAHASIA - Jangan pernah di-commit!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Google Apps Script files (agar kode rahasia / API backend tidak ter-commit ke git)
+*.gs
+kode.gs
+Kode.gs
+
+# Vercel deployment artifacts
+.vercel
+
+# Node dependencies & logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
