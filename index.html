@@ -46,19 +46,19 @@
   <div class="w-full max-w-[1560px] mx-auto h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F8FAFC] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
     
     <!-- Top Header Bar (Dual Mode: Mobile Compact & Desktop Enterprise Navbar) -->
-    <header class="px-5 md:px-8 pt-4 pb-3 md:py-3.5 bg-white/95 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 flex-shrink-0 pt-safe">
+    <header class="px-3.5 sm:px-5 md:px-8 py-2.5 sm:py-3 md:py-3.5 bg-white/95 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between border-b border-slate-100/90 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] flex-shrink-0 pt-safe">
       <!-- Left: Logo & Branch Info -->
-      <div class="flex items-center space-x-3.5">
+      <div class="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0">
         <!-- Logo Resmi Daihatsu -->
-        <div class="h-10 md:h-11 px-2.5 py-1 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-center flex-shrink-0">
-          <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-7 md:h-8 w-auto object-contain">
+        <div class="h-9 sm:h-10 md:h-11 px-2 sm:px-2.5 py-1 rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-center flex-shrink-0">
+          <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-5 sm:h-6 md:h-8 w-auto object-contain">
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-sm md:text-base font-extrabold text-slate-900 leading-tight">Salvage</h1>
-            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200">DSO Lampung</span>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5">
+            <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/70 leading-none">DSO</span>
           </div>
-          <p class="text-[11px] text-slate-400 flex items-center mt-0.5 font-medium">
+          <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate leading-none mt-1">
             Management Sentra Lampung
           </p>
         </div>
@@ -85,25 +85,27 @@
       </nav>
       
       <!-- Right: Desktop Quick Action, Live Badge & Operator Profile -->
-      <div class="flex items-center space-x-2.5">
+      <div class="flex items-center space-x-2 sm:space-x-2.5 flex-shrink-0">
         <!-- Desktop Quick Scan Button -->
         <button onclick="openScannerModal()" class="hidden md:inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 active:scale-95 transition space-x-1.5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
           <span>Scan Unit</span>
         </button>
 
-        <!-- Live Tracking Badge -->
-        <div class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/60 shadow-sm">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
-          Live Tracking
+        <!-- Live Tracking Badge (Clean, Never Wraps) -->
+        <div class="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-1 rounded-full text-[9.5px] sm:text-[11px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1 sm:mr-1.5 flex-shrink-0"></span>
+          <span class="hidden sm:inline">Live Tracking</span>
+          <span class="sm:hidden">Live</span>
         </div>
 
         <!-- Profile Avatar & Info -->
-        <button onclick="switchTab('settings')" class="flex items-center space-x-2 p-0.5 md:pr-2.5 md:bg-slate-50 md:hover:bg-slate-100 rounded-full md:border md:border-slate-200 transition active:scale-95" aria-label="Pengaturan Profil">
-          <div class="w-9 h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
+        <button onclick="switchTab('settings')" class="relative flex items-center p-0.5 md:pr-2.5 md:bg-slate-50 md:hover:bg-slate-100 rounded-full md:border md:border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0 ring-1 ring-slate-200/60">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
           </div>
-          <div class="hidden md:block text-left">
+          <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border-2 border-white sm:hidden"></span>
+          <div class="hidden md:block text-left ml-2">
             <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
             <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
           </div>
