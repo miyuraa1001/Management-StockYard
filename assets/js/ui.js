@@ -50,6 +50,13 @@ const UI = {
     if (target === 'dashboard') {
       this.renderDashboardActivities();
       this.updateDashboardKpis();
+      if (typeof this.startHeroAutoScroll === 'function') {
+        this.startHeroAutoScroll();
+      }
+    } else {
+      if (typeof this.stopHeroAutoScroll === 'function') {
+        this.stopHeroAutoScroll();
+      }
     }
     if (target === 'inventory') this.renderInventoryList();
     if (target === 'history') this.renderHistoryList();
@@ -426,7 +433,7 @@ const UI = {
   },
 
   /**
-   * Hero Carousel Controller (Auto-Scroll, Glassmorphic Dots & Swipe)
+   * Hero Carousel Controller (Auto-Scroll, Glassmorphic Dots & GPU Transform)
    */
   heroTimer: null,
   heroCurrentIndex: 0,
@@ -455,69 +462,61 @@ const UI = {
       }
     };
 
-    const scrollToSlide = (index) => {
+    const goToSlide = (index) => {
       if (index >= totalSlides) index = 0;
       if (index < 0) index = totalSlides - 1;
-      this.heroCurrentIndex = index;
+      UI.heroCurrentIndex = index;
       
-      const targetSlide = slides[index];
-      if (targetSlide) {
-        track.scrollTo({
-          left: targetSlide.offsetLeft,
-          behavior: 'smooth'
-        });
-        updateDots(index);
-      }
+      track.style.transform = `translateX(-${index * 100}%)`;
+      updateDots(index);
     };
 
-    this.nextHeroSlide = () => scrollToSlide(this.heroCurrentIndex + 1);
-    this.prevHeroSlide = () => scrollToSlide(this.heroCurrentIndex - 1);
-    this.goToHeroSlide = (idx) => scrollToSlide(idx);
+    UI.nextHeroSlide = () => goToSlide(UI.heroCurrentIndex + 1);
+    UI.prevHeroSlide = () => goToSlide(UI.heroCurrentIndex - 1);
+    UI.goToHeroSlide = (idx) => goToSlide(idx);
 
-    const startAutoScroll = () => {
-      this.stopHeroAutoScroll();
-      this.heroTimer = setInterval(() => {
-        this.nextHeroSlide();
+    window.nextHeroSlide = () => UI.nextHeroSlide();
+    window.prevHeroSlide = () => UI.prevHeroSlide();
+    window.goToHeroSlide = (idx) => UI.goToHeroSlide(idx);
+
+    UI.startHeroAutoScroll = () => {
+      UI.stopHeroAutoScroll();
+      UI.heroTimer = setInterval(() => {
+        UI.nextHeroSlide();
       }, 4500);
     };
 
-    this.stopHeroAutoScroll = () => {
-      if (this.heroTimer) {
-        clearInterval(this.heroTimer);
-        this.heroTimer = null;
+    UI.stopHeroAutoScroll = () => {
+      if (UI.heroTimer) {
+        clearInterval(UI.heroTimer);
+        UI.heroTimer = null;
       }
     };
 
-    track.addEventListener('mouseenter', () => this.stopHeroAutoScroll());
-    track.addEventListener('mouseleave', () => startAutoScroll());
-    track.addEventListener('touchstart', () => this.stopHeroAutoScroll(), { passive: true });
-    track.addEventListener('touchend', () => {
-      setTimeout(startAutoScroll, 2500);
+    track.addEventListener('mouseenter', () => UI.stopHeroAutoScroll());
+    track.addEventListener('mouseleave', () => UI.startHeroAutoScroll());
+
+    // Touch Swipe Support for mobile devices
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    track.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      UI.stopHeroAutoScroll();
     }, { passive: true });
 
-    // Enable smooth vertical page scrolling when wheeling over the hero carousel track
-    track.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        const vp = document.getElementById('appMainViewport');
-        if (vp) {
-          vp.scrollTop += e.deltaY;
-        }
+    track.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 45) {
+        if (diff > 0) UI.nextHeroSlide();
+        else UI.prevHeroSlide();
       }
+      setTimeout(startAutoScroll, 2000);
     }, { passive: true });
 
-    // Sync dots and counter on manual drag/touch scroll
-    track.addEventListener('scroll', () => {
-      const scrollPos = track.scrollLeft;
-      const slideW = track.clientWidth;
-      if (slideW > 0) {
-        const activeIdx = Math.round(scrollPos / slideW);
-        if (activeIdx !== this.heroCurrentIndex && activeIdx >= 0 && activeIdx < totalSlides) {
-          this.heroCurrentIndex = activeIdx;
-          updateDots(activeIdx);
-        }
-      }
-    }, { passive: true });
-
+    // Initial position & run
+    goToSlide(0);
     startAutoScroll();
   },
 
