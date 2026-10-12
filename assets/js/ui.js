@@ -450,9 +450,9 @@ const UI = {
       const dots = document.querySelectorAll('.hero-dot');
       dots.forEach((dot, idx) => {
         if (idx === index) {
-          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
+          dot.className = 'hero-dot w-3.5 sm:w-5 md:w-6 h-1 md:h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
         } else {
-          dot.className = 'hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
+          dot.className = 'hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
         }
       });
 
@@ -462,11 +462,12 @@ const UI = {
       }
     };
 
-    const goToSlide = (index) => {
+    const goToSlide = (index, immediate = false) => {
       if (index >= totalSlides) index = 0;
       if (index < 0) index = totalSlides - 1;
       UI.heroCurrentIndex = index;
       
+      track.style.transition = immediate ? 'none' : 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
       track.style.transform = `translateX(-${index * 100}%)`;
       updateDots(index);
     };
@@ -493,31 +494,118 @@ const UI = {
       }
     };
 
-    track.addEventListener('mouseenter', () => UI.stopHeroAutoScroll());
-    track.addEventListener('mouseleave', () => UI.startHeroAutoScroll());
+    // =========================================================================
+    // Real-Time Touch & Mouse Drag Gesture Engine (Geser / Swipe Halus)
+    // =========================================================================
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentDeltaX = 0;
+    let isHorizontalSwipe = null;
+    let dragStartTime = 0;
 
-    // Touch Swipe Support for mobile devices
-    let touchStartX = 0;
-    let touchEndX = 0;
+    const onDragStart = (e) => {
+      // Abaikan jika klik tombol navigasi atau tombol aksi
+      if (e.target && e.target.closest('button')) return;
 
-    track.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
+      isDragging = true;
+      isHorizontalSwipe = null;
+      currentDeltaX = 0;
+      dragStartTime = Date.now();
+
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+
       UI.stopHeroAutoScroll();
-    }, { passive: true });
+    };
 
-    track.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 45) {
-        if (diff > 0) UI.nextHeroSlide();
-        else UI.prevHeroSlide();
+    const onDragMove = (e) => {
+      if (!isDragging) return;
+
+      const point = e.touches ? e.touches[0] : e;
+      const deltaX = point.clientX - startX;
+      const deltaY = point.clientY - startY;
+
+      // Deteksi arah gesture pada pergerakan awal (5px)
+      if (isHorizontalSwipe === null) {
+        if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+          if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+            isHorizontalSwipe = true;
+          } else {
+            // Pengguna sedang scroll halaman ke atas/bawah secara vertikal
+            isHorizontalSwipe = false;
+            isDragging = false;
+            return;
+          }
+        }
       }
-      setTimeout(startAutoScroll, 2000);
-    }, { passive: true });
 
-    // Initial position & run
-    goToSlide(0);
-    startAutoScroll();
+      if (isHorizontalSwipe) {
+        if (e.cancelable) e.preventDefault();
+        currentDeltaX = deltaX;
+
+        // Berikan efek tactile rubber band pada ujung slide pertama dan terakhir
+        let effectiveDelta = deltaX;
+        if ((UI.heroCurrentIndex === 0 && deltaX > 0) || (UI.heroCurrentIndex === totalSlides - 1 && deltaX < 0)) {
+          effectiveDelta = deltaX * 0.35;
+        }
+
+        track.style.transition = 'none';
+        track.style.transform = `calc(-${UI.heroCurrentIndex * 100}% + ${effectiveDelta}px)`;
+      }
+    };
+
+    const onDragEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      track.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
+
+      if (isHorizontalSwipe) {
+        const timeElapsed = Date.now() - dragStartTime;
+        const velocity = Math.abs(currentDeltaX) / (timeElapsed || 1); // px per ms
+
+        // Geser jika melewati threshold jarak (30px) atau threshold kecepatan flick (velocity > 0.35)
+        if (currentDeltaX < -30 || (currentDeltaX < -15 && velocity > 0.35)) {
+          goToSlide(UI.heroCurrentIndex + 1);
+        } else if (currentDeltaX > 30 || (currentDeltaX > 15 && velocity > 0.35)) {
+          goToSlide(UI.heroCurrentIndex - 1);
+        } else {
+          goToSlide(UI.heroCurrentIndex); // Kembalikan ke posisi semula
+        }
+      }
+
+      isHorizontalSwipe = null;
+      currentDeltaX = 0;
+      setTimeout(() => UI.startHeroAutoScroll(), 3000);
+    };
+
+    // Touch event listeners pada track
+    track.addEventListener('touchstart', onDragStart, { passive: true });
+    window.addEventListener('touchmove', onDragMove, { passive: false });
+    window.addEventListener('touchend', onDragEnd, { passive: true });
+    window.addEventListener('touchcancel', onDragEnd, { passive: true });
+
+    // Mouse drag listeners untuk desktop & mobile devtools emulator
+    track.addEventListener('mousedown', (e) => {
+      onDragStart(e);
+      track.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('mouseup', () => {
+      if (track) track.style.cursor = 'grab';
+      onDragEnd();
+    });
+
+    track.addEventListener('mouseenter', () => UI.stopHeroAutoScroll());
+    track.addEventListener('mouseleave', () => {
+      if (!isDragging) UI.startHeroAutoScroll();
+    });
+
+    // Inisialisasi slide pertama dan mulai auto-scroll
+    goToSlide(0, true);
+    UI.startHeroAutoScroll();
   },
 
   filterInventoryByModel(modelKeyword) {
