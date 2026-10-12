@@ -117,335 +117,398 @@
       <!-- ======================================================== -->
       <!-- SECTION 1: DASHBOARD (BERANDA) -->
       <!-- ======================================================== -->
-      <section id="viewDashboard" class="space-y-4 md:space-y-6">
+      <section id="viewDashboard" class="space-y-4 md:space-y-5">
         
-        <!-- Greeting Header -->
-        <div class="flex items-center justify-between pt-1">
+        <!-- Top Executive Greeting & Status Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
           <div>
-            <span class="text-[11px] md:text-xs font-semibold text-slate-400">Selamat Pagi,</span>
-            <h2 class="text-base md:text-xl font-extrabold text-slate-900 leading-tight">Astra Daihatsu DSO Lampung 👋</h2>
-            <p class="text-[11px] md:text-xs text-slate-400 mt-0.5">Ringkasan manajemen unit salvage hari ini.</p>
+            <div class="flex items-center space-x-2">
+              <span class="text-[11px] md:text-xs font-semibold text-slate-400">Selamat Datang,</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] md:text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1"></span>
+                Sistem Aktif
+              </span>
+            </div>
+            <h2 class="text-base md:text-xl font-black text-slate-900 tracking-tight leading-tight mt-0.5">Astra Daihatsu DSO Lampung 👋</h2>
+            <p class="text-[11px] md:text-xs text-slate-400 mt-0.5">Sentra Salvage & Mutasi Unit Wilayah Lampung</p>
           </div>
-          <div class="text-right">
-            <span class="text-[10px] md:text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-1 rounded-xl inline-block border border-slate-200/60">
-              📅 9 Okt 2026
-            </span>
-            <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 block mt-0.5">09:41 WIB</span>
-          </div>
-        </div>
 
-        <!-- ======================================================== -->
-        <!-- HERO KPI LANDSCAPE CAROUSEL (Floating & Glassmorphism) -->
-        <!-- ======================================================== -->
-        <div class="relative group hero-floating-card select-none my-2 md:my-3">
-          <!-- Ambient Glow Aura behind the card -->
-          <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600/30 via-indigo-600/20 to-rose-600/30 rounded-[32px] md:rounded-[40px] blur-xl opacity-75 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
-
-          <!-- Main Carousel Card Wrapper with Glass Border & Shadow -->
-          <div class="relative w-full rounded-[28px] md:rounded-[36px] overflow-hidden bg-slate-900 shadow-2xl border border-white/20">
+          <!-- Right: Date & Quick Actions -->
+          <div class="flex items-center space-x-2 sm:space-x-3 self-start sm:self-auto">
+            <div class="bg-white px-3.5 py-1.5 rounded-2xl border border-slate-200/80 shadow-sm text-right">
+              <span class="text-[11px] md:text-xs font-extrabold text-slate-700 block leading-tight">
+                📅 9 Okt 2026
+              </span>
+              <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 block leading-tight mt-0.5">09:41 WIB • Realtime Sync</span>
+            </div>
             
-            <!-- Horizontal Scroll Slides Track -->
-            <div id="heroCarouselTrack" class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth w-full h-56 sm:h-64 md:h-72">
-              
-              <!-- Slide 1: Gran Max Pickup / Blind Van -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=1400&q=80" alt="Gran Max Pickup" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
-
-                <!-- Top Floating Glass Badges -->
-                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
-                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Niaga & Logistik</span>
-                  </div>
-
-                  <!-- Glassmorphism KPI Counters per Model -->
-                  <div class="flex items-center space-x-1.5 md:space-x-2">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>18 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>15 Keluar</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
-                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
-                    <span class="text-[10px] md:text-xs font-bold text-amber-300 uppercase tracking-wider block">Best Seller Commercial</span>
-                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Gran Max 1.5 D Pickup</h3>
-                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
-                      <span>Stok In-Yard: <strong class="text-emerald-300">12 Unit</strong></span>
-                      <span>•</span>
-                      <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
-                    </p>
-                  </div>
-
-                  <button onclick="filterInventoryByModel('Gran Max')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
-                    <span>Lihat Stok</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Slide 2: All New Terios R 1.5 Deluxe -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1400&q=80" alt="Terios R 1.5 Deluxe" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
-
-                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
-                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Adventure SUV</span>
-                  </div>
-
-                  <div class="flex items-center space-x-1.5 md:space-x-2">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>12 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>10 Keluar</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
-                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
-                    <span class="text-[10px] md:text-xs font-bold text-blue-300 uppercase tracking-wider block">7-Seater Deluxe</span>
-                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">All New Terios R 1.5 X</h3>
-                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
-                      <span>Stok In-Yard: <strong class="text-emerald-300">8 Unit</strong></span>
-                      <span>•</span>
-                      <span>Intransit: <strong class="text-amber-300">4 Unit</strong></span>
-                    </p>
-                  </div>
-
-                  <button onclick="filterInventoryByModel('Terios')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
-                    <span>Lihat Stok</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Slide 3: Daihatsu Sigra 1.2 R -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1400&q=80" alt="Daihatsu Sigra 1.2 R" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
-
-                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
-                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Family MPV Favorit</span>
-                  </div>
-
-                  <div class="flex items-center space-x-1.5 md:space-x-2">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>10 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>9 Keluar</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
-                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
-                    <span class="text-[10px] md:text-xs font-bold text-indigo-300 uppercase tracking-wider block">7-Seater Efisien</span>
-                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Daihatsu Sigra 1.2 R</h3>
-                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
-                      <span>Stok In-Yard: <strong class="text-emerald-300">6 Unit</strong></span>
-                      <span>•</span>
-                      <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
-                    </p>
-                  </div>
-
-                  <button onclick="filterInventoryByModel('Sigra')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
-                    <span>Lihat Stok</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Slide 4: All New Xenia 1.5 R CVT -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80" alt="All New Xenia" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
-
-                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
-                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Executive MPV</span>
-                  </div>
-
-                  <div class="flex items-center space-x-1.5 md:space-x-2">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>8 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>7 Keluar</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
-                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
-                    <span class="text-[10px] md:text-xs font-bold text-amber-300 uppercase tracking-wider block">Modern FWD Comfort</span>
-                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">All New Xenia 1.5 R</h3>
-                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
-                      <span>Stok In-Yard: <strong class="text-emerald-300">5 Unit</strong></span>
-                      <span>•</span>
-                      <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
-                    </p>
-                  </div>
-
-                  <button onclick="filterInventoryByModel('Xenia')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
-                    <span>Lihat Stok</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Slide 5: Daihatsu Rocky 1.0 R Turbo -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80" alt="Daihatsu Rocky Turbo" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
-
-                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
-                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Turbo Crossover</span>
-                  </div>
-
-                  <div class="flex items-center space-x-1.5 md:space-x-2">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>6 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
-                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>5 Keluar</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
-                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
-                    <span class="text-[10px] md:text-xs font-bold text-rose-300 uppercase tracking-wider block">Compact Dynamic Turbo</span>
-                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Daihatsu Rocky 1.0 R TC</h3>
-                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
-                      <span>Stok In-Yard: <strong class="text-emerald-300">4 Unit</strong></span>
-                      <span>•</span>
-                      <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
-                    </p>
-                  </div>
-
-                  <button onclick="filterInventoryByModel('Rocky')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
-                    <span>Lihat Stok</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Left & Right Floating Glass Navigation Arrows -->
-            <button onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/60 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <button onclick="exportHistoryPDF()" title="Unduh Rekap Laporan" class="hidden md:inline-flex items-center px-3.5 py-2 rounded-2xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition active:scale-95 space-x-1.5">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Laporan</span>
             </button>
-            <button onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/60 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </button>
-
-            <!-- Bottom Floating Dots Indicator -->
-            <div id="heroDotsContainer" class="absolute bottom-2.5 md:bottom-3 inset-x-0 flex items-center justify-center space-x-1.5 z-20 pointer-events-auto">
-              <button onclick="goToHeroSlide(0)" class="hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all"></button>
-              <button onclick="goToHeroSlide(1)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
-              <button onclick="goToHeroSlide(2)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
-              <button onclick="goToHeroSlide(3)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
-              <button onclick="goToHeroSlide(4)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
-            </div>
-
           </div>
         </div>
 
-        <!-- 3 KPI Cards Grid -->
-        <div class="grid grid-cols-3 gap-2.5 md:gap-5">
+        <!-- ======================================================== -->
+        <!-- EXECUTIVE KPI STATS BAR (4 CARDS: Above The Fold on Desktop) -->
+        <!-- ======================================================== -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          
           <!-- Card 1: Unit Masuk -->
-          <div class="bg-emerald-50/70 border border-emerald-100/90 rounded-2xl md:rounded-3xl p-3 md:p-5 flex flex-col justify-between shadow-saas-card">
+          <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 md:p-4.5 border border-slate-100 shadow-saas-card relative overflow-hidden group hover:border-emerald-200 transition">
             <div class="flex items-center justify-between">
-              <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl md:rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
               </div>
-              <span class="text-[10px] md:text-xs text-emerald-600 font-extrabold">↑ 12%</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                ↑ 12%
+              </span>
             </div>
-            <div class="mt-2 md:mt-4">
-              <span class="text-[10px] md:text-xs font-bold text-slate-500 block leading-tight">Unit Masuk</span>
-              <span id="kpiMasukVal" class="text-xl md:text-3xl font-extrabold text-slate-900 leading-tight">48</span>
-              <span class="text-[9px] md:text-[10px] text-slate-400 block mt-0.5">vs kemarin</span>
+            <div class="mt-2.5 md:mt-3">
+              <span class="text-[10px] md:text-xs font-bold text-slate-400 block leading-tight">Unit Masuk Hari Ini</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="kpiMasukVal" class="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">48</span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-semibold">Unit</span>
+              </div>
+              <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-emerald-500 h-full rounded-full" style="width: 82%"></div>
+              </div>
             </div>
           </div>
 
           <!-- Card 2: Unit Keluar -->
-          <div class="bg-blue-50/70 border border-blue-100/90 rounded-2xl md:rounded-3xl p-3 md:p-5 flex flex-col justify-between shadow-saas-card">
+          <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 md:p-4.5 border border-slate-100 shadow-saas-card relative overflow-hidden group hover:border-blue-200 transition">
             <div class="flex items-center justify-between">
-              <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl md:rounded-2xl bg-blue-500/15 text-blue-600 flex items-center justify-center">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
               </div>
-              <span class="text-[10px] md:text-xs text-blue-600 font-extrabold">↑ 8%</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200/60">
+                ↑ 8%
+              </span>
             </div>
-            <div class="mt-2 md:mt-4">
-              <span class="text-[10px] md:text-xs font-bold text-slate-500 block leading-tight">Unit Keluar</span>
-              <span id="kpiKeluarVal" class="text-xl md:text-3xl font-extrabold text-slate-900 leading-tight">42</span>
-              <span class="text-[9px] md:text-[10px] text-slate-400 block mt-0.5">vs kemarin</span>
+            <div class="mt-2.5 md:mt-3">
+              <span class="text-[10px] md:text-xs font-bold text-slate-400 block leading-tight">Unit Keluar (DO/BASTK)</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="kpiKeluarVal" class="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">42</span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-semibold">Unit</span>
+              </div>
+              <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-blue-500 h-full rounded-full" style="width: 74%"></div>
+              </div>
             </div>
           </div>
 
-          <!-- Card 3: Intransit Alert -->
-          <div class="bg-amber-50/70 border border-amber-100/90 rounded-2xl md:rounded-3xl p-3 md:p-5 flex flex-col justify-between shadow-saas-card">
+          <!-- Card 3: Intransit Ekspedisi -->
+          <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 md:p-4.5 border border-slate-100 shadow-saas-card relative overflow-hidden group hover:border-amber-200 transition">
             <div class="flex items-center justify-between">
-              <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl md:rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
-              <span class="text-[10px] md:text-xs text-amber-600 font-extrabold">↑ 23%</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-extrabold bg-amber-50 text-amber-600 border border-amber-200/60">
+                ↑ 23%
+              </span>
             </div>
-            <div class="mt-2 md:mt-4">
-              <span class="text-[10px] md:text-xs font-bold text-slate-500 block leading-tight">Intransit</span>
-              <span id="kpiIntransitVal" class="text-xl md:text-3xl font-extrabold text-slate-900 leading-tight">16</span>
-              <span class="text-[9px] md:text-[10px] text-slate-400 block mt-0.5">vs kemarin</span>
+            <div class="mt-2.5 md:mt-3">
+              <span class="text-[10px] md:text-xs font-bold text-slate-400 block leading-tight">Unit Sedang Intransit</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="kpiIntransitVal" class="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">16</span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-semibold">Unit</span>
+              </div>
+              <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-500 h-full rounded-full" style="width: 45%"></div>
+              </div>
             </div>
           </div>
+
+          <!-- Card 4: Kapasitas Yard Lampung -->
+          <div class="bg-white rounded-2xl md:rounded-3xl p-3.5 md:p-4.5 border border-slate-100 shadow-saas-card relative overflow-hidden group hover:border-indigo-200 transition">
+            <div class="flex items-center justify-between">
+              <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 flex items-center justify-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-extrabold bg-indigo-50 text-indigo-600 border border-indigo-200/60">
+                63.3% Yard
+              </span>
+            </div>
+            <div class="mt-2.5 md:mt-3">
+              <span class="text-[10px] md:text-xs font-bold text-slate-400 block leading-tight">Total In-Yard Sentra</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span class="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">76</span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-semibold">/ 120 Slot</span>
+              </div>
+              <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-indigo-600 h-full rounded-full" style="width: 63.3%"></div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Main Dashboard Responsive Split (Desktop 2-Columns Grid) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+        <!-- ======================================================== -->
+        <!-- MAIN DASHBOARD RESPONSIVE SPLIT (Left: 8 Cols, Right: 4 Cols) -->
+        <!-- ======================================================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
           
-          <!-- Left Column (8 cols on LG): Donut Chart & Attention Banner -->
+          <!-- LEFT COLUMN (8 cols): Hero Model Showcase + Vehicle Distribution Donut -->
           <div class="lg:col-span-7 xl:col-span-8 space-y-4 md:space-y-5">
-            <!-- Donut Chart & Vehicle Distribution Card -->
+            
+            <!-- HERO KPI LANDSCAPE CAROUSEL (Floating & Glassmorphism) -->
+            <div class="relative group hero-floating-card select-none">
+              <!-- Ambient Glow Aura behind the card -->
+              <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600/30 via-indigo-600/20 to-rose-600/30 rounded-[30px] md:rounded-[36px] blur-xl opacity-75 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
+
+              <!-- Main Carousel Card Wrapper with Glass Border & Shadow -->
+              <div class="relative w-full rounded-[26px] md:rounded-[32px] overflow-hidden bg-slate-950 shadow-2xl border border-white/20">
+                
+                <!-- Horizontal Scroll Slides Track -->
+                <div id="heroCarouselTrack" class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth w-full h-56 sm:h-64 lg:h-72">
+                  
+                  <!-- Slide 1: Gran Max Pickup / Blind Van -->
+                  <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80" alt="Gran Max Pickup" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-transparent to-transparent"></div>
+
+                    <!-- Top Floating Glass Badges -->
+                    <div class="absolute top-3 inset-x-3 md:top-4 md:inset-x-4 flex items-center justify-between z-10">
+                      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Niaga & Logistik</span>
+                      </div>
+
+                      <!-- Glassmorphism KPI Counters per Model -->
+                      <div class="flex items-center space-x-1.5 md:space-x-2">
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          <span>18 Masuk</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                          <span>15 Keluar</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Bottom Glassmorphism Info Overlay -->
+                    <div class="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-10 flex items-end justify-between">
+                      <div class="backdrop-blur-md bg-slate-900/60 border border-white/20 p-3 md:p-3.5 rounded-2xl md:rounded-3xl shadow-xl max-w-sm md:max-w-md">
+                        <span class="text-[9px] md:text-[10px] font-bold text-amber-300 uppercase tracking-wider block">Best Seller Commercial</span>
+                        <h3 class="text-sm md:text-xl font-black text-white leading-tight mt-0.5">Gran Max 1.5 D Pickup</h3>
+                        <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                          <span>Stok In-Yard: <strong class="text-emerald-300">12 Unit</strong></span>
+                          <span>•</span>
+                          <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
+                        </p>
+                      </div>
+
+                      <button onclick="filterInventoryByModel('Gran Max')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-[10px] md:text-xs font-bold shadow-lg transition active:scale-95">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Slide 2: All New Terios R 1.5 Deluxe -->
+                  <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80" alt="Terios R 1.5 Deluxe" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-transparent to-transparent"></div>
+
+                    <div class="absolute top-3 inset-x-3 md:top-4 md:inset-x-4 flex items-center justify-between z-10">
+                      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Adventure SUV</span>
+                      </div>
+
+                      <div class="flex items-center space-x-1.5 md:space-x-2">
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          <span>12 Masuk</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                          <span>10 Keluar</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-10 flex items-end justify-between">
+                      <div class="backdrop-blur-md bg-slate-900/60 border border-white/20 p-3 md:p-3.5 rounded-2xl md:rounded-3xl shadow-xl max-w-sm md:max-w-md">
+                        <span class="text-[9px] md:text-[10px] font-bold text-blue-300 uppercase tracking-wider block">7-Seater Deluxe</span>
+                        <h3 class="text-sm md:text-xl font-black text-white leading-tight mt-0.5">All New Terios R 1.5 X</h3>
+                        <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                          <span>Stok In-Yard: <strong class="text-emerald-300">8 Unit</strong></span>
+                          <span>•</span>
+                          <span>Intransit: <strong class="text-amber-300">4 Unit</strong></span>
+                        </p>
+                      </div>
+
+                      <button onclick="filterInventoryByModel('Terios')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-[10px] md:text-xs font-bold shadow-lg transition active:scale-95">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Slide 3: Daihatsu Sigra 1.2 R -->
+                  <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80" alt="Daihatsu Sigra 1.2 R" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-transparent to-transparent"></div>
+
+                    <div class="absolute top-3 inset-x-3 md:top-4 md:inset-x-4 flex items-center justify-between z-10">
+                      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Family MPV Favorit</span>
+                      </div>
+
+                      <div class="flex items-center space-x-1.5 md:space-x-2">
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          <span>10 Masuk</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                          <span>9 Keluar</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-10 flex items-end justify-between">
+                      <div class="backdrop-blur-md bg-slate-900/60 border border-white/20 p-3 md:p-3.5 rounded-2xl md:rounded-3xl shadow-xl max-w-sm md:max-w-md">
+                        <span class="text-[9px] md:text-[10px] font-bold text-indigo-300 uppercase tracking-wider block">7-Seater Efisien</span>
+                        <h3 class="text-sm md:text-xl font-black text-white leading-tight mt-0.5">Daihatsu Sigra 1.2 R</h3>
+                        <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                          <span>Stok In-Yard: <strong class="text-emerald-300">6 Unit</strong></span>
+                          <span>•</span>
+                          <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
+                        </p>
+                      </div>
+
+                      <button onclick="filterInventoryByModel('Sigra')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-[10px] md:text-xs font-bold shadow-lg transition active:scale-95">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Slide 4: All New Xenia 1.5 R CVT -->
+                  <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80" alt="All New Xenia" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-transparent to-transparent"></div>
+
+                    <div class="absolute top-3 inset-x-3 md:top-4 md:inset-x-4 flex items-center justify-between z-10">
+                      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Executive MPV</span>
+                      </div>
+
+                      <div class="flex items-center space-x-1.5 md:space-x-2">
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          <span>8 Masuk</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                          <span>7 Keluar</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-10 flex items-end justify-between">
+                      <div class="backdrop-blur-md bg-slate-900/60 border border-white/20 p-3 md:p-3.5 rounded-2xl md:rounded-3xl shadow-xl max-w-sm md:max-w-md">
+                        <span class="text-[9px] md:text-[10px] font-bold text-amber-300 uppercase tracking-wider block">Modern FWD Comfort</span>
+                        <h3 class="text-sm md:text-xl font-black text-white leading-tight mt-0.5">All New Xenia 1.5 R</h3>
+                        <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                          <span>Stok In-Yard: <strong class="text-emerald-300">5 Unit</strong></span>
+                          <span>•</span>
+                          <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
+                        </p>
+                      </div>
+
+                      <button onclick="filterInventoryByModel('Xenia')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-[10px] md:text-xs font-bold shadow-lg transition active:scale-95">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Slide 5: Daihatsu Rocky 1.0 R Turbo -->
+                  <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80" alt="Daihatsu Rocky Turbo" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-transparent to-transparent"></div>
+
+                    <div class="absolute top-3 inset-x-3 md:top-4 md:inset-x-4 flex items-center justify-between z-10">
+                      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Turbo Crossover</span>
+                      </div>
+
+                      <div class="flex items-center space-x-1.5 md:space-x-2">
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          <span>6 Masuk</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                          <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                          <span>5 Keluar</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-10 flex items-end justify-between">
+                      <div class="backdrop-blur-md bg-slate-900/60 border border-white/20 p-3 md:p-3.5 rounded-2xl md:rounded-3xl shadow-xl max-w-sm md:max-w-md">
+                        <span class="text-[9px] md:text-[10px] font-bold text-rose-300 uppercase tracking-wider block">Compact Dynamic Turbo</span>
+                        <h3 class="text-sm md:text-xl font-black text-white leading-tight mt-0.5">Daihatsu Rocky 1.0 R TC</h3>
+                        <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                          <span>Stok In-Yard: <strong class="text-emerald-300">4 Unit</strong></span>
+                          <span>•</span>
+                          <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
+                        </p>
+                      </div>
+
+                      <button onclick="filterInventoryByModel('Rocky')" class="inline-flex items-center space-x-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-[10px] md:text-xs font-bold shadow-lg transition active:scale-95">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Left & Right Floating Glass Navigation Arrows -->
+                <button onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
+                  <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
+                  <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- Bottom Floating Dots Indicator -->
+                <div id="heroDotsContainer" class="absolute bottom-2 md:bottom-2.5 inset-x-0 flex items-center justify-center space-x-1.5 z-20 pointer-events-auto">
+                  <button onclick="goToHeroSlide(0)" class="hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all"></button>
+                  <button onclick="goToHeroSlide(1)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+                  <button onclick="goToHeroSlide(2)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+                  <button onclick="goToHeroSlide(3)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+                  <button onclick="goToHeroSlide(4)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Distribusi Model Kendaraan (Donut Chart & Breakdown) -->
             <div class="bg-white rounded-3xl p-5 md:p-6 border border-slate-100 shadow-saas-card">
               <div class="flex items-center justify-between mb-4">
                 <div>
                   <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Distribusi Model Kendaraan</h3>
-                  <p class="text-[11px] text-slate-400 mt-0.5 hidden md:block">Komposisi stok unit fisik di yard operasional</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Komposisi stok unit fisik di pool yard Sentra Lampung</p>
                 </div>
-                <span class="text-[10px] md:text-xs text-slate-500 font-bold bg-slate-100 px-2.5 py-1 rounded-xl">Total 48 Unit</span>
+                <span class="text-[10px] md:text-xs text-slate-600 font-extrabold bg-slate-100 px-3 py-1 rounded-xl border border-slate-200/60">Total 48 Unit In-Yard</span>
               </div>
 
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
                 <!-- Donut SVG -->
                 <div class="relative w-32 h-32 md:w-36 md:h-36 flex-shrink-0 flex items-center justify-center">
                   <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -457,61 +520,108 @@
                     <path class="text-emerald-500" stroke-dashoffset="-83" stroke-dasharray="10, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span class="text-[9px] text-slate-400 font-semibold leading-none">Total</span>
-                    <span class="text-sm font-black text-slate-900 mt-0.5">48 Unit</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Total</span>
+                    <span class="text-base font-black text-slate-900 mt-0.5">48 Unit</span>
                   </div>
                 </div>
 
-                <!-- Legends -->
-                <div class="flex-1 w-full pl-0 sm:pl-4 space-y-2 text-xs">
-                  <div class="flex items-center justify-between pb-1 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-rose-500"></span><span class="text-slate-700 font-medium">Gran Max Pickup / Van</span></div>
-                    <span class="font-extrabold text-slate-900">35%</span>
+                <!-- Legends Breakdown -->
+                <div class="flex-1 w-full pl-0 sm:pl-3 space-y-2.5 text-xs">
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
+                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-rose-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Gran Max Pickup / Van</span></div>
+                    <div class="text-right"><span class="font-extrabold text-slate-900">35%</span> <span class="text-[10px] text-slate-400">(17 Unit)</span></div>
                   </div>
-                  <div class="flex items-center justify-between pb-1 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-slate-700 font-medium">All New Terios R</span></div>
-                    <span class="font-extrabold text-slate-900">21%</span>
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
+                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">All New Terios R</span></div>
+                    <div class="text-right"><span class="font-extrabold text-slate-900">21%</span> <span class="text-[10px] text-slate-400">(10 Unit)</span></div>
                   </div>
-                  <div class="flex items-center justify-between pb-1 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-indigo-500"></span><span class="text-slate-700 font-medium">Daihatsu Sigra 1.2 R</span></div>
-                    <span class="font-extrabold text-slate-900">15%</span>
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
+                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Daihatsu Sigra 1.2 R</span></div>
+                    <div class="text-right"><span class="font-extrabold text-slate-900">15%</span> <span class="text-[10px] text-slate-400">(7 Unit)</span></div>
                   </div>
-                  <div class="flex items-center justify-between pb-1 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-400"></span><span class="text-slate-700 font-medium">All New Xenia CVT</span></div>
-                    <span class="font-extrabold text-slate-900">12%</span>
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
+                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0"></span><span class="text-slate-700 font-semibold">All New Xenia CVT</span></div>
+                    <div class="text-right"><span class="font-extrabold text-slate-900">12%</span> <span class="text-[10px] text-slate-400">(6 Unit)</span></div>
                   </div>
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-700 font-medium">Ayla / Rocky Turbo</span></div>
-                    <span class="font-extrabold text-slate-900">10%</span>
+                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Ayla / Rocky Turbo</span></div>
+                    <div class="text-right"><span class="font-extrabold text-slate-900">10%</span> <span class="text-[10px] text-slate-400">(5 Unit)</span></div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Attention Banner -->
-            <div class="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/80 rounded-2xl md:rounded-3xl p-4 flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-                <div>
-                  <p class="text-xs md:text-sm font-bold text-rose-900">3 Unit Memerlukan Perhatian Fisik</p>
-                  <p class="text-[10px] md:text-xs text-rose-600 mt-0.5">Terdapat 2 unit terlambat >14 hari di yard transit & 1 unit butuh verifikasi fisik DO.</p>
-                </div>
-              </div>
-              <svg class="w-5 h-5 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
           </div>
 
-          <!-- Right Column (4 cols on LG): Recent Activities Feed -->
-          <div class="lg:col-span-5 xl:col-span-4 space-y-3">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Aktivitas Mutasi Terbaru</h3>
-              <button onclick="switchTab('history')" class="text-[11px] md:text-xs font-bold text-blue-600 hover:underline">Semua &rarr;</button>
+          <!-- RIGHT COLUMN (4 cols): Operational Intel & Live Mutasi Stream -->
+          <div class="lg:col-span-5 xl:col-span-4 space-y-4 md:space-y-4.5">
+            
+            <!-- Yard Operational Health Card -->
+            <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-3.5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Status Operasional Yard</h3>
+                  <p class="text-[10px] text-slate-400 mt-0.5">Monitoring kapasitas & kepatuhan fisik</p>
+                </div>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
+
+              <!-- Capacity Bar -->
+              <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-bold text-slate-600">Okupansi Slot Pool Yard</span>
+                  <span class="font-extrabold text-indigo-600">76 / 120 Unit (63.3%)</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div class="bg-indigo-600 h-full rounded-full" style="width: 63.3%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1 font-medium">
+                  <span>Tersedia: 44 Slot</span>
+                  <span>Ambang Batas: 100 Slot</span>
+                </div>
+              </div>
+
+              <!-- Quick Verification Status -->
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 text-left">
+                  <span class="text-[10px] text-blue-500 font-semibold block leading-tight">DO Siap Verifikasi</span>
+                  <span class="text-sm font-black text-blue-900 mt-0.5 block">5 Unit</span>
+                </div>
+                <div class="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-left">
+                  <span class="text-[10px] text-emerald-500 font-semibold block leading-tight">BASTK Valid</span>
+                  <span class="text-sm font-black text-emerald-900 mt-0.5 block">2 Unit</span>
+                </div>
+              </div>
             </div>
-            <div id="dashboardRecentList" class="space-y-2.5">
-              <!-- Rendered by UI.js -->
+
+            <!-- Urgent Attention Alert Card -->
+            <div class="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/90 rounded-2xl md:rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition" onclick="switchTab('inventory'); filterInventoryByStatus('Intransit')">
+              <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-rose-900 truncate">3 Unit Memerlukan Perhatian</p>
+                  <p class="text-[10px] text-rose-600 mt-0.5 leading-snug">2 unit transit >14 hari & 1 unit butuh verifikasi fisik DO.</p>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-rose-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </div>
+
+            <!-- Aktivitas Mutasi Terbaru -->
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between px-0.5">
+                <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Aktivitas Mutasi Terbaru</h3>
+                <button onclick="switchTab('history')" class="text-[11px] md:text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center">
+                  <span>Lihat Semua</span>
+                  <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div id="dashboardRecentList" class="space-y-2">
+                <!-- Rendered by UI.js -->
+              </div>
+            </div>
+
           </div>
 
         </div>

@@ -87,7 +87,7 @@ const AppState = {
       engine: '3NRF5678901',
       status: 'Allocated',
       location: 'Alokasi DSO Lampung',
-      photo: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=260&q=80',
+      photo: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=260&q=80',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
