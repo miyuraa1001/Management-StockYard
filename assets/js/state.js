@@ -37,6 +37,17 @@ const AppState = {
   inventoryData: [
     {
       id: 'INV-001',
+      model: 'Rocky e-Smart Hybrid',
+      plate: 'BE 1001 RKY',
+      vin: 'MHKP3FA1JXK001122',
+      engine: 'WA-VEX1029384',
+      status: 'In-Yard',
+      location: 'Yard A - Blok 1 (Hybrid)',
+      photo: 'assets/images/inventory-rocky-hybrid.png',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-002',
       model: 'Gran Max 1.5 D Pickup',
       plate: 'BE 1234 KZA',
       vin: 'MHKP3FA1JXK005678',

@@ -161,7 +161,7 @@ const UI = {
 
       return `
         <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-saas-card flex items-start space-x-3">
-          <img src="${item.photo}" alt="${item.model}" class="w-14 h-14 rounded-xl object-cover border border-slate-100 flex-shrink-0 mt-0.5">
+          <img src="${item.photo}" alt="${item.model}" class="w-16 h-14 rounded-xl object-contain bg-slate-50 p-0.5 border border-slate-100 flex-shrink-0 mt-0.5">
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-extrabold text-slate-900 truncate">${item.model}</h4>
