@@ -11,9 +11,9 @@
  */
 
 const CONFIG = {
-  // Informasi Cabang & Unit
-  BRANCH_NAME: 'Daihatsu Ahmad Yani',
-  BRANCH_ADDRESS: 'Jl. Ahmad Yani No. 88, Surabaya',
+  // Informasi Cabang & Aplikasi
+  APP_TITLE: 'Salvage (Management Salvage Sentra Lampung)',
+  BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
   OPERATOR_NAME: 'Andi Pratama',
   OPERATOR_NIP: '19870215201001123',
 

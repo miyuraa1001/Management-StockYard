@@ -20,6 +20,7 @@ const UI = {
     tabs.forEach(t => {
       const viewEl = document.getElementById(`view${this.capitalize(t)}`);
       const btnEl = document.getElementById(`nav-${t}`);
+      const deskBtnEl = document.getElementById(`desk-nav-${t}`);
 
       if (viewEl) {
         if (t === target) {
@@ -34,6 +35,14 @@ const UI = {
           btnEl.classList.add('active');
         } else {
           btnEl.classList.remove('active');
+        }
+      }
+
+      if (deskBtnEl) {
+        if (t === target) {
+          deskBtnEl.classList.add('active');
+        } else {
+          deskBtnEl.classList.remove('active');
         }
       }
     });
@@ -129,7 +138,7 @@ const UI = {
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 text-center border border-slate-100 shadow-sm">
+        <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm">
           <p class="text-xs font-bold text-slate-600">Tidak ada unit yang cocok</p>
           <p class="text-[10px] text-slate-400 mt-1">Coba kata kunci lain atau ubah filter status.</p>
         </div>
@@ -213,7 +222,7 @@ const UI = {
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 text-center border border-slate-100 shadow-sm">
+        <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm">
           <p class="text-xs font-bold text-slate-600">Tidak ada transaksi ditemukan</p>
           <p class="text-[10px] text-slate-400 mt-1">Coba sesuaikan filter waktu atau pilih tab Semua.</p>
         </div>

@@ -11,7 +11,7 @@ const App = {
    * Titik masuk utama aplikasi saat halaman selesai dimuat
    */
   async init() {
-    console.log('[App] Memulai Daihatsu Vehicle Logistics Tracker...');
+    console.log('[App] Memulai Salvage (Management Salvage Sentra Lampung)...');
 
     // 1. Inisialisasi dropdown tanggal filter riwayat
     UI.populateDateDropdown();

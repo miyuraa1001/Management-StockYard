@@ -1,6 +1,6 @@
-# 🚗 Daihatsu Vehicle Logistics Tracker - Sentra Monitoring
+# 🚗 Salvage (Management Salvage Sentra Lampung)
 
-Sistem pelacakan mutasi dan logistik unit kendaraan Daihatsu berbasis web mobile dengan optical barcode scanner (ZXing) dan database real-time Google Spreadsheet.
+Sistem manajemen unit salvage Astra Daihatsu DSO Lampung berbasis web mobile & desktop dengan optical barcode scanner (ZXing) dan database real-time Google Spreadsheet.
 
 ---
 
