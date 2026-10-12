@@ -12,7 +12,8 @@
 
 const CONFIG = {
   // Informasi Cabang & Aplikasi
-  APP_TITLE: 'Salvage (Management Salvage Sentra Lampung)',
+  APP_TITLE: 'Salvage',
+  APP_SUBTITLE: 'Management Sentra Lampung',
   BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
   OPERATOR_NAME: 'Andi Pratama',
   OPERATOR_NIP: '19870215201001123',
