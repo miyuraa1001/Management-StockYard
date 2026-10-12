@@ -470,9 +470,20 @@ const UI = {
       if (index >= totalSlides) index = 0;
       if (index < 0) index = totalSlides - 1;
       UI.heroCurrentIndex = index;
-      
-      track.style.transition = immediate ? 'none' : 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
-      track.style.transform = `translateX(-${index * 100}%)`;
+
+      const slideWidth = track.clientWidth || track.offsetWidth || window.innerWidth;
+      const targetScrollLeft = index * slideWidth;
+
+      if (immediate) {
+        track.style.scrollBehavior = 'auto';
+        track.scrollLeft = targetScrollLeft;
+        track.style.scrollBehavior = 'smooth';
+      } else {
+        track.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth'
+        });
+      }
       updateDots(index);
     };
 
@@ -480,10 +491,12 @@ const UI = {
       const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
       goToSlide(curr + 1);
     };
+
     UI.prevHeroSlide = () => {
       const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
       goToSlide(curr - 1);
     };
+
     UI.goToHeroSlide = (idx) => goToSlide(idx);
 
     window.nextHeroSlide = () => UI.nextHeroSlide();
@@ -504,173 +517,107 @@ const UI = {
       }
     };
 
-    // =========================================================================
-    // Real-Time Touch & Mouse Drag Gesture Engine (Geser / Swipe Halus)
-    // =========================================================================
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let currentDeltaX = 0;
-    let isHorizontalSwipe = null;
-    let dragStartTime = 0;
-
-    const onDragStart = (e) => {
-      // Abaikan jika klik tombol navigasi atau tombol aksi
-      if (e.target && e.target.closest('button')) return;
-
-      isDragging = true;
-      isHorizontalSwipe = null;
-      currentDeltaX = 0;
-      dragStartTime = Date.now();
-
-      const point = e.touches ? e.touches[0] : e;
-      startX = point.clientX;
-      startY = point.clientY;
-
+    // Sinkronisasi otomatis dots dan counter saat pengguna swipe secara native pada layar sentuh
+    let scrollTimeout = null;
+    track.addEventListener('scroll', () => {
       UI.stopHeroAutoScroll();
-    };
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const slideWidth = track.clientWidth || track.offsetWidth || 1;
+        const currentIndex = Math.round(track.scrollLeft / slideWidth);
+        const validIndex = Math.max(0, Math.min(totalSlides - 1, currentIndex));
+        UI.heroCurrentIndex = validIndex;
+        updateDots(validIndex);
+        UI.startHeroAutoScroll();
+      }, 90);
+    }, { passive: true });
 
-    const onDragMove = (e) => {
-      if (!isDragging) return;
-
-      const point = e.touches ? e.touches[0] : e;
-      const deltaX = point.clientX - startX;
-      const deltaY = point.clientY - startY;
-
-      // Deteksi arah gesture pada pergerakan awal (6px)
-      if (isHorizontalSwipe === null) {
-        if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
-          if (Math.abs(deltaX) >= Math.abs(deltaY)) {
-            isHorizontalSwipe = true;
-          } else {
-            // Pengguna sedang scroll halaman ke atas/bawah secara vertikal
-            isHorizontalSwipe = false;
-            isDragging = false;
-            return;
-          }
-        }
-      }
-
-      if (isHorizontalSwipe) {
-        if (e.cancelable) e.preventDefault();
-        currentDeltaX = deltaX;
-
-        // Berikan efek tactile rubber band pada ujung slide pertama dan terakhir
-        let effectiveDelta = deltaX;
-        const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
-        if ((curr === 0 && deltaX > 0) || (curr === totalSlides - 1 && deltaX < 0)) {
-          effectiveDelta = deltaX * 0.35;
-        }
-
-        track.style.transition = 'none';
-        track.style.transform = `translateX(calc(-${curr * 100}% + ${effectiveDelta}px))`;
-      }
-    };
-
-    const onDragEnd = () => {
-      if (!isDragging) return;
-      isDragging = false;
-
-      track.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
-
-      if (isHorizontalSwipe) {
-        const timeElapsed = Date.now() - dragStartTime;
-        const velocity = Math.abs(currentDeltaX) / (timeElapsed || 1); // px per ms
-        const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
-
-        // Geser jika melewati threshold jarak (25px) atau threshold kecepatan flick (velocity > 0.3)
-        if (currentDeltaX < -25 || (currentDeltaX < -15 && velocity > 0.3)) {
-          goToSlide(curr + 1);
-        } else if (currentDeltaX > 25 || (currentDeltaX > 15 && velocity > 0.3)) {
-          goToSlide(curr - 1);
-        } else {
-          goToSlide(curr); // Kembalikan ke posisi semula
-        }
-      }
-
-      isHorizontalSwipe = null;
-      currentDeltaX = 0;
-      setTimeout(() => UI.startHeroAutoScroll(), 3000);
-    };
-
-    // Touch event listeners pada track
-    track.addEventListener('touchstart', onDragStart, { passive: true });
-    window.addEventListener('touchmove', onDragMove, { passive: false });
-    window.addEventListener('touchend', onDragEnd, { passive: true });
-    window.addEventListener('touchcancel', onDragEnd, { passive: true });
-
-    // Mouse drag listeners untuk desktop & mobile devtools emulator
-    track.addEventListener('mousedown', (e) => {
-      onDragStart(e);
-      track.style.cursor = 'grabbing';
-    });
-    window.addEventListener('mousemove', onDragMove);
-    window.addEventListener('mouseup', () => {
-      if (track) track.style.cursor = 'grab';
-      onDragEnd();
-    });
-
+    // Hentikan sementara auto-scroll saat disentuh oleh pengguna
+    track.addEventListener('touchstart', () => UI.stopHeroAutoScroll(), { passive: true });
+    track.addEventListener('touchend', () => {
+      setTimeout(() => UI.startHeroAutoScroll(), 3500);
+    }, { passive: true });
     track.addEventListener('mouseenter', () => UI.stopHeroAutoScroll());
-    track.addEventListener('mouseleave', () => {
-      if (!isDragging) UI.startHeroAutoScroll();
+    track.addEventListener('mouseleave', () => UI.startHeroAutoScroll());
+
+    // Mouse drag support untuk desktop
+    let isMouseDown = false;
+    let startMouseX = 0;
+    let scrollStart = 0;
+
+    track.addEventListener('mousedown', (e) => {
+      if (e.target && e.target.closest('button')) return;
+      isMouseDown = true;
+      startMouseX = e.pageX;
+      scrollStart = track.scrollLeft;
+      track.style.cursor = 'grabbing';
+      track.style.scrollBehavior = 'auto';
+      UI.stopHeroAutoScroll();
     });
 
-    // Dedicated Button Click & Touch Listeners for Mobile & Desktop
+    window.addEventListener('mousemove', (e) => {
+      if (!isMouseDown) return;
+      e.preventDefault();
+      const delta = e.pageX - startMouseX;
+      track.scrollLeft = scrollStart - delta;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      track.style.cursor = 'grab';
+      track.style.scrollBehavior = 'smooth';
+      const slideWidth = track.clientWidth || track.offsetWidth || 1;
+      const targetIndex = Math.round(track.scrollLeft / slideWidth);
+      goToSlide(targetIndex);
+      setTimeout(() => UI.startHeroAutoScroll(), 3500);
+    });
+
+    // Pasang tombol panah navigasi kiri dan kanan
     const prevBtn = document.getElementById('heroPrevBtn');
     const nextBtn = document.getElementById('heroNextBtn');
-    let lastNavTime = 0;
-
-    const handleNextTap = (e) => {
-      if (e) {
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
-      }
-      const now = Date.now();
-      if (now - lastNavTime < 220) return;
-      lastNavTime = now;
-      UI.nextHeroSlide();
-    };
-
-    const handlePrevTap = (e) => {
-      if (e) {
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
-      }
-      const now = Date.now();
-      if (now - lastNavTime < 220) return;
-      lastNavTime = now;
-      UI.prevHeroSlide();
-    };
 
     if (nextBtn) {
-      nextBtn.addEventListener('click', handleNextTap);
-      nextBtn.addEventListener('touchend', handleNextTap, { passive: false });
-    }
-    if (prevBtn) {
-      prevBtn.addEventListener('click', handlePrevTap);
-      prevBtn.addEventListener('touchend', handlePrevTap, { passive: false });
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        UI.stopHeroAutoScroll();
+        UI.nextHeroSlide();
+        setTimeout(() => UI.startHeroAutoScroll(), 3500);
+      });
     }
 
-    // Touch & Click handler pada container indikator dots
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        UI.stopHeroAutoScroll();
+        UI.prevHeroSlide();
+        setTimeout(() => UI.startHeroAutoScroll(), 3500);
+      });
+    }
+
+    // Pasang handler untuk dots indikator
     const dotsContainer = document.getElementById('heroDotsContainer');
     if (dotsContainer) {
-      const handleDotTap = (e) => {
+      dotsContainer.addEventListener('click', (e) => {
         const dot = e.target.closest('.hero-dot');
         if (dot) {
           const dots = Array.from(document.querySelectorAll('.hero-dot'));
           const idx = dots.indexOf(dot);
           if (idx >= 0) {
-            if (e.cancelable) e.preventDefault();
-            e.stopPropagation();
+            UI.stopHeroAutoScroll();
             goToSlide(idx);
+            setTimeout(() => UI.startHeroAutoScroll(), 3500);
           }
         }
-      };
-      dotsContainer.addEventListener('click', handleDotTap);
-      dotsContainer.addEventListener('touchend', handleDotTap, { passive: false });
+      });
     }
 
-    // Inisialisasi slide pertama dan mulai auto-scroll
+    // Adaptasi posisi saat resize layar
+    window.addEventListener('resize', () => {
+      goToSlide(UI.heroCurrentIndex || 0, true);
+    });
+
+    // Inisialisasi awal
     goToSlide(0, true);
     UI.startHeroAutoScroll();
   },

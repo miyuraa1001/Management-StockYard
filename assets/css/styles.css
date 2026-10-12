@@ -259,20 +259,36 @@ body {
   will-change: transform;
 }
 
+@media (max-width: 767px) {
+  .hero-floating-card {
+    animation: none;
+  }
+}
+
 .hero-floating-card:hover {
   animation-play-state: paused;
 }
 
-/* Smooth Hardware-Accelerated Carousel Track */
+/* Smooth Hardware-Accelerated Native Scroll-Snap Carousel Track */
 #heroCarouselTrack {
   display: flex;
   width: 100%;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-  touch-action: pan-y;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#heroCarouselTrack::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 #heroCarouselTrack:active {
@@ -280,9 +296,13 @@ body {
 }
 
 .hero-slide {
-  flex-shrink: 0;
+  flex: 0 0 100%;
   width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
   user-select: none;
   -webkit-user-select: none;
 }
