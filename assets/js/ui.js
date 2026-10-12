@@ -443,11 +443,16 @@ const UI = {
       const dots = document.querySelectorAll('.hero-dot');
       dots.forEach((dot, idx) => {
         if (idx === index) {
-          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
+          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-rose-500 shadow-sm transition-all';
         } else {
           dot.className = 'hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
         }
       });
+
+      const counter = document.getElementById('heroSlideCounter');
+      if (counter) {
+        counter.textContent = index + 1;
+      }
     };
 
     const scrollToSlide = (index) => {
@@ -473,7 +478,7 @@ const UI = {
       this.stopHeroAutoScroll();
       this.heroTimer = setInterval(() => {
         this.nextHeroSlide();
-      }, 4000);
+      }, 4500);
     };
 
     this.stopHeroAutoScroll = () => {
@@ -490,13 +495,23 @@ const UI = {
       setTimeout(startAutoScroll, 2500);
     }, { passive: true });
 
-    // Sync dots on manual drag/touch scroll
+    // Enable smooth vertical page scrolling when wheeling over the hero carousel track
+    track.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        const vp = document.getElementById('appMainViewport');
+        if (vp) {
+          vp.scrollTop += e.deltaY;
+        }
+      }
+    }, { passive: true });
+
+    // Sync dots and counter on manual drag/touch scroll
     track.addEventListener('scroll', () => {
       const scrollPos = track.scrollLeft;
       const slideW = track.clientWidth;
       if (slideW > 0) {
         const activeIdx = Math.round(scrollPos / slideW);
-        if (activeIdx !== this.heroCurrentIndex && activeIdx < totalSlides) {
+        if (activeIdx !== this.heroCurrentIndex && activeIdx >= 0 && activeIdx < totalSlides) {
           this.heroCurrentIndex = activeIdx;
           updateDots(activeIdx);
         }

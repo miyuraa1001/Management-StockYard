@@ -11,6 +11,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background-color: #0B1120;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -19,6 +23,7 @@ body {
   user-select: none;
   min-height: 100vh;
   min-height: 100dvh;
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 768px) {
@@ -48,7 +53,7 @@ body {
 .smooth-scroll {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: auto;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -58,6 +63,30 @@ body {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Modern SaaS Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 /* --------------------------------------------------------------------------
@@ -120,17 +149,20 @@ body {
   box-shadow: 0 0 6px rgba(37, 99, 235, 0.6);
 }
 
-/* Desktop Header Navigation Button States */
+/* Desktop Header Navigation Button States (Zero Layout Shift) */
 .desk-nav-btn {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  font-weight: 700 !important;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .desk-nav-btn.active {
   background-color: #EFF6FF !important;
   color: #2563EB !important;
   border-color: #BFDBFE !important;
-  font-weight: 800 !important;
-  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.05);
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.08);
 }
 
 /* --------------------------------------------------------------------------
@@ -235,6 +267,7 @@ body {
 #heroCarouselTrack {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
 }
 
 .hero-slide {
