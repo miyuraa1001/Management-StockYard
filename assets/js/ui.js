@@ -423,6 +423,97 @@ const UI = {
       opt.textContent = i;
       dateSelect.appendChild(opt);
     }
+  },
+
+  /**
+   * Hero Carousel Controller (Auto-Scroll, Glassmorphic Dots & Swipe)
+   */
+  heroTimer: null,
+  heroCurrentIndex: 0,
+
+  initHeroCarousel() {
+    const track = document.getElementById('heroCarouselTrack');
+    if (!track) return;
+
+    const slides = track.querySelectorAll('.hero-slide');
+    const totalSlides = slides.length;
+    if (totalSlides === 0) return;
+
+    const updateDots = (index) => {
+      const dots = document.querySelectorAll('.hero-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === index) {
+          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
+        } else {
+          dot.className = 'hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
+        }
+      });
+    };
+
+    const scrollToSlide = (index) => {
+      if (index >= totalSlides) index = 0;
+      if (index < 0) index = totalSlides - 1;
+      this.heroCurrentIndex = index;
+      
+      const targetSlide = slides[index];
+      if (targetSlide) {
+        track.scrollTo({
+          left: targetSlide.offsetLeft,
+          behavior: 'smooth'
+        });
+        updateDots(index);
+      }
+    };
+
+    this.nextHeroSlide = () => scrollToSlide(this.heroCurrentIndex + 1);
+    this.prevHeroSlide = () => scrollToSlide(this.heroCurrentIndex - 1);
+    this.goToHeroSlide = (idx) => scrollToSlide(idx);
+
+    const startAutoScroll = () => {
+      this.stopHeroAutoScroll();
+      this.heroTimer = setInterval(() => {
+        this.nextHeroSlide();
+      }, 4000);
+    };
+
+    this.stopHeroAutoScroll = () => {
+      if (this.heroTimer) {
+        clearInterval(this.heroTimer);
+        this.heroTimer = null;
+      }
+    };
+
+    track.addEventListener('mouseenter', () => this.stopHeroAutoScroll());
+    track.addEventListener('mouseleave', () => startAutoScroll());
+    track.addEventListener('touchstart', () => this.stopHeroAutoScroll(), { passive: true });
+    track.addEventListener('touchend', () => {
+      setTimeout(startAutoScroll, 2500);
+    }, { passive: true });
+
+    // Sync dots on manual drag/touch scroll
+    track.addEventListener('scroll', () => {
+      const scrollPos = track.scrollLeft;
+      const slideW = track.clientWidth;
+      if (slideW > 0) {
+        const activeIdx = Math.round(scrollPos / slideW);
+        if (activeIdx !== this.heroCurrentIndex && activeIdx < totalSlides) {
+          this.heroCurrentIndex = activeIdx;
+          updateDots(activeIdx);
+        }
+      }
+    }, { passive: true });
+
+    startAutoScroll();
+  },
+
+  filterInventoryByModel(modelKeyword) {
+    this.switchTab('inventory');
+    const searchInput = document.getElementById('inventorySearchInput');
+    if (searchInput) {
+      searchInput.value = modelKeyword;
+      this.filterInventory();
+      this.showToast(`🔍 Menampilkan stok: ${modelKeyword}`);
+    }
   }
 };
 
@@ -441,4 +532,8 @@ window.triggerFileInput = (id) => UI.triggerFileInput(id);
 window.handleFileSelected = (e, type) => UI.handleFileSelected(e, type);
 window.removeImagePreview = (type) => UI.removeImagePreview(type);
 window.exportHistoryPDF = () => UI.exportHistoryPDF();
+window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;
+window.prevHeroSlide = () => UI.prevHeroSlide ? UI.prevHeroSlide() : null;
+window.goToHeroSlide = (idx) => UI.goToHeroSlide ? UI.goToHeroSlide(idx) : null;
+window.filterInventoryByModel = (m) => UI.filterInventoryByModel ? UI.filterInventoryByModel(m) : null;
 

@@ -209,3 +209,35 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Hero KPI Landscape Floating Animation & Glass Effects
+   -------------------------------------------------------------------------- */
+@keyframes subtleHeroFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.hero-floating-card {
+  animation: subtleHeroFloat 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-floating-card:hover {
+  animation-play-state: paused;
+}
+
+/* Smooth Scroll Snap Track */
+#heroCarouselTrack {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hero-slide {
+  scroll-snap-align: start;
+}
+

@@ -133,6 +133,254 @@
           </div>
         </div>
 
+        <!-- ======================================================== -->
+        <!-- HERO KPI LANDSCAPE CAROUSEL (Floating & Glassmorphism) -->
+        <!-- ======================================================== -->
+        <div class="relative group hero-floating-card select-none my-2 md:my-3">
+          <!-- Ambient Glow Aura behind the card -->
+          <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600/30 via-indigo-600/20 to-rose-600/30 rounded-[32px] md:rounded-[40px] blur-xl opacity-75 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
+
+          <!-- Main Carousel Card Wrapper with Glass Border & Shadow -->
+          <div class="relative w-full rounded-[28px] md:rounded-[36px] overflow-hidden bg-slate-900 shadow-2xl border border-white/20">
+            
+            <!-- Horizontal Scroll Slides Track -->
+            <div id="heroCarouselTrack" class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth w-full h-56 sm:h-64 md:h-72">
+              
+              <!-- Slide 1: Gran Max Pickup / Blind Van -->
+              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=1400&q=80" alt="Gran Max Pickup" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
+
+                <!-- Top Floating Glass Badges -->
+                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
+                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Niaga & Logistik</span>
+                  </div>
+
+                  <!-- Glassmorphism KPI Counters per Model -->
+                  <div class="flex items-center space-x-1.5 md:space-x-2">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                      <span>18 Masuk</span>
+                    </div>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      <span>15 Keluar</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom Glassmorphism Info Overlay -->
+                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
+                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
+                    <span class="text-[10px] md:text-xs font-bold text-amber-300 uppercase tracking-wider block">Best Seller Commercial</span>
+                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Gran Max 1.5 D Pickup</h3>
+                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                      <span>Stok In-Yard: <strong class="text-emerald-300">12 Unit</strong></span>
+                      <span>•</span>
+                      <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
+                    </p>
+                  </div>
+
+                  <button onclick="filterInventoryByModel('Gran Max')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
+                    <span>Lihat Stok</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slide 2: All New Terios R 1.5 Deluxe -->
+              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1400&q=80" alt="Terios R 1.5 Deluxe" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
+
+                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
+                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Adventure SUV</span>
+                  </div>
+
+                  <div class="flex items-center space-x-1.5 md:space-x-2">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                      <span>12 Masuk</span>
+                    </div>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      <span>10 Keluar</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
+                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
+                    <span class="text-[10px] md:text-xs font-bold text-blue-300 uppercase tracking-wider block">7-Seater Deluxe</span>
+                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">All New Terios R 1.5 X</h3>
+                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                      <span>Stok In-Yard: <strong class="text-emerald-300">8 Unit</strong></span>
+                      <span>•</span>
+                      <span>Intransit: <strong class="text-amber-300">4 Unit</strong></span>
+                    </p>
+                  </div>
+
+                  <button onclick="filterInventoryByModel('Terios')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
+                    <span>Lihat Stok</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slide 3: Daihatsu Sigra 1.2 R -->
+              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1400&q=80" alt="Daihatsu Sigra 1.2 R" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
+
+                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
+                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Family MPV Favorit</span>
+                  </div>
+
+                  <div class="flex items-center space-x-1.5 md:space-x-2">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                      <span>10 Masuk</span>
+                    </div>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      <span>9 Keluar</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
+                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
+                    <span class="text-[10px] md:text-xs font-bold text-indigo-300 uppercase tracking-wider block">7-Seater Efisien</span>
+                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Daihatsu Sigra 1.2 R</h3>
+                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                      <span>Stok In-Yard: <strong class="text-emerald-300">6 Unit</strong></span>
+                      <span>•</span>
+                      <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
+                    </p>
+                  </div>
+
+                  <button onclick="filterInventoryByModel('Sigra')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
+                    <span>Lihat Stok</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slide 4: All New Xenia 1.5 R CVT -->
+              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80" alt="All New Xenia" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
+
+                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
+                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Executive MPV</span>
+                  </div>
+
+                  <div class="flex items-center space-x-1.5 md:space-x-2">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                      <span>8 Masuk</span>
+                    </div>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      <span>7 Keluar</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
+                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
+                    <span class="text-[10px] md:text-xs font-bold text-amber-300 uppercase tracking-wider block">Modern FWD Comfort</span>
+                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">All New Xenia 1.5 R</h3>
+                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                      <span>Stok In-Yard: <strong class="text-emerald-300">5 Unit</strong></span>
+                      <span>•</span>
+                      <span>Intransit: <strong class="text-amber-300">3 Unit</strong></span>
+                    </p>
+                  </div>
+
+                  <button onclick="filterInventoryByModel('Xenia')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
+                    <span>Lihat Stok</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Slide 5: Daihatsu Rocky 1.0 R Turbo -->
+              <div class="hero-slide flex-shrink-0 w-full h-full relative snap-start overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80" alt="Daihatsu Rocky Turbo" class="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent"></div>
+
+                <div class="absolute top-3.5 inset-x-3.5 md:top-5 md:inset-x-5 flex items-center justify-between z-10">
+                  <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider">Turbo Crossover</span>
+                  </div>
+
+                  <div class="flex items-center space-x-1.5 md:space-x-2">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-emerald-500/80 backdrop-blur-md border border-emerald-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                      <span>6 Masuk</span>
+                    </div>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-blue-500/80 backdrop-blur-md border border-blue-400/40 text-white text-[10px] md:text-xs font-extrabold shadow-lg">
+                      <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      <span>5 Keluar</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-3.5 inset-x-3.5 md:bottom-5 md:inset-x-5 z-10 flex items-end justify-between">
+                  <div class="backdrop-blur-md bg-white/10 border border-white/20 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl max-w-md">
+                    <span class="text-[10px] md:text-xs font-bold text-rose-300 uppercase tracking-wider block">Compact Dynamic Turbo</span>
+                    <h3 class="text-base md:text-2xl font-black text-white leading-tight mt-0.5">Daihatsu Rocky 1.0 R TC</h3>
+                    <p class="text-[10px] md:text-xs text-white/80 mt-1 flex items-center space-x-2">
+                      <span>Stok In-Yard: <strong class="text-emerald-300">4 Unit</strong></span>
+                      <span>•</span>
+                      <span>Intransit: <strong class="text-amber-300">2 Unit</strong></span>
+                    </p>
+                  </div>
+
+                  <button onclick="filterInventoryByModel('Rocky')" class="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold shadow-lg transition active:scale-95">
+                    <span>Lihat Stok</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Left & Right Floating Glass Navigation Arrows -->
+            <button onclick="prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/60 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button onclick="nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-black/40 hover:bg-black/60 border border-white/20 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-xl active:scale-95 z-20">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+
+            <!-- Bottom Floating Dots Indicator -->
+            <div id="heroDotsContainer" class="absolute bottom-2.5 md:bottom-3 inset-x-0 flex items-center justify-center space-x-1.5 z-20 pointer-events-auto">
+              <button onclick="goToHeroSlide(0)" class="hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all"></button>
+              <button onclick="goToHeroSlide(1)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+              <button onclick="goToHeroSlide(2)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+              <button onclick="goToHeroSlide(3)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+              <button onclick="goToHeroSlide(4)" class="hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all"></button>
+            </div>
+
+          </div>
+        </div>
+
         <!-- 3 KPI Cards Grid -->
         <div class="grid grid-cols-3 gap-2.5 md:gap-5">
           <!-- Card 1: Unit Masuk -->
