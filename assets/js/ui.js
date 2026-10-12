@@ -443,7 +443,7 @@ const UI = {
       const dots = document.querySelectorAll('.hero-dot');
       dots.forEach((dot, idx) => {
         if (idx === index) {
-          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-rose-500 shadow-sm transition-all';
+          dot.className = 'hero-dot w-6 h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
         } else {
           dot.className = 'hero-dot w-2 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
         }
