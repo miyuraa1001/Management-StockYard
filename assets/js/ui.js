@@ -615,6 +615,61 @@ const UI = {
       if (!isDragging) UI.startHeroAutoScroll();
     });
 
+    // Dedicated Button Click & Touch Listeners for Mobile & Desktop
+    const prevBtn = document.getElementById('heroPrevBtn');
+    const nextBtn = document.getElementById('heroNextBtn');
+    let lastNavTime = 0;
+
+    const handleNextTap = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastNavTime < 220) return;
+      lastNavTime = now;
+      UI.nextHeroSlide();
+    };
+
+    const handlePrevTap = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastNavTime < 220) return;
+      lastNavTime = now;
+      UI.prevHeroSlide();
+    };
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', handleNextTap);
+      nextBtn.addEventListener('touchend', handleNextTap, { passive: false });
+    }
+    if (prevBtn) {
+      prevBtn.addEventListener('click', handlePrevTap);
+      prevBtn.addEventListener('touchend', handlePrevTap, { passive: false });
+    }
+
+    // Touch & Click handler pada container indikator dots
+    const dotsContainer = document.getElementById('heroDotsContainer');
+    if (dotsContainer) {
+      const handleDotTap = (e) => {
+        const dot = e.target.closest('.hero-dot');
+        if (dot) {
+          const dots = Array.from(document.querySelectorAll('.hero-dot'));
+          const idx = dots.indexOf(dot);
+          if (idx >= 0) {
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+            goToSlide(idx);
+          }
+        }
+      };
+      dotsContainer.addEventListener('click', handleDotTap);
+      dotsContainer.addEventListener('touchend', handleDotTap, { passive: false });
+    }
+
     // Inisialisasi slide pertama dan mulai auto-scroll
     goToSlide(0, true);
     UI.startHeroAutoScroll();
