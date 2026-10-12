@@ -58,18 +58,18 @@ const AppState = {
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
-      id: 'INV-002',
-      model: 'Terios R 1.5 X',
+      id: 'INV-003',
+      model: 'New Terios R 1.5 X',
       plate: 'BE 5678 TCD',
       vin: 'MHKDA3BA1RJ012345',
       engine: '3NRF2345678',
       status: 'Intransit',
       location: 'Rute Palembang → Lampung',
-      photo: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=260&q=80',
+      photo: 'assets/images/inventory-new-terios.png',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
-      id: 'INV-003',
+      id: 'INV-004',
       model: 'Sigra 1.2 R',
       plate: 'BE 9012 VBN',
       vin: 'MHKBR5DA3JJ056789',
@@ -80,7 +80,7 @@ const AppState = {
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
-      id: 'INV-004',
+      id: 'INV-005',
       model: 'All New Ayla 1.2 R',
       plate: 'BE 3456 FGH',
       vin: 'MHKAG5DA3KL078901',
@@ -91,7 +91,7 @@ const AppState = {
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
-      id: 'INV-005',
+      id: 'INV-006',
       model: 'All New Xenia 1.5 R',
       plate: 'BE 7890 JKL',
       vin: 'MHKDA4BA1LM098765',
