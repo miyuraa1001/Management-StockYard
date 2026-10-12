@@ -131,16 +131,20 @@
           <div class="relative w-full rounded-[20px] sm:rounded-[26px] md:rounded-[36px] overflow-hidden bg-slate-950 shadow-2xl border border-white/20 touch-pan-y">
             
             <!-- Horizontal GPU-Accelerated Slides Track (Landscape Cinematic on Mobile & Taller on Desktop) -->
-            <div id="heroCarouselTrack" class="flex w-full h-[215px] sm:h-[260px] md:h-[460px] lg:h-[490px] xl:h-[520px]">
+            <div id="heroCarouselTrack" class="flex w-full h-[200px] sm:h-[250px] md:h-[460px] lg:h-[490px] xl:h-[520px]">
               
               <!-- ------------------------------------------------------------------ -->
               <!-- Slide 1: Rocky e-Smart Hybrid -->
               <!-- ------------------------------------------------------------------ -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Rocky e-Smart Hybrid -->
-                <img src="assets/images/hero-rocky-hybrid.png" alt="Rocky e-Smart Hybrid" class="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/40"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/30 to-transparent"></div>
+              <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none bg-slate-950 flex items-center justify-center">
+                <!-- Ambient Blurred Background (Mencegah black bar & memberi nuansa luxury) -->
+                <img src="assets/images/hero-rocky-hybrid.png" alt="" class="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none">
+                <!-- Gradient Depth Lighting Overlays -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/20 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/30 to-transparent pointer-events-none"></div>
+
+                <!-- [FOTO MOBIL RESMI - FULL UNZOOMED]: Rocky e-Smart Hybrid -->
+                <img src="assets/images/hero-rocky-hybrid.png" alt="Rocky e-Smart Hybrid" class="relative z-10 max-w-full max-h-full object-contain p-2 sm:p-3 md:p-6 drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
 
                 <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
                 <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
@@ -195,11 +199,15 @@
               <!-- ------------------------------------------------------------------ -->
               <!-- Slide 2: New Terios -->
               <!-- ------------------------------------------------------------------ -->
-              <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Terios -->
-                <img src="assets/images/hero-new-terios.png" alt="New Terios" class="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/40"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/30 to-transparent"></div>
+              <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none bg-slate-950 flex items-center justify-center">
+                <!-- Ambient Blurred Background -->
+                <img src="assets/images/hero-new-terios.png" alt="" class="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none">
+                <!-- Gradient Depth Lighting Overlays -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/20 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/30 to-transparent pointer-events-none"></div>
+
+                <!-- [FOTO MOBIL RESMI - FULL UNZOOMED]: New Terios -->
+                <img src="assets/images/hero-new-terios.png" alt="New Terios" class="relative z-10 max-w-full max-h-full object-contain p-2 sm:p-3 md:p-6 drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
 
                 <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
                 <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
@@ -726,11 +734,11 @@
             </div>
 
             <!-- Left & Right Floating Glass Navigation Arrows -->
-            <button type="button" onclick="window.prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-1.5 sm:left-2 md:left-3.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/60 hover:bg-slate-900/90 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <button type="button" onclick="window.prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-2 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/70 hover:bg-slate-900/95 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer touch-manipulation">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button type="button" onclick="window.nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-1.5 sm:right-2 md:right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/60 hover:bg-slate-900/90 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <button type="button" onclick="window.nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-2 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/70 hover:bg-slate-900/95 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer touch-manipulation">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
 
             <!-- Bottom Floating Dots Indicator (10 Models) -->

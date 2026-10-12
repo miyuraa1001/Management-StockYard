@@ -446,6 +446,8 @@ const UI = {
     const totalSlides = slides.length;
     if (totalSlides === 0) return;
 
+    UI.heroCurrentIndex = 0;
+
     const updateDots = (index) => {
       const dots = document.querySelectorAll('.hero-dot');
       dots.forEach((dot, idx) => {
@@ -463,6 +465,8 @@ const UI = {
     };
 
     const goToSlide = (index, immediate = false) => {
+      index = parseInt(index, 10);
+      if (isNaN(index)) index = 0;
       if (index >= totalSlides) index = 0;
       if (index < 0) index = totalSlides - 1;
       UI.heroCurrentIndex = index;
@@ -472,8 +476,14 @@ const UI = {
       updateDots(index);
     };
 
-    UI.nextHeroSlide = () => goToSlide(UI.heroCurrentIndex + 1);
-    UI.prevHeroSlide = () => goToSlide(UI.heroCurrentIndex - 1);
+    UI.nextHeroSlide = () => {
+      const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
+      goToSlide(curr + 1);
+    };
+    UI.prevHeroSlide = () => {
+      const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
+      goToSlide(curr - 1);
+    };
     UI.goToHeroSlide = (idx) => goToSlide(idx);
 
     window.nextHeroSlide = () => UI.nextHeroSlide();
@@ -527,7 +537,7 @@ const UI = {
       const deltaX = point.clientX - startX;
       const deltaY = point.clientY - startY;
 
-      // Deteksi arah gesture pada pergerakan awal (5px)
+      // Deteksi arah gesture pada pergerakan awal (6px)
       if (isHorizontalSwipe === null) {
         if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
           if (Math.abs(deltaX) >= Math.abs(deltaY)) {
@@ -547,12 +557,13 @@ const UI = {
 
         // Berikan efek tactile rubber band pada ujung slide pertama dan terakhir
         let effectiveDelta = deltaX;
-        if ((UI.heroCurrentIndex === 0 && deltaX > 0) || (UI.heroCurrentIndex === totalSlides - 1 && deltaX < 0)) {
+        const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
+        if ((curr === 0 && deltaX > 0) || (curr === totalSlides - 1 && deltaX < 0)) {
           effectiveDelta = deltaX * 0.35;
         }
 
         track.style.transition = 'none';
-        track.style.transform = `calc(-${UI.heroCurrentIndex * 100}% + ${effectiveDelta}px)`;
+        track.style.transform = `translateX(calc(-${curr * 100}% + ${effectiveDelta}px))`;
       }
     };
 
@@ -565,14 +576,15 @@ const UI = {
       if (isHorizontalSwipe) {
         const timeElapsed = Date.now() - dragStartTime;
         const velocity = Math.abs(currentDeltaX) / (timeElapsed || 1); // px per ms
+        const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
 
-        // Geser jika melewati threshold jarak (30px) atau threshold kecepatan flick (velocity > 0.35)
-        if (currentDeltaX < -30 || (currentDeltaX < -15 && velocity > 0.35)) {
-          goToSlide(UI.heroCurrentIndex + 1);
-        } else if (currentDeltaX > 30 || (currentDeltaX > 15 && velocity > 0.35)) {
-          goToSlide(UI.heroCurrentIndex - 1);
+        // Geser jika melewati threshold jarak (25px) atau threshold kecepatan flick (velocity > 0.3)
+        if (currentDeltaX < -25 || (currentDeltaX < -15 && velocity > 0.3)) {
+          goToSlide(curr + 1);
+        } else if (currentDeltaX > 25 || (currentDeltaX > 15 && velocity > 0.3)) {
+          goToSlide(curr - 1);
         } else {
-          goToSlide(UI.heroCurrentIndex); // Kembalikan ke posisi semula
+          goToSlide(curr); // Kembalikan ke posisi semula
         }
       }
 
