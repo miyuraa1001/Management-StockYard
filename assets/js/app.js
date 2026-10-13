@@ -64,8 +64,8 @@ const App = {
    * Menyimpan dan memverifikasi data mutasi fisik kendaraan
    */
   async saveMutationData() {
-    const vin = document.getElementById('inputVin')?.value.trim();
-    const engine = document.getElementById('inputEngine')?.value.trim();
+    const vin = (document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '').trim();
+    const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
     const model = document.getElementById('inputCarModel')?.value;
     const notes = document.getElementById('inputKeterangan')?.value.trim();
