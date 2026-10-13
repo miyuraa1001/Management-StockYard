@@ -1022,145 +1022,89 @@
       </section>
 
       <!-- ======================================================== -->
+      <!-- ======================================================== -->
       <!-- SECTION 2: INVENTORY & KATALOG 13 MODEL (STOK UNIT) -->
       <!-- ======================================================== -->
-      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-5">
+      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
         
-        <!-- Top Page Header & Action Bar -->
-        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 md:px-6 md:py-5 border border-white shadow-saas-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 scroll-reveal is-visible">
-          <div class="flex items-start sm:items-center space-x-3 sm:space-x-3.5 min-w-0">
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-50/90 border border-blue-100/90 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-tight">Katalog & Inventory Kendaraan</h2>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">13 Model Resmi</span>
+        <!-- Unified Inventory Header, Summary Badges & Search/Filter Card -->
+        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+          <!-- Top Row: Title & Compact Stock Summary Pills -->
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-3 min-w-0">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
               </div>
-              <p class="text-[11px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-snug">Monitoring stok unit fisik, lokasi blok yard, & spesifikasi 13 lini kendaraan Daihatsu.</p>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">Katalog & Inventory Kendaraan</h2>
+                  <span class="px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap flex-shrink-0">13 Model</span>
+                </div>
+                <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 truncate">Katalog resmi 13 lini mobil Daihatsu beserta rincian stok unit di yard.</p>
+              </div>
+            </div>
+
+            <!-- Compact Summary Strip (Mobile 4-Grid / Desktop Inline Pills) -->
+            <div class="grid grid-cols-4 sm:flex sm:items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <div class="bg-slate-50 border border-slate-200/70 rounded-xl px-2 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-slate-400 uppercase block leading-none">Total Stok</span>
+                <span class="text-xs sm:text-sm font-black text-slate-900 mt-0.5 block leading-tight"><span id="invKpiTotalUnits">120</span> <span class="text-[9px] font-semibold text-slate-400 hidden sm:inline">Unit</span></span>
+              </div>
+              <div class="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-2 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-emerald-600 uppercase block leading-none">In-Yard</span>
+                <span class="text-xs sm:text-sm font-black text-emerald-700 mt-0.5 block leading-tight"><span id="invKpiInYard">83</span> <span class="text-[9px] font-semibold text-emerald-600/80 hidden sm:inline">Unit</span></span>
+              </div>
+              <div class="bg-amber-50/70 border border-amber-200/70 rounded-xl px-2 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-amber-600 uppercase block leading-none">Intransit</span>
+                <span class="text-xs sm:text-sm font-black text-amber-700 mt-0.5 block leading-tight"><span id="invKpiIntransit">22</span> <span class="text-[9px] font-semibold text-amber-600/80 hidden sm:inline">Unit</span></span>
+              </div>
+              <div class="bg-blue-50/70 border border-blue-200/70 rounded-xl px-2 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-blue-600 uppercase block leading-none">Allocated</span>
+                <span class="text-xs sm:text-sm font-black text-blue-700 mt-0.5 block leading-tight"><span id="invKpiAllocated">15</span> <span class="text-[9px] font-semibold text-blue-600/80 hidden sm:inline">Unit</span></span>
+              </div>
             </div>
           </div>
 
-          <!-- Quick Action Buttons -->
-          <div class="flex items-center gap-2 self-stretch sm:self-auto flex-shrink-0">
-            <button type="button" onclick="openScannerModal()" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 space-x-2 transition active:scale-95 cursor-pointer">
-              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-              <span>Scan Unit Masuk / Keluar</span>
-            </button>
-          </div>
-        </div>
+          <!-- Bottom Row: Search Bar + Segmented Status Filter Chips -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+            <!-- Search Bar with Clear Button -->
+            <div class="relative flex-1 min-w-0">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="inventorySearchInput" oninput="filterInventory()" placeholder="Cari model mobil, jenis SUV/MPV/Niaga, lokasi yard, plat, atau VIN..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2.5 pl-10 pr-18 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+              <button type="button" id="inventorySearchClearBtn" onclick="clearInventorySearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
+                Reset ×
+              </button>
+            </div>
 
-        <!-- Interactive 4-Column Inventory KPI Summary Strip -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4 scroll-reveal is-visible">
-          <!-- Summary 1: Total Unit Katalog -->
-          <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-slate-300/80 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">Total Stok Katalog</span>
-              <div class="flex items-baseline space-x-1.5 mt-1">
-                <span id="invKpiTotalUnits" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">120</span>
-                <span class="text-[10px] sm:text-xs font-bold text-slate-500">Unit</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">11 Model Aktif • 2 Indent</span>
+            <!-- Filter Chips Track -->
+            <div class="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar py-0.5 flex-shrink-0">
+              <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" id="chip-all" class="inv-chip active px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer">
+                <span>Semua</span>
+                <span id="chipCount-all" class="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-white/20 text-white">13</span>
+              </button>
+              <button type="button" onclick="filterInventoryByStatus('In-Yard')" id="chip-In-Yard" class="inv-chip px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>In-Yard</span>
+                <span id="chipCount-In-Yard" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
+              </button>
+              <button type="button" onclick="filterInventoryByStatus('Intransit')" id="chip-Intransit" class="inv-chip px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span>Intransit</span>
+                <span id="chipCount-Intransit" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
+              </button>
+              <button type="button" onclick="filterInventoryByStatus('Allocated')" id="chip-Allocated" class="inv-chip px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                <span>Allocated</span>
+                <span id="chipCount-Allocated" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">10</span>
+              </button>
+              <button type="button" onclick="filterInventoryByStatus('Kosong')" id="chip-Kosong" class="inv-chip px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                <span>Stok Kosong</span>
+                <span id="chipCount-Kosong" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">2</span>
+              </button>
             </div>
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 group-hover:bg-slate-900 group-hover:text-white text-slate-700 flex items-center justify-center transition flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            </div>
-          </button>
-
-          <!-- Summary 2: Tersedia In-Yard -->
-          <button type="button" onclick="filterInventoryByStatus('In-Yard')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-emerald-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1 truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                <span>Tersedia (In-Yard)</span>
-              </span>
-              <div class="flex items-baseline space-x-1.5 mt-1">
-                <span id="invKpiInYard" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">83</span>
-                <span class="text-[10px] sm:text-xs font-bold text-emerald-600">Unit</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Parkir di Pool Yard A–D</span>
-            </div>
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white text-emerald-600 border border-emerald-100 flex items-center justify-center transition flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
-            </div>
-          </button>
-
-          <!-- Summary 3: Intransit -->
-          <button type="button" onclick="filterInventoryByStatus('Intransit')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-amber-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1 truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
-                <span>Dalam Perjalanan</span>
-              </span>
-              <div class="flex items-baseline space-x-1.5 mt-1">
-                <span id="invKpiIntransit" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">22</span>
-                <span class="text-[10px] sm:text-xs font-bold text-amber-600">Unit</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Pengiriman Menuju Lampung</span>
-            </div>
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 group-hover:bg-amber-500 group-hover:text-white text-amber-600 border border-amber-100 flex items-center justify-center transition flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-            </div>
-          </button>
-
-          <!-- Summary 4: Allocated -->
-          <button type="button" onclick="filterInventoryByStatus('Allocated')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-blue-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1 truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                <span>Unit Allocated</span>
-              </span>
-              <div class="flex items-baseline space-x-1.5 mt-1">
-                <span id="invKpiAllocated" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">15</span>
-                <span class="text-[10px] sm:text-xs font-bold text-blue-600">Unit</span>
-              </div>
-              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Siap BASTK & Kirim Cabang</span>
-            </div>
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 group-hover:bg-blue-600 group-hover:text-white text-blue-600 border border-blue-100 flex items-center justify-center transition flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-          </button>
-        </div>
-
-        <!-- Filter Controls Toolbar (Search Bar + Segmented Status Filter Chips) -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white/95 p-3 sm:p-3.5 md:p-4 rounded-[24px] border border-white shadow-saas-card scroll-reveal is-visible">
-          <!-- Search Bar with Clear Button -->
-          <div class="relative flex-1 min-w-0">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="inventorySearchInput" oninput="filterInventory()" placeholder="Cari nama model, tipe SUV/MPV/Niaga, lokasi yard, plat, atau nomor rangka (VIN)..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2.5 pl-10 pr-20 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-            <button type="button" id="inventorySearchClearBtn" onclick="clearInventorySearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
-              Reset ×
-            </button>
-          </div>
-
-          <!-- Filter Chips Track -->
-          <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto hide-scrollbar py-0.5 flex-shrink-0">
-            <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" id="chip-all" class="inv-chip active px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer">
-              <span>Semua</span>
-              <span id="chipCount-all" class="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-white/20 text-white">13</span>
-            </button>
-            <button type="button" onclick="filterInventoryByStatus('In-Yard')" id="chip-In-Yard" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>In-Yard</span>
-              <span id="chipCount-In-Yard" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
-            </button>
-            <button type="button" onclick="filterInventoryByStatus('Intransit')" id="chip-Intransit" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              <span>Intransit</span>
-              <span id="chipCount-Intransit" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
-            </button>
-            <button type="button" onclick="filterInventoryByStatus('Allocated')" id="chip-Allocated" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              <span>Allocated</span>
-              <span id="chipCount-Allocated" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">10</span>
-            </button>
-            <button type="button" onclick="filterInventoryByStatus('Kosong')" id="chip-Kosong" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-              <span>Stok Kosong</span>
-              <span id="chipCount-Kosong" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">2</span>
-            </button>
           </div>
         </div>
 
@@ -1173,132 +1117,85 @@
       <!-- ======================================================== -->
       <!-- SECTION 3: HISTORY (RIWAYAT AUDIT & SERAH TERIMA - TABEL) -->
       <!-- ======================================================== -->
-      <section id="viewHistory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-5">
+      <section id="viewHistory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
         
-        <!-- Top Page Header & Action Bar -->
-        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 md:px-6 md:py-5 border border-white shadow-saas-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 scroll-reveal is-visible">
-          <div class="flex items-start sm:items-center space-x-3 sm:space-x-3.5 min-w-0">
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-50/90 border border-blue-100/90 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-tight">Riwayat Audit & Serah Terima</h2>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/80 whitespace-nowrap">Log Terverifikasi</span>
+        <!-- Unified Header & Filter Control Card (relative z-30 so Dropdown Popovers Float Above Table) -->
+        <div class="relative z-30 bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+          <!-- Row 1: Title & Export PDF Button (No Catat Mutasi Button) -->
+          <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-3 min-w-0">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
               </div>
-              <p class="text-[11px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-snug">Tabel rekapitulasi mutasi unit masuk/keluar, nomor rangka (VIN), personel PIC, & bukti fisik dokumen DO.</p>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">Riwayat Audit & Serah Terima</h2>
+                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/80 whitespace-nowrap">Terverifikasi</span>
+                </div>
+                <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 truncate">Rekapitulasi tabel mutasi unit masuk/keluar, VIN, petugas PIC, & dokumen DO.</p>
+              </div>
             </div>
-          </div>
 
-          <!-- Action Buttons: Export PDF & Scan Baru -->
-          <div class="flex items-center gap-2 self-stretch sm:self-auto flex-shrink-0">
-            <button type="button" onclick="exportHistoryPDF()" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-3.5 py-2.5 rounded-2xl text-xs font-extrabold bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 transition active:scale-95 cursor-pointer">
-              <svg class="w-4 h-4 mr-1.5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Export PDF</span>
-            </button>
-            <button type="button" onclick="openScannerModal()" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 space-x-1.5 transition active:scale-95 cursor-pointer">
-              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
-              <span>Catat Mutasi</span>
+            <button type="button" onclick="exportHistoryPDF()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 rounded-2xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 transition active:scale-95 cursor-pointer flex-shrink-0">
+              <svg class="w-4 h-4 sm:mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span class="hidden sm:inline">Export PDF</span>
+              <span class="sm:hidden ml-1">PDF</span>
             </button>
           </div>
-        </div>
 
-        <!-- 3-Column Interactive Summary Strip -->
-        <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5 md:gap-4 scroll-reveal is-visible">
-          <button type="button" onclick="clearHistorySearch(); filterHistoryTab('all')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3 sm:p-4 border border-white hover:border-slate-300/80 shadow-saas-card transition cursor-pointer flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <span class="text-[9.5px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">Total Log Audit</span>
-              <div class="flex items-baseline space-x-1 mt-1">
-                <span id="histKpiTotal" class="text-base sm:text-2xl font-black text-slate-900 leading-none">8</span>
-                <span class="text-[9.5px] sm:text-xs font-bold text-slate-500">Rekaman</span>
+          <!-- Row 2: Segmented Tabs, Search Input & Clean Custom Period Dropdowns -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
+            <!-- Segmented Tab Filter -->
+            <div class="lg:col-span-4">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5 px-0.5">Jenis Mutasi</span>
+              <div class="grid grid-cols-3 bg-slate-100/90 p-1 rounded-2xl text-xs font-bold text-center border border-slate-200/60">
+                <button type="button" onclick="filterHistoryTab('all')" id="histTab-all" class="py-2 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Semua</span>
+                  <span id="histCount-all" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 text-white font-extrabold">8</span>
+                </button>
+                <button type="button" onclick="filterHistoryTab('in')" id="histTab-in" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Masuk</span>
+                  <span id="histCount-in" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">5</span>
+                </button>
+                <button type="button" onclick="filterHistoryTab('out')" id="histTab-out" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Keluar</span>
+                  <span id="histCount-out" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">3</span>
+                </button>
               </div>
             </div>
-            <div class="hidden sm:flex w-9 h-9 rounded-xl bg-slate-100 text-slate-700 items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-          </button>
 
-          <button type="button" onclick="filterHistoryTab('in')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3 sm:p-4 border border-white hover:border-emerald-200 shadow-saas-card transition cursor-pointer flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <span class="text-[9.5px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1 truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                <span>Unit Masuk</span>
-              </span>
-              <div class="flex items-baseline space-x-1 mt-1">
-                <span id="histKpiMasuk" class="text-base sm:text-2xl font-black text-slate-900 leading-none">5</span>
-                <span class="text-[9.5px] sm:text-xs font-bold text-emerald-600">Transaksi</span>
+            <!-- Search Input -->
+            <div class="lg:col-span-4">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5 px-0.5">Pencarian Cepat</span>
+              <div class="relative">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" id="historySearchInput" oninput="applyHistoryDateFilter()" placeholder="Cari model, VIN, mesin, petugas PIC..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2.5 pl-9 pr-16 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                <button type="button" id="historySearchClearBtn" onclick="clearHistorySearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
+                  Reset ×
+                </button>
               </div>
             </div>
-            <div class="hidden sm:flex w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-            </div>
-          </button>
 
-          <button type="button" onclick="filterHistoryTab('out')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3 sm:p-4 border border-white hover:border-blue-200 shadow-saas-card transition cursor-pointer flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <span class="text-[9.5px] sm:text-[11px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1 truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                <span>Unit Keluar</span>
-              </span>
-              <div class="flex items-baseline space-x-1 mt-1">
-                <span id="histKpiKeluar" class="text-base sm:text-2xl font-black text-slate-900 leading-none">3</span>
-                <span class="text-[9.5px] sm:text-xs font-bold text-blue-600">Transaksi</span>
-              </div>
-            </div>
-            <div class="hidden sm:flex w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-            </div>
-          </button>
-        </div>
-
-        <!-- Unified Filter Bar: Segmented Tabs, Search Input & Date Dropdowns -->
-        <div class="bg-white/95 p-3.5 sm:p-4 rounded-[24px] border border-white shadow-saas-card space-y-3 scroll-reveal is-visible">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
-            <!-- Segmented Tab Filter (Left) -->
-            <div class="lg:col-span-4 grid grid-cols-3 bg-slate-100/90 p-1 rounded-2xl text-xs font-bold text-center border border-slate-200/60">
-              <button type="button" onclick="filterHistoryTab('all')" id="histTab-all" class="py-2 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer flex items-center justify-center space-x-1">
-                <span>Semua</span>
-                <span id="histCount-all" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 text-white font-extrabold">8</span>
-              </button>
-              <button type="button" onclick="filterHistoryTab('in')" id="histTab-in" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
-                <span>Penerimaan</span>
-                <span id="histCount-in" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">5</span>
-              </button>
-              <button type="button" onclick="filterHistoryTab('out')" id="histTab-out" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
-                <span>Pengiriman</span>
-                <span id="histCount-out" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">3</span>
-              </button>
-            </div>
-
-            <!-- Search Input (Center) -->
-            <div class="lg:col-span-4 relative">
-              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" id="historySearchInput" oninput="applyHistoryDateFilter()" placeholder="Cari model, VIN, mesin, petugas PIC, catatan..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2 pl-9 pr-16 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-              <button type="button" id="historySearchClearBtn" onclick="clearHistorySearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
-                Reset ×
-              </button>
-            </div>
-
-            <!-- Date / Month / Year Dropdowns (Right) -->
-            <div class="lg:col-span-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
-              <div class="flex items-center justify-between sm:justify-start space-x-2 flex-shrink-0">
-                <span class="text-[11px] font-extrabold text-slate-600 flex items-center">
-                  <svg class="w-3.5 h-3.5 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  Periode:
+            <!-- Date / Month / Year Custom Dropdowns -->
+            <div class="lg:col-span-4">
+              <div class="flex items-center justify-between mb-1.5 px-0.5">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center">
+                  <svg class="w-3 h-3 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  Filter Periode Waktu
                 </span>
-                <button type="button" onclick="resetHistoryDateFilter()" class="text-[10.5px] font-extrabold text-rose-500 hover:text-rose-600 hover:underline cursor-pointer">Reset</button>
+                <button type="button" onclick="resetHistoryDateFilter()" class="text-[10px] font-extrabold text-rose-500 hover:text-rose-600 hover:underline cursor-pointer">Reset Waktu</button>
               </div>
               
-              <div class="grid grid-cols-3 gap-1.5 flex-1">
+              <div class="grid grid-cols-3 gap-2">
                 <!-- Dropdown Tanggal -->
-                <select id="histFilterDate" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <select id="histFilterDate" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
                   <option value="all">Semua Tgl</option>
                 </select>
 
                 <!-- Dropdown Bulan -->
-                <select id="histFilterMonth" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <select id="histFilterMonth" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
                   <option value="all">Semua Bln</option>
                   <option value="1">Januari</option>
                   <option value="2">Februari</option>
@@ -1315,7 +1212,7 @@
                 </select>
 
                 <!-- Dropdown Tahun -->
-                <select id="histFilterYear" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <select id="histFilterYear" onchange="applyHistoryDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
                   <option value="all">Semua Thn</option>
                   <option value="2026" selected>2026</option>
                   <option value="2025">2025</option>
@@ -1326,34 +1223,34 @@
           </div>
         </div>
 
-        <!-- Enterprise Audit History Data Table Card -->
-        <div class="bg-white/95 rounded-[26px] border border-white shadow-saas-card overflow-hidden scroll-reveal is-visible">
+        <!-- Enterprise Audit History Data Table Card (relative z-10) -->
+        <div class="relative z-10 bg-white/95 rounded-[24px] md:rounded-[26px] border border-white shadow-saas-card overflow-hidden">
           <!-- Table Top Header Bar -->
-          <div class="px-4 sm:px-5 md:px-6 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2 bg-slate-50/50">
+          <div class="px-4 sm:px-5 py-3 border-b border-slate-100 flex items-center justify-between gap-2 bg-slate-50/50">
             <div class="flex items-center space-x-2 min-w-0">
               <span class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0"></span>
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">Tabel Rekaman Mutasi & Serah Terima Fisik</h3>
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">Tabel Rekaman Mutasi Kendaraan</h3>
             </div>
             <div class="flex items-center space-x-2 flex-shrink-0">
-              <span class="md:hidden text-[10px] font-semibold text-slate-400">Geser tabel &leftrightarrow;</span>
-              <span id="historyShowingBadge" class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">
-                Menampilkan 8 Data
+              <span class="md:hidden text-[10px] font-semibold text-slate-400">Geser &leftrightarrow;</span>
+              <span id="historyShowingBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">
+                8 Data
               </span>
             </div>
           </div>
 
           <!-- Responsive Table Scroll Container -->
           <div class="w-full overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[880px]">
+            <table class="w-full text-left border-collapse min-w-[740px]">
               <thead>
-                <tr class="bg-slate-50/95 border-b border-slate-200/80 text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wider text-slate-500 select-none">
-                  <th class="py-3.5 pl-4 sm:pl-6 pr-3 w-[135px]">ID & Waktu</th>
-                  <th class="py-3.5 px-3 w-[125px]">Jenis Mutasi</th>
-                  <th class="py-3.5 px-3 w-[220px]">Model Kendaraan</th>
-                  <th class="py-3.5 px-3 w-[185px]">No. Rangka (VIN) & Mesin</th>
-                  <th class="py-3.5 px-3">Petugas PIC & Catatan Audit</th>
-                  <th class="py-3.5 px-3 w-[185px] text-center">Bukti Fisik</th>
-                  <th class="py-3.5 pl-3 pr-4 sm:pr-6 w-[115px] text-right">Status</th>
+                <tr class="bg-slate-50/95 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 select-none">
+                  <th class="py-3 pl-4 sm:pl-5 pr-2.5 w-[125px]">Waktu & ID</th>
+                  <th class="py-3 px-2.5 w-[110px]">Mutasi</th>
+                  <th class="py-3 px-2.5 w-[200px]">Kendaraan</th>
+                  <th class="py-3 px-2.5 w-[165px]">No. Rangka (VIN) & Mesin</th>
+                  <th class="py-3 px-2.5">PIC & Catatan Audit</th>
+                  <th class="py-3 px-2.5 w-[155px] text-center">Bukti Fisik</th>
+                  <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[105px] text-right">Status</th>
                 </tr>
               </thead>
               <tbody id="historyListContainer" class="divide-y divide-slate-100 text-xs">
@@ -1363,9 +1260,9 @@
           </div>
 
           <!-- Table Footer Bar -->
-          <div class="px-4 sm:px-5 md:px-6 py-3 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-[10.5px] text-slate-400 font-medium">
+          <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
             <span id="historyFooterSummary">Menampilkan seluruh rekaman audit yang sesuai dengan filter aktif.</span>
-            <span class="text-slate-400">Klik tombol <strong class="text-slate-600">Foto Mobil</strong> atau <strong class="text-slate-600">Dokumen DO</strong> pada baris tabel untuk memperbesar gambar.</span>
+            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">DO</strong> untuk melihat foto bukti fisik.</span>
           </div>
         </div>
       </section>
@@ -1373,91 +1270,104 @@
       <!-- ======================================================== -->
       <!-- SECTION 4: SETTINGS (PENGATURAN) -->
       <!-- ======================================================== -->
-      <section id="viewSettings" class="hidden max-w-[1440px] mx-auto w-full space-y-4 md:space-y-6">
-        <div>
-          <h2 class="text-base md:text-xl font-extrabold text-slate-900">Pengaturan Sistem</h2>
-          <p class="text-xs text-slate-400 mt-0.5">Kelola profil operator, preferensi pemindai, & integrasi otomatisasi.</p>
+      <section id="viewSettings" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
+        <!-- Settings Header Card -->
+        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card flex items-center justify-between gap-3">
+          <div class="flex items-center space-x-3 min-w-0">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">Pengaturan Sistem & Operator</h2>
+              <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 truncate">Kelola profil petugas lapangan, perangkat scanner optik, & jadwal laporan otomatis.</p>
+            </div>
+          </div>
+          <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/80 whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Sistem Aktif
+          </span>
         </div>
 
         <!-- Responsive Settings Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4">
           <!-- Profile Card -->
-          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card flex items-center space-x-4 md:col-span-2 scroll-reveal">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Andi Pratama" class="w-16 h-16 rounded-2xl object-cover border border-slate-200 flex-shrink-0">
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm md:text-base font-extrabold text-slate-900">Andi Pratama</h3>
-                <span class="text-[9px] md:text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">Staff Operasional</span>
+          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card flex items-center space-x-3.5 sm:space-x-4 md:col-span-2">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Andi Pratama" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">Andi Pratama</h3>
+                <span class="text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap flex-shrink-0">Staff Operasional</span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">NIP: 19870215201001123</p>
-              <p class="text-xs text-slate-400 flex items-center mt-1">
-                <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                Sentra Lampung • Astra Daihatsu DSO Lampung
+              <p class="text-[11px] sm:text-xs text-slate-500 font-semibold mt-0.5">NIP: 19870215201001123</p>
+              <p class="text-[11px] text-slate-400 flex items-center mt-1 truncate">
+                <svg class="w-3.5 h-3.5 mr-1 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <span class="truncate">Sentra Lampung • Astra Daihatsu DSO Lampung</span>
               </p>
             </div>
           </div>
 
           <!-- Hardware Settings -->
-          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card space-y-4 scroll-reveal">
-            <h4 class="text-xs font-black tracking-wider uppercase text-slate-400">Scanner & Perangkat</h4>
+          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+            <h4 class="text-[11px] font-black tracking-wider uppercase text-slate-400">Scanner & Perangkat Optik</h4>
             
             <div class="flex items-center justify-between py-1">
-              <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
                 </div>
-                <div>
-                  <span class="text-xs font-bold text-slate-800 block">Kamera Default</span>
-                  <span class="text-[10px] text-slate-400">Gunakan kamera belakang untuk scan</span>
+                <div class="min-w-0">
+                  <span class="text-xs font-bold text-slate-800 block truncate">Kamera Default</span>
+                  <span class="text-[10px] text-slate-400 block truncate">Gunakan kamera belakang untuk scan</span>
                 </div>
               </div>
-              <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-xl">Belakang</span>
+              <span class="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-xl flex-shrink-0">Belakang</span>
             </div>
 
-            <div class="flex items-center justify-between py-1 border-t border-slate-50 pt-3">
-              <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div class="flex items-center justify-between py-1 border-t border-slate-100 pt-3">
+              <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <div>
-                  <span class="text-xs font-bold text-slate-800 block">Auto Flashlight</span>
-                  <span class="text-[10px] text-slate-400">Nyalakan senter jika area yard gelap</span>
+                <div class="min-w-0">
+                  <span class="text-xs font-bold text-slate-800 block truncate">Auto Flashlight</span>
+                  <span class="text-[10px] text-slate-400 block truncate">Nyalakan senter jika area yard gelap</span>
                 </div>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer">
+              <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" checked class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
           </div>
 
           <!-- Automation Settings -->
-          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card space-y-4 scroll-reveal">
-            <h4 class="text-xs font-black tracking-wider uppercase text-slate-400">Otomatisasi Laporan</h4>
+          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+            <h4 class="text-[11px] font-black tracking-wider uppercase text-slate-400">Otomatisasi Laporan</h4>
             
             <div class="flex items-center justify-between py-1">
-              <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
-                <div>
-                  <span class="text-xs font-bold text-slate-800 block">Email Daily Digest PDF</span>
-                  <span class="text-[10px] text-slate-400">Kirim rekap PDF harian via Google Apps Script</span>
+                <div class="min-w-0">
+                  <span class="text-xs font-bold text-slate-800 block truncate">Email Daily Digest PDF</span>
+                  <span class="text-[10px] text-slate-400 block truncate">Kirim rekap PDF harian otomatis</span>
                 </div>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer">
+              <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" checked class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
 
-            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-50 pt-3">
+            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-100 pt-2.5">
               <span class="text-slate-500 font-medium">Jadwal Pengiriman</span>
               <span class="font-extrabold text-slate-900">Setiap Hari 08:00 WIB</span>
             </div>
-            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-50 pt-3">
+            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-100 pt-2.5">
               <span class="text-slate-500 font-medium">Target Email</span>
-              <span class="font-bold text-blue-600">report.logistik@daihatsu.co.id</span>
+              <span class="font-bold text-blue-600 truncate ml-2">report.logistik@daihatsu.co.id</span>
             </div>
           </div>
         </div>

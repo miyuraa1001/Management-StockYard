@@ -299,10 +299,10 @@ const UI = {
       const delayMs = Math.min((idx % 6) * 45, 200);
 
       return `
-        <div class="scroll-reveal bg-white/95 hover:bg-white rounded-[26px] p-3.5 sm:p-4 md:p-5 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
+        <div class="scroll-reveal bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
           <div>
             <!-- Top Showroom Studio Image Stage -->
-            <div class="relative w-full h-40 sm:h-44 md:h-48 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
+            <div class="relative w-full h-38 sm:h-42 md:h-44 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
               <!-- Subtle Studio Floor Shadow -->
               <div class="absolute inset-x-10 bottom-2.5 h-3 rounded-full bg-slate-900/[0.04] blur-xs pointer-events-none"></div>
 
@@ -317,8 +317,8 @@ const UI = {
                 <span>${statusLabel}</span>
               </span>
 
-              <!-- Official Studio Car Image (Cropped vertically to trim top empty square margin & blend white studio background) -->
-              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.08] transition-transform duration-500 select-none">
+              <!-- Official Studio Car Image -->
+              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.07] transition-transform duration-500 select-none">
 
               <!-- Bottom-Right Zoom Hint Pill -->
               <span class="absolute bottom-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 group-hover/img:bg-slate-900 text-slate-500 group-hover/img:text-white border border-slate-200/80 shadow-xs flex items-center justify-center transition" title="Perbesar Foto Katalog">
@@ -327,10 +327,10 @@ const UI = {
             </div>
 
             <!-- Model Title, Catalog ID & Technical Spec -->
-            <div class="mt-3.5">
+            <div class="mt-3">
               <div class="flex items-center justify-between gap-2">
-                <h4 class="text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
-                <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
+                <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
+                <span class="text-[9.5px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
               </div>
               <div class="flex items-center justify-between gap-2 mt-1 text-[11px] text-slate-500 font-semibold">
                 <span class="truncate flex items-center gap-1">
@@ -344,61 +344,54 @@ const UI = {
             </div>
 
             <!-- Rincian Status Stok Per Model (3 Kolom Presisi) -->
-            <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-slate-100 text-center">
-              <div class="rounded-xl py-1.5 px-2 ${entry.inYardCount > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[9px] font-extrabold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 pt-2.5 border-t border-slate-100 text-center">
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.inYardCount > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full ${entry.inYardCount > 0 ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
                   <span>In-Yard</span>
                 </span>
-                <span class="text-xs sm:text-sm font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'} block mt-0.5">${entry.inYardCount} <span class="text-[10px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'} block mt-0.5">${entry.inYardCount} <span class="text-[9.5px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1.5 px-2 ${entry.intransitCount > 0 ? 'bg-amber-50/75 border border-amber-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[9px] font-extrabold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.intransitCount > 0 ? 'bg-amber-50/75 border border-amber-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full ${entry.intransitCount > 0 ? 'bg-amber-500' : 'bg-slate-300'}"></span>
                   <span>Intransit</span>
                 </span>
-                <span class="text-xs sm:text-sm font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'} block mt-0.5">${entry.intransitCount} <span class="text-[10px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'} block mt-0.5">${entry.intransitCount} <span class="text-[9.5px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1.5 px-2 ${entry.allocatedCount > 0 ? 'bg-blue-50/75 border border-blue-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[9px] font-extrabold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.allocatedCount > 0 ? 'bg-blue-50/75 border border-blue-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full ${entry.allocatedCount > 0 ? 'bg-blue-500' : 'bg-slate-300'}"></span>
                   <span>Allocated</span>
                 </span>
-                <span class="text-xs sm:text-sm font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'} block mt-0.5">${entry.allocatedCount} <span class="text-[10px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'} block mt-0.5">${entry.allocatedCount} <span class="text-[9.5px] font-bold">Unit</span></span>
               </div>
             </div>
           </div>
 
-          <!-- Detail Unit Aktif atau Status Katalog Stok Kosong (Equal Height Footer) -->
-          <div class="mt-3 pt-3 border-t border-slate-100">
+          <!-- Detail Unit Aktif & Lokasi Yard (Tanpa Tombol Scan) -->
+          <div class="mt-2.5 pt-2.5 border-t border-slate-100">
             ${!isEmpty && u ? `
-              <div class="bg-slate-50/90 rounded-2xl p-2.5 sm:p-3 border border-slate-200/60 space-y-2">
-                <div class="flex items-center justify-between gap-2 text-[10.5px]">
+              <div class="bg-slate-50/90 rounded-xl px-2.5 py-2 border border-slate-200/60 space-y-1.5">
+                <div class="flex items-center justify-between gap-2 text-[10px]">
                   <span class="font-extrabold px-2 py-0.5 rounded-md bg-white text-slate-800 border border-slate-200/90 shadow-2xs flex-shrink-0">${u.plate || '-'}</span>
                   <span class="font-mono font-bold text-slate-600 truncate">VIN: ${u.vin}</span>
                 </div>
-                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/50">
-                  <span class="text-[10px] font-semibold text-slate-500 flex items-center truncate min-w-0">
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/50 text-[10px]">
+                  <span class="font-semibold text-slate-500 flex items-center truncate min-w-0">
                     <svg class="w-3.5 h-3.5 text-blue-500 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                     <span class="truncate">${u.location || entry.defaultLocation}</span>
                   </span>
-                  <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200/90 hover:border-blue-600 text-[10px] font-extrabold whitespace-nowrap shadow-2xs transition active:scale-95 flex-shrink-0 cursor-pointer">
-                    + Scan Mutasi
-                  </button>
+                  <span class="font-mono text-[9.5px] font-semibold text-slate-400 flex-shrink-0">${u.engine || ''}</span>
                 </div>
               </div>
             ` : `
-              <div class="bg-slate-50/75 rounded-2xl p-2.5 sm:p-3 border border-dashed border-slate-200 flex items-center justify-between gap-2.5">
-                <div class="min-w-0">
-                  <span class="text-[10.5px] font-extrabold text-slate-600 block truncate">Stok unit fisik kosong (0 Unit)</span>
-                  <span class="text-[10px] text-slate-400 font-medium flex items-center truncate mt-1">
-                    <svg class="w-3.5 h-3.5 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                    <span class="truncate">${entry.defaultLocation}</span>
-                  </span>
-                </div>
-                <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold whitespace-nowrap shadow-xs transition active:scale-95 flex-shrink-0 cursor-pointer">
-                  + Scan Masuk
-                </button>
+              <div class="bg-slate-50/75 rounded-xl px-2.5 py-2 border border-dashed border-slate-200 flex items-center justify-between gap-2 text-[10px]">
+                <span class="font-bold text-slate-500 truncate">Stok unit fisik kosong</span>
+                <span class="text-slate-400 font-semibold flex items-center truncate flex-shrink-0">
+                  <svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                  <span class="truncate">${entry.defaultLocation.split('(')[0].trim()}</span>
+                </span>
               </div>
             `}
           </div>
@@ -429,10 +422,10 @@ const UI = {
       const countEl = document.getElementById(`chipCount-${c}`);
       if (chipEl) {
         if (c === status) {
-          chipEl.className = 'inv-chip active px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer';
+          chipEl.className = 'inv-chip active px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer';
           if (countEl) countEl.className = 'px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-white/20 text-white';
         } else {
-          chipEl.className = 'inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer';
+          chipEl.className = 'inv-chip px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer';
           if (countEl) countEl.className = 'px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600';
         }
       }
@@ -480,17 +473,10 @@ const UI = {
       );
     });
 
-    // Update KPI Ringkasan & Counter pada Tab Filter
+    // Update Counter pada Tab Filter
     const totalAll = baseFiltered.length;
     const totalIn = baseFiltered.filter(i => i.type === 'Unit Masuk').length;
     const totalOut = baseFiltered.filter(i => i.type === 'Unit Keluar').length;
-
-    const kpiTotalEl = document.getElementById('histKpiTotal');
-    const kpiMasukEl = document.getElementById('histKpiMasuk');
-    const kpiKeluarEl = document.getElementById('histKpiKeluar');
-    if (kpiTotalEl) kpiTotalEl.textContent = totalAll;
-    if (kpiMasukEl) kpiMasukEl.textContent = totalIn;
-    if (kpiKeluarEl) kpiKeluarEl.textContent = totalOut;
 
     const countAllEl = document.getElementById('histCount-all');
     const countInEl = document.getElementById('histCount-in');
@@ -499,7 +485,7 @@ const UI = {
     if (countInEl) countInEl.textContent = totalIn;
     if (countOutEl) countOutEl.textContent = totalOut;
 
-    // Filter tahap 2: Berdasarkan Tab Jenis Mutasi (Semua / Penerimaan / Pengiriman)
+    // Filter tahap 2: Berdasarkan Tab Jenis Mutasi (Semua / Masuk / Keluar)
     const filtered = baseFiltered.filter(item => {
       if (AppState.historyTabFilter === 'in') return item.type === 'Unit Masuk';
       if (AppState.historyTabFilter === 'out') return item.type === 'Unit Keluar';
@@ -508,7 +494,7 @@ const UI = {
 
     const showingBadge = document.getElementById('historyShowingBadge');
     if (showingBadge) {
-      showingBadge.textContent = `Menampilkan ${filtered.length} Data`;
+      showingBadge.textContent = `${filtered.length} Data`;
     }
 
     const footerSummary = document.getElementById('historyFooterSummary');
@@ -519,13 +505,13 @@ const UI = {
     if (filtered.length === 0) {
       container.innerHTML = `
         <tr>
-          <td colspan="7" class="py-12 px-6 text-center">
-            <div class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+          <td colspan="7" class="py-10 px-6 text-center">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
             <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada transaksi mutasi yang ditemukan</p>
             <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan filter periode waktu, kata kunci pencarian, atau pilih tab "Semua".</p>
-            <button type="button" onclick="clearHistorySearch(); resetHistoryDateFilter(); filterHistoryTab('all')" class="mt-3.5 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
+            <button type="button" onclick="clearHistorySearch(); resetHistoryDateFilter(); filterHistoryTab('all')" class="mt-3 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
               Reset Semua Filter
             </button>
           </td>
@@ -549,81 +535,80 @@ const UI = {
 
       return `
         <tr class="hover:bg-blue-50/35 transition-colors group">
-          <!-- Kolom 1: ID & Waktu -->
-          <td class="py-3.5 pl-4 sm:pl-6 pr-3 align-middle whitespace-nowrap">
+          <!-- Kolom 1: Waktu & ID -->
+          <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap">
             <div class="flex items-center space-x-1.5">
-              <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200/80">#${rowNum}</span>
-              <span class="text-[11px] font-mono font-bold text-slate-700">${item.id || '-'}</span>
+              <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200/80">#${rowNum}</span>
+              <span class="text-[10.5px] font-mono font-bold text-slate-700">${item.id || '-'}</span>
             </div>
-            <div class="text-[11px] font-bold text-slate-800 mt-1">${item.fullDateStr}</div>
-            <div class="text-[10px] font-semibold text-slate-400">${item.time} WIB</div>
+            <div class="text-[11px] font-bold text-slate-800 mt-0.5">${item.fullDateStr} <span class="text-slate-400 font-semibold">• ${item.time}</span></div>
           </td>
 
           <!-- Kolom 2: Jenis Mutasi -->
-          <td class="py-3.5 px-3 align-middle whitespace-nowrap">
-            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10.5px] font-extrabold border shadow-2xs ${typeBadge}">
+          <td class="py-3 px-2.5 align-middle whitespace-nowrap">
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold border shadow-2xs ${typeBadge}">
               <span class="font-black leading-none">${typeArrow}</span>
               <span>${item.type}</span>
             </span>
           </td>
 
-          <!-- Kolom 3: Model Kendaraan & Foto Thumbnail -->
-          <td class="py-3.5 px-3 align-middle">
+          <!-- Kolom 3: Kendaraan -->
+          <td class="py-3 px-2.5 align-middle">
             <div class="flex items-center space-x-2.5">
-              <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="w-12 h-9 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Mobil">
+              <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="w-11 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Mobil">
                 <img src="${unitPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
                 <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
-                <div class="text-[10px] font-semibold text-slate-400 truncate mt-0.5">
-                  ${catalogItem ? catalogItem.category : 'Unit Kendaraan Daihatsu'}
+                <div class="text-[10px] font-semibold text-slate-400 truncate">
+                  ${catalogItem ? catalogItem.category : 'Unit Daihatsu'}
                 </div>
               </div>
             </div>
           </td>
 
           <!-- Kolom 4: No. Rangka (VIN) & Mesin -->
-          <td class="py-3.5 px-3 align-middle whitespace-nowrap">
-            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/70 font-mono text-[10.5px] font-bold text-slate-800">
+          <td class="py-3 px-2.5 align-middle whitespace-nowrap">
+            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/70 font-mono text-[10px] font-bold text-slate-800">
               ${item.vin}
             </div>
-            <div class="text-[10px] font-mono text-slate-400 mt-1">
+            <div class="text-[9.5px] font-mono text-slate-400 mt-0.5">
               ENG: <span class="font-semibold text-slate-600">${item.engine}</span>
             </div>
           </td>
 
           <!-- Kolom 5: Petugas PIC & Catatan Audit -->
-          <td class="py-3.5 px-3 align-middle">
+          <td class="py-3 px-2.5 align-middle">
             <div class="flex items-center space-x-1.5">
               <span class="w-4 h-4 rounded-full bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center text-[9px] font-black flex-shrink-0">
                 ${(item.pic || 'A').charAt(0).toUpperCase()}
               </span>
               <span class="text-[11px] font-extrabold text-slate-800">${item.pic}</span>
             </div>
-            <p class="text-[10.5px] text-slate-500 font-medium mt-1 line-clamp-2 leading-snug max-w-xs">
+            <p class="text-[10px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-snug max-w-[240px]" title="${item.notes || ''}">
               ${item.notes || 'Pemeriksaan standar serah terima unit di lapangan.'}
             </p>
           </td>
 
           <!-- Kolom 6: Bukti Fisik (Foto Mobil & Dokumen DO) -->
-          <td class="py-3.5 px-3 align-middle whitespace-nowrap text-center">
-            <div class="inline-flex items-center justify-center space-x-1.5">
-              <button type="button" onclick="openImagePreviewModal('${unitPhotoSrc}')" class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer shadow-2xs" title="Lihat Foto Fisik Mobil">
-                <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                <span>Foto Mobil</span>
+          <td class="py-3 px-2.5 align-middle whitespace-nowrap text-center">
+            <div class="inline-flex items-center justify-center space-x-1">
+              <button type="button" onclick="openImagePreviewModal('${unitPhotoSrc}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Foto Fisik Mobil">
+                <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                <span>Mobil</span>
               </button>
-              <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer shadow-2xs" title="Lihat Dokumen Serah Terima DO">
-                <svg class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>Dokumen DO</span>
+              <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Dokumen Serah Terima DO">
+                <svg class="w-3 h-3 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>DO</span>
               </button>
             </div>
           </td>
 
           <!-- Kolom 7: Status Verifikasi -->
-          <td class="py-3.5 pl-3 pr-4 sm:pr-6 align-middle whitespace-nowrap text-right">
-            <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/80">
+          <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle whitespace-nowrap text-right">
+            <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
               <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-              <span>Terverifikasi</span>
+              <span>Valid</span>
             </span>
           </td>
         </tr>
@@ -1309,9 +1294,22 @@ const UI = {
 
   /**
    * Menggantikan semua <select> bawaan browser dengan Custom Website Dropdown
-   * agar di perangkat mobile tidak memunculkan picker layar penuh bawaan OS
+   * agar di perangkat mobile tidak memunculkan picker layar penuh bawaan OS,
+   * serta menampilkan Popover Kalender Tanggal (7 kolom) & Grid Bulan (3 kolom) yang rapi di History
    */
   initCustomDropdowns() {
+    // Pastikan opsi tanggal 1..31 sudah terisi sebelum membangun custom dropdown
+    const dateSelectCheck = document.getElementById('histFilterDate');
+    if (dateSelectCheck && dateSelectCheck.options.length <= 1) {
+      dateSelectCheck.innerHTML = '<option value="all">Semua Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        dateSelectCheck.appendChild(opt);
+      }
+    }
+
     const selectIds = [
       'histFilterDate',
       'histFilterMonth',
@@ -1321,14 +1319,27 @@ const UI = {
     ];
 
     const nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    const shortMonths = {
+      '1': 'Jan', '2': 'Feb', '3': 'Mar', '4': 'Apr',
+      '5': 'Mei', '6': 'Jun', '7': 'Jul', '8': 'Agu',
+      '9': 'Sep', '10': 'Okt', '11': 'Nov', '12': 'Des'
+    };
 
     selectIds.forEach(id => {
       const selectEl = document.getElementById(id);
-      if (!selectEl || selectEl.dataset.customEnhanced === 'true') return;
+      if (!selectEl) return;
+      if (selectEl.dataset.customEnhanced === 'true') {
+        if (typeof selectEl._refreshCustomDropdown === 'function') {
+          selectEl._refreshCustomDropdown();
+        }
+        return;
+      }
       selectEl.dataset.customEnhanced = 'true';
 
       const isCompactFilter = id.startsWith('histFilter');
-      const isRightAligned = id === 'histFilterYear';
+      const isDateGrid = id === 'histFilterDate';
+      const isMonthGrid = id === 'histFilterMonth';
+      const isYearFilter = id === 'histFilterYear';
 
       // Sembunyikan ikon panah SVG bawaan di sebelah select jika ada
       const parentEl = selectEl.parentElement;
@@ -1342,17 +1353,18 @@ const UI = {
 
       // Buat wrapper custom dropdown
       const wrapper = document.createElement('div');
-      wrapper.className = 'custom-select-wrapper relative w-full select-none';
+      wrapper.className = 'custom-select-wrapper relative z-10 w-full select-none';
 
-      // Buat tombol trigger
+      // Buat tombol trigger yang rapi untuk mobile & desktop
       const triggerBtn = document.createElement('button');
       triggerBtn.type = 'button';
-      triggerBtn.className = isCompactFilter
-        ? 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-700 flex items-center justify-between gap-1 transition focus:outline-none focus:ring-2 focus:ring-blue-500/30'
-        : 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-500/30';
+      const baseTriggerClass = isCompactFilter
+        ? 'w-full bg-slate-50/90 hover:bg-white border border-slate-200/90 rounded-2xl px-2.5 sm:px-3 py-2.5 text-xs font-bold text-slate-700 flex items-center justify-between gap-1.5 shadow-2xs transition cursor-pointer focus:outline-none'
+        : 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition cursor-pointer focus:outline-none';
+      triggerBtn.className = baseTriggerClass;
 
       const triggerLabel = document.createElement('span');
-      triggerLabel.className = 'truncate text-left';
+      triggerLabel.className = 'truncate text-left leading-tight';
 
       const triggerArrow = document.createElement('span');
       triggerArrow.className = 'text-slate-400 flex-shrink-0 transition-transform duration-200';
@@ -1361,30 +1373,150 @@ const UI = {
       triggerBtn.appendChild(triggerLabel);
       triggerBtn.appendChild(triggerArrow);
 
-      // Buat panel menu pop-up ringkas (tidak memenuhi layar)
+      // Buat panel menu pop-up sesuai tipe dropdown
       const menu = document.createElement('div');
-      const alignClass = isRightAligned
-        ? 'right-0 min-w-[120px] w-full'
-        : (isCompactFilter ? 'left-0 min-w-[130px] w-full' : 'left-0 right-0 w-full');
+      if (isDateGrid) {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-0 w-[256px] sm:w-[272px] z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-2.5';
+      } else if (isMonthGrid) {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-[236px] sm:w-[248px] z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-2.5';
+      } else if (isYearFilter) {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 right-0 min-w-[140px] w-full z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-1.5';
+      } else {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-0 right-0 w-full z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 py-1.5 max-h-56 overflow-y-auto';
+      }
 
-      menu.className = `custom-select-menu hidden absolute top-full mt-1.5 z-50 ${alignClass} bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-[0_12px_32px_rgba(15,23,42,0.16)] ring-1 ring-slate-900/5 py-1.5 max-h-48 overflow-y-auto`;
+      const selectValueAndClose = (val) => {
+        selectEl.value = val;
+        closeMenu();
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      };
 
       const renderMenuOptions = () => {
         menu.innerHTML = '';
-        const currentVal = nativeValueDesc ? nativeValueDesc.get.call(selectEl) : selectEl.value;
+        const currentVal = String(nativeValueDesc ? nativeValueDesc.get.call(selectEl) : selectEl.value);
         const options = Array.from(selectEl.options);
-        const selectedOpt = options.find(o => o.value === String(currentVal)) || options[0];
+        const selectedOpt = options.find(o => String(o.value) === currentVal) || options[0];
 
+        // Update label tombol trigger agar ringkas & jelas di mobile
         if (selectedOpt) {
-          triggerLabel.textContent = selectedOpt.textContent;
+          if (isDateGrid && currentVal !== 'all') {
+            triggerLabel.textContent = `Tgl ${selectedOpt.textContent}`;
+          } else if (isYearFilter && currentVal !== 'all') {
+            triggerLabel.textContent = `Thn ${selectedOpt.textContent}`;
+          } else {
+            triggerLabel.textContent = selectedOpt.textContent;
+          }
         }
 
+        // 1. Tampilan Popover Grid Kalender Tanggal (7 Kolom) untuk histFilterDate
+        if (isDateGrid) {
+          const allOpt = options.find(o => o.value === 'all');
+          if (allOpt) {
+            const isAllSelected = currentVal === 'all';
+            const allBtn = document.createElement('button');
+            allBtn.type = 'button';
+            allBtn.dataset.val = 'all';
+            allBtn.className = `w-full py-2 px-3 mb-2 rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+              isAllSelected
+                ? 'bg-slate-900 text-white font-extrabold shadow-2xs'
+                : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 font-bold'
+            }`;
+            allBtn.innerHTML = `
+              <span>Semua Tanggal (1 - 31)</span>
+              ${isAllSelected ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-white/20 text-white">Aktif</span>' : ''}
+            `;
+            allBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectValueAndClose('all');
+            });
+            menu.appendChild(allBtn);
+          }
+
+          const grid = document.createElement('div');
+          grid.className = 'grid grid-cols-7 gap-1';
+
+          options.filter(o => o.value !== 'all').forEach(opt => {
+            const isSelected = String(opt.value) === currentVal;
+            const dayBtn = document.createElement('button');
+            dayBtn.type = 'button';
+            dayBtn.dataset.val = opt.value;
+            dayBtn.className = `h-8 rounded-lg text-[11px] flex items-center justify-center transition cursor-pointer ${
+              isSelected
+                ? 'bg-blue-600 text-white font-black shadow-2xs'
+                : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600 font-bold'
+            }`;
+            dayBtn.textContent = opt.textContent;
+            dayBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectValueAndClose(opt.value);
+            });
+            grid.appendChild(dayBtn);
+          });
+
+          menu.appendChild(grid);
+          return;
+        }
+
+        // 2. Tampilan Popover Grid Bulan (3 Kolom) untuk histFilterMonth
+        if (isMonthGrid) {
+          const allOpt = options.find(o => o.value === 'all');
+          if (allOpt) {
+            const isAllSelected = currentVal === 'all';
+            const allBtn = document.createElement('button');
+            allBtn.type = 'button';
+            allBtn.dataset.val = 'all';
+            allBtn.className = `w-full py-2 px-3 mb-2 rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
+              isAllSelected
+                ? 'bg-slate-900 text-white font-extrabold shadow-2xs'
+                : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 font-bold'
+            }`;
+            allBtn.innerHTML = `
+              <span>Semua Bulan (Jan - Des)</span>
+              ${isAllSelected ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-white/20 text-white">Aktif</span>' : ''}
+            `;
+            allBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectValueAndClose('all');
+            });
+            menu.appendChild(allBtn);
+          }
+
+          const grid = document.createElement('div');
+          grid.className = 'grid grid-cols-3 gap-1.5';
+
+          options.filter(o => o.value !== 'all').forEach(opt => {
+            const isSelected = String(opt.value) === currentVal;
+            const mBtn = document.createElement('button');
+            mBtn.type = 'button';
+            mBtn.dataset.val = opt.value;
+            mBtn.className = `py-2 px-2 rounded-xl text-xs flex items-center justify-center transition cursor-pointer ${
+              isSelected
+                ? 'bg-blue-600 text-white font-extrabold shadow-2xs'
+                : 'bg-slate-50/80 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold border border-slate-200/60'
+            }`;
+            mBtn.textContent = shortMonths[String(opt.value)] || opt.textContent;
+            mBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectValueAndClose(opt.value);
+            });
+            grid.appendChild(mBtn);
+          });
+
+          menu.appendChild(grid);
+          return;
+        }
+
+        // 3. Tampilan Daftar Standar untuk Tahun & Input Modal
         options.forEach(opt => {
-          const isSelected = String(opt.value) === String(currentVal);
+          const isSelected = String(opt.value) === currentVal;
           const itemBtn = document.createElement('button');
           itemBtn.type = 'button';
           itemBtn.dataset.val = opt.value;
-          itemBtn.className = `w-[calc(100%-10px)] mx-[5px] my-0.5 px-2.5 py-2 rounded-xl text-left text-xs flex items-center justify-between gap-2 transition ${
+          itemBtn.className = `w-full my-0.5 px-3 py-2 rounded-xl text-left text-xs flex items-center justify-between gap-2 transition cursor-pointer ${
             isSelected
               ? 'bg-blue-50 text-blue-600 font-extrabold'
               : 'text-slate-700 hover:bg-slate-100/80 font-semibold'
@@ -1416,9 +1548,7 @@ const UI = {
           itemBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            selectEl.value = opt.value;
-            closeMenu();
-            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+            selectValueAndClose(opt.value);
           });
 
           menu.appendChild(itemBtn);
@@ -1426,30 +1556,41 @@ const UI = {
       };
 
       const openMenu = () => {
-        // Tutup semua custom dropdown lain yang sedang terbuka
+        // Tutup semua custom dropdown lain yang sedang terbuka & reset z-index
         document.querySelectorAll('.custom-select-menu').forEach(m => {
           if (m !== menu) m.classList.add('hidden');
         });
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          w.classList.remove('z-50');
+          w.classList.add('z-10');
           if (w !== wrapper) {
             const arr = w.querySelector('button > span:last-child');
             if (arr) arr.style.transform = 'rotate(0deg)';
+            const btn = w.querySelector('button');
+            if (btn) btn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
           }
         });
 
         renderMenuOptions();
+        wrapper.classList.remove('z-10');
+        wrapper.classList.add('z-50');
+        triggerBtn.classList.add('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         menu.classList.remove('hidden');
         triggerArrow.style.transform = 'rotate(180deg)';
 
-        // Scroll otomatis ke item yang sedang terpilih di dalam menu
-        const activeItem = menu.querySelector(`[data-val="${CSS.escape(String(selectEl.value))}"]`);
-        if (activeItem) {
-          activeItem.scrollIntoView({ block: 'nearest' });
+        if (!isDateGrid && !isMonthGrid) {
+          const activeItem = menu.querySelector(`[data-val="${CSS.escape(String(selectEl.value))}"]`);
+          if (activeItem) {
+            activeItem.scrollIntoView({ block: 'nearest' });
+          }
         }
       };
 
       const closeMenu = () => {
         menu.classList.add('hidden');
+        wrapper.classList.remove('z-50');
+        wrapper.classList.add('z-10');
+        triggerBtn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         triggerArrow.style.transform = 'rotate(0deg)';
       };
 
@@ -1476,6 +1617,8 @@ const UI = {
         });
       }
 
+      selectEl._refreshCustomDropdown = renderMenuOptions;
+
       wrapper.appendChild(triggerBtn);
       wrapper.appendChild(menu);
       selectEl.insertAdjacentElement('afterend', wrapper);
@@ -1489,8 +1632,13 @@ const UI = {
       document.addEventListener('click', (e) => {
         if (e.target && e.target.closest('.custom-select-wrapper')) return;
         document.querySelectorAll('.custom-select-menu').forEach(m => m.classList.add('hidden'));
-        document.querySelectorAll('.custom-select-wrapper button > span:last-child').forEach(arr => {
-          arr.style.transform = 'rotate(0deg)';
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          w.classList.remove('z-50');
+          w.classList.add('z-10');
+          const arr = w.querySelector('button > span:last-child');
+          if (arr) arr.style.transform = 'rotate(0deg)';
+          const btn = w.querySelector('button');
+          if (btn) btn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         });
       });
     }
