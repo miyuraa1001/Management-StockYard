@@ -110,7 +110,7 @@ const UI = {
         : '9 Okt 2026';
 
       return `
-        <div class="bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center space-x-2.5 sm:space-x-3">
+        <div class="bg-slate-50/75 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center space-x-2.5 sm:space-x-3">
           <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0">
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1.5">
@@ -119,14 +119,14 @@ const UI = {
               </span>
               <span class="text-[9px] sm:text-[10.5px] font-medium text-slate-400 whitespace-nowrap">${shortDate} • ${item.time}</span>
             </div>
+            <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight mt-1">${item.model}</h4>
             <div class="flex items-center justify-between gap-1.5 mt-1">
-              <span class="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight">${item.model}</span>
+              <p class="text-[9px] sm:text-[11px] text-slate-400 font-mono leading-none truncate">VIN: ${item.vin}</p>
               <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex-shrink-0 leading-none">
                 <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                 <span>Terverifikasi</span>
               </span>
             </div>
-            <p class="text-[9.5px] sm:text-[11px] text-slate-400 font-mono mt-0.5 leading-tight">VIN: ${item.vin}</p>
           </div>
         </div>
       `;
@@ -849,7 +849,6 @@ const UI = {
     const filterKey = segmentEl.dataset.filter || model;
     const photo = segmentEl.dataset.photo || 'assets/images/Inventory_Gran Max Pick Up.jpeg';
     const category = segmentEl.dataset.category || 'Unit Kendaraan Daihatsu';
-    const location = segmentEl.dataset.location || 'Pool Yard Sentra Lampung';
     const masuk = segmentEl.dataset.masuk || '0';
     const keluar = segmentEl.dataset.keluar || '0';
 
@@ -869,7 +868,7 @@ const UI = {
     const centerLabel = document.getElementById('donutCenterLabel');
     const centerVal = document.getElementById('donutCenterValue');
     const centerSub = document.getElementById('donutCenterSub');
-    if (centerLabel) centerLabel.textContent = 'KOMPOSISI';
+    if (centerLabel) centerLabel.textContent = 'PORSI';
     if (centerVal) centerVal.textContent = percent;
     if (centerSub) centerSub.textContent = units;
 
@@ -890,7 +889,6 @@ const UI = {
     const prevBadge = document.getElementById('donutPreviewPercentBadge');
     const prevImg = document.getElementById('donutPreviewImg');
     const prevModel = document.getElementById('donutPreviewModel');
-    const prevLocation = document.getElementById('donutPreviewLocation');
     const prevBar = document.getElementById('donutPreviewBar');
     const prevUnits = document.getElementById('donutPreviewUnits');
     const prevMutation = document.getElementById('donutPreviewMutation');
@@ -907,7 +905,6 @@ const UI = {
       prevImg.alt = model;
     }
     if (prevModel) prevModel.textContent = model;
-    if (prevLocation) prevLocation.textContent = `📍 ${location}`;
     if (prevBar) {
       prevBar.style.width = percent;
       prevBar.style.backgroundColor = color;
