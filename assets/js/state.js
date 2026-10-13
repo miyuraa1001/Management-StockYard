@@ -33,72 +33,247 @@ const AppState = {
     intransit: 16
   },
 
-  // Dataset Inventory Kendaraan
+  // Master Katalog 13 Model Kendaraan Daihatsu (Tetap tampil meski stok 0 / kosong)
+  vehicleCatalog: [
+    {
+      catalogId: 'CAT-01',
+      model: 'Rocky e-Smart Hybrid',
+      category: 'Smart Hybrid SUV',
+      spec: '1.2L WA-VEX e-Smart Hybrid',
+      defaultLocation: 'Yard A - Blok 1 (Hybrid)',
+      photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
+      heroPhoto: 'assets/images/hero-rocky-hybrid.jpg'
+    },
+    {
+      catalogId: 'CAT-02',
+      model: 'New Terios',
+      category: '7-Seater Adventure SUV',
+      spec: '1.5L 2NR-VE Dual VVT-i',
+      defaultLocation: 'Yard A - Blok 2 (SUV)',
+      photo: 'assets/images/Inventory_New Terios.jpeg',
+      heroPhoto: 'assets/images/hero-new-terios.jpg'
+    },
+    {
+      catalogId: 'CAT-03',
+      model: 'Terios SE',
+      category: 'Limited Sporty Edition SUV',
+      spec: '1.5L 2NR-VE Special Edition',
+      defaultLocation: 'Yard A - Blok 2 (SUV)',
+      photo: 'assets/images/Inventory_Terios SE.jpeg',
+      heroPhoto: 'assets/images/hero-terios-se.jpg'
+    },
+    {
+      catalogId: 'CAT-04',
+      model: 'All New Xenia',
+      category: 'Executive Family MPV',
+      spec: '1.5L 2NR-VE D-CVT FWD',
+      defaultLocation: 'Yard B - Blok 1 (MPV)',
+      photo: 'assets/images/Inventory_All New Xenia.jpeg',
+      heroPhoto: 'assets/images/hero-all-new-xenia.jpg'
+    },
+    {
+      catalogId: 'CAT-05',
+      model: 'New Sigra',
+      category: 'LCGC 7-Seater Family MPV',
+      spec: '1.2L 3NR-VE Dual VVT-i',
+      defaultLocation: 'Yard B - Blok 2 (MPV)',
+      photo: 'assets/images/Inventory_New Sigra.jpeg',
+      heroPhoto: 'assets/images/hero-new-sigra.jpg'
+    },
+    {
+      catalogId: 'CAT-06',
+      model: 'New Sigra (Prod Old)',
+      category: 'Reliable Value MPV',
+      spec: '1.2L 3NR-VE MT/AT',
+      defaultLocation: 'Yard B - Blok 3 (MPV)',
+      photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
+      heroPhoto: 'assets/images/hero-sigra-old.jpg'
+    },
+    {
+      catalogId: 'CAT-07',
+      model: 'All New Ayla',
+      category: 'Dynamic City Hatchback',
+      spec: '1.2L WA-VE D-CVT',
+      defaultLocation: 'Yard C - Blok 1 (Hatchback)',
+      photo: 'assets/images/Inventory_All New Ayla.jpeg',
+      heroPhoto: 'assets/images/hero-all-new-ayla.jpg'
+    },
+    {
+      catalogId: 'CAT-08',
+      model: 'New Rocky',
+      category: 'Compact Turbo SUV',
+      spec: '1.0L 1KR-VET Turbocharged',
+      defaultLocation: 'Yard A - Blok 3 (SUV)',
+      photo: 'assets/images/Inventory_New Rocky.jpeg',
+      heroPhoto: 'assets/images/hero-new-rocky.jpg'
+    },
+    {
+      catalogId: 'CAT-09',
+      model: 'Rocky',
+      category: 'Sporty Compact SUV (ADS)',
+      spec: '1.2L WA-VE ADS Styling',
+      defaultLocation: 'Yard A - Blok 3 (SUV)',
+      photo: 'assets/images/Inventory_Rocky.jpeg',
+      heroPhoto: 'assets/images/hero-rocky.jpg'
+    },
+    {
+      catalogId: 'CAT-10',
+      model: 'New Sirion',
+      category: 'Dynamic Hatchback City Car',
+      spec: '1.3L 1NR-VE Dual VVT-i D-CVT',
+      defaultLocation: 'Yard C - Blok 2 (City Car)',
+      photo: 'assets/images/Inventory_New Sirion.jpeg',
+      heroPhoto: 'assets/images/hero-new-sirion.jpg'
+    },
+    {
+      catalogId: 'CAT-11',
+      model: 'Luxio',
+      category: 'Prestigious Business Van',
+      spec: '1.5L 3SZ-VE DOHC VVT-i',
+      defaultLocation: 'Yard D - Blok 1 (Commercial)',
+      photo: 'assets/images/Inventory_Luxio.jpeg',
+      heroPhoto: 'assets/images/hero-luxio.jpg'
+    },
+    {
+      catalogId: 'CAT-12',
+      model: 'Gran Max Minibus',
+      category: 'Spacious Passenger & Blind Van',
+      spec: '1.5L 2NR-VE / 1.3L DOHC',
+      defaultLocation: 'Yard D - Blok 2 (Commercial)',
+      photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
+      heroPhoto: 'assets/images/hero-granmax-minibus.jpg'
+    },
+    {
+      catalogId: 'CAT-13',
+      model: 'Gran Max Pick Up',
+      category: 'Niaga & Logistik Tangguh',
+      spec: '1.5L 2NR-VE Heavy Duty Deck',
+      defaultLocation: 'Yard D - Blok 3 (Niaga)',
+      photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
+      heroPhoto: 'assets/images/hero-granmax-pickup.jpg'
+    }
+  ],
+
+  // Helper untuk mencari foto katalog resmi berdasarkan nama model
+  getModelCatalogItem(modelName) {
+    if (!modelName) return this.vehicleCatalog[0];
+    const clean = modelName.toLowerCase().trim();
+    // 1. Exact match
+    let found = this.vehicleCatalog.find(c => c.model.toLowerCase() === clean);
+    if (found) return found;
+    // 2. Specific disambiguations
+    if (clean.includes('hybrid')) return this.vehicleCatalog[0];
+    if (clean.includes('terios se')) return this.vehicleCatalog[2];
+    if (clean.includes('terios')) return this.vehicleCatalog[1];
+    if (clean.includes('xenia')) return this.vehicleCatalog[3];
+    if (clean.includes('old')) return this.vehicleCatalog[5];
+    if (clean.includes('sigra')) return this.vehicleCatalog[4];
+    if (clean.includes('ayla')) return this.vehicleCatalog[6];
+    if (clean.includes('new rocky') || clean.includes('turbo')) return this.vehicleCatalog[7];
+    if (clean.includes('rocky')) return this.vehicleCatalog[8];
+    if (clean.includes('sirion')) return this.vehicleCatalog[9];
+    if (clean.includes('luxio')) return this.vehicleCatalog[10];
+    if (clean.includes('minibus') || clean.includes('van')) return this.vehicleCatalog[11];
+    if (clean.includes('pick') || clean.includes('gran max') || clean.includes('granmax')) return this.vehicleCatalog[12];
+    return this.vehicleCatalog[0];
+  },
+
+  // Dataset Inventory Unit Fisik Kendaraan
   inventoryData: [
     {
       id: 'INV-001',
       model: 'Rocky e-Smart Hybrid',
+      category: 'Smart Hybrid SUV',
       plate: 'BE 1001 RKY',
       vin: 'MHKP3FA1JXK001122',
       engine: 'WA-VEX1029384',
       status: 'In-Yard',
       location: 'Yard A - Blok 1 (Hybrid)',
-      photo: 'assets/images/inventory-rocky-hybrid.png',
+      photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
       id: 'INV-002',
-      model: 'Gran Max 1.5 D Pickup',
+      model: 'Gran Max Pick Up',
+      category: 'Niaga & Logistik Tangguh',
       plate: 'BE 1234 KZA',
       vin: 'MHKP3FA1JXK005678',
       engine: '2NRX1234567',
       status: 'In-Yard',
-      location: 'Yard A - Blok 3',
-      photo: 'assets/images/hero-granmax-pickup.jpg',
+      location: 'Yard D - Blok 3 (Niaga)',
+      photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
       id: 'INV-003',
-      model: 'New Terios R 1.5 X',
+      model: 'New Terios',
+      category: '7-Seater Adventure SUV',
       plate: 'BE 5678 TCD',
       vin: 'MHKDA3BA1RJ012345',
       engine: '3NRF2345678',
       status: 'Intransit',
       location: 'Rute Palembang → Lampung',
-      photo: 'assets/images/inventory-new-terios.png',
+      photo: 'assets/images/Inventory_New Terios.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
       id: 'INV-004',
-      model: 'Sigra 1.2 R',
+      model: 'New Sigra',
+      category: 'LCGC 7-Seater Family MPV',
       plate: 'BE 9012 VBN',
       vin: 'MHKBR5DA3JJ056789',
       engine: '3NRD3456789',
       status: 'In-Yard',
-      location: 'Yard B - Blok 1',
-      photo: 'assets/images/hero-new-sigra.jpg',
+      location: 'Yard B - Blok 2 (MPV)',
+      photo: 'assets/images/Inventory_New Sigra.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
       id: 'INV-005',
-      model: 'All New Ayla 1.2 R',
+      model: 'All New Ayla',
+      category: 'Dynamic City Hatchback',
       plate: 'BE 3456 FGH',
       vin: 'MHKAG5DA3KL078901',
       engine: '3NRH4567890',
       status: 'Intransit',
       location: 'Rute Jakarta → Lampung',
-      photo: 'assets/images/hero-all-new-ayla.jpg',
+      photo: 'assets/images/Inventory_All New Ayla.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
       id: 'INV-006',
-      model: 'All New Xenia 1.5 R',
+      model: 'All New Xenia',
+      category: 'Executive Family MPV',
       plate: 'BE 7890 JKL',
       vin: 'MHKDA4BA1LM098765',
       engine: '3NRF5678901',
       status: 'Allocated',
       location: 'Alokasi DSO Lampung',
-      photo: 'assets/images/hero-all-new-xenia.jpg',
+      photo: 'assets/images/Inventory_All New Xenia.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-007',
+      model: 'New Rocky',
+      category: 'Compact Turbo SUV',
+      plate: 'BE 2468 RKT',
+      vin: 'MHKP3FA1JXK009876',
+      engine: '1KRVET88291',
+      status: 'In-Yard',
+      location: 'Yard A - Blok 3 (SUV)',
+      photo: 'assets/images/Inventory_New Rocky.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-008',
+      model: 'Gran Max Minibus',
+      category: 'Spacious Passenger & Blind Van',
+      plate: 'BE 1357 GMB',
+      vin: 'MHKP3FA1JXK004321',
+      engine: '2NRVE77412',
+      status: 'In-Yard',
+      location: 'Yard D - Blok 2 (Commercial)',
+      photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
@@ -113,12 +288,12 @@ const AppState = {
       month: 10,
       year: 2026,
       fullDateStr: '9 Oktober 2026',
-      model: 'Gran Max 1.5 D Pickup',
+      model: 'Gran Max Pick Up',
       vin: 'MHKP3FA1JTK137533',
       engine: '2NR4F82393',
       pic: 'Andi Pratama',
       notes: 'Tarikan unit dari D600 ke D661, dokumen lengkap.',
-      unitPhoto: 'assets/images/hero-granmax-pickup.jpg',
+      unitPhoto: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -129,12 +304,12 @@ const AppState = {
       month: 10,
       year: 2026,
       fullDateStr: '9 Oktober 2026',
-      model: 'Terios R 1.5 X',
+      model: 'New Terios',
       vin: 'MHKDA3BA1RJ012345',
       engine: '3NRF2345678',
       pic: 'Budi Santoso',
       notes: 'Kirim serah terima ke cabang Raden Intan.',
-      unitPhoto: 'assets/images/hero-new-terios.jpg',
+      unitPhoto: 'assets/images/Inventory_New Terios.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -145,12 +320,12 @@ const AppState = {
       month: 10,
       year: 2026,
       fullDateStr: '8 Oktober 2026',
-      model: 'Sigra 1.2 R',
+      model: 'New Sigra',
       vin: 'MHKBR5DA3JJ056789',
       engine: '3NRD3456789',
       pic: 'Rina Marlina',
       notes: 'Unit baru tiba dari pabrik Jakarta.',
-      unitPhoto: 'assets/images/hero-new-sigra.jpg',
+      unitPhoto: 'assets/images/Inventory_New Sigra.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],

@@ -100,11 +100,15 @@ const UI = {
       const badgeColor = isMasuk 
         ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
         : 'bg-blue-50 text-blue-600 border-blue-200';
+      const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
+      const photoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
+        ? item.unitPhoto
+        : (catalogItem ? catalogItem.photo : item.unitPhoto);
 
       return `
         <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-saas-card flex items-center justify-between">
           <div class="flex items-center space-x-3 min-w-0">
-            <img src="${item.unitPhoto}" alt="${item.model}" class="w-11 h-11 rounded-xl object-cover border border-slate-100 flex-shrink-0">
+            <img src="${photoSrc}" alt="${item.model}" class="w-12 h-11 rounded-xl object-contain bg-white p-0.5 border border-slate-100 flex-shrink-0">
             <div class="min-w-0">
               <div class="flex items-center space-x-1.5">
                 <span class="text-xs font-extrabold text-slate-900 truncate">${item.model}</span>
@@ -128,56 +132,180 @@ const UI = {
   },
 
   /**
-   * Render daftar inventory unit kendaraan
+   * Render katalog & stok inventory 13 model kendaraan Daihatsu
+   * Menampilkan seluruh jenis mobil & foto resminya walaupun stok masih kosong (0 unit)
    */
   renderInventoryList() {
     const container = document.getElementById('inventoryContainer');
-    const searchVal = (document.getElementById('inventorySearchInput')?.value || '').toLowerCase();
+    const searchVal = (document.getElementById('inventorySearchInput')?.value || '').toLowerCase().trim();
     if (!container) return;
 
-    let filtered = AppState.inventoryData.filter(item => {
-      const matchesStatus = AppState.inventoryFilter === 'all' || item.status === AppState.inventoryFilter;
-      const matchesSearch = item.model.toLowerCase().includes(searchVal) || 
-                            item.vin.toLowerCase().includes(searchVal) || 
-                            (item.plate && item.plate.toLowerCase().includes(searchVal));
-      return matchesStatus && matchesSearch;
+    const catalog = AppState.vehicleCatalog || [];
+
+    // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData
+    const catalogWithStock = catalog.map(cat => {
+      const units = (AppState.inventoryData || []).filter(u => {
+        if (!u || !u.model) return false;
+        if (u.model.toLowerCase() === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+
+      const inYardCount = units.filter(u => u.status === 'In-Yard').length;
+      const intransitCount = units.filter(u => u.status === 'Intransit').length;
+      const allocatedCount = units.filter(u => u.status === 'Allocated').length;
+      const totalUnits = units.length;
+
+      let primaryStatus = 'Kosong';
+      if (inYardCount > 0) primaryStatus = 'In-Yard';
+      else if (intransitCount > 0) primaryStatus = 'Intransit';
+      else if (allocatedCount > 0) primaryStatus = 'Allocated';
+
+      return {
+        ...cat,
+        units,
+        totalUnits,
+        inYardCount,
+        intransitCount,
+        allocatedCount,
+        primaryStatus,
+        primaryUnit: units[0] || null
+      };
+    });
+
+    // Filter berdasarkan chip status & pencarian kata kunci
+    const filtered = catalogWithStock.filter(entry => {
+      let matchesStatus = true;
+      if (AppState.inventoryFilter === 'In-Yard') matchesStatus = entry.inYardCount > 0;
+      else if (AppState.inventoryFilter === 'Intransit') matchesStatus = entry.intransitCount > 0;
+      else if (AppState.inventoryFilter === 'Allocated') matchesStatus = entry.allocatedCount > 0;
+      else if (AppState.inventoryFilter === 'Kosong') matchesStatus = entry.totalUnits === 0;
+
+      if (!searchVal) return matchesStatus;
+
+      const matchesCatalog =
+        entry.model.toLowerCase().includes(searchVal) ||
+        entry.category.toLowerCase().includes(searchVal) ||
+        entry.spec.toLowerCase().includes(searchVal) ||
+        entry.defaultLocation.toLowerCase().includes(searchVal);
+
+      const matchesUnit = entry.units.some(u =>
+        (u.vin && u.vin.toLowerCase().includes(searchVal)) ||
+        (u.plate && u.plate.toLowerCase().includes(searchVal)) ||
+        (u.engine && u.engine.toLowerCase().includes(searchVal))
+      );
+
+      return matchesStatus && (matchesCatalog || matchesUnit);
     });
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm">
-          <p class="text-xs font-bold text-slate-600">Tidak ada unit yang cocok</p>
-          <p class="text-[10px] text-slate-400 mt-1">Coba kata kunci lain atau ubah filter status.</p>
+        <div class="col-span-full bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm">
+          <p class="text-xs font-bold text-slate-600">Tidak ada model atau unit yang cocok</p>
+          <p class="text-[10px] text-slate-400 mt-1">Coba kata kunci lain atau pilih filter "Semua (13 Model)".</p>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = filtered.map(item => {
-      let statusBadge = '';
-      if (item.status === 'In-Yard') statusBadge = 'bg-emerald-50 text-emerald-600 border-emerald-200';
-      else if (item.status === 'Intransit') statusBadge = 'bg-amber-50 text-amber-600 border-amber-200';
-      else statusBadge = 'bg-blue-50 text-blue-600 border-blue-200';
+    container.innerHTML = filtered.map(entry => {
+      const isEmpty = entry.totalUnits === 0;
+
+      let statusBadgeClass = 'bg-slate-100 text-slate-500 border-slate-200';
+      let statusLabel = 'Stok Kosong (0 Unit)';
+
+      if (!isEmpty) {
+        if (entry.primaryStatus === 'In-Yard') {
+          statusBadgeClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+          statusLabel = `Tersedia • ${entry.totalUnits} Unit`;
+        } else if (entry.primaryStatus === 'Intransit') {
+          statusBadgeClass = 'bg-amber-50 text-amber-600 border-amber-200';
+          statusLabel = `Intransit • ${entry.totalUnits} Unit`;
+        } else {
+          statusBadgeClass = 'bg-blue-50 text-blue-600 border-blue-200';
+          statusLabel = `Allocated • ${entry.totalUnits} Unit`;
+        }
+      }
+
+      const u = entry.primaryUnit;
 
       return `
-        <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-saas-card flex items-start space-x-3">
-          <img src="${item.photo}" alt="${item.model}" class="w-16 h-14 rounded-xl object-contain bg-slate-50 p-0.5 border border-slate-100 flex-shrink-0 mt-0.5">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-extrabold text-slate-900 truncate">${item.model}</h4>
-              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black border ${statusBadge}">${item.status}</span>
-            </div>
-            <div class="flex items-center space-x-2 mt-1">
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">${item.plate || '-'}</span>
-              <span class="text-[10px] font-mono text-slate-400 truncate">VIN: ${item.vin}</span>
-            </div>
-            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-50 text-[10px]">
-              <span class="text-slate-400 font-mono">ENG: ${item.engine}</span>
-              <span class="text-slate-500 font-medium flex items-center">
-                <svg class="w-3 h-3 text-slate-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                ${item.location || 'Sentra Hub'}
+        <div class="bg-white rounded-3xl p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-slate-100'} shadow-saas-card hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <!-- Top Studio Catalog Image Showcase -->
+            <div class="relative w-full h-36 sm:h-40 rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-2 overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
+              <!-- Jenis Kendaraan Badge (Top-Left) -->
+              <span class="absolute top-2 left-2 z-10 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-slate-900/85 text-white backdrop-blur-sm shadow-xs">
+                ${entry.category}
               </span>
+
+              <!-- Status Stok Badge (Top-Right) -->
+              <span class="absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-[9px] font-black border ${statusBadgeClass}">
+                ${statusLabel}
+              </span>
+
+              <!-- Official Studio Car Image -->
+              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-contain transform group-hover/img:scale-105 transition-transform duration-300 select-none">
             </div>
+
+            <!-- Model Title & Jenis/Spesifikasi -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="text-sm font-black text-slate-900 truncate">${entry.model}</h4>
+                <span class="text-[9.5px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 flex-shrink-0">${entry.catalogId}</span>
+              </div>
+              <p class="text-[10.5px] text-slate-500 font-semibold mt-0.5 truncate">
+                Jenis: <span class="text-slate-700 font-bold">${entry.category}</span> • ${entry.spec}
+              </p>
+            </div>
+
+            <!-- Rincian Status Stok Per Model -->
+            <div class="grid grid-cols-3 gap-1.5 mt-2.5 pt-2.5 border-t border-slate-100 text-center">
+              <div class="rounded-xl py-1 px-1.5 ${entry.inYardCount > 0 ? 'bg-emerald-50/80 border border-emerald-200/70' : 'bg-slate-50 border border-slate-100'}">
+                <span class="text-[8.5px] font-bold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} block uppercase">In-Yard</span>
+                <span class="text-xs font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'}">${entry.inYardCount} Unit</span>
+              </div>
+              <div class="rounded-xl py-1 px-1.5 ${entry.intransitCount > 0 ? 'bg-amber-50/80 border border-amber-200/70' : 'bg-slate-50 border border-slate-100'}">
+                <span class="text-[8.5px] font-bold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} block uppercase">Intransit</span>
+                <span class="text-xs font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'}">${entry.intransitCount} Unit</span>
+              </div>
+              <div class="rounded-xl py-1 px-1.5 ${entry.allocatedCount > 0 ? 'bg-blue-50/80 border border-blue-200/70' : 'bg-slate-50 border border-slate-100'}">
+                <span class="text-[8.5px] font-bold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} block uppercase">Allocated</span>
+                <span class="text-xs font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'}">${entry.allocatedCount} Unit</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail Unit Aktif atau Status Katalog Stok Kosong -->
+          <div class="mt-2.5 pt-2.5 border-t border-slate-100">
+            ${!isEmpty && u ? `
+              <div class="bg-slate-50/90 rounded-2xl p-2.5 border border-slate-100 space-y-1">
+                <div class="flex items-center justify-between text-[10px]">
+                  <span class="font-bold px-1.5 py-0.5 rounded bg-white text-slate-800 border border-slate-200/80 shadow-2xs">${u.plate || '-'}</span>
+                  <span class="font-mono font-bold text-slate-600 truncate ml-2">VIN: ${u.vin}</span>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
+                  <span class="font-mono text-slate-400 truncate">ENG: ${u.engine}</span>
+                  <span class="font-semibold text-slate-600 flex items-center truncate ml-2">
+                    <svg class="w-3 h-3 text-blue-500 mr-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                    ${u.location || entry.defaultLocation}
+                  </span>
+                </div>
+              </div>
+            ` : `
+              <div class="bg-slate-50/70 rounded-2xl p-2.5 border border-dashed border-slate-200 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="text-[10px] font-bold text-slate-500 block truncate">Stok unit fisik saat ini kosong (0)</span>
+                  <span class="text-[9.5px] text-slate-400 flex items-center truncate mt-0.5">
+                    <svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                    ${entry.defaultLocation}
+                  </span>
+                </div>
+                <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 text-[10px] font-extrabold whitespace-nowrap transition active:scale-95 flex-shrink-0">
+                  + Scan Unit
+                </button>
+              </div>
+            `}
           </div>
         </div>
       `;
@@ -190,14 +318,14 @@ const UI = {
 
   filterInventoryByStatus(status) {
     AppState.inventoryFilter = status;
-    const chips = ['all', 'In-Yard', 'Intransit', 'Allocated'];
+    const chips = ['all', 'In-Yard', 'Intransit', 'Allocated', 'Kosong'];
     chips.forEach(c => {
       const chipEl = document.getElementById(`chip-${c}`);
       if (chipEl) {
         if (c === status) {
-          chipEl.className = 'inv-chip active px-3.5 py-1.5 rounded-full text-[11px] font-bold bg-slate-900 text-white whitespace-nowrap shadow-sm';
+          chipEl.className = 'inv-chip active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-sm';
         } else {
-          chipEl.className = 'inv-chip px-3.5 py-1.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap';
+          chipEl.className = 'inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap';
         }
       }
     });
@@ -242,6 +370,10 @@ const UI = {
       const typeBadge = isMasuk 
         ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
         : 'bg-blue-50 text-blue-600 border-blue-200';
+      const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
+      const unitPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
+        ? item.unitPhoto
+        : (catalogItem ? catalogItem.photo : item.unitPhoto);
 
       return `
         <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-saas-card space-y-3">
@@ -258,7 +390,10 @@ const UI = {
 
           <div class="flex items-start justify-between">
             <div>
-              <h4 class="text-xs font-black text-slate-900">${item.model}</h4>
+              <div class="flex items-center space-x-1.5">
+                <h4 class="text-xs font-black text-slate-900">${item.model}</h4>
+                ${catalogItem ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${catalogItem.category}</span>` : ''}
+              </div>
               <p class="text-[10px] font-mono text-slate-500 mt-0.5">VIN: <span class="font-bold text-slate-800">${item.vin}</span></p>
               <p class="text-[10px] font-mono text-slate-400 mt-0.5">ENG: ${item.engine}</p>
               <p class="text-[10px] text-slate-500 font-medium mt-1">PIC: <span class="font-bold text-slate-700">${item.pic}</span></p>
@@ -273,8 +408,8 @@ const UI = {
           ` : ''}
 
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition" onclick="openImagePreviewModal('${item.unitPhoto}')">
-              <img src="${item.unitPhoto}" alt="Foto Unit" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-slate-200">
+            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition" onclick="openImagePreviewModal('${unitPhotoSrc}')">
+              <img src="${unitPhotoSrc}" alt="Foto Unit" class="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0 border border-slate-200">
               <div class="min-w-0">
                 <span class="text-[10px] font-bold text-slate-800 block truncate">Foto Mobil</span>
                 <span class="text-[9px] text-blue-600 font-semibold">Lihat Gambar &rarr;</span>
@@ -671,12 +806,25 @@ const UI = {
   },
 
   filterInventoryByModel(modelKeyword) {
+    this.filterInventoryByStatus('all');
     this.switchTab('inventory');
     const searchInput = document.getElementById('inventorySearchInput');
     if (searchInput) {
       searchInput.value = modelKeyword;
       this.filterInventory();
-      this.showToast(`🔍 Menampilkan stok: ${modelKeyword}`);
+      this.showToast(`🔍 Menampilkan katalog & stok: ${modelKeyword}`);
+    }
+  },
+
+  openScannerForModel(modelName) {
+    if (typeof window.openScannerModal === 'function') {
+      window.openScannerModal();
+    } else if (typeof ScannerService !== 'undefined') {
+      ScannerService.open();
+    }
+    const selectEl = document.getElementById('inputCarModel');
+    if (selectEl && modelName) {
+      selectEl.value = modelName;
     }
   }
 };
@@ -700,4 +848,4 @@ window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;
 window.prevHeroSlide = () => UI.prevHeroSlide ? UI.prevHeroSlide() : null;
 window.goToHeroSlide = (idx) => UI.goToHeroSlide ? UI.goToHeroSlide(idx) : null;
 window.filterInventoryByModel = (m) => UI.filterInventoryByModel ? UI.filterInventoryByModel(m) : null;
-
+window.openScannerForModel = (m) => UI.openScannerForModel ? UI.openScannerForModel(m) : null;

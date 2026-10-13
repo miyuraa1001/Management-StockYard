@@ -75,7 +75,8 @@ const App = {
       return;
     }
 
-    const unitImg = AppState.uploadedUnitPhotoUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=260&q=80';
+    const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(model) : null;
+    const unitImg = AppState.uploadedUnitPhotoUrl || (catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg');
     const docImg = AppState.uploadedDocPhotoUrl || 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80';
 
     const now = new Date();
@@ -117,12 +118,13 @@ const App = {
       if (mutationType === 'Unit Masuk') {
         AppState.inventoryData.unshift({
           id: 'INV-' + Date.now().toString().slice(-4),
-          model: model,
+          model: catalogItem ? catalogItem.model : model,
+          category: catalogItem ? catalogItem.category : 'Kendaraan Daihatsu',
           plate: 'BE ' + Math.floor(1000 + Math.random() * 9000) + ' DAA',
           vin: vin,
           engine: engine,
           status: 'In-Yard',
-          location: 'Yard A - Receiving Bay',
+          location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: unitImg,
           docPhoto: docImg
         });
