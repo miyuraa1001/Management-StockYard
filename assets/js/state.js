@@ -42,7 +42,8 @@ const AppState = {
       spec: '1.2L WA-VEX e-Smart Hybrid',
       defaultLocation: 'Yard A - Blok 1 (Hybrid)',
       photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
-      heroPhoto: 'assets/images/hero-rocky-hybrid.jpg'
+      heroPhoto: 'assets/images/hero-rocky-hybrid.jpg',
+      baseStock: { inYard: 5, intransit: 2, allocated: 1 }
     },
     {
       catalogId: 'CAT-02',
@@ -51,7 +52,8 @@ const AppState = {
       spec: '1.5L 2NR-VE Dual VVT-i',
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_New Terios.jpeg',
-      heroPhoto: 'assets/images/hero-new-terios.jpg'
+      heroPhoto: 'assets/images/hero-new-terios.jpg',
+      baseStock: { inYard: 9, intransit: 3, allocated: 2 }
     },
     {
       catalogId: 'CAT-03',
@@ -60,7 +62,8 @@ const AppState = {
       spec: '1.5L 2NR-VE Special Edition',
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_Terios SE.jpeg',
-      heroPhoto: 'assets/images/hero-terios-se.jpg'
+      heroPhoto: 'assets/images/hero-terios-se.jpg',
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-04',
@@ -69,7 +72,8 @@ const AppState = {
       spec: '1.5L 2NR-VE D-CVT FWD',
       defaultLocation: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
-      heroPhoto: 'assets/images/hero-all-new-xenia.jpg'
+      heroPhoto: 'assets/images/hero-all-new-xenia.jpg',
+      baseStock: { inYard: 8, intransit: 2, allocated: 2 }
     },
     {
       catalogId: 'CAT-05',
@@ -78,7 +82,8 @@ const AppState = {
       spec: '1.2L 3NR-VE Dual VVT-i',
       defaultLocation: 'Yard B - Blok 2 (MPV)',
       photo: 'assets/images/Inventory_New Sigra.jpeg',
-      heroPhoto: 'assets/images/hero-new-sigra.jpg'
+      heroPhoto: 'assets/images/hero-new-sigra.jpg',
+      baseStock: { inYard: 11, intransit: 3, allocated: 2 }
     },
     {
       catalogId: 'CAT-06',
@@ -87,7 +92,8 @@ const AppState = {
       spec: '1.2L 3NR-VE MT/AT',
       defaultLocation: 'Yard B - Blok 3 (MPV)',
       photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
-      heroPhoto: 'assets/images/hero-sigra-old.jpg'
+      heroPhoto: 'assets/images/hero-sigra-old.jpg',
+      baseStock: { inYard: 6, intransit: 2, allocated: 1 }
     },
     {
       catalogId: 'CAT-07',
@@ -96,7 +102,8 @@ const AppState = {
       spec: '1.2L WA-VE D-CVT',
       defaultLocation: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
-      heroPhoto: 'assets/images/hero-all-new-ayla.jpg'
+      heroPhoto: 'assets/images/hero-all-new-ayla.jpg',
+      baseStock: { inYard: 10, intransit: 3, allocated: 1 }
     },
     {
       catalogId: 'CAT-08',
@@ -105,7 +112,8 @@ const AppState = {
       spec: '1.0L 1KR-VET Turbocharged',
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_New Rocky.jpeg',
-      heroPhoto: 'assets/images/hero-new-rocky.jpg'
+      heroPhoto: 'assets/images/hero-new-rocky.jpg',
+      baseStock: { inYard: 6, intransit: 1, allocated: 1 }
     },
     {
       catalogId: 'CAT-09',
@@ -114,7 +122,8 @@ const AppState = {
       spec: '1.2L WA-VE ADS Styling',
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_Rocky.jpeg',
-      heroPhoto: 'assets/images/hero-rocky.jpg'
+      heroPhoto: 'assets/images/hero-rocky.jpg',
+      baseStock: { inYard: 4, intransit: 1, allocated: 0 }
     },
     {
       catalogId: 'CAT-10',
@@ -123,7 +132,8 @@ const AppState = {
       spec: '1.3L 1NR-VE Dual VVT-i D-CVT',
       defaultLocation: 'Yard C - Blok 2 (City Car)',
       photo: 'assets/images/Inventory_New Sirion.jpeg',
-      heroPhoto: 'assets/images/hero-new-sirion.jpg'
+      heroPhoto: 'assets/images/hero-new-sirion.jpg',
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-11',
@@ -132,7 +142,8 @@ const AppState = {
       spec: '1.5L 3SZ-VE DOHC VVT-i',
       defaultLocation: 'Yard D - Blok 1 (Commercial)',
       photo: 'assets/images/Inventory_Luxio.jpeg',
-      heroPhoto: 'assets/images/hero-luxio.jpg'
+      heroPhoto: 'assets/images/hero-luxio.jpg',
+      baseStock: { inYard: 3, intransit: 1, allocated: 1 }
     },
     {
       catalogId: 'CAT-12',
@@ -141,7 +152,8 @@ const AppState = {
       spec: '1.5L 2NR-VE / 1.3L DOHC',
       defaultLocation: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
-      heroPhoto: 'assets/images/hero-granmax-minibus.jpg'
+      heroPhoto: 'assets/images/hero-granmax-minibus.jpg',
+      baseStock: { inYard: 7, intransit: 2, allocated: 1 }
     },
     {
       catalogId: 'CAT-13',
@@ -150,7 +162,8 @@ const AppState = {
       spec: '1.5L 2NR-VE Heavy Duty Deck',
       defaultLocation: 'Yard D - Blok 3 (Niaga)',
       photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
-      heroPhoto: 'assets/images/hero-granmax-pickup.jpg'
+      heroPhoto: 'assets/images/hero-granmax-pickup.jpg',
+      baseStock: { inYard: 14, intransit: 4, allocated: 3 }
     }
   ],
 
@@ -178,7 +191,7 @@ const AppState = {
     return this.vehicleCatalog[0];
   },
 
-  // Dataset Inventory Unit Fisik Kendaraan
+  // Dataset Inventory Unit Fisik Kendaraan (Unit sampel/terbaru per model)
   inventoryData: [
     {
       id: 'INV-001',
@@ -211,8 +224,8 @@ const AppState = {
       plate: 'BE 5678 TCD',
       vin: 'MHKDA3BA1RJ012345',
       engine: '3NRF2345678',
-      status: 'Intransit',
-      location: 'Rute Palembang → Lampung',
+      status: 'In-Yard',
+      location: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_New Terios.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
@@ -235,8 +248,8 @@ const AppState = {
       plate: 'BE 3456 FGH',
       vin: 'MHKAG5DA3KL078901',
       engine: '3NRH4567890',
-      status: 'Intransit',
-      location: 'Rute Jakarta → Lampung',
+      status: 'In-Yard',
+      location: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
@@ -247,8 +260,8 @@ const AppState = {
       plate: 'BE 7890 JKL',
       vin: 'MHKDA4BA1LM098765',
       engine: '3NRF5678901',
-      status: 'Allocated',
-      location: 'Alokasi DSO Lampung',
+      status: 'In-Yard',
+      location: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
@@ -274,6 +287,42 @@ const AppState = {
       status: 'In-Yard',
       location: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-009',
+      model: 'New Sigra (Prod Old)',
+      category: 'Reliable Value MPV',
+      plate: 'BE 4120 SGR',
+      vin: 'MHKBR5DA2HJ019283',
+      engine: '3NRVE661920',
+      status: 'In-Yard',
+      location: 'Yard B - Blok 3 (MPV)',
+      photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-010',
+      model: 'Rocky',
+      category: 'Sporty Compact SUV (ADS)',
+      plate: 'BE 8821 RKA',
+      vin: 'MHKP3FA1JXK011409',
+      engine: 'WAVE449102',
+      status: 'In-Yard',
+      location: 'Yard A - Blok 3 (SUV)',
+      photo: 'assets/images/Inventory_Rocky.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'INV-011',
+      model: 'Luxio',
+      category: 'Prestigious Business Van',
+      plate: 'BE 6090 LUX',
+      vin: 'MHKW2CA1JLK008812',
+      engine: '3SZVE330192',
+      status: 'In-Yard',
+      location: 'Yard D - Blok 1 (Commercial)',
+      photo: 'assets/images/Inventory_Luxio.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
@@ -381,12 +430,22 @@ const AppState = {
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
+      const defaultInv = [...this.inventoryData];
       const defaultHist = [...this.historyData];
       const cachedInv = localStorage.getItem(CONFIG.CACHE_KEYS.INVENTORY);
       const cachedHist = localStorage.getItem(CONFIG.CACHE_KEYS.HISTORY);
       const cachedKpi = localStorage.getItem(CONFIG.CACHE_KEYS.KPI);
 
-      if (cachedInv) this.inventoryData = JSON.parse(cachedInv);
+      if (cachedInv) {
+        const parsedInv = JSON.parse(cachedInv);
+        if (Array.isArray(parsedInv)) {
+          const existingInvIds = new Set(parsedInv.map(i => i.id));
+          defaultInv.forEach(di => {
+            if (!existingInvIds.has(di.id)) parsedInv.push(di);
+          });
+          this.inventoryData = parsedInv;
+        }
+      }
       if (cachedHist) {
         const parsedHist = JSON.parse(cachedHist);
         if (Array.isArray(parsedHist)) {

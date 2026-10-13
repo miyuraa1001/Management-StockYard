@@ -149,7 +149,18 @@ const UI = {
    */
   renderInventoryList() {
     const container = document.getElementById('inventoryContainer');
-    const searchVal = (document.getElementById('inventorySearchInput')?.value || '').toLowerCase().trim();
+    const searchInput = document.getElementById('inventorySearchInput');
+    const clearBtn = document.getElementById('inventorySearchClearBtn');
+    const searchVal = (searchInput?.value || '').toLowerCase().trim();
+
+    if (clearBtn) {
+      if (searchVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
+
     if (!container) return;
 
     const catalog = AppState.vehicleCatalog || [];
@@ -163,10 +174,16 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const inYardCount = units.filter(u => u.status === 'In-Yard').length;
-      const intransitCount = units.filter(u => u.status === 'Intransit').length;
-      const allocatedCount = units.filter(u => u.status === 'Allocated').length;
-      const totalUnits = units.length;
+      // Hitung unit tambahan hasil scan baru di luar sampel awal INV-001..INV-011
+      const extraUnits = units.filter(u => !/^INV-0(0[1-9]|1[01])$/.test(String(u.id)));
+      const baseInYard = cat.baseStock ? cat.baseStock.inYard : units.filter(u => u.status === 'In-Yard').length;
+      const baseIntransit = cat.baseStock ? cat.baseStock.intransit : units.filter(u => u.status === 'Intransit').length;
+      const baseAllocated = cat.baseStock ? cat.baseStock.allocated : units.filter(u => u.status === 'Allocated').length;
+
+      const inYardCount = baseInYard + extraUnits.filter(u => u.status === 'In-Yard').length;
+      const intransitCount = baseIntransit + extraUnits.filter(u => u.status === 'Intransit').length;
+      const allocatedCount = baseAllocated + extraUnits.filter(u => u.status === 'Allocated').length;
+      const totalUnits = inYardCount + intransitCount + allocatedCount;
 
       let primaryStatus = 'Kosong';
       if (inYardCount > 0) primaryStatus = 'In-Yard';
@@ -185,6 +202,34 @@ const UI = {
       };
     });
 
+    // Update KPI Ringkasan Inventory & Badge Counter pada Filter Chips
+    const sumTotal = catalogWithStock.reduce((acc, item) => acc + item.totalUnits, 0);
+    const sumInYard = catalogWithStock.reduce((acc, item) => acc + item.inYardCount, 0);
+    const sumIntransit = catalogWithStock.reduce((acc, item) => acc + item.intransitCount, 0);
+    const sumAllocated = catalogWithStock.reduce((acc, item) => acc + item.allocatedCount, 0);
+
+    const elTotal = document.getElementById('invKpiTotalUnits');
+    const elInYard = document.getElementById('invKpiInYard');
+    const elIntransit = document.getElementById('invKpiIntransit');
+    const elAllocated = document.getElementById('invKpiAllocated');
+
+    if (elTotal) elTotal.textContent = sumTotal;
+    if (elInYard) elInYard.textContent = sumInYard;
+    if (elIntransit) elIntransit.textContent = sumIntransit;
+    if (elAllocated) elAllocated.textContent = sumAllocated;
+
+    const chipCounts = {
+      'all': catalogWithStock.length,
+      'In-Yard': catalogWithStock.filter(e => e.inYardCount > 0).length,
+      'Intransit': catalogWithStock.filter(e => e.intransitCount > 0).length,
+      'Allocated': catalogWithStock.filter(e => e.allocatedCount > 0).length,
+      'Kosong': catalogWithStock.filter(e => e.totalUnits === 0).length
+    };
+    Object.keys(chipCounts).forEach(key => {
+      const badge = document.getElementById(`chipCount-${key}`);
+      if (badge) badge.textContent = chipCounts[key];
+    });
+
     // Filter berdasarkan chip status & pencarian kata kunci
     const filtered = catalogWithStock.filter(entry => {
       let matchesStatus = true;
@@ -199,7 +244,8 @@ const UI = {
         entry.model.toLowerCase().includes(searchVal) ||
         entry.category.toLowerCase().includes(searchVal) ||
         entry.spec.toLowerCase().includes(searchVal) ||
-        entry.defaultLocation.toLowerCase().includes(searchVal);
+        entry.defaultLocation.toLowerCase().includes(searchVal) ||
+        entry.catalogId.toLowerCase().includes(searchVal);
 
       const matchesUnit = entry.units.some(u =>
         (u.vin && u.vin.toLowerCase().includes(searchVal)) ||
@@ -212,9 +258,15 @@ const UI = {
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm">
-          <p class="text-xs font-bold text-slate-600">Tidak ada model atau unit yang cocok</p>
-          <p class="text-[10px] text-slate-400 mt-1">Coba kata kunci lain atau pilih filter "Semua (13 Model)".</p>
+        <div class="col-span-full bg-white/95 rounded-[26px] p-8 sm:p-10 text-center border border-white shadow-saas-card">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <p class="text-sm font-extrabold text-slate-700">Tidak ada model atau unit yang cocok</p>
+          <p class="text-xs text-slate-400 mt-1">Coba kata kunci lain atau tekan tombol di bawah untuk menampilkan seluruh 13 model.</p>
+          <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer">
+            Tampilkan Semua Model (13)
+          </button>
         </div>
       `;
       return;
@@ -223,19 +275,23 @@ const UI = {
     container.innerHTML = filtered.map((entry, idx) => {
       const isEmpty = entry.totalUnits === 0;
 
-      let statusBadgeClass = 'bg-slate-100 text-slate-500 border-slate-200';
-      let statusLabel = 'Stok Kosong (0 Unit)';
+      let statusBadgeClass = 'bg-slate-100/95 text-slate-500 border-slate-200/90';
+      let statusDotClass = 'bg-slate-400';
+      let statusLabel = 'Stok Kosong (0)';
 
       if (!isEmpty) {
         if (entry.primaryStatus === 'In-Yard') {
-          statusBadgeClass = 'bg-emerald-50 text-emerald-600 border-emerald-200';
-          statusLabel = `Tersedia • ${entry.totalUnits} Unit`;
+          statusBadgeClass = 'bg-emerald-50/95 text-emerald-700 border-emerald-200/90';
+          statusDotClass = 'bg-emerald-500';
+          statusLabel = `Total ${entry.totalUnits} Unit`;
         } else if (entry.primaryStatus === 'Intransit') {
-          statusBadgeClass = 'bg-amber-50 text-amber-600 border-amber-200';
-          statusLabel = `Intransit • ${entry.totalUnits} Unit`;
+          statusBadgeClass = 'bg-amber-50/95 text-amber-700 border-amber-200/90';
+          statusDotClass = 'bg-amber-500';
+          statusLabel = `Total ${entry.totalUnits} Unit`;
         } else {
-          statusBadgeClass = 'bg-blue-50 text-blue-600 border-blue-200';
-          statusLabel = `Allocated • ${entry.totalUnits} Unit`;
+          statusBadgeClass = 'bg-blue-50/95 text-blue-700 border-blue-200/90';
+          statusDotClass = 'bg-blue-500';
+          statusLabel = `Total ${entry.totalUnits} Unit`;
         }
       }
 
@@ -243,79 +299,105 @@ const UI = {
       const delayMs = Math.min((idx % 6) * 45, 200);
 
       return `
-        <div class="scroll-reveal bg-white/95 rounded-3xl p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between" style="--reveal-delay: ${delayMs}ms;">
+        <div class="scroll-reveal bg-white/95 hover:bg-white rounded-[26px] p-3.5 sm:p-4 md:p-5 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
           <div>
-            <!-- Top Studio Catalog Image Showcase -->
-            <div class="relative w-full h-36 sm:h-40 rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-2 overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
+            <!-- Top Showroom Studio Image Stage -->
+            <div class="relative w-full h-40 sm:h-44 md:h-48 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
+              <!-- Subtle Studio Floor Shadow -->
+              <div class="absolute inset-x-10 bottom-2.5 h-3 rounded-full bg-slate-900/[0.04] blur-xs pointer-events-none"></div>
+
               <!-- Jenis Kendaraan Badge (Top-Left) -->
-              <span class="absolute top-2 left-2 z-10 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-slate-900/85 text-white backdrop-blur-sm shadow-xs">
+              <span class="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold bg-slate-900/80 text-white backdrop-blur-md shadow-xs tracking-wide">
                 ${entry.category}
               </span>
 
               <!-- Status Stok Badge (Top-Right) -->
-              <span class="absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-[9px] font-black border ${statusBadgeClass}">
-                ${statusLabel}
+              <span class="absolute top-2.5 right-2.5 z-10 inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border backdrop-blur-sm shadow-2xs ${statusBadgeClass}">
+                <span class="w-1.5 h-1.5 rounded-full ${statusDotClass}"></span>
+                <span>${statusLabel}</span>
               </span>
 
-              <!-- Official Studio Car Image -->
-              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-contain transform group-hover/img:scale-105 transition-transform duration-300 select-none">
+              <!-- Official Studio Car Image (Cropped vertically to trim top empty square margin & blend white studio background) -->
+              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.08] transition-transform duration-500 select-none">
+
+              <!-- Bottom-Right Zoom Hint Pill -->
+              <span class="absolute bottom-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 group-hover/img:bg-slate-900 text-slate-500 group-hover/img:text-white border border-slate-200/80 shadow-xs flex items-center justify-center transition" title="Perbesar Foto Katalog">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+              </span>
             </div>
 
-            <!-- Model Title & Jenis/Spesifikasi -->
-            <div class="mt-3">
+            <!-- Model Title, Catalog ID & Technical Spec -->
+            <div class="mt-3.5">
               <div class="flex items-center justify-between gap-2">
-                <h4 class="text-sm font-black text-slate-900 truncate">${entry.model}</h4>
-                <span class="text-[9.5px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 flex-shrink-0">${entry.catalogId}</span>
+                <h4 class="text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
+                <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
               </div>
-              <p class="text-[10.5px] text-slate-500 font-semibold mt-0.5 truncate">
-                Jenis: <span class="text-slate-700 font-bold">${entry.category}</span> • ${entry.spec}
-              </p>
+              <div class="flex items-center justify-between gap-2 mt-1 text-[11px] text-slate-500 font-semibold">
+                <span class="truncate flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <span class="truncate">${entry.spec}</span>
+                </span>
+                <span class="text-[10px] font-bold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md truncate max-w-[46%] flex-shrink-0">
+                  ${entry.defaultLocation.split('(')[0].trim()}
+                </span>
+              </div>
             </div>
 
-            <!-- Rincian Status Stok Per Model -->
-            <div class="grid grid-cols-3 gap-1.5 mt-2.5 pt-2.5 border-t border-slate-100 text-center">
-              <div class="rounded-xl py-1 px-1.5 ${entry.inYardCount > 0 ? 'bg-emerald-50/80 border border-emerald-200/70' : 'bg-slate-50 border border-slate-100'}">
-                <span class="text-[8.5px] font-bold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} block uppercase">In-Yard</span>
-                <span class="text-xs font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'}">${entry.inYardCount} Unit</span>
+            <!-- Rincian Status Stok Per Model (3 Kolom Presisi) -->
+            <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-slate-100 text-center">
+              <div class="rounded-xl py-1.5 px-2 ${entry.inYardCount > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[9px] font-extrabold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.inYardCount > 0 ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                  <span>In-Yard</span>
+                </span>
+                <span class="text-xs sm:text-sm font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'} block mt-0.5">${entry.inYardCount} <span class="text-[10px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1 px-1.5 ${entry.intransitCount > 0 ? 'bg-amber-50/80 border border-amber-200/70' : 'bg-slate-50 border border-slate-100'}">
-                <span class="text-[8.5px] font-bold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} block uppercase">Intransit</span>
-                <span class="text-xs font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'}">${entry.intransitCount} Unit</span>
+              <div class="rounded-xl py-1.5 px-2 ${entry.intransitCount > 0 ? 'bg-amber-50/75 border border-amber-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[9px] font-extrabold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.intransitCount > 0 ? 'bg-amber-500' : 'bg-slate-300'}"></span>
+                  <span>Intransit</span>
+                </span>
+                <span class="text-xs sm:text-sm font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'} block mt-0.5">${entry.intransitCount} <span class="text-[10px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1 px-1.5 ${entry.allocatedCount > 0 ? 'bg-blue-50/80 border border-blue-200/70' : 'bg-slate-50 border border-slate-100'}">
-                <span class="text-[8.5px] font-bold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} block uppercase">Allocated</span>
-                <span class="text-xs font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'}">${entry.allocatedCount} Unit</span>
+              <div class="rounded-xl py-1.5 px-2 ${entry.allocatedCount > 0 ? 'bg-blue-50/75 border border-blue-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[9px] font-extrabold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.allocatedCount > 0 ? 'bg-blue-500' : 'bg-slate-300'}"></span>
+                  <span>Allocated</span>
+                </span>
+                <span class="text-xs sm:text-sm font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'} block mt-0.5">${entry.allocatedCount} <span class="text-[10px] font-bold">Unit</span></span>
               </div>
             </div>
           </div>
 
-          <!-- Detail Unit Aktif atau Status Katalog Stok Kosong -->
-          <div class="mt-2.5 pt-2.5 border-t border-slate-100">
+          <!-- Detail Unit Aktif atau Status Katalog Stok Kosong (Equal Height Footer) -->
+          <div class="mt-3 pt-3 border-t border-slate-100">
             ${!isEmpty && u ? `
-              <div class="bg-slate-50/90 rounded-2xl p-2.5 border border-slate-100 space-y-1">
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-bold px-1.5 py-0.5 rounded bg-white text-slate-800 border border-slate-200/80 shadow-2xs">${u.plate || '-'}</span>
-                  <span class="font-mono font-bold text-slate-600 truncate ml-2">VIN: ${u.vin}</span>
+              <div class="bg-slate-50/90 rounded-2xl p-2.5 sm:p-3 border border-slate-200/60 space-y-2">
+                <div class="flex items-center justify-between gap-2 text-[10.5px]">
+                  <span class="font-extrabold px-2 py-0.5 rounded-md bg-white text-slate-800 border border-slate-200/90 shadow-2xs flex-shrink-0">${u.plate || '-'}</span>
+                  <span class="font-mono font-bold text-slate-600 truncate">VIN: ${u.vin}</span>
                 </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
-                  <span class="font-mono text-slate-400 truncate">ENG: ${u.engine}</span>
-                  <span class="font-semibold text-slate-600 flex items-center truncate ml-2">
-                    <svg class="w-3 h-3 text-blue-500 mr-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                    ${u.location || entry.defaultLocation}
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/50">
+                  <span class="text-[10px] font-semibold text-slate-500 flex items-center truncate min-w-0">
+                    <svg class="w-3.5 h-3.5 text-blue-500 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                    <span class="truncate">${u.location || entry.defaultLocation}</span>
                   </span>
+                  <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200/90 hover:border-blue-600 text-[10px] font-extrabold whitespace-nowrap shadow-2xs transition active:scale-95 flex-shrink-0 cursor-pointer">
+                    + Scan Mutasi
+                  </button>
                 </div>
               </div>
             ` : `
-              <div class="bg-slate-50/70 rounded-2xl p-2.5 border border-dashed border-slate-200 flex items-center justify-between gap-2">
+              <div class="bg-slate-50/75 rounded-2xl p-2.5 sm:p-3 border border-dashed border-slate-200 flex items-center justify-between gap-2.5">
                 <div class="min-w-0">
-                  <span class="text-[10px] font-bold text-slate-500 block truncate">Stok unit fisik saat ini kosong (0)</span>
-                  <span class="text-[9.5px] text-slate-400 flex items-center truncate mt-0.5">
-                    <svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                    ${entry.defaultLocation}
+                  <span class="text-[10.5px] font-extrabold text-slate-600 block truncate">Stok unit fisik kosong (0 Unit)</span>
+                  <span class="text-[10px] text-slate-400 font-medium flex items-center truncate mt-1">
+                    <svg class="w-3.5 h-3.5 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                    <span class="truncate">${entry.defaultLocation}</span>
                   </span>
                 </div>
-                <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 text-[10px] font-extrabold whitespace-nowrap transition active:scale-95 flex-shrink-0">
-                  + Scan Unit
+                <button type="button" onclick="openScannerForModel('${entry.model}')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-extrabold whitespace-nowrap shadow-xs transition active:scale-95 flex-shrink-0 cursor-pointer">
+                  + Scan Masuk
                 </button>
               </div>
             `}
@@ -333,16 +415,25 @@ const UI = {
     this.renderInventoryList();
   },
 
+  clearInventorySearch() {
+    const input = document.getElementById('inventorySearchInput');
+    if (input) input.value = '';
+    this.renderInventoryList();
+  },
+
   filterInventoryByStatus(status) {
     AppState.inventoryFilter = status;
     const chips = ['all', 'In-Yard', 'Intransit', 'Allocated', 'Kosong'];
     chips.forEach(c => {
       const chipEl = document.getElementById(`chip-${c}`);
+      const countEl = document.getElementById(`chipCount-${c}`);
       if (chipEl) {
         if (c === status) {
-          chipEl.className = 'inv-chip active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-sm';
+          chipEl.className = 'inv-chip active px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer';
+          if (countEl) countEl.className = 'px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-white/20 text-white';
         } else {
-          chipEl.className = 'inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap';
+          chipEl.className = 'inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer';
+          if (countEl) countEl.className = 'px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600';
         }
       }
     });
@@ -1350,6 +1441,7 @@ const UI = {
 window.UI = UI;
 window.switchTab = (tab) => UI.switchTab(tab);
 window.filterInventory = () => UI.filterInventory();
+window.clearInventorySearch = () => UI.clearInventorySearch();
 window.filterInventoryByStatus = (status) => UI.filterInventoryByStatus(status);
 window.filterHistoryTab = (tabKey) => UI.filterHistoryTab(tabKey);
 window.applyHistoryDateFilter = () => UI.applyHistoryDateFilter();

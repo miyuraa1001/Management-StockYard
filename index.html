@@ -1024,42 +1024,148 @@
       <!-- ======================================================== -->
       <!-- SECTION 2: INVENTORY & KATALOG 13 MODEL (STOK UNIT) -->
       <!-- ======================================================== -->
-      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-4 md:space-y-5">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <div class="flex items-center space-x-2">
-              <h2 class="text-base md:text-xl font-extrabold text-slate-900">Katalog & Inventory Kendaraan</h2>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-200/80">13 Model Resmi</span>
+      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-5">
+        
+        <!-- Top Page Header & Action Bar -->
+        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 md:px-6 md:py-5 border border-white shadow-saas-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 scroll-reveal is-visible">
+          <div class="flex items-start sm:items-center space-x-3 sm:space-x-3.5 min-w-0">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-50/90 border border-blue-100/90 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
             </div>
-            <p class="text-xs text-slate-400 mt-0.5">Katalog seluruh jenis mobil Daihatsu beserta foto & status stok unit di yard.</p>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-tight">Katalog & Inventory Kendaraan</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">13 Model Resmi</span>
+              </div>
+              <p class="text-[11px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-snug">Monitoring stok unit fisik, lokasi blok yard, & spesifikasi 13 lini kendaraan Daihatsu.</p>
+            </div>
           </div>
-          <!-- Desktop Add Button -->
-          <button onclick="openScannerModal()" class="hidden md:inline-flex items-center px-4 py-2 rounded-2xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm space-x-1.5 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span>Scan Unit Masuk/Keluar</span>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 self-stretch sm:self-auto flex-shrink-0">
+            <button type="button" onclick="openScannerModal()" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 space-x-2 transition active:scale-95 cursor-pointer">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <span>Scan Unit Masuk / Keluar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive 4-Column Inventory KPI Summary Strip -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4 scroll-reveal is-visible">
+          <!-- Summary 1: Total Unit Katalog -->
+          <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-slate-300/80 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">Total Stok Katalog</span>
+              <div class="flex items-baseline space-x-1.5 mt-1">
+                <span id="invKpiTotalUnits" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">120</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-500">Unit</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">11 Model Aktif • 2 Indent</span>
+            </div>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 group-hover:bg-slate-900 group-hover:text-white text-slate-700 flex items-center justify-center transition flex-shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+          </button>
+
+          <!-- Summary 2: Tersedia In-Yard -->
+          <button type="button" onclick="filterInventoryByStatus('In-Yard')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-emerald-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1 truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                <span>Tersedia (In-Yard)</span>
+              </span>
+              <div class="flex items-baseline space-x-1.5 mt-1">
+                <span id="invKpiInYard" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">83</span>
+                <span class="text-[10px] sm:text-xs font-bold text-emerald-600">Unit</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Parkir di Pool Yard A–D</span>
+            </div>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white text-emerald-600 border border-emerald-100 flex items-center justify-center transition flex-shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </button>
+
+          <!-- Summary 3: Intransit -->
+          <button type="button" onclick="filterInventoryByStatus('Intransit')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-amber-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1 truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+                <span>Dalam Perjalanan</span>
+              </span>
+              <div class="flex items-baseline space-x-1.5 mt-1">
+                <span id="invKpiIntransit" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">22</span>
+                <span class="text-[10px] sm:text-xs font-bold text-amber-600">Unit</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Pengiriman Menuju Lampung</span>
+            </div>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 group-hover:bg-amber-500 group-hover:text-white text-amber-600 border border-amber-100 flex items-center justify-center transition flex-shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+            </div>
+          </button>
+
+          <!-- Summary 4: Allocated -->
+          <button type="button" onclick="filterInventoryByStatus('Allocated')" class="text-left bg-white/95 hover:bg-white rounded-[22px] p-3.5 sm:p-4 border border-white hover:border-blue-200 shadow-saas-card transition group cursor-pointer flex items-center justify-between gap-2.5">
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1 truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                <span>Unit Allocated</span>
+              </span>
+              <div class="flex items-baseline space-x-1.5 mt-1">
+                <span id="invKpiAllocated" class="text-lg sm:text-2xl font-black text-slate-900 leading-none">15</span>
+                <span class="text-[10px] sm:text-xs font-bold text-blue-600">Unit</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate">Siap BASTK & Kirim Cabang</span>
+            </div>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 group-hover:bg-blue-600 group-hover:text-white text-blue-600 border border-blue-100 flex items-center justify-center transition flex-shrink-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
           </button>
         </div>
 
-        <!-- Filter Controls (Search Bar + Status Chips) -->
-        <div class="flex flex-col md:flex-row md:items-center gap-3 bg-white/95 p-3 md:p-4 rounded-3xl border border-white shadow-saas-card scroll-reveal">
-          <!-- Search Bar -->
-          <div class="relative flex-1">
-            <input type="text" id="inventorySearchInput" oninput="filterInventory()" placeholder="Cari Model / Jenis SUV, MPV, Niaga / VIN / Plat..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-xs font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <!-- Filter Controls Toolbar (Search Bar + Segmented Status Filter Chips) -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white/95 p-3 sm:p-3.5 md:p-4 rounded-[24px] border border-white shadow-saas-card scroll-reveal is-visible">
+          <!-- Search Bar with Clear Button -->
+          <div class="relative flex-1 min-w-0">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="inventorySearchInput" oninput="filterInventory()" placeholder="Cari nama model, tipe SUV/MPV/Niaga, lokasi yard, plat, atau nomor rangka (VIN)..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2.5 pl-10 pr-20 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+            <button type="button" id="inventorySearchClearBtn" onclick="clearInventorySearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
+              Reset ×
+            </button>
           </div>
 
-          <!-- Filter Chips -->
-          <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-0.5">
-            <button onclick="document.getElementById('inventorySearchInput').value=''; filterInventoryByStatus('all')" id="chip-all" class="inv-chip active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-sm">Semua (13 Model)</button>
-            <button onclick="filterInventoryByStatus('In-Yard')" id="chip-In-Yard" class="inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">In-Yard</button>
-            <button onclick="filterInventoryByStatus('Intransit')" id="chip-Intransit" class="inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Intransit</button>
-            <button onclick="filterInventoryByStatus('Allocated')" id="chip-Allocated" class="inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Allocated</button>
-            <button onclick="filterInventoryByStatus('Kosong')" id="chip-Kosong" class="inv-chip px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Stok Kosong</button>
+          <!-- Filter Chips Track -->
+          <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto hide-scrollbar py-0.5 flex-shrink-0">
+            <button type="button" onclick="clearInventorySearch(); filterInventoryByStatus('all')" id="chip-all" class="inv-chip active px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs flex items-center space-x-1.5 transition cursor-pointer">
+              <span>Semua</span>
+              <span id="chipCount-all" class="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-white/20 text-white">13</span>
+            </button>
+            <button type="button" onclick="filterInventoryByStatus('In-Yard')" id="chip-In-Yard" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>In-Yard</span>
+              <span id="chipCount-In-Yard" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
+            </button>
+            <button type="button" onclick="filterInventoryByStatus('Intransit')" id="chip-Intransit" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span>Intransit</span>
+              <span id="chipCount-Intransit" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">11</span>
+            </button>
+            <button type="button" onclick="filterInventoryByStatus('Allocated')" id="chip-Allocated" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              <span>Allocated</span>
+              <span id="chipCount-Allocated" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">10</span>
+            </button>
+            <button type="button" onclick="filterInventoryByStatus('Kosong')" id="chip-Kosong" class="inv-chip px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 whitespace-nowrap flex items-center space-x-1.5 transition cursor-pointer">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              <span>Stok Kosong</span>
+              <span id="chipCount-Kosong" class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">2</span>
+            </button>
           </div>
         </div>
 
         <!-- Inventory Responsive Grid Container -->
-        <div id="inventoryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4">
+        <div id="inventoryContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 md:gap-5 items-stretch">
           <!-- Rendered by UI.js -->
         </div>
       </section>
