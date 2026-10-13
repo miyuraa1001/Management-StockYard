@@ -38,100 +38,102 @@
   </script>
 
   <!-- Modular Stylesheet -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261013-4">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261013-5">
 </head>
-<body class="min-h-screen bg-[#F1F5F9] md:bg-slate-100 text-slate-800 flex flex-col antialiased">
+<body class="h-[100dvh] text-slate-800 flex flex-col antialiased overflow-hidden">
 
-  <!-- App Container (Fluid on Mobile, Modern Wide Enterprise SaaS on Desktop) -->
-  <div class="w-full max-w-[1560px] mx-auto min-h-[100dvh] h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F4F7FB] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
+  <!-- App Container (Full-Bleed Ambient Mesh Workspace with Single Clean Scrollbar) -->
+  <div class="w-full h-[100dvh] relative overflow-hidden flex flex-col">
     
-    <!-- Top Header Bar (Dual Mode: Floating Glass Mobile Header & Desktop Enterprise Navbar) -->
-    <header class="px-3.5 sm:px-6 md:px-8 py-2 sm:py-3 bg-white/80 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/90 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex-shrink-0 pt-safe">
-      <!-- Left: Logo, Divider & Branch Info -->
-      <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
-        <!-- Logo Resmi Daihatsu -->
-        <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-5 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0 select-none">
+    <!-- Top Header Bar (Sticky Glass Mobile Header & Floating Glassmorphism Desktop Capsule) -->
+    <header class="w-full md:pt-3 md:px-6 lg:px-8 sticky top-0 z-30 flex-shrink-0 pt-safe">
+      <div class="max-w-[1440px] mx-auto w-full px-3.5 sm:px-5 md:px-6 py-2 sm:py-2.5 bg-white/85 md:bg-white/75 backdrop-blur-xl md:rounded-[22px] border-b md:border border-white/95 shadow-[0_10px_30px_-6px_rgba(15,23,42,0.08)] flex items-center justify-between gap-2 md:gap-4">
+        <!-- Left: Logo, Divider & Branch Info -->
+        <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-shrink-0">
+          <!-- Logo Resmi Daihatsu -->
+          <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-5 sm:h-6 md:h-7 w-auto object-contain flex-shrink-0 select-none">
+          
+          <!-- Vertical Divider -->
+          <div class="h-6 sm:h-7 w-px bg-slate-200/90 flex-shrink-0"></div>
+
+          <div class="min-w-0">
+            <div class="flex items-center space-x-1.5">
+              <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none">DSO</span>
+            </div>
+            <p class="text-[9.5px] sm:text-[11px] text-slate-500 font-semibold whitespace-nowrap leading-none mt-1">
+              Management Sentra Lampung
+            </p>
+          </div>
+        </div>
+
+        <!-- Center (Desktop Navigation Menu - Floating Pill Capsule) -->
+        <nav class="hidden md:flex items-center space-x-1 bg-slate-100/85 p-1 rounded-2xl border border-slate-200/70 flex-shrink-0">
+          <button onclick="switchTab('dashboard')" id="desk-nav-dashboard" class="desk-nav-btn active px-3 lg:px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="switchTab('inventory')" id="desk-nav-inventory" class="desk-nav-btn px-3 lg:px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <span>Inventory</span>
+          </button>
+          <button onclick="switchTab('history')" id="desk-nav-history" class="desk-nav-btn px-3 lg:px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Riwayat Audit</span>
+          </button>
+          <button onclick="switchTab('settings')" id="desk-nav-settings" class="desk-nav-btn px-3 lg:px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Pengaturan</span>
+          </button>
+        </nav>
         
-        <!-- Vertical Divider -->
-        <div class="h-6 sm:h-7 w-px bg-slate-200 flex-shrink-0"></div>
+        <!-- Right: Desktop Quick Action, Live Badge & Operator Profile -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+          <!-- Desktop Quick Scan Button -->
+          <button onclick="openScannerModal()" class="hidden md:inline-flex items-center px-3 lg:px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 active:scale-95 transition space-x-1.5 whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+            <span>Scan Unit</span>
+          </button>
 
-        <div class="min-w-0">
-          <div class="flex items-center space-x-1.5">
-            <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none">DSO</span>
+          <!-- Live Tracking Badge -->
+          <div class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1 flex-shrink-0"></span>
+            <span class="hidden lg:inline">Live Tracking</span>
+            <span class="lg:hidden">Live</span>
           </div>
-          <p class="text-[9.5px] sm:text-[11px] text-slate-500 font-semibold whitespace-nowrap leading-none mt-1">
-            Management Sentra Lampung
-          </p>
+
+          <!-- Profile Avatar & Dropdown Chevron -->
+          <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1 py-0.5 md:pr-2.5 bg-slate-50/90 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95 cursor-pointer" aria-label="Pengaturan Profil">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            <div class="hidden xl:block text-left ml-2 mr-1">
+              <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
+              <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
+            </div>
+            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </button>
         </div>
-      </div>
-
-      <!-- Center (Desktop Navigation Menu - Stable Width, Zero Shift) -->
-      <nav class="hidden md:flex items-center space-x-1.5 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60">
-        <button onclick="switchTab('dashboard')" id="desk-nav-dashboard" class="desk-nav-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition flex items-center space-x-1.5">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-          <span>Dashboard</span>
-        </button>
-        <button onclick="switchTab('inventory')" id="desk-nav-inventory" class="desk-nav-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <span>Inventory</span>
-        </button>
-        <button onclick="switchTab('history')" id="desk-nav-history" class="desk-nav-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span>Riwayat Audit</span>
-        </button>
-        <button onclick="switchTab('settings')" id="desk-nav-settings" class="desk-nav-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span>Pengaturan</span>
-        </button>
-      </nav>
-      
-      <!-- Right: Desktop Quick Action, Live Badge & Operator Profile -->
-      <div class="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
-        <!-- Desktop Quick Scan Button -->
-        <button onclick="openScannerModal()" class="hidden md:inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 active:scale-95 transition space-x-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-          <span>Scan Unit</span>
-        </button>
-
-        <!-- Live Tracking Badge -->
-        <div class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1 flex-shrink-0"></span>
-          <span class="hidden sm:inline">Live Tracking</span>
-          <span class="sm:hidden">Live</span>
-        </div>
-
-        <!-- Profile Avatar & Dropdown Chevron -->
-        <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1 py-0.5 md:pr-2.5 bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
-          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
-          </div>
-          <div class="hidden md:block text-left ml-2 mr-1">
-            <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
-            <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
-          </div>
-          <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-        </button>
       </div>
     </header>
 
     <!-- Main Scrollable Area -->
-    <main id="appMainViewport" class="flex-1 min-h-0 overflow-y-scroll max-md:hide-scrollbar custom-scrollbar smooth-scroll pb-28 md:pb-12 pt-3 px-3.5 sm:px-5 md:px-8">
+    <main id="appMainViewport" class="flex-1 min-h-0 overflow-y-auto max-md:hide-scrollbar custom-scrollbar smooth-scroll pb-28 md:pb-12 pt-3 md:pt-4 px-3.5 sm:px-5 md:px-6 lg:px-8">
       
       <!-- ======================================================== -->
       <!-- SECTION 1: DASHBOARD (BERANDA) -->
       <!-- ======================================================== -->
-      <section id="viewDashboard" class="space-y-4 md:space-y-5">
+      <section id="viewDashboard" class="max-w-[1440px] mx-auto w-full space-y-4 md:space-y-5">
         
         <!-- ======================================================== -->
-        <!-- HERO KPI LANDSCAPE CAROUSEL (Clean Unobstructed Reference Layout) -->
+        <!-- HERO KPI LANDSCAPE CAROUSEL (Widescreen Proportion so KPIs are Visible Above the Fold) -->
         <!-- ======================================================== -->
         <div class="relative group select-none w-full scroll-reveal is-visible">
           <!-- Main Carousel Card Wrapper -->
-          <div class="relative w-full rounded-[24px] sm:rounded-[28px] md:rounded-[34px] overflow-hidden bg-slate-900 shadow-[0_18px_38px_-8px_rgba(15,23,42,0.22)] ring-1 ring-white/80">
+          <div class="relative w-full rounded-[24px] sm:rounded-[28px] md:rounded-[30px] overflow-hidden bg-slate-900 shadow-[0_18px_38px_-8px_rgba(15,23,42,0.22)] ring-1 ring-white/80">
             
             <!-- Horizontal GPU-Accelerated Slides Track -->
-            <div id="heroCarouselTrack" class="flex w-full h-[200px] sm:h-[245px] md:h-[430px] lg:h-[460px]">
+            <div id="heroCarouselTrack" class="flex w-full h-[200px] sm:h-[235px] md:h-[285px] lg:h-[315px]">
               
               <!-- ------------------------------------------------------------------ -->
               <!-- Slide 1: Rocky e-Smart Hybrid -->
@@ -1022,7 +1024,7 @@
       <!-- ======================================================== -->
       <!-- SECTION 2: INVENTORY & KATALOG 13 MODEL (STOK UNIT) -->
       <!-- ======================================================== -->
-      <section id="viewInventory" class="hidden space-y-4 md:space-y-5">
+      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-4 md:space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <div class="flex items-center space-x-2">
@@ -1065,7 +1067,7 @@
       <!-- ======================================================== -->
       <!-- SECTION 3: HISTORY (RIWAYAT AUDIT) -->
       <!-- ======================================================== -->
-      <section id="viewHistory" class="hidden space-y-4 md:space-y-5">
+      <section id="viewHistory" class="hidden max-w-[1440px] mx-auto w-full space-y-4 md:space-y-5">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-base md:text-xl font-extrabold text-slate-900">Riwayat Audit & Serah Terima</h2>
@@ -1139,7 +1141,7 @@
       <!-- ======================================================== -->
       <!-- SECTION 4: SETTINGS (PENGATURAN) -->
       <!-- ======================================================== -->
-      <section id="viewSettings" class="hidden space-y-4 md:space-y-6">
+      <section id="viewSettings" class="hidden max-w-[1440px] mx-auto w-full space-y-4 md:space-y-6">
         <div>
           <h2 class="text-base md:text-xl font-extrabold text-slate-900">Pengaturan Sistem</h2>
           <p class="text-xs text-slate-400 mt-0.5">Kelola profil operator, preferensi pemindai, & integrasi otomatisasi.</p>

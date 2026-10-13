@@ -12,25 +12,28 @@
 }
 
 html {
-  scrollbar-gutter: stable;
-  background-color: #F1F5F9;
+  background-color: #EEF2F8;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background-color: #F1F5F9;
+  background-color: #EEF2F8;
+  background-image:
+    radial-gradient(at 8% 12%, rgba(37, 99, 235, 0.09) 0px, transparent 48%),
+    radial-gradient(at 92% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 55%, rgba(14, 165, 233, 0.06) 0px, transparent 55%),
+    radial-gradient(at 85% 90%, rgba(16, 185, 129, 0.07) 0px, transparent 48%),
+    radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+  background-attachment: fixed;
   font-family: 'Plus Jakarta Sans', sans-serif;
   margin: 0;
   padding: 0;
   user-select: none;
-  min-height: 100vh;
-  min-height: 100dvh;
-  scrollbar-gutter: stable;
-}
-
-@media (min-width: 768px) {
-  body {
-    background-color: #EEF2F6;
-  }
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* --------------------------------------------------------------------------
