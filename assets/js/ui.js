@@ -441,7 +441,7 @@ const UI = {
   },
 
   /**
-   * Render riwayat audit serah terima unit
+   * Render riwayat audit serah terima unit dalam format Tabel Enterprise
    */
   renderHistoryList() {
     const container = document.getElementById('historyListContainer');
@@ -450,91 +450,183 @@ const UI = {
     const fDate = document.getElementById('histFilterDate')?.value || 'all';
     const fMonth = document.getElementById('histFilterMonth')?.value || 'all';
     const fYear = document.getElementById('histFilterYear')?.value || 'all';
+    const searchInput = document.getElementById('historySearchInput');
+    const clearBtn = document.getElementById('historySearchClearBtn');
+    const searchVal = (searchInput?.value || '').toLowerCase().trim();
 
-    let filtered = AppState.historyData.filter(item => {
-      let tabMatch = true;
-      if (AppState.historyTabFilter === 'in') tabMatch = item.type === 'Unit Masuk';
-      if (AppState.historyTabFilter === 'out') tabMatch = item.type === 'Unit Keluar';
+    if (clearBtn) {
+      if (searchVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
 
-      let dateMatch = fDate === 'all' || item.date.toString() === fDate;
-      let monthMatch = fMonth === 'all' || item.month.toString() === fMonth;
-      let yearMatch = fYear === 'all' || item.year.toString() === fYear;
+    // Filter tahap 1: Berdasarkan Periode Waktu & Kata Kunci Pencarian (untuk menghitung counter tab)
+    const baseFiltered = (AppState.historyData || []).filter(item => {
+      const dateMatch = fDate === 'all' || item.date.toString() === fDate;
+      const monthMatch = fMonth === 'all' || item.month.toString() === fMonth;
+      const yearMatch = fYear === 'all' || item.year.toString() === fYear;
+      if (!dateMatch || !monthMatch || !yearMatch) return false;
 
-      return tabMatch && dateMatch && monthMatch && yearMatch;
+      if (!searchVal) return true;
+      return (
+        (item.model && item.model.toLowerCase().includes(searchVal)) ||
+        (item.vin && item.vin.toLowerCase().includes(searchVal)) ||
+        (item.engine && item.engine.toLowerCase().includes(searchVal)) ||
+        (item.pic && item.pic.toLowerCase().includes(searchVal)) ||
+        (item.notes && item.notes.toLowerCase().includes(searchVal)) ||
+        (item.id && item.id.toLowerCase().includes(searchVal))
+      );
     });
+
+    // Update KPI Ringkasan & Counter pada Tab Filter
+    const totalAll = baseFiltered.length;
+    const totalIn = baseFiltered.filter(i => i.type === 'Unit Masuk').length;
+    const totalOut = baseFiltered.filter(i => i.type === 'Unit Keluar').length;
+
+    const kpiTotalEl = document.getElementById('histKpiTotal');
+    const kpiMasukEl = document.getElementById('histKpiMasuk');
+    const kpiKeluarEl = document.getElementById('histKpiKeluar');
+    if (kpiTotalEl) kpiTotalEl.textContent = totalAll;
+    if (kpiMasukEl) kpiMasukEl.textContent = totalIn;
+    if (kpiKeluarEl) kpiKeluarEl.textContent = totalOut;
+
+    const countAllEl = document.getElementById('histCount-all');
+    const countInEl = document.getElementById('histCount-in');
+    const countOutEl = document.getElementById('histCount-out');
+    if (countAllEl) countAllEl.textContent = totalAll;
+    if (countInEl) countInEl.textContent = totalIn;
+    if (countOutEl) countOutEl.textContent = totalOut;
+
+    // Filter tahap 2: Berdasarkan Tab Jenis Mutasi (Semua / Penerimaan / Pengiriman)
+    const filtered = baseFiltered.filter(item => {
+      if (AppState.historyTabFilter === 'in') return item.type === 'Unit Masuk';
+      if (AppState.historyTabFilter === 'out') return item.type === 'Unit Keluar';
+      return true;
+    });
+
+    const showingBadge = document.getElementById('historyShowingBadge');
+    if (showingBadge) {
+      showingBadge.textContent = `Menampilkan ${filtered.length} Data`;
+    }
+
+    const footerSummary = document.getElementById('historyFooterSummary');
+    if (footerSummary) {
+      footerSummary.textContent = `Menampilkan ${filtered.length} dari ${AppState.historyData.length} total rekaman audit mutasi kendaraan.`;
+    }
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm">
-          <p class="text-xs font-bold text-slate-600">Tidak ada transaksi ditemukan</p>
-          <p class="text-[10px] text-slate-400 mt-1">Coba sesuaikan filter waktu atau pilih tab Semua.</p>
-        </div>
+        <tr>
+          <td colspan="7" class="py-12 px-6 text-center">
+            <div class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada transaksi mutasi yang ditemukan</p>
+            <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan filter periode waktu, kata kunci pencarian, atau pilih tab "Semua".</p>
+            <button type="button" onclick="clearHistorySearch(); resetHistoryDateFilter(); filterHistoryTab('all')" class="mt-3.5 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
+              Reset Semua Filter
+            </button>
+          </td>
+        </tr>
       `;
       return;
     }
 
     container.innerHTML = filtered.map((item, idx) => {
       const isMasuk = item.type === 'Unit Masuk';
-      const typeBadge = isMasuk 
-        ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
-        : 'bg-blue-50 text-blue-600 border-blue-200';
+      const typeBadge = isMasuk
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/90'
+        : 'bg-blue-50 text-blue-700 border-blue-200/90';
+      const typeArrow = isMasuk ? '↓' : '↑';
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
       const unitPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
         ? item.unitPhoto
         : (catalogItem ? catalogItem.photo : item.unitPhoto);
 
-      const delayMs = Math.min((idx % 6) * 45, 200);
+      const rowNum = String(idx + 1).padStart(2, '0');
 
       return `
-        <div class="scroll-reveal bg-white/95 rounded-3xl p-4 border border-white shadow-saas-card space-y-3" style="--reveal-delay: ${delayMs}ms;">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div class="flex items-center space-x-2">
-              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black border ${typeBadge}">${item.type}</span>
-              <span class="text-[11px] font-bold text-slate-700">${item.fullDateStr} • ${item.time} WIB</span>
+        <tr class="hover:bg-blue-50/35 transition-colors group">
+          <!-- Kolom 1: ID & Waktu -->
+          <td class="py-3.5 pl-4 sm:pl-6 pr-3 align-middle whitespace-nowrap">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200/80">#${rowNum}</span>
+              <span class="text-[11px] font-mono font-bold text-slate-700">${item.id || '-'}</span>
             </div>
-            <span class="inline-flex items-center text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              Terverifikasi
+            <div class="text-[11px] font-bold text-slate-800 mt-1">${item.fullDateStr}</div>
+            <div class="text-[10px] font-semibold text-slate-400">${item.time} WIB</div>
+          </td>
+
+          <!-- Kolom 2: Jenis Mutasi -->
+          <td class="py-3.5 px-3 align-middle whitespace-nowrap">
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10.5px] font-extrabold border shadow-2xs ${typeBadge}">
+              <span class="font-black leading-none">${typeArrow}</span>
+              <span>${item.type}</span>
             </span>
-          </div>
+          </td>
 
-          <div class="flex items-start justify-between">
-            <div>
-              <div class="flex items-center space-x-1.5">
-                <h4 class="text-xs font-black text-slate-900">${item.model}</h4>
-                ${catalogItem ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${catalogItem.category}</span>` : ''}
+          <!-- Kolom 3: Model Kendaraan & Foto Thumbnail -->
+          <td class="py-3.5 px-3 align-middle">
+            <div class="flex items-center space-x-2.5">
+              <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="w-12 h-9 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Mobil">
+                <img src="${unitPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain">
               </div>
-              <p class="text-[10px] font-mono text-slate-500 mt-0.5">VIN: <span class="font-bold text-slate-800">${item.vin}</span></p>
-              <p class="text-[10px] font-mono text-slate-400 mt-0.5">ENG: ${item.engine}</p>
-              <p class="text-[10px] text-slate-500 font-medium mt-1">PIC: <span class="font-bold text-slate-700">${item.pic}</span></p>
-            </div>
-          </div>
-
-          ${item.notes ? `
-            <div class="bg-slate-50 rounded-xl p-2 text-[10px] text-slate-600 border border-slate-100 flex items-start space-x-1.5">
-              <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-              <span>${item.notes}</span>
-            </div>
-          ` : ''}
-
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition" onclick="openImagePreviewModal('${unitPhotoSrc}')">
-              <img src="${unitPhotoSrc}" alt="Foto Unit" class="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0 border border-slate-200">
               <div class="min-w-0">
-                <span class="text-[10px] font-bold text-slate-800 block truncate">Foto Mobil</span>
-                <span class="text-[9px] text-blue-600 font-semibold">Lihat Gambar &rarr;</span>
+                <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
+                <div class="text-[10px] font-semibold text-slate-400 truncate mt-0.5">
+                  ${catalogItem ? catalogItem.category : 'Unit Kendaraan Daihatsu'}
+                </div>
               </div>
             </div>
+          </td>
 
-            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition" onclick="openImagePreviewModal('${item.docPhoto}')">
-              <img src="${item.docPhoto}" alt="Foto DO" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-slate-200">
-              <div class="min-w-0">
-                <span class="text-[10px] font-bold text-slate-800 block truncate">Dokumen DO</span>
-                <span class="text-[9px] text-blue-600 font-semibold">Lihat Dokumen &rarr;</span>
-              </div>
+          <!-- Kolom 4: No. Rangka (VIN) & Mesin -->
+          <td class="py-3.5 px-3 align-middle whitespace-nowrap">
+            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/70 font-mono text-[10.5px] font-bold text-slate-800">
+              ${item.vin}
             </div>
-          </div>
-        </div>
+            <div class="text-[10px] font-mono text-slate-400 mt-1">
+              ENG: <span class="font-semibold text-slate-600">${item.engine}</span>
+            </div>
+          </td>
+
+          <!-- Kolom 5: Petugas PIC & Catatan Audit -->
+          <td class="py-3.5 px-3 align-middle">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-4 h-4 rounded-full bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                ${(item.pic || 'A').charAt(0).toUpperCase()}
+              </span>
+              <span class="text-[11px] font-extrabold text-slate-800">${item.pic}</span>
+            </div>
+            <p class="text-[10.5px] text-slate-500 font-medium mt-1 line-clamp-2 leading-snug max-w-xs">
+              ${item.notes || 'Pemeriksaan standar serah terima unit di lapangan.'}
+            </p>
+          </td>
+
+          <!-- Kolom 6: Bukti Fisik (Foto Mobil & Dokumen DO) -->
+          <td class="py-3.5 px-3 align-middle whitespace-nowrap text-center">
+            <div class="inline-flex items-center justify-center space-x-1.5">
+              <button type="button" onclick="openImagePreviewModal('${unitPhotoSrc}')" class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer shadow-2xs" title="Lihat Foto Fisik Mobil">
+                <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                <span>Foto Mobil</span>
+              </button>
+              <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer shadow-2xs" title="Lihat Dokumen Serah Terima DO">
+                <svg class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Dokumen DO</span>
+              </button>
+            </div>
+          </td>
+
+          <!-- Kolom 7: Status Verifikasi -->
+          <td class="py-3.5 pl-3 pr-4 sm:pr-6 align-middle whitespace-nowrap text-right">
+            <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/80">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>Terverifikasi</span>
+            </span>
+          </td>
+        </tr>
       `;
     }).join('');
 
@@ -548,14 +640,23 @@ const UI = {
     const tabs = ['all', 'in', 'out'];
     tabs.forEach(t => {
       const el = document.getElementById(`histTab-${t}`);
+      const countEl = document.getElementById(`histCount-${t}`);
       if (el) {
         if (t === tabKey) {
-          el.className = 'py-1.5 rounded-xl bg-white text-slate-900 shadow-sm transition font-bold';
+          el.className = 'py-2 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer flex items-center justify-center space-x-1 font-bold';
+          if (countEl) countEl.className = 'text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 text-white font-extrabold';
         } else {
-          el.className = 'py-1.5 rounded-xl text-slate-500 hover:text-slate-800 transition font-bold';
+          el.className = 'py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1 font-bold';
+          if (countEl) countEl.className = 'text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold';
         }
       }
     });
+    this.renderHistoryList();
+  },
+
+  clearHistorySearch() {
+    const input = document.getElementById('historySearchInput');
+    if (input) input.value = '';
     this.renderHistoryList();
   },
 
@@ -1444,6 +1545,7 @@ window.filterInventory = () => UI.filterInventory();
 window.clearInventorySearch = () => UI.clearInventorySearch();
 window.filterInventoryByStatus = (status) => UI.filterInventoryByStatus(status);
 window.filterHistoryTab = (tabKey) => UI.filterHistoryTab(tabKey);
+window.clearHistorySearch = () => UI.clearHistorySearch();
 window.applyHistoryDateFilter = () => UI.applyHistoryDateFilter();
 window.resetHistoryDateFilter = () => UI.resetHistoryDateFilter();
 window.showToast = (msg) => UI.showToast(msg);

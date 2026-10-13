@@ -424,6 +424,38 @@ const AppState = {
       notes: 'Serah terima BASTK ke pelanggan fleet.',
       unitPhoto: 'assets/images/Inventory_All New Xenia.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'HIST-107',
+      type: 'Unit Masuk',
+      time: '15:10',
+      date: 5,
+      month: 10,
+      year: 2026,
+      fullDateStr: '5 Oktober 2026',
+      model: 'Gran Max Minibus',
+      vin: 'MHKP3FA1JXK004321',
+      engine: '2NRVE774120',
+      pic: 'Rina Marlina',
+      notes: 'Unit tiba dari pabrik Sunter, kondisi bodi & segel baik.',
+      unitPhoto: 'assets/images/Inventory_Gran Max Minibus.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'HIST-108',
+      type: 'Unit Masuk',
+      time: '11:40',
+      date: 4,
+      month: 10,
+      year: 2026,
+      fullDateStr: '4 Oktober 2026',
+      model: 'New Rocky',
+      vin: 'MHKP3FA1JXK009876',
+      engine: '1KRVET88291',
+      pic: 'Hendra Wijaya',
+      notes: 'Penerimaan unit alokasi Yard A - Blok 3 (SUV).',
+      unitPhoto: 'assets/images/Inventory_New Rocky.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
 
