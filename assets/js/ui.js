@@ -1355,12 +1355,12 @@ const UI = {
       const wrapper = document.createElement('div');
       wrapper.className = 'custom-select-wrapper relative z-10 w-full select-none';
 
-      // Buat tombol trigger yang rapi untuk mobile & desktop
+      // Buat tombol trigger yang rapi untuk mobile & desktop (tidak terpotong "...")
       const triggerBtn = document.createElement('button');
       triggerBtn.type = 'button';
       const baseTriggerClass = isCompactFilter
-        ? 'w-full bg-slate-50/90 hover:bg-white border border-slate-200/90 rounded-2xl px-2.5 sm:px-3 py-2.5 text-xs font-bold text-slate-700 flex items-center justify-between gap-1.5 shadow-2xs transition cursor-pointer focus:outline-none'
-        : 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition cursor-pointer focus:outline-none';
+        ? 'w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 flex items-center justify-between gap-1 shadow-2xs transition cursor-pointer focus:outline-none'
+        : 'w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition cursor-pointer focus:outline-none';
       triggerBtn.className = baseTriggerClass;
 
       const triggerLabel = document.createElement('span');
@@ -1373,16 +1373,17 @@ const UI = {
       triggerBtn.appendChild(triggerLabel);
       triggerBtn.appendChild(triggerArrow);
 
-      // Buat panel menu pop-up sesuai tipe dropdown
+      // Buat panel menu pop-up dengan latar belakang SOLID PUTIH (#FFFFFF) agar tabel di bawahnya tidak tembus
       const menu = document.createElement('div');
+      menu.style.backgroundColor = '#ffffff';
       if (isDateGrid) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-0 w-[256px] sm:w-[272px] z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-2.5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 w-[252px] sm:w-[268px] z-50 bg-white border border-slate-200 rounded-2xl p-3';
       } else if (isMonthGrid) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-[236px] sm:w-[248px] z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-2.5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-[232px] sm:w-[244px] z-50 bg-white border border-slate-200 rounded-2xl p-3';
       } else if (isYearFilter) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 right-0 min-w-[140px] w-full z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 p-1.5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 min-w-[132px] w-full z-50 bg-white border border-slate-200 rounded-2xl p-1.5';
       } else {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-1.5 left-0 right-0 w-full z-50 bg-white/98 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_18px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5 py-1.5 max-h-56 overflow-y-auto';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 right-0 w-full z-50 bg-white border border-slate-200 rounded-2xl py-1.5 max-h-56 overflow-y-auto';
       }
 
       const selectValueAndClose = (val) => {
@@ -1397,12 +1398,14 @@ const UI = {
         const options = Array.from(selectEl.options);
         const selectedOpt = options.find(o => String(o.value) === currentVal) || options[0];
 
-        // Update label tombol trigger agar ringkas & jelas di mobile
+        // Update label tombol trigger agar ringkas & tidak terpotong di layar mobile
         if (selectedOpt) {
-          if (isDateGrid && currentVal !== 'all') {
-            triggerLabel.textContent = `Tgl ${selectedOpt.textContent}`;
-          } else if (isYearFilter && currentVal !== 'all') {
-            triggerLabel.textContent = `Thn ${selectedOpt.textContent}`;
+          if (isDateGrid) {
+            triggerLabel.textContent = currentVal === 'all' ? 'Semua Tgl' : `Tgl ${selectedOpt.textContent}`;
+          } else if (isMonthGrid) {
+            triggerLabel.textContent = currentVal === 'all' ? 'Semua Bln' : selectedOpt.textContent;
+          } else if (isYearFilter) {
+            triggerLabel.textContent = currentVal === 'all' ? 'Semua Thn' : selectedOpt.textContent;
           } else {
             triggerLabel.textContent = selectedOpt.textContent;
           }
@@ -1418,8 +1421,8 @@ const UI = {
             allBtn.dataset.val = 'all';
             allBtn.className = `w-full py-2 px-3 mb-2 rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
               isAllSelected
-                ? 'bg-slate-900 text-white font-extrabold shadow-2xs'
-                : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 font-bold'
+                ? 'bg-slate-900 text-white font-extrabold shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'
             }`;
             allBtn.innerHTML = `
               <span>Semua Tanggal (1 - 31)</span>
@@ -1434,7 +1437,7 @@ const UI = {
           }
 
           const grid = document.createElement('div');
-          grid.className = 'grid grid-cols-7 gap-1';
+          grid.className = 'grid grid-cols-7 gap-1 pt-1 border-t border-slate-100';
 
           options.filter(o => o.value !== 'all').forEach(opt => {
             const isSelected = String(opt.value) === currentVal;
@@ -1443,8 +1446,8 @@ const UI = {
             dayBtn.dataset.val = opt.value;
             dayBtn.className = `h-8 rounded-lg text-[11px] flex items-center justify-center transition cursor-pointer ${
               isSelected
-                ? 'bg-blue-600 text-white font-black shadow-2xs'
-                : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600 font-bold'
+                ? 'bg-blue-600 text-white font-black shadow-xs'
+                : 'bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold border border-slate-200/70'
             }`;
             dayBtn.textContent = opt.textContent;
             dayBtn.addEventListener('click', (e) => {
@@ -1469,8 +1472,8 @@ const UI = {
             allBtn.dataset.val = 'all';
             allBtn.className = `w-full py-2 px-3 mb-2 rounded-xl text-xs flex items-center justify-between transition cursor-pointer ${
               isAllSelected
-                ? 'bg-slate-900 text-white font-extrabold shadow-2xs'
-                : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 font-bold'
+                ? 'bg-slate-900 text-white font-extrabold shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold'
             }`;
             allBtn.innerHTML = `
               <span>Semua Bulan (Jan - Des)</span>
@@ -1485,7 +1488,7 @@ const UI = {
           }
 
           const grid = document.createElement('div');
-          grid.className = 'grid grid-cols-3 gap-1.5';
+          grid.className = 'grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100';
 
           options.filter(o => o.value !== 'all').forEach(opt => {
             const isSelected = String(opt.value) === currentVal;
@@ -1494,8 +1497,8 @@ const UI = {
             mBtn.dataset.val = opt.value;
             mBtn.className = `py-2 px-2 rounded-xl text-xs flex items-center justify-center transition cursor-pointer ${
               isSelected
-                ? 'bg-blue-600 text-white font-extrabold shadow-2xs'
-                : 'bg-slate-50/80 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold border border-slate-200/60'
+                ? 'bg-blue-600 text-white font-extrabold shadow-xs'
+                : 'bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold border border-slate-200/80'
             }`;
             mBtn.textContent = shortMonths[String(opt.value)] || opt.textContent;
             mBtn.addEventListener('click', (e) => {
@@ -1519,7 +1522,7 @@ const UI = {
           itemBtn.className = `w-full my-0.5 px-3 py-2 rounded-xl text-left text-xs flex items-center justify-between gap-2 transition cursor-pointer ${
             isSelected
               ? 'bg-blue-50 text-blue-600 font-extrabold'
-              : 'text-slate-700 hover:bg-slate-100/80 font-semibold'
+              : 'text-slate-700 hover:bg-slate-100 font-semibold'
           }`;
 
           const rawText = opt.textContent || '';
