@@ -141,18 +141,20 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Row: Category Pill (Left) + Masuk/Keluar Pills (Right) -->
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Smart Hybrid SUV</span>
+                <!-- Top Row: Category Pill (Left) + Glass Masuk/Keluar Pills (Right) -->
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Smart Hybrid SUV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 8 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 6 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>6 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -163,14 +165,14 @@
                   <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Rocky e-Smart Hybrid</h3>
                 </div>
 
-                <!-- Bottom Row: Inline Stock Status (Left) + Blue Lihat Stok Pill (Right) -->
+                <!-- Bottom Row: Inline Stock Status (Left) + Glass Lihat Stok Pill (Right) -->
                 <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
                   <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">5 Unit</strong></span>
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Rocky e-Smart Hybrid')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Rocky e-Smart Hybrid')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -185,17 +187,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">7-Seater Adventure SUV</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">7-Seater Adventure SUV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 14 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>14 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 11 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>11 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -211,7 +215,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Terios')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Terios')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -226,17 +230,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Limited Sporty Edition</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Limited Sporty Edition</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 6 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>6 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 5 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>5 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -252,7 +258,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Terios SE')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Terios SE')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -267,17 +273,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Executive Family MPV</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Executive Family MPV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 12 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>12 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 10 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>10 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -293,7 +301,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Xenia')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Xenia')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -308,17 +316,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Best Selling 7-Seater MPV</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Best Selling 7-Seater MPV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 19 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>19 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 16 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>16 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -334,7 +344,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Sigra')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Sigra')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -349,17 +359,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Reliable Value MPV</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Reliable Value MPV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 8 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 6 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>6 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -375,7 +387,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('New Sigra (Prod Old)')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('New Sigra (Prod Old)')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -390,17 +402,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Powerful & Agile Hatchback</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Powerful & Agile Hatchback</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 15 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>15 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 13 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>13 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -416,7 +430,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Ayla')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Ayla')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -431,17 +445,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Compact Turbo SUV</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Compact Turbo SUV</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 7 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>7 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 5 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>5 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -457,7 +473,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('New Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('New Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -472,17 +488,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Sporty ADS Styling</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Sporty ADS Styling</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 5 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>5 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 4 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>4 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -498,7 +516,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -513,17 +531,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Dynamic Hatchback City Car</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Dynamic Hatchback City Car</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 5 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>5 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 4 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>4 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -539,7 +559,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Sirion')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Sirion')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -554,17 +574,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Prestigious Business Van</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Prestigious Business Van</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 4 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>4 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 3 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>3 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -580,7 +602,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Luxio')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Luxio')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -595,17 +617,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Spacious Passenger Van</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Spacious Passenger Van</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 8 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 7 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>7 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -621,7 +645,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Gran Max Minibus')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Gran Max Minibus')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
@@ -636,17 +660,19 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
-                    <span class="text-[10px] md:text-xs">🏆</span>
-                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Niaga & Logistik Tangguh</span>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between gap-1.5 z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/65 backdrop-blur-md border border-white/20 text-white shadow-sm min-w-0">
+                    <span class="text-[10px] md:text-xs flex-shrink-0">🏆</span>
+                    <span class="text-[8px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider truncate">Niaga & Logistik Tangguh</span>
                   </div>
-                  <div class="flex items-center space-x-1.5">
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↓ 20 Masuk</span>
+                  <div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-emerald-300 font-black leading-none">↓</span>
+                      <span>20 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
-                      <span>↑ 18 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[9px] sm:text-[10.5px] md:text-xs font-bold shadow-sm whitespace-nowrap">
+                      <span class="text-sky-300 font-black leading-none">↑</span>
+                      <span>18 Keluar</span>
                     </div>
                   </div>
                 </div>
@@ -662,7 +688,7 @@
                     <span class="text-white/40">|</span>
                     <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
                   </div>
-                  <button type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
+                  <button type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-[10.5px] sm:text-xs md:text-sm font-bold shadow-lg transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
                     <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
