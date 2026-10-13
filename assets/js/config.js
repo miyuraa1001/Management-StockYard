@@ -39,9 +39,9 @@ const CONFIG = {
 
   // LocalStorage Cache Key
   CACHE_KEYS: {
-    INVENTORY: 'daihatsu_inventory_cache',
-    HISTORY: 'daihatsu_history_cache',
-    KPI: 'daihatsu_kpi_cache'
+    INVENTORY: 'daihatsu_inventory_cache_v2',
+    HISTORY: 'daihatsu_history_cache_v2',
+    KPI: 'daihatsu_kpi_cache_v2'
   }
 };
 

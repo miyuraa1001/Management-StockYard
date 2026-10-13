@@ -269,26 +269,17 @@ body {
   animation-play-state: paused;
 }
 
-/* Smooth Hardware-Accelerated Native Scroll-Snap Carousel Track */
+/* Smooth Hardware-Accelerated GPU Transform Carousel Track */
 #heroCarouselTrack {
   display: flex;
   width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+  will-change: transform;
+  transform: translate3d(0%, 0, 0);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  touch-action: pan-y;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-#heroCarouselTrack::-webkit-scrollbar {
-  display: none;
-  width: 0 !important;
-  height: 0 !important;
 }
 
 #heroCarouselTrack:active {
@@ -301,8 +292,6 @@ body {
   min-width: 100%;
   max-width: 100%;
   height: 100%;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   user-select: none;
   -webkit-user-select: none;
 }

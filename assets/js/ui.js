@@ -447,6 +447,7 @@ const UI = {
     if (totalSlides === 0) return;
 
     UI.heroCurrentIndex = 0;
+    let lastManualAction = 0;
 
     const updateDots = (index) => {
       const dots = document.querySelectorAll('.hero-dot');
@@ -471,42 +472,56 @@ const UI = {
       if (index < 0) index = totalSlides - 1;
       UI.heroCurrentIndex = index;
 
-      const slideWidth = track.clientWidth || track.offsetWidth || window.innerWidth;
-      const targetScrollLeft = index * slideWidth;
+      track.scrollLeft = 0;
+      track.style.transition = immediate ? 'none' : 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+      track.style.transform = `translate3d(-${index * 100}%, 0, 0)`;
 
-      if (immediate) {
-        track.style.scrollBehavior = 'auto';
-        track.scrollLeft = targetScrollLeft;
-        track.style.scrollBehavior = 'smooth';
-      } else {
-        track.scrollTo({
-          left: targetScrollLeft,
-          behavior: 'smooth'
-        });
-      }
       updateDots(index);
     };
 
-    UI.nextHeroSlide = () => {
+    UI.nextHeroSlide = (isAuto = false) => {
+      const now = Date.now();
+      if (!isAuto && now - lastManualAction < 180) return;
+      if (!isAuto) lastManualAction = now;
       const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
       goToSlide(curr + 1);
     };
 
     UI.prevHeroSlide = () => {
+      const now = Date.now();
+      if (now - lastManualAction < 180) return;
+      lastManualAction = now;
       const curr = (typeof UI.heroCurrentIndex === 'number' && !isNaN(UI.heroCurrentIndex)) ? UI.heroCurrentIndex : 0;
       goToSlide(curr - 1);
     };
 
-    UI.goToHeroSlide = (idx) => goToSlide(idx);
+    UI.goToHeroSlide = (idx) => {
+      const now = Date.now();
+      if (now - lastManualAction < 180) return;
+      lastManualAction = now;
+      goToSlide(idx);
+    };
 
-    window.nextHeroSlide = () => UI.nextHeroSlide();
-    window.prevHeroSlide = () => UI.prevHeroSlide();
-    window.goToHeroSlide = (idx) => UI.goToHeroSlide(idx);
+    window.nextHeroSlide = () => {
+      UI.stopHeroAutoScroll();
+      UI.nextHeroSlide(false);
+      setTimeout(() => UI.startHeroAutoScroll(), 4000);
+    };
+    window.prevHeroSlide = () => {
+      UI.stopHeroAutoScroll();
+      UI.prevHeroSlide();
+      setTimeout(() => UI.startHeroAutoScroll(), 4000);
+    };
+    window.goToHeroSlide = (idx) => {
+      UI.stopHeroAutoScroll();
+      UI.goToHeroSlide(idx);
+      setTimeout(() => UI.startHeroAutoScroll(), 4000);
+    };
 
     UI.startHeroAutoScroll = () => {
       UI.stopHeroAutoScroll();
       UI.heroTimer = setInterval(() => {
-        UI.nextHeroSlide();
+        UI.nextHeroSlide(true);
       }, 4500);
     };
 
@@ -517,60 +532,97 @@ const UI = {
       }
     };
 
-    // Sinkronisasi otomatis dots dan counter saat pengguna swipe secara native pada layar sentuh
-    let scrollTimeout = null;
-    track.addEventListener('scroll', () => {
+    // Touch swipe support untuk Mobile & Tablet
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchDeltaX = 0;
+    let isSwiping = false;
+
+    track.addEventListener('touchstart', (e) => {
       UI.stopHeroAutoScroll();
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const slideWidth = track.clientWidth || track.offsetWidth || 1;
-        const currentIndex = Math.round(track.scrollLeft / slideWidth);
-        const validIndex = Math.max(0, Math.min(totalSlides - 1, currentIndex));
-        UI.heroCurrentIndex = validIndex;
-        updateDots(validIndex);
-        UI.startHeroAutoScroll();
-      }, 90);
+      if (!e.touches || e.touches.length === 0) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchDeltaX = 0;
+      isSwiping = true;
+      track.style.transition = 'none';
     }, { passive: true });
 
-    // Hentikan sementara auto-scroll saat disentuh oleh pengguna
-    track.addEventListener('touchstart', () => UI.stopHeroAutoScroll(), { passive: true });
-    track.addEventListener('touchend', () => {
-      setTimeout(() => UI.startHeroAutoScroll(), 3500);
+    track.addEventListener('touchmove', (e) => {
+      if (!isSwiping || !e.touches || e.touches.length === 0) return;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = currentX - touchStartX;
+      const diffY = currentY - touchStartY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        touchDeltaX = diffX;
+        const width = track.clientWidth || window.innerWidth || 1;
+        const dragPercent = (touchDeltaX / width) * 100;
+        const basePercent = -(UI.heroCurrentIndex * 100);
+        track.style.transform = `translate3d(${basePercent + dragPercent}%, 0, 0)`;
+      }
     }, { passive: true });
+
+    const finishTouchSwipe = () => {
+      if (!isSwiping) return;
+      isSwiping = false;
+      const threshold = 28;
+      if (touchDeltaX < -threshold) {
+        goToSlide(UI.heroCurrentIndex + 1);
+      } else if (touchDeltaX > threshold) {
+        goToSlide(UI.heroCurrentIndex - 1);
+      } else {
+        goToSlide(UI.heroCurrentIndex);
+      }
+      touchDeltaX = 0;
+      setTimeout(() => UI.startHeroAutoScroll(), 4000);
+    };
+
+    track.addEventListener('touchend', finishTouchSwipe, { passive: true });
+    track.addEventListener('touchcancel', finishTouchSwipe, { passive: true });
+
     track.addEventListener('mouseenter', () => UI.stopHeroAutoScroll());
     track.addEventListener('mouseleave', () => UI.startHeroAutoScroll());
 
-    // Mouse drag support untuk desktop
+    // Mouse drag support untuk Desktop
     let isMouseDown = false;
     let startMouseX = 0;
-    let scrollStart = 0;
+    let mouseDeltaX = 0;
 
     track.addEventListener('mousedown', (e) => {
       if (e.target && e.target.closest('button')) return;
       isMouseDown = true;
       startMouseX = e.pageX;
-      scrollStart = track.scrollLeft;
+      mouseDeltaX = 0;
       track.style.cursor = 'grabbing';
-      track.style.scrollBehavior = 'auto';
+      track.style.transition = 'none';
       UI.stopHeroAutoScroll();
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isMouseDown) return;
-      e.preventDefault();
-      const delta = e.pageX - startMouseX;
-      track.scrollLeft = scrollStart - delta;
+      mouseDeltaX = e.pageX - startMouseX;
+      const width = track.clientWidth || window.innerWidth || 1;
+      const dragPercent = (mouseDeltaX / width) * 100;
+      const basePercent = -(UI.heroCurrentIndex * 100);
+      track.style.transform = `translate3d(${basePercent + dragPercent}%, 0, 0)`;
     });
 
     window.addEventListener('mouseup', () => {
       if (!isMouseDown) return;
       isMouseDown = false;
       track.style.cursor = 'grab';
-      track.style.scrollBehavior = 'smooth';
-      const slideWidth = track.clientWidth || track.offsetWidth || 1;
-      const targetIndex = Math.round(track.scrollLeft / slideWidth);
-      goToSlide(targetIndex);
-      setTimeout(() => UI.startHeroAutoScroll(), 3500);
+      const threshold = 35;
+      if (mouseDeltaX < -threshold) {
+        goToSlide(UI.heroCurrentIndex + 1);
+      } else if (mouseDeltaX > threshold) {
+        goToSlide(UI.heroCurrentIndex - 1);
+      } else {
+        goToSlide(UI.heroCurrentIndex);
+      }
+      mouseDeltaX = 0;
+      setTimeout(() => UI.startHeroAutoScroll(), 4000);
     });
 
     // Pasang tombol panah navigasi kiri dan kanan
@@ -580,18 +632,16 @@ const UI = {
     if (nextBtn) {
       nextBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        UI.stopHeroAutoScroll();
-        UI.nextHeroSlide();
-        setTimeout(() => UI.startHeroAutoScroll(), 3500);
+        e.stopPropagation();
+        window.nextHeroSlide();
       });
     }
 
     if (prevBtn) {
       prevBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        UI.stopHeroAutoScroll();
-        UI.prevHeroSlide();
-        setTimeout(() => UI.startHeroAutoScroll(), 3500);
+        e.stopPropagation();
+        window.prevHeroSlide();
       });
     }
 
@@ -604,9 +654,7 @@ const UI = {
           const dots = Array.from(document.querySelectorAll('.hero-dot'));
           const idx = dots.indexOf(dot);
           if (idx >= 0) {
-            UI.stopHeroAutoScroll();
-            goToSlide(idx);
-            setTimeout(() => UI.startHeroAutoScroll(), 3500);
+            window.goToHeroSlide(idx);
           }
         }
       });

@@ -54,7 +54,7 @@ const AppState = {
       engine: '2NRX1234567',
       status: 'In-Yard',
       location: 'Yard A - Blok 3',
-      photo: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=260&q=80',
+      photo: 'assets/images/hero-granmax-pickup.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -76,7 +76,7 @@ const AppState = {
       engine: '3NRD3456789',
       status: 'In-Yard',
       location: 'Yard B - Blok 1',
-      photo: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=260&q=80',
+      photo: 'assets/images/hero-new-sigra.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -87,7 +87,7 @@ const AppState = {
       engine: '3NRH4567890',
       status: 'Intransit',
       location: 'Rute Jakarta → Lampung',
-      photo: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=260&q=80',
+      photo: 'assets/images/hero-all-new-ayla.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -98,7 +98,7 @@ const AppState = {
       engine: '3NRF5678901',
       status: 'Allocated',
       location: 'Alokasi DSO Lampung',
-      photo: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=260&q=80',
+      photo: 'assets/images/hero-all-new-xenia.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
@@ -118,7 +118,7 @@ const AppState = {
       engine: '2NR4F82393',
       pic: 'Andi Pratama',
       notes: 'Tarikan unit dari D600 ke D661, dokumen lengkap.',
-      unitPhoto: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=260&q=80',
+      unitPhoto: 'assets/images/hero-granmax-pickup.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -134,7 +134,7 @@ const AppState = {
       engine: '3NRF2345678',
       pic: 'Budi Santoso',
       notes: 'Kirim serah terima ke cabang Raden Intan.',
-      unitPhoto: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=260&q=80',
+      unitPhoto: 'assets/images/hero-new-terios.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     },
     {
@@ -150,7 +150,7 @@ const AppState = {
       engine: '3NRD3456789',
       pic: 'Rina Marlina',
       notes: 'Unit baru tiba dari pabrik Jakarta.',
-      unitPhoto: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=260&q=80',
+      unitPhoto: 'assets/images/hero-new-sigra.jpg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
