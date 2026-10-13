@@ -46,21 +46,21 @@
   <div class="w-full max-w-[1560px] mx-auto min-h-[100dvh] h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F4F7FB] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
     
     <!-- Top Header Bar (Dual Mode: Floating Glass Mobile Header & Desktop Enterprise Navbar) -->
-    <header class="px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 bg-white/80 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between border-b border-white/90 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex-shrink-0 pt-safe">
+    <header class="px-3.5 sm:px-6 md:px-8 py-2 sm:py-3 bg-white/80 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/90 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex-shrink-0 pt-safe">
       <!-- Left: Logo, Divider & Branch Info -->
-      <div class="flex items-center space-x-3 min-w-0">
+      <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
         <!-- Logo Resmi Daihatsu -->
-        <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-6 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0 select-none">
+        <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-5 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0 select-none">
         
         <!-- Vertical Divider -->
-        <div class="h-7 w-px bg-slate-200 flex-shrink-0"></div>
+        <div class="h-6 sm:h-7 w-px bg-slate-200 flex-shrink-0"></div>
 
         <div class="min-w-0">
           <div class="flex items-center space-x-1.5">
-            <h1 class="text-[15px] sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none">DSO</span>
+            <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none">DSO</span>
           </div>
-          <p class="text-[10.5px] sm:text-[11px] text-slate-500 font-medium truncate leading-none mt-1">
+          <p class="text-[9.5px] sm:text-[11px] text-slate-500 font-semibold whitespace-nowrap leading-none mt-1">
             Management Sentra Lampung
           </p>
         </div>
@@ -87,7 +87,7 @@
       </nav>
       
       <!-- Right: Desktop Quick Action, Live Badge & Operator Profile -->
-      <div class="flex items-center space-x-2 sm:space-x-2.5 flex-shrink-0">
+      <div class="flex items-center space-x-1.5 sm:space-x-2.5 flex-shrink-0">
         <!-- Desktop Quick Scan Button -->
         <button onclick="openScannerModal()" class="hidden md:inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 active:scale-95 transition space-x-1.5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
@@ -95,22 +95,22 @@
         </button>
 
         <!-- Live Tracking Badge -->
-        <div class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5 flex-shrink-0"></span>
+        <div class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1 flex-shrink-0"></span>
           <span class="hidden sm:inline">Live Tracking</span>
           <span class="sm:hidden">Live</span>
         </div>
 
         <!-- Profile Avatar & Dropdown Chevron -->
-        <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1.5 py-0.5 md:pr-2.5 bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
+        <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1 py-0.5 md:pr-2.5 bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
+          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
           </div>
           <div class="hidden md:block text-left ml-2 mr-1">
             <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
             <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
           </div>
-          <svg class="w-3.5 h-3.5 text-slate-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
     </header>
@@ -756,11 +756,11 @@
               </div>
 
               <!-- Precision Side-by-Side Body (Mobile & Desktop): Left = Donut, Right = Dynamic Car Preview Card -->
-              <div id="donutChartWrapper" class="relative flex flex-row items-center justify-between gap-2.5 sm:gap-5 select-none">
+              <div id="donutChartWrapper" class="relative flex flex-row items-stretch justify-between gap-2.5 sm:gap-5 select-none">
                 
-                <!-- LEFT: Interactive 13-Color Donut + Micro Badge -->
-                <div class="w-[92px] sm:w-[148px] md:w-[164px] flex-shrink-0 flex flex-col items-center justify-center">
-                  <div class="relative w-[90px] h-[90px] sm:w-[140px] sm:h-[140px] md:w-[152px] md:h-[152px] flex items-center justify-center" style="touch-action: none;">
+                <!-- LEFT: Interactive 13-Color Donut + Micro Badge (Matched Height Box) -->
+                <div class="w-[104px] sm:w-[154px] md:w-[168px] flex-shrink-0 flex flex-col items-center justify-center bg-slate-50/70 rounded-2xl p-2 sm:p-3 border border-slate-200/70">
+                  <div class="relative w-[88px] h-[88px] sm:w-[134px] sm:h-[134px] md:w-[146px] md:h-[146px] flex items-center justify-center" style="touch-action: none;">
                     <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" style="touch-action: none;" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)" ontouchstart="handleDonutTouch(event)" ontouchmove="handleDonutTouch(event)">
                       <!-- Track Background -->
                       <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -848,20 +848,20 @@
                     <!-- Center Donut Label -->
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                       <span id="donutCenterLabel" class="text-[7px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
-                      <span id="donutCenterValue" class="text-[17px] sm:text-2xl font-black text-slate-900 leading-tight my-0.5">89</span>
-                      <span id="donutCenterSub" class="text-[8.5px] sm:text-[10.5px] font-bold text-slate-500 leading-none">Unit</span>
+                      <span id="donutCenterValue" class="text-base sm:text-2xl font-black text-slate-900 leading-tight my-0.5">89</span>
+                      <span id="donutCenterSub" class="text-[8px] sm:text-[10.5px] font-bold text-slate-500 leading-none">Unit</span>
                     </div>
                   </div>
 
                   <!-- Clean Micro-Badge under Donut -->
-                  <div class="mt-2 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-100/90 border border-slate-200/70 text-[8.5px] sm:text-[9.5px] font-bold text-slate-500 whitespace-nowrap shadow-2xs">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <div class="mt-2.5 inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200/80 text-[8px] sm:text-[9.5px] font-extrabold text-slate-600 whitespace-nowrap shadow-2xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
                     <span>Geser Warna</span>
                   </div>
                 </div>
 
                 <!-- Small Glassmorphism Capsule Pop-up Outside Donut Ring -->
-                <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-2.5 py-1 bg-white/80 backdrop-blur-md border border-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.14)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
+                <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-2.5 py-1 bg-white/85 backdrop-blur-md border border-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.14)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
                   <span id="donutPopupDot" class="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style="background-color: #f43f5e;"></span>
                   <span id="donutPopupModel" class="text-[10.5px] sm:text-xs font-extrabold text-slate-800">Gran Max Pick Up</span>
                   <span class="text-slate-300 text-[9.5px] font-bold">•</span>
@@ -869,53 +869,55 @@
                   <span id="donutPopupPercent" class="px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white text-[9px] sm:text-[10px] font-extrabold leading-none">17%</span>
                 </div>
 
-                <!-- RIGHT: Precision Dynamic Vehicle Photo & Stock Preview Card -->
+                <!-- RIGHT: Precision Dynamic Vehicle Photo & Stock Preview Card (Zero Overflow Guaranteed) -->
                 <div class="flex-1 min-w-0">
-                  <div id="donutPreviewCard" class="bg-gradient-to-br from-white via-slate-50/90 to-slate-100/60 rounded-2xl p-2.5 sm:p-4 border border-slate-200/80 shadow-[0_8px_22px_-6px_rgba(15,23,42,0.06)] transition-all duration-200">
+                  <div id="donutPreviewCard" class="h-full bg-gradient-to-br from-white via-slate-50/90 to-slate-100/60 rounded-2xl p-2.5 sm:p-4 border border-slate-200/80 shadow-[0_8px_22px_-6px_rgba(15,23,42,0.06)] transition-all duration-200 overflow-hidden flex flex-col justify-between">
                     <!-- Row 1 (Header): Dot + Model Name & Category + Percentage Pill -->
                     <div class="flex items-start justify-between gap-1.5 pb-2 mb-2 border-b border-slate-200/60">
-                      <div class="min-w-0">
-                        <div class="flex items-center space-x-1.5">
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center space-x-1.5 min-w-0">
                           <span id="donutPreviewDot" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0" style="background-color: #f43f5e;"></span>
-                          <h4 id="donutPreviewModel" class="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Gran Max Pick Up</h4>
+                          <h4 id="donutPreviewModel" class="text-[11.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight truncate">Gran Max Pick Up</h4>
                         </div>
-                        <p id="donutPreviewCategory" class="text-[9px] sm:text-[10.5px] font-semibold text-slate-400 leading-tight mt-0.5 pl-3.5 sm:pl-4">Niaga &amp; Logistik</p>
+                        <p id="donutPreviewCategory" class="text-[9px] sm:text-[10.5px] font-semibold text-slate-400 leading-tight mt-0.5 pl-3.5 sm:pl-4 truncate">Niaga &amp; Logistik</p>
                       </div>
                       <span id="donutPreviewPercentBadge" class="px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-extrabold text-white shadow-xs flex-shrink-0 leading-tight" style="background-color: #f43f5e;">17%</span>
                     </div>
 
                     <!-- Row 2 (Body): Car Studio Photo (Left) + Stock Count & Progress Bar (Right) -->
-                    <div class="flex items-center gap-2.5 sm:gap-3.5">
-                      <div class="w-[72px] h-[50px] sm:w-24 sm:h-16 md:w-28 md:h-[72px] rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden">
+                    <div class="flex items-center gap-2 sm:gap-3.5">
+                      <div class="w-[64px] h-[44px] sm:w-24 sm:h-16 md:w-28 md:h-[72px] rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
                         <img id="donutPreviewImg" src="assets/images/Inventory_Gran Max Pick Up.jpeg" alt="Gran Max Pick Up" class="w-full h-full object-contain transition-transform duration-300">
                       </div>
                       <div class="flex-1 min-w-0">
-                        <span class="text-[8px] sm:text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block leading-none">Stok Aktif</span>
-                        <span id="donutPreviewUnits" class="text-sm sm:text-base font-black text-slate-900 leading-tight mt-0.5 block">15 Unit</span>
+                        <div class="flex items-baseline justify-between gap-1">
+                          <span class="text-[8px] sm:text-[9.5px] font-bold uppercase tracking-wider text-slate-400 leading-none">Stok</span>
+                          <span id="donutPreviewUnits" class="text-xs sm:text-base font-black text-slate-900 leading-none">15 Unit</span>
+                        </div>
                         <!-- Share Progress Bar -->
-                        <div class="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden mt-1.5">
+                        <div class="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden mt-2">
                           <div id="donutPreviewBar" class="h-full rounded-full transition-all duration-300" style="width: 17%; background-color: #f43f5e;"></div>
                         </div>
                       </div>
                     </div>
 
-                    <!-- Row 3 (Footer): Interactive Highlighted Masuk/Keluar Pill Buttons + Lihat Stok Button -->
-                    <div class="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-slate-200/60">
-                      <div class="flex items-center gap-1 sm:gap-1.5">
-                        <button id="donutPreviewMasukBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Masuk')" class="px-1.5 py-1 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border border-emerald-200/90 shadow-2xs text-[8.5px] sm:text-[10.5px] font-extrabold inline-flex items-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                          <span id="donutPreviewMasuk">Masuk 8</span>
-                        </button>
-                        <button id="donutPreviewKeluarBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Keluar')" class="px-1.5 py-1 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 hover:bg-blue-100/90 text-blue-700 border border-blue-200/90 shadow-2xs text-[8.5px] sm:text-[10.5px] font-extrabold inline-flex items-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
-                          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                          <span id="donutPreviewKeluar">Keluar 7</span>
-                        </button>
-                      </div>
-                      <button id="donutPreviewBtn" type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="py-1 px-2 sm:py-1 sm:px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[8.5px] sm:text-[10.5px] font-bold inline-flex items-center space-x-0.5 shadow-xs active:scale-95 transition flex-shrink-0 whitespace-nowrap cursor-pointer">
-                        <span>Lihat Stok</span>
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <!-- Row 3: 2-Column Highlighted Masuk & Keluar Interactive Buttons -->
+                    <div class="grid grid-cols-2 gap-1.5 mt-2.5 pt-2 border-t border-slate-200/60">
+                      <button id="donutPreviewMasukBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Masuk')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border border-emerald-200/90 shadow-2xs text-[9px] sm:text-[10.5px] font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                        <span id="donutPreviewMasuk">Masuk 8</span>
+                      </button>
+                      <button id="donutPreviewKeluarBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Keluar')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-blue-50 hover:bg-blue-100/90 text-blue-700 border border-blue-200/90 shadow-2xs text-[9px] sm:text-[10.5px] font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                        <span id="donutPreviewKeluar">Keluar 7</span>
                       </button>
                     </div>
+
+                    <!-- Row 4: Full-Width Lihat Stok Action Button -->
+                    <button id="donutPreviewBtn" type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="w-full mt-1.5 py-1.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[9.5px] sm:text-[11px] font-bold inline-flex items-center justify-center space-x-1 shadow-xs active:scale-95 transition cursor-pointer">
+                      <span>Lihat Stok Unit</span>
+                      <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </button>
                   </div>
                 </div>
 
