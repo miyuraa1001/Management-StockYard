@@ -901,7 +901,7 @@ const UI = {
     if (prevDot) prevDot.style.backgroundColor = color;
     if (prevCategory) prevCategory.textContent = category;
     if (prevBadge) {
-      prevBadge.textContent = `${percent} Komposisi`;
+      prevBadge.textContent = percent;
       prevBadge.style.backgroundColor = color;
     }
     if (prevImg) {
