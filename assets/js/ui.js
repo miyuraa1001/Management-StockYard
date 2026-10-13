@@ -110,25 +110,23 @@ const UI = {
         : '9 Okt 2026';
 
       return `
-        <div class="bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center justify-between gap-2">
-          <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
-            <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0">
-            <div class="min-w-0">
-              <div class="flex items-center space-x-1.5">
-                <span class="px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0">
-                  ${isMasuk ? 'Unit Masuk' : 'Unit Keluar'}
-                </span>
-                <span class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${item.model}</span>
-              </div>
-              <p class="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-1 truncate">VIN: ${item.vin}</p>
+        <div class="bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center space-x-2.5 sm:space-x-3">
+          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1.5">
+              <span class="px-2 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0 leading-none">
+                ${isMasuk ? 'Unit Masuk' : 'Unit Keluar'}
+              </span>
+              <span class="text-[9px] sm:text-[10.5px] font-medium text-slate-400 whitespace-nowrap">${shortDate} • ${item.time}</span>
             </div>
-          </div>
-          <div class="text-right flex-shrink-0 pl-1">
-            <span class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-400 block whitespace-nowrap">${shortDate} • ${item.time}</span>
-            <span class="inline-flex items-center space-x-1 mt-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/70">
-              <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-              <span>Terverifikasi</span>
-            </span>
+            <div class="flex items-center justify-between gap-1.5 mt-1">
+              <span class="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight">${item.model}</span>
+              <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex-shrink-0 leading-none">
+                <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Terverifikasi</span>
+              </span>
+            </div>
+            <p class="text-[9.5px] sm:text-[11px] text-slate-400 font-mono mt-0.5 leading-tight">VIN: ${item.vin}</p>
           </div>
         </div>
       `;
@@ -915,7 +913,7 @@ const UI = {
       prevBar.style.backgroundColor = color;
     }
     if (prevUnits) prevUnits.textContent = units;
-    if (prevMutation) prevMutation.textContent = `IN ${masuk} • OUT ${keluar}`;
+    if (prevMutation) prevMutation.textContent = `Masuk ${masuk} • Keluar ${keluar}`;
     if (prevBtn) {
       prevBtn.onclick = () => this.filterInventoryByModel(filterKey);
     }
