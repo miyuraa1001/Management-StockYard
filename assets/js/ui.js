@@ -699,51 +699,129 @@ const UI = {
   /**
    * Unggah berkas gambar unit / DO
    */
+  /**
+   * Unggah berkas gambar unit / DO dengan kompresi otomatis & snapshot kamera
+   */
   triggerFileInput(inputId) {
     const fileInput = document.getElementById(inputId);
-    if (fileInput) fileInput.click();
+    if (fileInput) {
+      fileInput.click();
+    }
+  },
+
+  setPhotoPreview(targetType, dataUrl) {
+    if (targetType === 'unitPhoto') {
+      AppState.uploadedUnitPhotoUrl = dataUrl;
+      const preview = document.getElementById('unitPhotoPreview');
+      const placeholder = document.getElementById('unitPhotoPlaceholder');
+      const removeBtn = document.getElementById('unitPhotoRemoveBtn');
+      if (preview) {
+        preview.src = dataUrl;
+        preview.classList.remove('hidden');
+      }
+      if (placeholder) placeholder.classList.add('hidden');
+      if (removeBtn) removeBtn.classList.remove('hidden');
+    } else {
+      AppState.uploadedDocPhotoUrl = dataUrl;
+      const preview = document.getElementById('docPhotoPreview');
+      const placeholder = document.getElementById('docPhotoPlaceholder');
+      const removeBtn = document.getElementById('docPhotoRemoveBtn');
+      if (preview) {
+        preview.src = dataUrl;
+        preview.classList.remove('hidden');
+      }
+      if (placeholder) placeholder.classList.add('hidden');
+      if (removeBtn) removeBtn.classList.remove('hidden');
+    }
   },
 
   handleFileSelected(event, targetType) {
-    const file = event.target.files[0];
+    const file = event.target && event.target.files && event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      if (targetType === 'unitPhoto') {
-        AppState.uploadedUnitPhotoUrl = dataUrl;
-        document.getElementById('unitPhotoPreview').src = dataUrl;
-        document.getElementById('unitPhotoPreview').classList.remove('hidden');
-        document.getElementById('unitPhotoPlaceholder').classList.add('hidden');
-        document.getElementById('unitPhotoRemoveBtn').classList.remove('hidden');
-      } else {
-        AppState.uploadedDocPhotoUrl = dataUrl;
-        document.getElementById('docPhotoPreview').src = dataUrl;
-        document.getElementById('docPhotoPreview').classList.remove('hidden');
-        document.getElementById('docPhotoPlaceholder').classList.add('hidden');
-        document.getElementById('docPhotoRemoveBtn').classList.remove('hidden');
-      }
-      this.showToast('Foto berhasil diunggah!');
+      const rawDataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        // Kompresi gambar client-side (Max 1280px) agar lancar di HP dan tidak membebani local storage
+        const maxDim = 1280;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        this.setPhotoPreview(targetType, optimizedDataUrl);
+        this.showToast(targetType === 'unitPhoto' ? '✅ Foto fisik unit berhasil dipasang!' : '✅ Foto dokumen DO berhasil dipasang!');
+      };
+      img.onerror = () => {
+        this.setPhotoPreview(targetType, rawDataUrl);
+        this.showToast('✅ Foto berhasil dipasang!');
+      };
+      img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
+  },
+
+  /**
+   * Jepret foto langsung dari live feed kamera scanner yang sedang aktif
+   */
+  captureFromScanner(targetType) {
+    const videoEl = document.getElementById('scannerVideo');
+    if (!videoEl || !videoEl.videoWidth || videoEl.videoWidth === 0) {
+      // Jika kamera video belum aktif atau ditutup, arahkan ke file picker kamera bawaan HP
+      this.triggerFileInput(targetType === 'unitPhoto' ? 'unitPhotoInput' : 'docPhotoInput');
+      return;
+    }
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoEl.videoWidth;
+      canvas.height = videoEl.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      this.setPhotoPreview(targetType, dataUrl);
+      this.showToast(targetType === 'unitPhoto' ? '📸 Berhasil jepret foto unit dari scanner!' : '📄 Berhasil jepret dokumen DO dari scanner!');
+    } catch (e) {
+      console.warn('[UI] Gagal capture dari video scanner, fallback ke input file:', e);
+      this.triggerFileInput(targetType === 'unitPhoto' ? 'unitPhotoInput' : 'docPhotoInput');
+    }
   },
 
   removeImagePreview(targetType) {
     if (targetType === 'unitPhoto') {
       AppState.uploadedUnitPhotoUrl = null;
-      document.getElementById('unitPhotoPreview').src = '';
-      document.getElementById('unitPhotoPreview').classList.add('hidden');
-      document.getElementById('unitPhotoPlaceholder').classList.remove('hidden');
-      document.getElementById('unitPhotoRemoveBtn').classList.add('hidden');
-      document.getElementById('unitPhotoInput').value = '';
+      const preview = document.getElementById('unitPhotoPreview');
+      const placeholder = document.getElementById('unitPhotoPlaceholder');
+      const removeBtn = document.getElementById('unitPhotoRemoveBtn');
+      const input = document.getElementById('unitPhotoInput');
+      if (preview) { preview.src = ''; preview.classList.add('hidden'); }
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (removeBtn) removeBtn.classList.add('hidden');
+      if (input) input.value = '';
     } else {
       AppState.uploadedDocPhotoUrl = null;
-      document.getElementById('docPhotoPreview').src = '';
-      document.getElementById('docPhotoPreview').classList.add('hidden');
-      document.getElementById('docPhotoPlaceholder').classList.remove('hidden');
-      document.getElementById('docPhotoRemoveBtn').classList.add('hidden');
-      document.getElementById('docPhotoInput').value = '';
+      const preview = document.getElementById('docPhotoPreview');
+      const placeholder = document.getElementById('docPhotoPlaceholder');
+      const removeBtn = document.getElementById('docPhotoRemoveBtn');
+      const input = document.getElementById('docPhotoInput');
+      if (preview) { preview.src = ''; preview.classList.add('hidden'); }
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (removeBtn) removeBtn.classList.add('hidden');
+      if (input) input.value = '';
     }
   },
 
@@ -1704,6 +1782,7 @@ window.openImagePreviewModal = (src) => UI.openImagePreview(src);
 window.closeImagePreviewModal = () => UI.closeImagePreview();
 window.triggerFileInput = (id) => UI.triggerFileInput(id);
 window.handleFileSelected = (e, type) => UI.handleFileSelected(e, type);
+window.captureFromScanner = (type) => UI.captureFromScanner(type);
 window.removeImagePreview = (type) => UI.removeImagePreview(type);
 window.exportHistoryPDF = () => UI.exportHistoryPDF();
 window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;

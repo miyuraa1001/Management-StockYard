@@ -1581,34 +1581,62 @@
             <!-- Field 5: Dual Upload Foto (Mobil & Dokumen) -->
             <div class="grid grid-cols-2 gap-3 pt-1">
               <!-- Upload Foto Kendaraan -->
-              <div>
-                <span class="text-[10px] font-bold text-slate-500 block mb-1">Foto Fisik Unit</span>
-                <div id="unitPhotoBox" class="relative border-2 border-dashed border-slate-200 rounded-2xl p-2 h-24 md:h-28 flex flex-col items-center justify-center bg-slate-50/60 hover:bg-slate-100 transition">
-                  <div id="unitPhotoPlaceholder" class="text-center">
-                    <button type="button" onclick="triggerFileInput('unitPhotoInput')" class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-1 active:scale-95 transition" aria-label="Ambil Foto Unit">
+              <div class="flex flex-col">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Foto Fisik Unit</span>
+                  <button type="button" onclick="captureFromScanner('unitPhoto')" class="text-[9.5px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 cursor-pointer" title="Ambil frame langsung dari kamera scanner aktif">
+                    <span>📸 Jepret Scanner</span>
+                  </button>
+                </div>
+                
+                <div id="unitPhotoBox" class="relative border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-2 h-26 md:h-28 flex flex-col items-center justify-center bg-slate-50/70 hover:bg-blue-50/30 transition group overflow-hidden cursor-pointer">
+                  <!-- Native Transparent File Input Covering Entire Card -->
+                  <input type="file" id="unitPhotoInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" onchange="handleFileSelected(event, 'unitPhoto')" aria-label="Upload Foto Fisik Unit">
+
+                  <!-- Placeholder State -->
+                  <div id="unitPhotoPlaceholder" class="text-center pointer-events-none">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-1 group-hover:scale-105 transition shadow-2xs">
                       <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                    </button>
-                    <span class="text-[10px] font-bold text-slate-600">Ambil Foto</span>
+                    </div>
+                    <span class="text-[10px] font-extrabold text-slate-700 block">Ambil / Pilih Foto</span>
+                    <span class="text-[8.5px] text-slate-400 font-medium block">Ketuk untuk kamera / galeri</span>
                   </div>
-                  <img id="unitPhotoPreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" alt="Preview Unit">
-                  <button type="button" id="unitPhotoRemoveBtn" onclick="removeImagePreview('unitPhoto')" class="hidden absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow" aria-label="Hapus Foto Unit">&times;</button>
-                  <input type="file" id="unitPhotoInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelected(event, 'unitPhoto')">
+
+                  <!-- Image Preview -->
+                  <img id="unitPhotoPreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl z-15 cursor-pointer" alt="Preview Unit" onclick="openImagePreviewModal(this.src)" title="Klik untuk perbesar foto">
+                  
+                  <!-- Remove Image Button -->
+                  <button type="button" id="unitPhotoRemoveBtn" onclick="removeImagePreview('unitPhoto')" class="hidden absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-xs font-black shadow-md z-20 cursor-pointer active:scale-90 transition" title="Hapus Foto" aria-label="Hapus Foto Unit">&times;</button>
                 </div>
               </div>
 
               <!-- Upload Foto Dokumen Order Kirim Kendaraan -->
-              <div>
-                <span class="text-[10px] font-bold text-slate-500 block mb-1">Foto Dokumen (DO)</span>
-                <div id="docPhotoBox" class="relative border-2 border-dashed border-slate-200 rounded-2xl p-2 h-24 md:h-28 flex flex-col items-center justify-center bg-slate-50/60 hover:bg-slate-100 transition">
-                  <div id="docPhotoPlaceholder" class="text-center">
-                    <button type="button" onclick="triggerFileInput('docPhotoInput')" class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-1 active:scale-95 transition" aria-label="Ambil Foto DO">
+              <div class="flex flex-col">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Foto Dokumen (DO)</span>
+                  <button type="button" onclick="captureFromScanner('docPhoto')" class="text-[9.5px] font-extrabold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5 cursor-pointer" title="Ambil frame langsung dari kamera scanner aktif">
+                    <span>📄 Jepret Scanner</span>
+                  </button>
+                </div>
+                
+                <div id="docPhotoBox" class="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-2 h-26 md:h-28 flex flex-col items-center justify-center bg-slate-50/70 hover:bg-indigo-50/30 transition group overflow-hidden cursor-pointer">
+                  <!-- Native Transparent File Input Covering Entire Card -->
+                  <input type="file" id="docPhotoInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" onchange="handleFileSelected(event, 'docPhoto')" aria-label="Upload Foto Dokumen DO">
+
+                  <!-- Placeholder State -->
+                  <div id="docPhotoPlaceholder" class="text-center pointer-events-none">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-1 group-hover:scale-105 transition shadow-2xs">
                       <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    </button>
-                    <span class="text-[10px] font-bold text-slate-600">Ambil DO</span>
+                    </div>
+                    <span class="text-[10px] font-extrabold text-slate-700 block">Ambil / Pilih DO</span>
+                    <span class="text-[8.5px] text-slate-400 font-medium block">Ketuk untuk kamera / galeri</span>
                   </div>
-                  <img id="docPhotoPreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" alt="Preview DO">
-                  <button type="button" id="docPhotoRemoveBtn" onclick="removeImagePreview('docPhoto')" class="hidden absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow" aria-label="Hapus Foto DO">&times;</button>
-                  <input type="file" id="docPhotoInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelected(event, 'docPhoto')">
+
+                  <!-- Image Preview -->
+                  <img id="docPhotoPreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl z-15 cursor-pointer" alt="Preview DO" onclick="openImagePreviewModal(this.src)" title="Klik untuk perbesar dokumen">
+                  
+                  <!-- Remove Image Button -->
+                  <button type="button" id="docPhotoRemoveBtn" onclick="removeImagePreview('docPhoto')" class="hidden absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-xs font-black shadow-md z-20 cursor-pointer active:scale-90 transition" title="Hapus Dokumen" aria-label="Hapus Foto DO">&times;</button>
                 </div>
               </div>
             </div>
@@ -1655,11 +1683,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261013-17"></script>
-  <script src="assets/js/state.js?v=20261013-17"></script>
-  <script src="assets/js/api.js?v=20261013-17"></script>
-  <script src="assets/js/scanner.js?v=20261013-17"></script>
-  <script src="assets/js/ui.js?v=20261013-17"></script>
-  <script src="assets/js/app.js?v=20261013-17"></script>
+  <script src="assets/js/config.js?v=20261013-18"></script>
+  <script src="assets/js/state.js?v=20261013-18"></script>
+  <script src="assets/js/api.js?v=20261013-18"></script>
+  <script src="assets/js/scanner.js?v=20261013-18"></script>
+  <script src="assets/js/ui.js?v=20261013-18"></script>
+  <script src="assets/js/app.js?v=20261013-18"></script>
 </body>
 </html>
