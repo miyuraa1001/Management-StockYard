@@ -38,15 +38,15 @@
   </script>
 
   <!-- Modular Stylesheet -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261013-2">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261013-4">
 </head>
-<body class="min-h-screen bg-slate-900 md:bg-slate-100 text-slate-800 flex flex-col antialiased">
+<body class="min-h-screen bg-[#F1F5F9] md:bg-slate-100 text-slate-800 flex flex-col antialiased">
 
   <!-- App Container (Fluid on Mobile, Modern Wide Enterprise SaaS on Desktop) -->
-  <div class="w-full max-w-[1560px] mx-auto h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F8FAFC] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
+  <div class="w-full max-w-[1560px] mx-auto min-h-[100dvh] h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F4F7FB] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
     
-    <!-- Top Header Bar (Dual Mode: Clean Mobile Header & Desktop Enterprise Navbar) -->
-    <header class="px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 bg-white sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] flex-shrink-0 pt-safe">
+    <!-- Top Header Bar (Dual Mode: Floating Glass Mobile Header & Desktop Enterprise Navbar) -->
+    <header class="px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 bg-white/80 backdrop-blur-xl sticky top-0 z-20 flex items-center justify-between border-b border-white/90 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] flex-shrink-0 pt-safe">
       <!-- Left: Logo, Divider & Branch Info -->
       <div class="flex items-center space-x-3 min-w-0">
         <!-- Logo Resmi Daihatsu -->
@@ -121,14 +121,14 @@
       <!-- ======================================================== -->
       <!-- SECTION 1: DASHBOARD (BERANDA) -->
       <!-- ======================================================== -->
-      <section id="viewDashboard" class="space-y-3.5 md:space-y-5">
+      <section id="viewDashboard" class="space-y-4 md:space-y-5">
         
         <!-- ======================================================== -->
         <!-- HERO KPI LANDSCAPE CAROUSEL (Clean Unobstructed Reference Layout) -->
         <!-- ======================================================== -->
-        <div class="relative group select-none w-full">
+        <div class="relative group select-none w-full scroll-reveal is-visible">
           <!-- Main Carousel Card Wrapper -->
-          <div class="relative w-full rounded-[22px] sm:rounded-[26px] md:rounded-[34px] overflow-hidden bg-slate-900 shadow-lg border border-slate-200/60">
+          <div class="relative w-full rounded-[24px] sm:rounded-[28px] md:rounded-[34px] overflow-hidden bg-slate-900 shadow-[0_18px_38px_-8px_rgba(15,23,42,0.22)] ring-1 ring-white/80">
             
             <!-- Horizontal GPU-Accelerated Slides Track -->
             <div id="heroCarouselTrack" class="flex w-full h-[200px] sm:h-[245px] md:h-[430px] lg:h-[460px]">
@@ -737,11 +737,11 @@
           <div class="lg:col-span-7 xl:col-span-8 space-y-4 md:space-y-5">
             
             <!-- Distribusi Model Kendaraan (Precision Side-by-Side 13-Color Donut + Dynamic Car Photo Preview Card) -->
-            <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-100 shadow-saas-card" onclick="closeDonutPopupOnOutside(event)">
+            <div class="bg-white/95 rounded-[26px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-white shadow-saas-card scroll-reveal" onclick="closeDonutPopupOnOutside(event)">
               <!-- Card Header -->
               <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
                 <div class="flex items-center space-x-2.5 min-w-0">
-                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
+                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80 shadow-2xs">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
                   </div>
                   <div class="min-w-0">
@@ -749,18 +749,18 @@
                     <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight">Komposisi 13 model unit di pool yard</p>
                   </div>
                 </div>
-                <div class="bg-slate-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0 text-right leading-tight">
+                <div class="bg-slate-50/90 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0 text-right leading-tight shadow-2xs">
                   <span class="text-[10.5px] sm:text-xs font-extrabold text-slate-800 block whitespace-nowrap">89 Unit</span>
                   <span class="text-[8.5px] sm:text-[10px] text-slate-400 font-semibold block mt-0.5 whitespace-nowrap">13 Model</span>
                 </div>
               </div>
 
               <!-- Precision Side-by-Side Body (Mobile & Desktop): Left = Donut, Right = Dynamic Car Preview Card -->
-              <div id="donutChartWrapper" class="relative flex flex-row items-center justify-between gap-3 sm:gap-5 select-none">
+              <div id="donutChartWrapper" class="relative flex flex-row items-center justify-between gap-2.5 sm:gap-5 select-none">
                 
                 <!-- LEFT: Interactive 13-Color Donut + Micro Badge -->
-                <div class="w-[100px] sm:w-[148px] md:w-[164px] flex-shrink-0 flex flex-col items-center justify-center">
-                  <div class="relative w-[96px] h-[96px] sm:w-[140px] sm:h-[140px] md:w-[152px] md:h-[152px] flex items-center justify-center" style="touch-action: none;">
+                <div class="w-[92px] sm:w-[148px] md:w-[164px] flex-shrink-0 flex flex-col items-center justify-center">
+                  <div class="relative w-[90px] h-[90px] sm:w-[140px] sm:h-[140px] md:w-[152px] md:h-[152px] flex items-center justify-center" style="touch-action: none;">
                     <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" style="touch-action: none;" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)" ontouchstart="handleDonutTouch(event)" ontouchmove="handleDonutTouch(event)">
                       <!-- Track Background -->
                       <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -854,7 +854,7 @@
                   </div>
 
                   <!-- Clean Micro-Badge under Donut -->
-                  <div class="mt-2 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-100/90 border border-slate-200/70 text-[8.5px] sm:text-[9.5px] font-bold text-slate-500 whitespace-nowrap">
+                  <div class="mt-2 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-100/90 border border-slate-200/70 text-[8.5px] sm:text-[9.5px] font-bold text-slate-500 whitespace-nowrap shadow-2xs">
                     <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                     <span>Geser Warna</span>
                   </div>
@@ -871,7 +871,7 @@
 
                 <!-- RIGHT: Precision Dynamic Vehicle Photo & Stock Preview Card -->
                 <div class="flex-1 min-w-0">
-                  <div id="donutPreviewCard" class="bg-slate-50/80 rounded-2xl p-2.5 sm:p-4 border border-slate-200/80 transition-all duration-200">
+                  <div id="donutPreviewCard" class="bg-gradient-to-br from-white via-slate-50/90 to-slate-100/60 rounded-2xl p-2.5 sm:p-4 border border-slate-200/80 shadow-[0_8px_22px_-6px_rgba(15,23,42,0.06)] transition-all duration-200">
                     <!-- Row 1 (Header): Dot + Model Name & Category + Percentage Pill -->
                     <div class="flex items-start justify-between gap-1.5 pb-2 mb-2 border-b border-slate-200/60">
                       <div class="min-w-0">
@@ -886,7 +886,7 @@
 
                     <!-- Row 2 (Body): Car Studio Photo (Left) + Stock Count & Progress Bar (Right) -->
                     <div class="flex items-center gap-2.5 sm:gap-3.5">
-                      <div class="w-[74px] h-[50px] sm:w-24 sm:h-16 md:w-28 md:h-[72px] rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden">
+                      <div class="w-[72px] h-[50px] sm:w-24 sm:h-16 md:w-28 md:h-[72px] rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden">
                         <img id="donutPreviewImg" src="assets/images/Inventory_Gran Max Pick Up.jpeg" alt="Gran Max Pick Up" class="w-full h-full object-contain transition-transform duration-300">
                       </div>
                       <div class="flex-1 min-w-0">
@@ -899,10 +899,19 @@
                       </div>
                     </div>
 
-                    <!-- Row 3 (Footer): Mutation Summary + Lihat Stok Button -->
-                    <div class="flex items-center justify-between gap-2 mt-2.5 pt-2 border-t border-slate-200/60">
-                      <span id="donutPreviewMutation" class="text-[9.5px] sm:text-[11px] font-bold text-slate-600 whitespace-nowrap leading-none">Masuk 8 • Keluar 7</span>
-                      <button id="donutPreviewBtn" type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="py-1 px-2 sm:py-1.5 sm:px-3 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[9px] sm:text-[11px] font-bold inline-flex items-center space-x-1 shadow-xs active:scale-95 transition flex-shrink-0 whitespace-nowrap">
+                    <!-- Row 3 (Footer): Interactive Highlighted Masuk/Keluar Pill Buttons + Lihat Stok Button -->
+                    <div class="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-slate-200/60">
+                      <div class="flex items-center gap-1 sm:gap-1.5">
+                        <button id="donutPreviewMasukBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Masuk')" class="px-1.5 py-1 sm:px-2.5 sm:py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border border-emerald-200/90 shadow-2xs text-[8.5px] sm:text-[10.5px] font-extrabold inline-flex items-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                          <span id="donutPreviewMasuk">Masuk 8</span>
+                        </button>
+                        <button id="donutPreviewKeluarBtn" type="button" onclick="filterHistoryByModelAndType('Gran Max Pick Up', 'Unit Keluar')" class="px-1.5 py-1 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 hover:bg-blue-100/90 text-blue-700 border border-blue-200/90 shadow-2xs text-[8.5px] sm:text-[10.5px] font-extrabold inline-flex items-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                          <span id="donutPreviewKeluar">Keluar 7</span>
+                        </button>
+                      </div>
+                      <button id="donutPreviewBtn" type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="py-1 px-2 sm:py-1 sm:px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[8.5px] sm:text-[10.5px] font-bold inline-flex items-center space-x-0.5 shadow-xs active:scale-95 transition flex-shrink-0 whitespace-nowrap cursor-pointer">
                         <span>Lihat Stok</span>
                         <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                       </button>
@@ -914,7 +923,7 @@
             </div>
 
             <!-- Urgent Attention Alert Card (Desktop Only so Mobile stays clean like Reference) -->
-            <div class="hidden lg:flex bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/90 rounded-3xl p-4 items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition" onclick="switchTab('inventory'); filterInventoryByStatus('Intransit')">
+            <div class="hidden lg:flex bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/90 rounded-3xl p-4 items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition scroll-reveal" onclick="switchTab('inventory'); filterInventoryByStatus('Intransit')">
               <div class="flex items-center space-x-3 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -933,10 +942,10 @@
           <div class="lg:col-span-5 xl:col-span-4 space-y-4 md:space-y-4.5">
             
             <!-- Aktivitas Terbaru Card (Matches Reference Screenshot) -->
-            <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-saas-card">
+            <div class="bg-white/95 rounded-[26px] md:rounded-3xl p-4 sm:p-5 border border-white shadow-saas-card scroll-reveal">
               <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center space-x-2">
-                  <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   </div>
                   <h3 class="text-[13.5px] sm:text-sm font-extrabold text-slate-900">Aktivitas Terbaru</h3>
@@ -952,7 +961,7 @@
             </div>
 
             <!-- Yard Operational Health Card (Desktop Only) -->
-            <div class="hidden lg:block bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-3.5">
+            <div class="hidden lg:block bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card space-y-3.5 scroll-reveal">
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Status Operasional Yard</h3>
@@ -1014,7 +1023,7 @@
         </div>
 
         <!-- Filter Controls (Search Bar + Status Chips) -->
-        <div class="flex flex-col md:flex-row md:items-center gap-3 bg-white p-3 md:p-4 rounded-3xl border border-slate-100 shadow-saas-card">
+        <div class="flex flex-col md:flex-row md:items-center gap-3 bg-white/95 p-3 md:p-4 rounded-3xl border border-white shadow-saas-card scroll-reveal">
           <!-- Search Bar -->
           <div class="relative flex-1">
             <input type="text" id="inventorySearchInput" oninput="filterInventory()" placeholder="Cari Model / Jenis SUV, MPV, Niaga / VIN / Plat..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-xs font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
@@ -1053,7 +1062,7 @@
         </div>
 
         <!-- Filter Bar: Segmented Tabs & Date Dropdowns -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 bg-white p-3.5 md:p-4 rounded-3xl border border-slate-100 shadow-saas-card">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 bg-white/95 p-3.5 md:p-4 rounded-3xl border border-white shadow-saas-card scroll-reveal">
           <!-- Segmented Tab Filter (Left) -->
           <div class="md:col-span-5 grid grid-cols-3 bg-slate-100 p-1.5 rounded-2xl text-xs font-bold text-center">
             <button onclick="filterHistoryTab('all')" id="histTab-all" class="py-2 rounded-xl bg-white text-slate-900 shadow-sm transition">Semua</button>
@@ -1123,7 +1132,7 @@
         <!-- Responsive Settings Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <!-- Profile Card -->
-          <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card flex items-center space-x-4 md:col-span-2">
+          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card flex items-center space-x-4 md:col-span-2 scroll-reveal">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Andi Pratama" class="w-16 h-16 rounded-2xl object-cover border border-slate-200 flex-shrink-0">
             <div class="flex-1">
               <div class="flex items-center justify-between">
@@ -1139,7 +1148,7 @@
           </div>
 
           <!-- Hardware Settings -->
-          <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-4">
+          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card space-y-4 scroll-reveal">
             <h4 class="text-xs font-black tracking-wider uppercase text-slate-400">Scanner & Perangkat</h4>
             
             <div class="flex items-center justify-between py-1">
@@ -1173,7 +1182,7 @@
           </div>
 
           <!-- Automation Settings -->
-          <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-4">
+          <div class="bg-white/95 rounded-3xl p-5 border border-white shadow-saas-card space-y-4 scroll-reveal">
             <h4 class="text-xs font-black tracking-wider uppercase text-slate-400">Otomatisasi Laporan</h4>
             
             <div class="flex items-center justify-between py-1">
@@ -1207,10 +1216,10 @@
     </main>
 
     <!-- ======================================================== -->
-    <!-- FIXED CLEAN WHITE BOTTOM NAVIGATION DOCK (Mobile Only) -->
+    <!-- FLOATING GLASSMORPHISM BOTTOM NAVIGATION CAPSULE (Mobile Only) -->
     <!-- ======================================================== -->
-    <div class="md:hidden absolute bottom-0 inset-x-0 z-30 select-none pointer-events-auto">
-      <nav class="floating-glass-bar rounded-t-[26px] px-3 pt-2 pb-2.5 flex items-center justify-between shadow-nav-glass">
+    <div class="md:hidden fixed bottom-3 inset-x-3.5 sm:inset-x-6 z-40 select-none pointer-events-none pb-safe">
+      <nav class="floating-glass-bar pointer-events-auto rounded-[28px] px-2.5 py-2 flex items-center justify-between">
         
         <!-- Tab 1: Dashboard -->
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active flex-1" aria-label="Dashboard">
@@ -1232,7 +1241,7 @@
 
         <!-- Tab 3: CENTER FLOATING SCAN BUTTON (FAB) -->
         <div class="flex-1 flex justify-center -mt-9 relative">
-          <button onclick="openScannerModal()" title="Buka Kamera Barcode" aria-label="Scan Barcode" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white ring-4 ring-white shadow-fab-glow hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
+          <button onclick="openScannerModal()" title="Buka Kamera Barcode" aria-label="Scan Barcode" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white ring-4 ring-white/90 shadow-fab-glow hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
             </svg>
