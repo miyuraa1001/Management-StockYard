@@ -736,72 +736,107 @@
           <!-- LEFT COLUMN (8 cols): Vehicle Distribution Donut + Attention Banner -->
           <div class="lg:col-span-7 xl:col-span-8 space-y-4 md:space-y-5">
             
-            <!-- Distribusi Model Kendaraan (Side-by-Side Donut Chart & 6-Item Legend on Mobile & Desktop) -->
-            <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-100 shadow-saas-card">
-              <div class="flex items-center justify-between gap-2 mb-3.5">
-                <div class="flex items-center space-x-2.5 min-w-0">
-                  <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <!-- Distribusi Model Kendaraan (Side-by-Side Donut Chart & 13-Model Legend on Mobile & Desktop) -->
+            <div class="bg-white rounded-[24px] md:rounded-3xl p-3.5 sm:p-5 md:p-6 border border-slate-100 shadow-saas-card">
+              <div class="flex items-start sm:items-center justify-between gap-2 mb-3">
+                <div class="flex items-center space-x-2 min-w-0">
+                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                   </div>
                   <div class="min-w-0">
-                    <h3 class="text-[13.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight truncate">Distribusi Model Kendaraan</h3>
-                    <p class="text-[10.5px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Komposisi stok unit fisik di pool yard Sentra Lampung</p>
+                    <h3 class="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Distribusi Model Kendaraan</h3>
+                    <p class="text-[9.5px] sm:text-[11px] text-slate-500 mt-0.5 leading-snug">Komposisi 13 model unit fisik di pool yard Sentra Lampung</p>
                   </div>
                 </div>
-                <div class="flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0">
-                  <span class="text-xs">🚘</span>
+                <div class="flex items-center space-x-1 bg-slate-50 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0">
+                  <span class="text-[11px] sm:text-xs">🚘</span>
                   <div class="text-left leading-none">
-                    <span class="text-[10px] sm:text-[11px] font-extrabold text-slate-800 block">Total 48 Unit</span>
-                    <span class="text-[9px] text-slate-500 font-semibold block mt-0.5">In-Yard</span>
+                    <span class="text-[9.5px] sm:text-[11px] font-extrabold text-slate-800 block whitespace-nowrap">Total 89 Unit</span>
+                    <span class="text-[8.5px] sm:text-[9px] text-slate-500 font-semibold block mt-0.5">In-Yard (13 Model)</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Side-by-Side Donut + Legend (Always horizontal flex-row like reference screenshot) -->
-              <div class="flex flex-row items-center justify-between gap-3 sm:gap-5 pt-1">
-                <!-- Donut SVG -->
-                <div class="relative w-[112px] h-[112px] sm:w-32 sm:h-32 md:w-36 md:h-36 flex-shrink-0 flex items-center justify-center">
+              <!-- Side-by-Side Donut + 13-Model Legend -->
+              <div class="flex flex-row items-center justify-between gap-2.5 sm:gap-5 pt-1">
+                <!-- Donut SVG (Compact on Mobile so Legend Text Never Truncates) -->
+                <div class="relative w-[88px] h-[88px] sm:w-32 sm:h-32 md:w-36 md:h-36 flex-shrink-0 flex items-center justify-center">
                   <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     <path class="text-slate-100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-rose-500" stroke-dasharray="35, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-blue-500" stroke-dashoffset="-35" stroke-dasharray="21, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-indigo-500" stroke-dashoffset="-56" stroke-dasharray="15, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-emerald-500" stroke-dashoffset="-71" stroke-dasharray="10, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-amber-400" stroke-dashoffset="-81" stroke-dasharray="10, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-slate-300" stroke-dashoffset="-91" stroke-dasharray="9, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-rose-500" stroke-dasharray="17, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-indigo-500" stroke-dashoffset="-17" stroke-dasharray="13, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-teal-500" stroke-dashoffset="-30" stroke-dasharray="11, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-blue-500" stroke-dashoffset="-41" stroke-dasharray="10, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-amber-500" stroke-dashoffset="-51" stroke-dasharray="8, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-sky-500" stroke-dashoffset="-59" stroke-dasharray="7, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-orange-500" stroke-dashoffset="-66" stroke-dasharray="7, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-emerald-500" stroke-dashoffset="-73" stroke-dasharray="6, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-violet-500" stroke-dashoffset="-79" stroke-dasharray="6, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-red-500" stroke-dashoffset="-85" stroke-dasharray="5, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-pink-500" stroke-dashoffset="-90" stroke-dasharray="4, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-cyan-500" stroke-dashoffset="-94" stroke-dasharray="3, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-purple-500" stroke-dashoffset="-97" stroke-dasharray="3, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span class="text-[8.5px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
-                    <span class="text-lg sm:text-xl font-black text-slate-900 leading-tight mt-0.5">48</span>
-                    <span class="text-[9.5px] sm:text-[10px] font-bold text-slate-500 leading-none">Unit</span>
+                    <span class="text-[7.5px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
+                    <span class="text-sm sm:text-xl font-black text-slate-900 leading-tight mt-0.5">89</span>
+                    <span class="text-[8px] sm:text-[10px] font-bold text-slate-500 leading-none">Unit</span>
                   </div>
                 </div>
 
-                <!-- 6-Row Legends Breakdown -->
-                <div class="flex-1 min-w-0 space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Gran Max Pickup / Van</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">17 Unit</span> <span class="font-extrabold text-slate-900 ml-1">35%</span></div>
+                <!-- 13-Row Official Daihatsu Models Breakdown (Compact text so nothing is cut off on mobile) -->
+                <div class="flex-1 min-w-0 space-y-1 sm:space-y-1.5 text-[9.5px] sm:text-[11px] md:text-xs">
+                  <div onclick="filterInventoryByModel('Gran Max Pick Up')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Gran Max Pick Up</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">15 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">17%</span></div>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">All New Terios R</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">10 Unit</span> <span class="font-extrabold text-slate-900 ml-1">21%</span></div>
+                  <div onclick="filterInventoryByModel('New Sigra')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">New Sigra</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">12 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">13%</span></div>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Daihatsu Sigra 1.2 R</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">7 Unit</span> <span class="font-extrabold text-slate-900 ml-1">15%</span></div>
+                  <div onclick="filterInventoryByModel('All New Ayla')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">All New Ayla</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">10 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">11%</span></div>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Ayla / Rocky Turbo</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-1">10%</span></div>
+                  <div onclick="filterInventoryByModel('New Terios')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">New Terios</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">9 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">10%</span></div>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Xenia / Avanza</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-1">10%</span></div>
+                  <div onclick="filterInventoryByModel('All New Xenia')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">All New Xenia</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">7 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">8%</span></div>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 flex-shrink-0"></span><span class="text-slate-500 font-semibold truncate">Lainnya</span></div>
-                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">4 Unit</span> <span class="font-extrabold text-slate-900 ml-1">8%</span></div>
+                  <div onclick="filterInventoryByModel('New Sigra (Prod Old)')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-sky-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Sigra (Prod Old)</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">6 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">7%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('Gran Max Minibus')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Gran Max Minibus</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">6 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">7%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('Rocky e-Smart Hybrid')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Rocky e-Smart Hybrid</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">6%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('Rocky')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-violet-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Rocky 1.2 ADS</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">6%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('Terios SE')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">Terios SE</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">4 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">4%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('New Rocky')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-pink-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">New Rocky</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">4 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">4%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('New Sirion')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">New Sirion</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">3 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">3%</span></div>
+                  </div>
+                  <div onclick="filterInventoryByModel('Luxio')" class="flex items-center justify-between cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5 transition">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold leading-tight">New Luxio</span></div>
+                    <div class="text-right flex-shrink-0 ml-1 whitespace-nowrap"><span class="text-slate-500 font-medium">3 Unit</span> <span class="font-extrabold text-slate-900 ml-0.5">3%</span></div>
                   </div>
                 </div>
               </div>
