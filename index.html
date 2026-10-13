@@ -736,16 +736,16 @@
           <!-- LEFT COLUMN (8 cols): Vehicle Distribution Donut + Attention Banner -->
           <div class="lg:col-span-7 xl:col-span-8 space-y-4 md:space-y-5">
             
-            <!-- Distribusi Model Kendaraan (Hover Donut Chart with Glassmorphism Capsule Outside) -->
+            <!-- Distribusi Model Kendaraan (13-Color Donut + Outside Glassmorphism Capsule + Dynamic Car Photo Preview Card) -->
             <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-100 shadow-saas-card" onclick="closeDonutPopupOnOutside(event)">
-              <div class="flex items-start sm:items-center justify-between gap-2 mb-1">
+              <div class="flex items-start sm:items-center justify-between gap-2 mb-3">
                 <div class="flex items-center space-x-2.5 min-w-0">
                   <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
                   </div>
                   <div class="min-w-0">
                     <h3 class="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Distribusi Model Kendaraan</h3>
-                    <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-snug">Arahkan kursor ke warna donat untuk melihat detail unit</p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-snug">Arahkan kursor ke warna donat untuk melihat preview mobil &amp; stok</p>
                   </div>
                 </div>
                 <div class="flex items-center space-x-1 bg-slate-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0">
@@ -757,96 +757,160 @@
                 </div>
               </div>
 
-              <!-- Centered Interactive Donut Chart + Outside Glassmorphism Capsule Pop-up -->
-              <div id="donutChartWrapper" class="relative flex flex-col items-center justify-center py-8 sm:py-10 select-none">
-                <div class="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 flex items-center justify-center">
-                  <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)">
-                    <!-- Track Background -->
-                    <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    
-                    <!-- 13 Interactive Model Segments (Instant Hover + Touch) -->
-                    <path class="donut-segment text-rose-500 cursor-pointer transition-all duration-150" stroke-dasharray="16.8, 100" stroke-dashoffset="0" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Gran Max Pick Up" data-units="15 Unit" data-percent="17%" data-color="#f43f5e" data-filter="Gran Max Pick Up" data-offset="0" data-len="16.8"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <!-- Balanced Layout: Left = Interactive Donut + Glass Capsule, Right = Dynamic Car Photo & Stock Preview Card -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 sm:gap-5 items-center pt-1">
+                
+                <!-- LEFT: Interactive 13-Color Donut + Outside Glassmorphism Capsule -->
+                <div id="donutChartWrapper" class="sm:col-span-5 relative flex flex-col items-center justify-center py-6 sm:py-7 select-none">
+                  <div class="relative w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 flex items-center justify-center">
+                    <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)">
+                      <!-- Track Background -->
+                      <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      
+                      <!-- 13 Interactive Model Segments (Instant Hover + Touch) -->
+                      <path class="donut-segment text-rose-500 cursor-pointer transition-all duration-150" stroke-dasharray="16.8, 100" stroke-dashoffset="0" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Gran Max Pick Up" data-units="15 Unit" data-percent="17%" data-color="#f43f5e" data-filter="Gran Max Pick Up" data-offset="0" data-len="16.8"
+                        data-photo="assets/images/Inventory_Gran Max Pick Up.jpeg" data-category="Niaga &amp; Logistik Tangguh" data-location="Yard D - Blok 3 (Niaga)" data-masuk="8" data-keluar="7"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-indigo-500 cursor-pointer transition-all duration-150" stroke-dasharray="13.5, 100" stroke-dashoffset="-16.8" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="New Sigra" data-units="12 Unit" data-percent="13%" data-color="#6366f1" data-filter="New Sigra" data-offset="16.8" data-len="13.5"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-indigo-500 cursor-pointer transition-all duration-150" stroke-dasharray="13.5, 100" stroke-dashoffset="-16.8" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="New Sigra" data-units="12 Unit" data-percent="13%" data-color="#6366f1" data-filter="New Sigra" data-offset="16.8" data-len="13.5"
+                        data-photo="assets/images/Inventory_New Sigra.jpeg" data-category="LCGC 7-Seater Family MPV" data-location="Yard B - Blok 2 (MPV)" data-masuk="6" data-keluar="5"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-teal-500 cursor-pointer transition-all duration-150" stroke-dasharray="11.2, 100" stroke-dashoffset="-30.3" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="All New Ayla" data-units="10 Unit" data-percent="11%" data-color="#14b8a6" data-filter="All New Ayla" data-offset="30.3" data-len="11.2"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-teal-500 cursor-pointer transition-all duration-150" stroke-dasharray="11.2, 100" stroke-dashoffset="-30.3" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="All New Ayla" data-units="10 Unit" data-percent="11%" data-color="#14b8a6" data-filter="All New Ayla" data-offset="30.3" data-len="11.2"
+                        data-photo="assets/images/Inventory_All New Ayla.jpeg" data-category="Dynamic City Hatchback" data-location="Yard C - Blok 1 (Hatchback)" data-masuk="5" data-keluar="4"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-blue-500 cursor-pointer transition-all duration-150" stroke-dasharray="10.1, 100" stroke-dashoffset="-41.5" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="New Terios" data-units="9 Unit" data-percent="10%" data-color="#3b82f6" data-filter="New Terios" data-offset="41.5" data-len="10.1"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-blue-500 cursor-pointer transition-all duration-150" stroke-dasharray="10.1, 100" stroke-dashoffset="-41.5" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="New Terios" data-units="9 Unit" data-percent="10%" data-color="#3b82f6" data-filter="New Terios" data-offset="41.5" data-len="10.1"
+                        data-photo="assets/images/Inventory_New Terios.jpeg" data-category="7-Seater Adventure SUV" data-location="Yard A - Blok 2 (SUV)" data-masuk="5" data-keluar="4"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-amber-500 cursor-pointer transition-all duration-150" stroke-dasharray="7.9, 100" stroke-dashoffset="-51.6" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="All New Xenia" data-units="7 Unit" data-percent="8%" data-color="#f59e0b" data-filter="All New Xenia" data-offset="51.6" data-len="7.9"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-amber-500 cursor-pointer transition-all duration-150" stroke-dasharray="7.9, 100" stroke-dashoffset="-51.6" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="All New Xenia" data-units="7 Unit" data-percent="8%" data-color="#f59e0b" data-filter="All New Xenia" data-offset="51.6" data-len="7.9"
+                        data-photo="assets/images/Inventory_All New Xenia.jpeg" data-category="Executive Family MPV" data-location="Yard B - Blok 1 (MPV)" data-masuk="4" data-keluar="3"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-sky-500 cursor-pointer transition-all duration-150" stroke-dasharray="6.7, 100" stroke-dashoffset="-59.5" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Sigra (Prod Old)" data-units="6 Unit" data-percent="7%" data-color="#0ea5e9" data-filter="New Sigra (Prod Old)" data-offset="59.5" data-len="6.7"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-sky-500 cursor-pointer transition-all duration-150" stroke-dasharray="6.7, 100" stroke-dashoffset="-59.5" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Sigra (Prod Old)" data-units="6 Unit" data-percent="7%" data-color="#0ea5e9" data-filter="New Sigra (Prod Old)" data-offset="59.5" data-len="6.7"
+                        data-photo="assets/images/Inventory_New Sigra (Prod Old).jpeg" data-category="Reliable Value MPV" data-location="Yard B - Blok 3 (MPV)" data-masuk="3" data-keluar="3"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-orange-500 cursor-pointer transition-all duration-150" stroke-dasharray="6.7, 100" stroke-dashoffset="-66.2" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Gran Max Minibus" data-units="6 Unit" data-percent="7%" data-color="#f97316" data-filter="Gran Max Minibus" data-offset="66.2" data-len="6.7"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-orange-500 cursor-pointer transition-all duration-150" stroke-dasharray="6.7, 100" stroke-dashoffset="-66.2" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Gran Max Minibus" data-units="6 Unit" data-percent="7%" data-color="#f97316" data-filter="Gran Max Minibus" data-offset="66.2" data-len="6.7"
+                        data-photo="assets/images/Inventory_Gran Max Minibus.jpeg" data-category="Spacious Passenger &amp; Blind Van" data-location="Yard D - Blok 2 (Commercial)" data-masuk="3" data-keluar="3"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-emerald-500 cursor-pointer transition-all duration-150" stroke-dasharray="5.6, 100" stroke-dashoffset="-72.9" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Rocky e-Smart Hybrid" data-units="5 Unit" data-percent="6%" data-color="#10b981" data-filter="Rocky e-Smart Hybrid" data-offset="72.9" data-len="5.6"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-emerald-500 cursor-pointer transition-all duration-150" stroke-dasharray="5.6, 100" stroke-dashoffset="-72.9" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Rocky e-Smart Hybrid" data-units="5 Unit" data-percent="6%" data-color="#10b981" data-filter="Rocky e-Smart Hybrid" data-offset="72.9" data-len="5.6"
+                        data-photo="assets/images/Inventory_Rocky e-Smart Hybrid.jpeg" data-category="Smart Hybrid SUV" data-location="Yard A - Blok 1 (Hybrid)" data-masuk="4" data-keluar="2"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-violet-500 cursor-pointer transition-all duration-150" stroke-dasharray="5.6, 100" stroke-dashoffset="-78.5" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Rocky 1.2 ADS" data-units="5 Unit" data-percent="6%" data-color="#8b5cf6" data-filter="Rocky" data-offset="78.5" data-len="5.6"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-violet-500 cursor-pointer transition-all duration-150" stroke-dasharray="5.6, 100" stroke-dashoffset="-78.5" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Rocky 1.2 ADS" data-units="5 Unit" data-percent="6%" data-color="#8b5cf6" data-filter="Rocky" data-offset="78.5" data-len="5.6"
+                        data-photo="assets/images/Inventory_Rocky.jpeg" data-category="Sporty Compact SUV (ADS)" data-location="Yard A - Blok 3 (SUV)" data-masuk="3" data-keluar="3"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-red-500 cursor-pointer transition-all duration-150" stroke-dasharray="4.5, 100" stroke-dashoffset="-84.1" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="Terios SE" data-units="4 Unit" data-percent="4%" data-color="#ef4444" data-filter="Terios SE" data-offset="84.1" data-len="4.5"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-red-500 cursor-pointer transition-all duration-150" stroke-dasharray="4.5, 100" stroke-dashoffset="-84.1" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="Terios SE" data-units="4 Unit" data-percent="4%" data-color="#ef4444" data-filter="Terios SE" data-offset="84.1" data-len="4.5"
+                        data-photo="assets/images/Inventory_Terios SE.jpeg" data-category="Limited Sporty Edition SUV" data-location="Yard A - Blok 2 (SUV)" data-masuk="2" data-keluar="2"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-pink-500 cursor-pointer transition-all duration-150" stroke-dasharray="4.5, 100" stroke-dashoffset="-88.6" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="New Rocky" data-units="4 Unit" data-percent="4%" data-color="#ec4899" data-filter="New Rocky" data-offset="88.6" data-len="4.5"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-pink-500 cursor-pointer transition-all duration-150" stroke-dasharray="4.5, 100" stroke-dashoffset="-88.6" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="New Rocky" data-units="4 Unit" data-percent="4%" data-color="#ec4899" data-filter="New Rocky" data-offset="88.6" data-len="4.5"
+                        data-photo="assets/images/Inventory_New Rocky.jpeg" data-category="Compact Turbo SUV" data-location="Yard A - Blok 3 (SUV)" data-masuk="2" data-keluar="2"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-cyan-500 cursor-pointer transition-all duration-150" stroke-dasharray="3.4, 100" stroke-dashoffset="-93.1" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="New Sirion" data-units="3 Unit" data-percent="3%" data-color="#06b6d4" data-filter="New Sirion" data-offset="93.1" data-len="3.4"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path class="donut-segment text-cyan-500 cursor-pointer transition-all duration-150" stroke-dasharray="3.4, 100" stroke-dashoffset="-93.1" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="New Sirion" data-units="3 Unit" data-percent="3%" data-color="#06b6d4" data-filter="New Sirion" data-offset="93.1" data-len="3.4"
+                        data-photo="assets/images/Inventory_New Sirion.jpeg" data-category="Dynamic Hatchback City Car" data-location="Yard C - Blok 2 (City Car)" data-masuk="2" data-keluar="2"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
 
-                    <path class="donut-segment text-purple-500 cursor-pointer transition-all duration-150" stroke-dasharray="3.5, 100" stroke-dashoffset="-96.5" stroke-width="6" stroke="currentColor" fill="none"
-                      data-model="New Luxio" data-units="3 Unit" data-percent="3%" data-color="#a855f7" data-filter="Luxio" data-offset="96.5" data-len="3.5"
-                      onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
+                      <path class="donut-segment text-purple-500 cursor-pointer transition-all duration-150" stroke-dasharray="3.5, 100" stroke-dashoffset="-96.5" stroke-width="6" stroke="currentColor" fill="none"
+                        data-model="New Luxio" data-units="3 Unit" data-percent="3%" data-color="#a855f7" data-filter="Luxio" data-offset="96.5" data-len="3.5"
+                        data-photo="assets/images/Inventory_Luxio.jpeg" data-category="Prestigious Business Van" data-location="Yard D - Blok 1 (Commercial)" data-masuk="1" data-keluar="2"
+                        onmouseenter="showDonutCapsule(this, event)" onmousemove="moveDonutCapsule(this, event)" ontouchstart="showDonutCapsule(this, event)"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
 
-                  <!-- Center Donut Label -->
-                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                    <span id="donutCenterLabel" class="text-[8.5px] sm:text-[9.5px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
-                    <span id="donutCenterValue" class="text-xl sm:text-2xl font-black text-slate-900 leading-tight mt-0.5">89</span>
-                    <span id="donutCenterSub" class="text-[9.5px] sm:text-[11px] font-bold text-slate-500 leading-none">Unit</span>
+                    <!-- Center Donut Label -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                      <span id="donutCenterLabel" class="text-[8.5px] sm:text-[9.5px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
+                      <span id="donutCenterValue" class="text-xl sm:text-2xl font-black text-slate-900 leading-tight mt-0.5">89</span>
+                      <span id="donutCenterSub" class="text-[9.5px] sm:text-[11px] font-bold text-slate-500 leading-none">Unit</span>
+                    </div>
+                  </div>
+
+                  <!-- Small Glassmorphism Capsule Pop-up Outside Donut Ring -->
+                  <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-3 py-1.5 bg-white/75 backdrop-blur-md border border-white/90 shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
+                    <span id="donutPopupDot" class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style="background-color: #f43f5e;"></span>
+                    <span id="donutPopupModel" class="text-[11px] sm:text-xs font-extrabold text-slate-800">Gran Max Pick Up</span>
+                    <span class="text-slate-300 text-[10px] font-bold">•</span>
+                    <span id="donutPopupUnits" class="text-[10.5px] sm:text-[11px] font-bold text-slate-600">15 Unit</span>
+                    <span id="donutPopupPercent" class="px-1.5 py-0.5 rounded-full bg-slate-900/80 text-white text-[9.5px] sm:text-[10px] font-extrabold leading-none">17%</span>
                   </div>
                 </div>
 
-                <!-- Small Glassmorphism Capsule Pop-up Outside Donut Ring -->
-                <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-3 py-1.5 bg-white/75 backdrop-blur-md border border-white/90 shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
-                  <span id="donutPopupDot" class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style="background-color: #f43f5e;"></span>
-                  <span id="donutPopupModel" class="text-[11px] sm:text-xs font-extrabold text-slate-800">Gran Max Pick Up</span>
-                  <span class="text-slate-300 text-[10px] font-bold">•</span>
-                  <span id="donutPopupUnits" class="text-[10.5px] sm:text-[11px] font-bold text-slate-600">15 Unit</span>
-                  <span id="donutPopupPercent" class="px-1.5 py-0.5 rounded-full bg-slate-900/80 text-white text-[9.5px] sm:text-[10px] font-extrabold leading-none">17%</span>
+                <!-- RIGHT: Dynamic Vehicle Photo & Stock Preview Card -->
+                <div class="sm:col-span-7">
+                  <div id="donutPreviewCard" class="bg-slate-50/80 hover:bg-slate-50 rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 transition-all duration-200">
+                    <!-- Top Header: Category Tag + Percentage Pill -->
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                      <div class="flex items-center space-x-1.5 min-w-0">
+                        <span id="donutPreviewDot" class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style="background-color: #f43f5e;"></span>
+                        <span id="donutPreviewCategory" class="text-[10px] sm:text-[11px] font-bold text-slate-500 truncate">Niaga &amp; Logistik Tangguh</span>
+                      </div>
+                      <span id="donutPreviewPercentBadge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold text-white shadow-sm flex-shrink-0" style="background-color: #f43f5e;">17% Komposisi</span>
+                    </div>
+
+                    <!-- Center: Car Studio Photo + Model Title & Location -->
+                    <div class="flex items-center space-x-3 sm:space-x-3.5">
+                      <div class="w-24 h-16 sm:w-28 sm:h-20 rounded-xl bg-white border border-slate-200/80 p-1.5 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                        <img id="donutPreviewImg" src="assets/images/Inventory_Gran Max Pick Up.jpeg" alt="Gran Max Pick Up" class="w-full h-full object-contain transition-transform duration-300">
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <h4 id="donutPreviewModel" class="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">Gran Max Pick Up</h4>
+                        <p id="donutPreviewLocation" class="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5">📍 Yard D - Blok 3 (Niaga)</p>
+                        
+                        <!-- Share Progress Bar -->
+                        <div class="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden mt-2">
+                          <div id="donutPreviewBar" class="h-full rounded-full transition-all duration-300" style="width: 17%; background-color: #f43f5e;"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Bottom: Stock Metrics + Quick Filter Button -->
+                    <div class="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-slate-200/70 items-center">
+                      <div class="bg-white rounded-xl px-2.5 py-1.5 border border-slate-200/60">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block leading-none">In-Yard</span>
+                        <span id="donutPreviewUnits" class="text-xs sm:text-sm font-black text-slate-900 mt-0.5 block">15 Unit</span>
+                      </div>
+                      <div class="bg-white rounded-xl px-2.5 py-1.5 border border-slate-200/60">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block leading-none">Mutasi</span>
+                        <span id="donutPreviewMutation" class="text-[10.5px] sm:text-xs font-extrabold text-slate-700 mt-0.5 block whitespace-nowrap">IN 8 • OUT 7</span>
+                      </div>
+                      <button id="donutPreviewBtn" type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="h-full py-1.5 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center space-x-1 shadow-sm active:scale-95 transition">
+                        <span>Lihat Stok</span>
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
 
@@ -1443,11 +1507,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261013-5"></script>
-  <script src="assets/js/state.js?v=20261013-5"></script>
-  <script src="assets/js/api.js?v=20261013-5"></script>
-  <script src="assets/js/scanner.js?v=20261013-5"></script>
-  <script src="assets/js/ui.js?v=20261013-5"></script>
-  <script src="assets/js/app.js?v=20261013-5"></script>
+  <script src="assets/js/config.js?v=20261013-6"></script>
+  <script src="assets/js/state.js?v=20261013-6"></script>
+  <script src="assets/js/api.js?v=20261013-6"></script>
+  <script src="assets/js/scanner.js?v=20261013-6"></script>
+  <script src="assets/js/ui.js?v=20261013-6"></script>
+  <script src="assets/js/app.js?v=20261013-6"></script>
 </body>
 </html>

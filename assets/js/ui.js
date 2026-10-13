@@ -833,7 +833,7 @@ const UI = {
   },
 
   /**
-   * Menampilkan kapsul glassmorphism kecil di LUAR lingkaran donat saat kursor diarahkan (hover / touch)
+   * Menampilkan kapsul glassmorphism kecil di LUAR lingkaran donat dan memperbarui Kartu Preview Mobil Dinamis saat kursor diarahkan (hover / touch)
    */
   showDonutCapsule(segmentEl, event) {
     if (!segmentEl) return;
@@ -847,6 +847,12 @@ const UI = {
     const units = segmentEl.dataset.units || '0 Unit';
     const percent = segmentEl.dataset.percent || '0%';
     const color = segmentEl.dataset.color || '#3b82f6';
+    const filterKey = segmentEl.dataset.filter || model;
+    const photo = segmentEl.dataset.photo || 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+    const category = segmentEl.dataset.category || 'Unit Kendaraan Daihatsu';
+    const location = segmentEl.dataset.location || 'Pool Yard Sentra Lampung';
+    const masuk = segmentEl.dataset.masuk || '0';
+    const keluar = segmentEl.dataset.keluar || '0';
 
     // Highlight segmen yang sedang di-hover dan redupkan segmen lain sedikit
     const allSegments = svg.querySelectorAll('.donut-segment');
@@ -868,7 +874,7 @@ const UI = {
     if (centerVal) centerVal.textContent = percent;
     if (centerSub) centerSub.textContent = units;
 
-    // Isi konten kapsul glassmorphism
+    // 1. Isi konten kapsul glassmorphism di luar donat
     const dotEl = document.getElementById('donutPopupDot');
     const modelEl = document.getElementById('donutPopupModel');
     const unitsEl = document.getElementById('donutPopupUnits');
@@ -878,6 +884,40 @@ const UI = {
     if (modelEl) modelEl.textContent = model;
     if (unitsEl) unitsEl.textContent = units;
     if (percentEl) percentEl.textContent = percent;
+
+    // 2. Perbarui Kartu Preview Foto Mobil Dinamis di sebelah kanan donat
+    const prevDot = document.getElementById('donutPreviewDot');
+    const prevCategory = document.getElementById('donutPreviewCategory');
+    const prevBadge = document.getElementById('donutPreviewPercentBadge');
+    const prevImg = document.getElementById('donutPreviewImg');
+    const prevModel = document.getElementById('donutPreviewModel');
+    const prevLocation = document.getElementById('donutPreviewLocation');
+    const prevBar = document.getElementById('donutPreviewBar');
+    const prevUnits = document.getElementById('donutPreviewUnits');
+    const prevMutation = document.getElementById('donutPreviewMutation');
+    const prevBtn = document.getElementById('donutPreviewBtn');
+
+    if (prevDot) prevDot.style.backgroundColor = color;
+    if (prevCategory) prevCategory.textContent = category;
+    if (prevBadge) {
+      prevBadge.textContent = `${percent} Komposisi`;
+      prevBadge.style.backgroundColor = color;
+    }
+    if (prevImg) {
+      prevImg.src = photo;
+      prevImg.alt = model;
+    }
+    if (prevModel) prevModel.textContent = model;
+    if (prevLocation) prevLocation.textContent = `📍 ${location}`;
+    if (prevBar) {
+      prevBar.style.width = percent;
+      prevBar.style.backgroundColor = color;
+    }
+    if (prevUnits) prevUnits.textContent = units;
+    if (prevMutation) prevMutation.textContent = `IN ${masuk} • OUT ${keluar}`;
+    if (prevBtn) {
+      prevBtn.onclick = () => this.filterInventoryByModel(filterKey);
+    }
 
     popup.classList.remove('hidden');
     this.positionDonutCapsuleOutside(segmentEl, event);
