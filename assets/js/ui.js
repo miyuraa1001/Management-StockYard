@@ -560,15 +560,16 @@ const UI = {
    */
   populateDateDropdown() {
     const dateSelect = document.getElementById('histFilterDate');
-    if (!dateSelect) return;
-
-    dateSelect.innerHTML = '<option value="all">Semua Tgl</option>';
-    for (let i = 1; i <= 31; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = i;
-      dateSelect.appendChild(opt);
+    if (dateSelect) {
+      dateSelect.innerHTML = '<option value="all">Semua Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        dateSelect.appendChild(opt);
+      }
     }
+    this.initCustomDropdowns();
   },
 
   /**
@@ -1078,6 +1079,195 @@ const UI = {
   closeDonutPopupOnOutside(event) {
     if (event && event.target && event.target.closest('#vehicleDonutSvg')) return;
     this.hideDonutCapsule();
+  },
+
+  /**
+   * Menggantikan semua <select> bawaan browser dengan Custom Website Dropdown
+   * agar di perangkat mobile tidak memunculkan picker layar penuh bawaan OS
+   */
+  initCustomDropdowns() {
+    const selectIds = [
+      'histFilterDate',
+      'histFilterMonth',
+      'histFilterYear',
+      'inputMutationType',
+      'inputCarModel'
+    ];
+
+    const nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+
+    selectIds.forEach(id => {
+      const selectEl = document.getElementById(id);
+      if (!selectEl || selectEl.dataset.customEnhanced === 'true') return;
+      selectEl.dataset.customEnhanced = 'true';
+
+      const isCompactFilter = id.startsWith('histFilter');
+      const isRightAligned = id === 'histFilterYear';
+
+      // Sembunyikan ikon panah SVG bawaan di sebelah select jika ada
+      const parentEl = selectEl.parentElement;
+      if (parentEl && parentEl.classList.contains('relative')) {
+        const siblingSvg = parentEl.querySelector('svg');
+        if (siblingSvg) siblingSvg.classList.add('hidden');
+      }
+
+      // Sembunyikan elemen <select> asli agar browser mobile tidak membuka native picker
+      selectEl.classList.add('hidden');
+
+      // Buat wrapper custom dropdown
+      const wrapper = document.createElement('div');
+      wrapper.className = 'custom-select-wrapper relative w-full select-none';
+
+      // Buat tombol trigger
+      const triggerBtn = document.createElement('button');
+      triggerBtn.type = 'button';
+      triggerBtn.className = isCompactFilter
+        ? 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-700 flex items-center justify-between gap-1 transition focus:outline-none focus:ring-2 focus:ring-blue-500/30'
+        : 'w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-500/30';
+
+      const triggerLabel = document.createElement('span');
+      triggerLabel.className = 'truncate text-left';
+
+      const triggerArrow = document.createElement('span');
+      triggerArrow.className = 'text-slate-400 flex-shrink-0 transition-transform duration-200';
+      triggerArrow.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M19 9l-7 7-7-7"/></svg>`;
+
+      triggerBtn.appendChild(triggerLabel);
+      triggerBtn.appendChild(triggerArrow);
+
+      // Buat panel menu pop-up ringkas (tidak memenuhi layar)
+      const menu = document.createElement('div');
+      const alignClass = isRightAligned
+        ? 'right-0 min-w-[120px] w-full'
+        : (isCompactFilter ? 'left-0 min-w-[130px] w-full' : 'left-0 right-0 w-full');
+
+      menu.className = `custom-select-menu hidden absolute top-full mt-1.5 z-50 ${alignClass} bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-[0_12px_32px_rgba(15,23,42,0.16)] ring-1 ring-slate-900/5 py-1.5 max-h-48 overflow-y-auto`;
+
+      const renderMenuOptions = () => {
+        menu.innerHTML = '';
+        const currentVal = nativeValueDesc ? nativeValueDesc.get.call(selectEl) : selectEl.value;
+        const options = Array.from(selectEl.options);
+        const selectedOpt = options.find(o => o.value === String(currentVal)) || options[0];
+
+        if (selectedOpt) {
+          triggerLabel.textContent = selectedOpt.textContent;
+        }
+
+        options.forEach(opt => {
+          const isSelected = String(opt.value) === String(currentVal);
+          const itemBtn = document.createElement('button');
+          itemBtn.type = 'button';
+          itemBtn.dataset.val = opt.value;
+          itemBtn.className = `w-[calc(100%-10px)] mx-[5px] my-0.5 px-2.5 py-2 rounded-xl text-left text-xs flex items-center justify-between gap-2 transition ${
+            isSelected
+              ? 'bg-blue-50 text-blue-600 font-extrabold'
+              : 'text-slate-700 hover:bg-slate-100/80 font-semibold'
+          }`;
+
+          const rawText = opt.textContent || '';
+          const textWrap = document.createElement('div');
+          textWrap.className = 'min-w-0 flex-1';
+
+          if (rawText.includes(' — ')) {
+            const parts = rawText.split(' — ');
+            textWrap.innerHTML = `
+              <span class="block text-xs font-extrabold leading-tight truncate">${parts[0]}</span>
+              <span class="block text-[10px] ${isSelected ? 'text-blue-500' : 'text-slate-400'} font-medium leading-tight truncate mt-0.5">${parts[1]}</span>
+            `;
+          } else {
+            textWrap.innerHTML = `<span class="block leading-tight truncate">${rawText}</span>`;
+          }
+
+          itemBtn.appendChild(textWrap);
+
+          if (isSelected) {
+            const checkIcon = document.createElement('span');
+            checkIcon.className = 'text-blue-600 flex-shrink-0';
+            checkIcon.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
+            itemBtn.appendChild(checkIcon);
+          }
+
+          itemBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            selectEl.value = opt.value;
+            closeMenu();
+            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+
+          menu.appendChild(itemBtn);
+        });
+      };
+
+      const openMenu = () => {
+        // Tutup semua custom dropdown lain yang sedang terbuka
+        document.querySelectorAll('.custom-select-menu').forEach(m => {
+          if (m !== menu) m.classList.add('hidden');
+        });
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          if (w !== wrapper) {
+            const arr = w.querySelector('button > span:last-child');
+            if (arr) arr.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        renderMenuOptions();
+        menu.classList.remove('hidden');
+        triggerArrow.style.transform = 'rotate(180deg)';
+
+        // Scroll otomatis ke item yang sedang terpilih di dalam menu
+        const activeItem = menu.querySelector(`[data-val="${CSS.escape(String(selectEl.value))}"]`);
+        if (activeItem) {
+          activeItem.scrollIntoView({ block: 'nearest' });
+        }
+      };
+
+      const closeMenu = () => {
+        menu.classList.add('hidden');
+        triggerArrow.style.transform = 'rotate(0deg)';
+      };
+
+      triggerBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (menu.classList.contains('hidden')) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
+      });
+
+      // Hook setter .value pada selectEl agar perubahan dari kode JS (misal reset / scan barcode) langsung memperbarui tampilan tombol
+      if (nativeValueDesc) {
+        Object.defineProperty(selectEl, 'value', {
+          get() {
+            return nativeValueDesc.get.call(this);
+          },
+          set(newVal) {
+            nativeValueDesc.set.call(this, newVal);
+            renderMenuOptions();
+          }
+        });
+      }
+
+      wrapper.appendChild(triggerBtn);
+      wrapper.appendChild(menu);
+      selectEl.insertAdjacentElement('afterend', wrapper);
+
+      renderMenuOptions();
+    });
+
+    // Tutup dropdown saat klik di luar
+    if (!this._customDropdownOutsideBound) {
+      this._customDropdownOutsideBound = true;
+      document.addEventListener('click', (e) => {
+        if (e.target && e.target.closest('.custom-select-wrapper')) return;
+        document.querySelectorAll('.custom-select-menu').forEach(m => m.classList.add('hidden'));
+        document.querySelectorAll('.custom-select-wrapper button > span:last-child').forEach(arr => {
+          arr.style.transform = 'rotate(0deg)';
+        });
+      });
+    }
   }
 };
 
@@ -1109,11 +1299,14 @@ window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSe
 window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
 
-// Pastikan event touchmove pada grafik donat bersifat non-passive agar layar mobile tidak ikut ter-scroll saat di-swipe
+// Pastikan event touchmove pada grafik donat bersifat non-passive & custom dropdown terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {
   const donutSvg = document.getElementById('vehicleDonutSvg');
   if (donutSvg) {
     donutSvg.addEventListener('touchstart', (e) => UI.handleDonutTouch(e), { passive: false });
     donutSvg.addEventListener('touchmove', (e) => UI.handleDonutTouch(e), { passive: false });
+  }
+  if (UI && typeof UI.initCustomDropdowns === 'function') {
+    UI.initCustomDropdowns();
   }
 });
