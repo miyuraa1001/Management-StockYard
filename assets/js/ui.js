@@ -105,9 +105,7 @@ const UI = {
         ? 'bg-emerald-50 text-emerald-600 border-emerald-200/80' 
         : 'bg-blue-50 text-blue-600 border-blue-200/80';
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
-      const photoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
-        ? item.unitPhoto
-        : (catalogItem ? catalogItem.photo : item.unitPhoto);
+      const photoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
 
       const shortDate = item.fullDateStr
         ? item.fullDateStr.replace('Oktober', 'Okt').replace('September', 'Sep').replace('November', 'Nov').replace('Desember', 'Des').replace('Januari', 'Jan').replace('Februari', 'Feb').replace('Agustus', 'Agu')
@@ -527,9 +525,12 @@ const UI = {
         : 'bg-blue-50 text-blue-700 border-blue-200/90';
       const typeArrow = isMasuk ? '↓' : '↑';
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
-      const unitPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
+      // Foto Kolom Kendaraan: selalu foto katalog resmi 13 model yang sama persis seperti di inventory
+      const catalogPhotoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
+      // Foto Bukti Fisik Lapangan: foto aktual hasil jepretan kamera / upload mutasi
+      const physicalPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
         ? item.unitPhoto
-        : (catalogItem ? catalogItem.photo : item.unitPhoto);
+        : catalogPhotoSrc;
 
       const rowNum = String(idx + 1).padStart(2, '0');
 
@@ -552,11 +553,11 @@ const UI = {
             </span>
           </td>
 
-          <!-- Kolom 3: Kendaraan -->
+          <!-- Kolom 3: Kendaraan (Foto Otomatis Sesuai Model & Sama dengan Inventory) -->
           <td class="py-3 px-2.5 align-middle">
             <div class="flex items-center space-x-2.5">
-              <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="w-11 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Mobil">
-                <img src="${unitPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain">
+              <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-11 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
                 <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
@@ -593,7 +594,7 @@ const UI = {
           <!-- Kolom 6: Bukti Fisik (Foto Mobil & Dokumen DO) -->
           <td class="py-3 px-2.5 align-middle whitespace-nowrap text-center">
             <div class="inline-flex items-center justify-center space-x-1">
-              <button type="button" onclick="openImagePreviewModal('${unitPhotoSrc}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Foto Fisik Mobil">
+              <button type="button" onclick="openImagePreviewModal('${physicalPhotoSrc}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Foto Fisik Mobil">
                 <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
                 <span>Mobil</span>
               </button>

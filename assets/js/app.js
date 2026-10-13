@@ -76,7 +76,8 @@ const App = {
     }
 
     const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(model) : null;
-    const unitImg = AppState.uploadedUnitPhotoUrl || (catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg');
+    const modelOfficialPhoto = catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+    const unitImg = AppState.uploadedUnitPhotoUrl || modelOfficialPhoto;
     const docImg = AppState.uploadedDocPhotoUrl || 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80';
 
     const now = new Date();
@@ -96,6 +97,7 @@ const App = {
       year: now.getFullYear(),
       fullDateStr: `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`,
       model: model,
+      modelPhoto: modelOfficialPhoto,
       vin: vin,
       engine: engine,
       pic: CONFIG.OPERATOR_NAME || 'Andi Pratama',
@@ -111,7 +113,7 @@ const App = {
     const existingInv = AppState.inventoryData.find(item => item.vin === vin);
     if (existingInv) {
       existingInv.status = mutationType === 'Unit Masuk' ? 'In-Yard' : 'Allocated';
-      existingInv.photo = unitImg;
+      existingInv.photo = modelOfficialPhoto;
       existingInv.docPhoto = docImg;
     } else {
       // Jika belum ada di inventory dan jenis mutasi adalah Unit Masuk, tambahkan ke inventory
@@ -125,7 +127,7 @@ const App = {
           engine: engine,
           status: 'In-Yard',
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
-          photo: unitImg,
+          photo: modelOfficialPhoto,
           docPhoto: docImg
         });
       }
