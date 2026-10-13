@@ -98,32 +98,36 @@ const UI = {
     container.innerHTML = recentItems.map(item => {
       const isMasuk = item.type === 'Unit Masuk';
       const badgeColor = isMasuk 
-        ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
-        : 'bg-blue-50 text-blue-600 border-blue-200';
+        ? 'bg-emerald-50 text-emerald-600 border-emerald-200/80' 
+        : 'bg-blue-50 text-blue-600 border-blue-200/80';
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
       const photoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
         ? item.unitPhoto
         : (catalogItem ? catalogItem.photo : item.unitPhoto);
 
+      const shortDate = item.fullDateStr
+        ? item.fullDateStr.replace('Oktober', 'Okt').replace('September', 'Sep').replace('November', 'Nov').replace('Desember', 'Des').replace('Januari', 'Jan').replace('Februari', 'Feb').replace('Agustus', 'Agu')
+        : '9 Okt 2026';
+
       return `
-        <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-saas-card flex items-center justify-between">
-          <div class="flex items-center space-x-3 min-w-0">
-            <img src="${photoSrc}" alt="${item.model}" class="w-12 h-11 rounded-xl object-contain bg-white p-0.5 border border-slate-100 flex-shrink-0">
+        <div class="bg-slate-50/70 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+            <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0">
             <div class="min-w-0">
               <div class="flex items-center space-x-1.5">
-                <span class="text-xs font-extrabold text-slate-900 truncate">${item.model}</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0">
+                  ${isMasuk ? 'Unit Masuk' : 'Unit Keluar'}
+                </span>
+                <span class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${item.model}</span>
               </div>
-              <p class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">VIN: ${item.vin}</p>
-              <p class="text-[10px] text-slate-500 font-medium mt-0.5 flex items-center truncate">
-                <span class="w-1.5 h-1.5 rounded-full ${isMasuk ? 'bg-emerald-500' : 'bg-blue-500'} mr-1"></span>
-                ${item.type} • PIC: ${item.pic}
-              </p>
+              <p class="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-1 truncate">VIN: ${item.vin}</p>
             </div>
           </div>
-          <div class="text-right flex-shrink-0 pl-2">
-            <span class="text-[10px] font-bold text-slate-400 block">${item.time}</span>
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-lg text-[9px] font-extrabold border ${badgeColor}">
-              ${isMasuk ? 'Masuk' : 'Keluar'}
+          <div class="text-right flex-shrink-0 pl-1">
+            <span class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-400 block whitespace-nowrap">${shortDate} • ${item.time}</span>
+            <span class="inline-flex items-center space-x-1 mt-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/70">
+              <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              <span>Terverifikasi</span>
             </span>
           </div>
         </div>
@@ -588,9 +592,9 @@ const UI = {
       const dots = document.querySelectorAll('.hero-dot');
       dots.forEach((dot, idx) => {
         if (idx === index) {
-          dot.className = 'hero-dot w-3.5 sm:w-5 md:w-6 h-1 md:h-1.5 rounded-full bg-blue-500 shadow-sm transition-all';
+          dot.className = 'hero-dot w-2.5 h-2.5 rounded-full bg-blue-600 shadow-xs transition-all scale-110';
         } else {
-          dot.className = 'hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all';
+          dot.className = 'hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all';
         }
       });
 

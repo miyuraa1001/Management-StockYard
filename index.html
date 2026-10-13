@@ -45,19 +45,22 @@
   <!-- App Container (Fluid on Mobile, Modern Wide Enterprise SaaS on Desktop) -->
   <div class="w-full max-w-[1560px] mx-auto h-[100dvh] md:h-[calc(100vh-2rem)] md:max-h-[calc(100vh-2rem)] md:my-4 bg-[#F8FAFC] md:rounded-[32px] md:shadow-2xl md:border md:border-slate-200/90 relative overflow-hidden flex flex-col">
     
-    <!-- Top Header Bar (Dual Mode: Mobile Compact & Desktop Enterprise Navbar) -->
-    <header class="px-3.5 sm:px-5 md:px-8 py-2 sm:py-2.5 md:py-3 bg-white sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] flex-shrink-0 pt-safe">
-      <!-- Left: Logo & Branch Info -->
-      <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
-        <!-- Logo Resmi Daihatsu (Menyatu Alami dengan Header) -->
+    <!-- Top Header Bar (Dual Mode: Clean Mobile Header & Desktop Enterprise Navbar) -->
+    <header class="px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 bg-white sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] flex-shrink-0 pt-safe">
+      <!-- Left: Logo, Divider & Branch Info -->
+      <div class="flex items-center space-x-3 min-w-0">
+        <!-- Logo Resmi Daihatsu -->
         <img src="assets/images/daihatsu-logo.png" alt="Logo Daihatsu" class="h-6 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0 select-none">
         
+        <!-- Vertical Divider -->
+        <div class="h-7 w-px bg-slate-200 flex-shrink-0"></div>
+
         <div class="min-w-0">
           <div class="flex items-center space-x-1.5">
-            <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/70 leading-none">DSO</span>
+            <h1 class="text-[15px] sm:text-base font-black text-slate-900 tracking-tight leading-none">Salvage</h1>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none">DSO</span>
           </div>
-          <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold truncate leading-none mt-1">
+          <p class="text-[10.5px] sm:text-[11px] text-slate-500 font-medium truncate leading-none mt-1">
             Management Sentra Lampung
           </p>
         </div>
@@ -91,103 +94,85 @@
           <span>Scan Unit</span>
         </button>
 
-        <!-- Live Tracking Badge (Clean, Never Wraps) -->
-        <div class="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-1 rounded-full text-[9.5px] sm:text-[11px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1 sm:mr-1.5 flex-shrink-0"></span>
+        <!-- Live Tracking Badge -->
+        <div class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs whitespace-nowrap">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5 flex-shrink-0"></span>
           <span class="hidden sm:inline">Live Tracking</span>
           <span class="sm:hidden">Live</span>
         </div>
 
-        <!-- Profile Avatar & Info -->
-        <button onclick="switchTab('settings')" class="relative flex items-center p-0.5 md:pr-2.5 md:bg-slate-50 md:hover:bg-slate-100 rounded-full md:border md:border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0 ring-1 ring-slate-200/60">
+        <!-- Profile Avatar & Dropdown Chevron -->
+        <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1.5 py-0.5 md:pr-2.5 bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95" aria-label="Pengaturan Profil">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
           </div>
-          <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border-2 border-white sm:hidden"></span>
-          <div class="hidden md:block text-left ml-2">
+          <div class="hidden md:block text-left ml-2 mr-1">
             <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
             <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
           </div>
+          <svg class="w-3.5 h-3.5 text-slate-400 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
     </header>
 
     <!-- Main Scrollable Area -->
-    <main id="appMainViewport" class="flex-1 min-h-0 overflow-y-scroll max-md:hide-scrollbar custom-scrollbar smooth-scroll pb-32 md:pb-12 pt-3 px-4 md:px-8">
+    <main id="appMainViewport" class="flex-1 min-h-0 overflow-y-scroll max-md:hide-scrollbar custom-scrollbar smooth-scroll pb-28 md:pb-12 pt-3 px-3.5 sm:px-5 md:px-8">
       
       <!-- ======================================================== -->
       <!-- SECTION 1: DASHBOARD (BERANDA) -->
       <!-- ======================================================== -->
-      <section id="viewDashboard" class="space-y-4 md:space-y-5">
+      <section id="viewDashboard" class="space-y-3.5 md:space-y-5">
         
-                <!-- ======================================================== -->
-        <!-- HERO KPI LANDSCAPE CAROUSEL (Integrated Executive Hero Banner) -->
         <!-- ======================================================== -->
-        <div class="relative group hero-floating-card select-none mt-1 mb-2 md:mt-2 md:mb-4 w-full">
-          <!-- Ambient Glow Aura behind the card -->
-          <div class="absolute -inset-1.5 bg-gradient-to-r from-blue-600/30 via-indigo-600/20 to-rose-600/30 rounded-[26px] md:rounded-[40px] blur-xl opacity-75 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
-
-          <!-- Main Carousel Card Wrapper with Glass Border & Shadow -->
-          <div class="relative w-full rounded-[20px] sm:rounded-[26px] md:rounded-[36px] overflow-hidden bg-slate-950 shadow-2xl border border-white/20">
+        <!-- HERO KPI LANDSCAPE CAROUSEL (Clean Unobstructed Reference Layout) -->
+        <!-- ======================================================== -->
+        <div class="relative group select-none w-full">
+          <!-- Main Carousel Card Wrapper -->
+          <div class="relative w-full rounded-[22px] sm:rounded-[26px] md:rounded-[34px] overflow-hidden bg-slate-900 shadow-lg border border-slate-200/60">
             
-            <!-- Horizontal GPU-Accelerated Slides Track (Landscape Cinematic on Mobile & Taller on Desktop) -->
-            <div id="heroCarouselTrack" class="flex w-full h-[215px] sm:h-[260px] md:h-[460px] lg:h-[490px] xl:h-[520px]">
+            <!-- Horizontal GPU-Accelerated Slides Track -->
+            <div id="heroCarouselTrack" class="flex w-full h-[200px] sm:h-[245px] md:h-[430px] lg:h-[460px]">
               
               <!-- ------------------------------------------------------------------ -->
               <!-- Slide 1: Rocky e-Smart Hybrid -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Rocky e-Smart Hybrid -->
-                <img src="assets/images/hero-rocky-hybrid.jpg?v=20261013-2" alt="Rocky e-Smart Hybrid" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-rocky-hybrid.jpg?v=20261013-3" alt="Rocky e-Smart Hybrid" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Smart Hybrid SUV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <!-- Top Row: Category Pill (Left) + Masuk/Keluar Pills (Right) -->
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Smart Hybrid SUV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>8 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>6 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 6 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-emerald-300 uppercase tracking-wider block truncate">Solusi Cerdas Elektrifikasi</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Rocky e-Smart Hybrid</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">5 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">2 Unit</strong></span>
-                    </div>
-                  </div>
+                <!-- Middle Left: Direct Unboxed Tagline & Title -->
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Solusi Cerdas Elektrifikasi</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Rocky e-Smart Hybrid</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Rocky e-Smart Hybrid')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <!-- Bottom Row: Inline Stock Status (Left) + Blue Lihat Stok Pill (Right) -->
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">5 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Rocky e-Smart Hybrid')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -196,57 +181,39 @@
               <!-- Slide 2: New Terios -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Terios -->
-                <img src="assets/images/hero-new-terios.jpg?v=20261013-2" alt="New Terios" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-new-terios.jpg?v=20261013-3" alt="New Terios" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">7-Seater Adventure SUV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">7-Seater Adventure SUV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 14 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>14 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>11 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 11 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-blue-300 uppercase tracking-wider block truncate">Sahabat Petualang Keluarga</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">New Terios</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">9 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">3 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Petualang Keluarga</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">New Terios</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Terios')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">9 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Terios')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -255,57 +222,39 @@
               <!-- Slide 3: Terios SE -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Terios SE -->
-                <img src="assets/images/hero-terios-se.jpg?v=20261013-2" alt="Terios SE" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-terios-se.jpg?v=20261013-3" alt="Terios SE" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-red-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Limited Sporty Edition</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Limited Sporty Edition</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 6 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>6 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>5 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 5 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-red-300 uppercase tracking-wider block truncate">Eksklusif & Berkarakter</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Terios SE</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">4 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">1 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Eksklusif & Berkarakter</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Terios SE</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Terios SE')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Terios SE')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -314,57 +263,39 @@
               <!-- Slide 4: All New Xenia -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: All New Xenia -->
-                <img src="assets/images/hero-all-new-xenia.jpg?v=20261013-2" alt="All New Xenia" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-all-new-xenia.jpg?v=20261013-3" alt="All New Xenia" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Executive Family MPV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Executive Family MPV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 12 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>12 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>10 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 10 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-amber-300 uppercase tracking-wider block truncate">Modern FWD Comfort</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">All New Xenia</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">7 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">2 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Modern FWD Comfort</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">All New Xenia</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Xenia')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">7 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Xenia')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -373,57 +304,39 @@
               <!-- Slide 5: New Sigra -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Sigra -->
-                <img src="assets/images/hero-new-sigra.jpg?v=20261013-2" alt="New Sigra" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-new-sigra.jpg?v=20261013-3" alt="New Sigra" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Best Selling 7-Seater MPV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Best Selling 7-Seater MPV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 19 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>19 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>16 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 16 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-indigo-300 uppercase tracking-wider block truncate">Sahabat Impian Keluarga</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">New Sigra</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">12 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">4 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Impian Keluarga</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">New Sigra</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Sigra')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">12 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Sigra')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -432,57 +345,39 @@
               <!-- Slide 6: Sigra (Prod Old) -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Sigra (Prod Old) -->
-                <img src="assets/images/hero-sigra-old.jpg?v=20261013-2" alt="Sigra (Prod Old)" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-sigra-old.jpg?v=20261013-3" alt="Sigra (Prod Old)" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-sky-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Reliable Value MPV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Reliable Value MPV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>8 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>6 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 6 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-sky-300 uppercase tracking-wider block truncate">Ekonomis & Tangguh</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Sigra (Prod Old)</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">6 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">2 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Ekonomis & Tangguh</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Sigra (Prod Old)</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('New Sigra (Prod Old)')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">6 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('New Sigra (Prod Old)')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -491,57 +386,39 @@
               <!-- Slide 7: All New Ayla -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: All New Ayla -->
-                <img src="assets/images/hero-all-new-ayla.jpg?v=20261013-2" alt="All New Ayla" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-all-new-ayla.jpg?v=20261013-3" alt="All New Ayla" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-teal-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Powerful & Agile Hatchback</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Powerful & Agile Hatchback</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 15 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>15 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>13 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 13 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-teal-300 uppercase tracking-wider block truncate">Sahabat Pertama Masa Depan</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">All New Ayla</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">10 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">3 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Pertama Masa Depan</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">All New Ayla</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Ayla')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">10 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Ayla')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -550,57 +427,39 @@
               <!-- Slide 8: New Rocky -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Rocky -->
-                <img src="assets/images/hero-new-rocky.jpg?v=20261013-2" alt="New Rocky" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-new-rocky.jpg?v=20261013-3" alt="New Rocky" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Compact Turbo SUV</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Compact Turbo SUV</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 7 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>7 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>5 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 5 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-rose-300 uppercase tracking-wider block truncate">Sahabat Eksplorasi Urban</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">New Rocky</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">4 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">2 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Eksplorasi Urban</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">New Rocky</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('New Rocky')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('New Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -609,57 +468,39 @@
               <!-- Slide 9: Rocky 1.2 ADS -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Rocky 1.2 ADS -->
-                <img src="assets/images/hero-rocky.jpg?v=20261013-2" alt="Rocky 1.2 ADS" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-rocky.jpg?v=20261013-3" alt="Rocky 1.2 ADS" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Sporty ADS Styling</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Sporty ADS Styling</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 5 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>5 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>4 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 4 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-orange-300 uppercase tracking-wider block truncate">Dinamis & Efisien</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Rocky 1.2 ADS</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">5 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">1 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Dinamis & Efisien</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Rocky 1.2 ADS</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Rocky')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">5 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Rocky')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -668,57 +509,39 @@
               <!-- Slide 10: New Sirion -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Sirion -->
-                <img src="assets/images/hero-new-sirion.jpg?v=20261013-2" alt="New Sirion" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-new-sirion.jpg?v=20261013-3" alt="New Sirion" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Dynamic Hatchback City Car</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Dynamic Hatchback City Car</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 5 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>5 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>4 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 4 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-cyan-300 uppercase tracking-wider block truncate">Sahabat Muda Aktif</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">New Sirion</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">3 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">1 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Muda Aktif</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">New Sirion</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Sirion')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Sirion')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -727,57 +550,39 @@
               <!-- Slide 11: New Luxio -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: New Luxio -->
-                <img src="assets/images/hero-luxio.jpg?v=20261013-2" alt="New Luxio" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-luxio.jpg?v=20261013-3" alt="New Luxio" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Prestigious Business Van</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Prestigious Business Van</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 4 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>4 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>3 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 3 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-purple-300 uppercase tracking-wider block truncate">Sahabat Bisnis Eksekutif</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">New Luxio</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">3 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">1 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Bisnis Eksekutif</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">New Luxio</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Luxio')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">3 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">1 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Luxio')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -786,57 +591,39 @@
               <!-- Slide 12: Gran Max Minibus -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Gran Max Minibus -->
-                <img src="assets/images/hero-granmax-minibus.jpg?v=20261013-2" alt="Gran Max Minibus" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-granmax-minibus.jpg?v=20261013-3" alt="Gran Max Minibus" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-orange-400 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Spacious Passenger Van</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Spacious Passenger Van</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 8 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>8 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>7 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 7 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-orange-300 uppercase tracking-wider block truncate">Sahabat Usaha & Travel</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Gran Max Minibus</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">6 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">2 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Sahabat Usaha & Travel</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Gran Max Minibus</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Gran Max Minibus')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">6 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">2 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Gran Max Minibus')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
@@ -845,155 +632,157 @@
               <!-- Slide 13: Gran Max Pick Up -->
               <!-- ------------------------------------------------------------------ -->
               <div class="hero-slide flex-shrink-0 w-full h-full relative overflow-hidden select-none">
-                <!-- [FOTO MOBIL RESMI]: Gran Max Pick Up -->
-                <img src="assets/images/hero-granmax-pickup.jpg?v=20261013-2" alt="Gran Max Pick Up" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/35 pointer-events-none"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+                <img src="assets/images/hero-granmax-pickup.jpg?v=20261013-3" alt="Gran Max Pick Up" class="w-full h-full object-cover object-[72%_62%] sm:object-[68%_60%] md:object-[center_62%] transform scale-100 group-hover:scale-105 transition-transform duration-700 pointer-events-none">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/35 to-transparent pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25 pointer-events-none"></div>
 
-                <!-- Top Floating Bar: Category, Branch, Date & KPI Counters -->
-                <div class="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 md:top-5 md:inset-x-5 flex items-center justify-between z-10 pointer-events-none">
-                  <div class="flex items-center space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                      <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                      <span class="text-[8px] sm:text-[9.5px] md:text-xs font-black uppercase tracking-wider">Niaga & Logistik Tangguh</span>
-                    </div>
-                    <div class="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white text-[10px] md:text-xs font-bold">
-                      <span>Astra Daihatsu DSO Lampung 👋</span>
-                    </div>
+                <div class="absolute top-3 inset-x-3.5 sm:top-4 sm:inset-x-4 md:top-5 md:inset-x-6 flex items-center justify-between z-10 pointer-events-none">
+                  <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-white shadow-md">
+                    <span class="text-[10px] md:text-xs">🏆</span>
+                    <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold uppercase tracking-wider">Niaga & Logistik Tangguh</span>
                   </div>
-
-                  <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 pointer-events-auto">
-                    <div class="hidden md:inline-flex items-center px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white/90 text-[10px] md:text-xs font-semibold">
-                      <span>📅 9 Okt 2026 • Realtime Sync</span>
+                  <div class="flex items-center space-x-1.5">
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-emerald-500 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↓ 20 Masuk</span>
                     </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-emerald-500/85 backdrop-blur-md border border-emerald-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-                      <span>20 Masuk</span>
-                    </div>
-                    <div class="inline-flex items-center space-x-0.5 sm:space-x-1 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl bg-blue-500/85 backdrop-blur-md border border-blue-400/40 text-white text-[8px] sm:text-[9.5px] md:text-xs font-black shadow-lg">
-                      <svg class="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                      <span>18 Keluar</span>
+                    <div class="inline-flex items-center space-x-1 px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full bg-blue-600 text-white text-[9.5px] sm:text-[11px] md:text-xs font-extrabold shadow-md">
+                      <span>↑ 18 Keluar</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Bottom Glassmorphism Info Overlay -->
-                <div class="absolute bottom-3 inset-x-2 sm:bottom-4 sm:inset-x-3 md:bottom-8 md:inset-x-6 z-10 flex items-end justify-between pointer-events-none">
-                  <div class="backdrop-blur-xl bg-slate-950/75 border border-white/20 p-2 sm:p-2.5 md:p-5 rounded-xl md:rounded-3xl shadow-xl max-w-[62%] sm:max-w-xs md:max-w-md pointer-events-auto">
-                    <div class="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] font-black text-amber-300 uppercase tracking-wider block truncate">Best Seller Commercial</span>
-                      <span class="text-white/40">•</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white/70 font-semibold flex-shrink-0">Sentra Lampung</span>
-                    </div>
-                    <h3 class="text-xs sm:text-sm md:text-2xl font-black text-white leading-tight mt-0.5 truncate">Gran Max Pick Up</h3>
-                    <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 text-[7.5px] sm:text-[9px] md:text-xs text-white/90 mt-0.5 font-medium">
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-400 mr-1"></span>In-Yard: <strong class="ml-0.5 md:ml-1 text-emerald-300 font-extrabold">15 Unit</strong></span>
-                      <span class="text-white/30">|</span>
-                      <span class="inline-flex items-center"><span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-amber-400 mr-1"></span>Intransit: <strong class="ml-0.5 md:ml-1 text-amber-300 font-extrabold">4 Unit</strong></span>
-                    </div>
-                  </div>
+                <div class="absolute left-3.5 sm:left-4 md:left-6 bottom-11 sm:bottom-12 md:bottom-16 z-10 pointer-events-none max-w-[65%]">
+                  <span class="text-[8.5px] sm:text-[10px] md:text-xs font-extrabold text-white/90 uppercase tracking-widest block drop-shadow">Best Seller Commercial</span>
+                  <h3 class="text-lg sm:text-2xl md:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md mt-0.5 truncate">Gran Max Pick Up</h3>
+                </div>
 
-                  <button type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="inline-flex items-center space-x-1 md:space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl bg-white/25 hover:bg-white/35 backdrop-blur-md border border-white/30 text-white text-[8.5px] sm:text-xs md:text-sm font-bold shadow-xl transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto mb-0.5">
+                <div class="absolute bottom-3 inset-x-3.5 sm:bottom-3.5 sm:inset-x-4 md:bottom-5 md:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
+                  <div class="flex items-center space-x-2 sm:space-x-2.5 text-[10px] sm:text-xs md:text-sm text-white/95 font-medium drop-shadow">
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>In-Yard: <strong class="ml-1 font-extrabold text-white">15 Unit</strong></span>
+                    <span class="text-white/40">|</span>
+                    <span class="inline-flex items-center"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>Intransit: <strong class="ml-1 font-extrabold text-white">4 Unit</strong></span>
+                  </div>
+                  <button type="button" onclick="filterInventoryByModel('Gran Max Pick Up')" class="inline-flex items-center space-x-1 px-3.5 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-[10.5px] sm:text-xs md:text-sm font-extrabold shadow-lg shadow-blue-600/35 transition active:scale-95 cursor-pointer flex-shrink-0 pointer-events-auto">
                     <span>Lihat Stok</span>
-                    <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </button>
                 </div>
               </div>
 
             </div>
 
-            <!-- Left & Right Floating Glass Navigation Arrows -->
-            <button id="heroPrevBtn" type="button" onclick="window.prevHeroSlide()" aria-label="Slide Sebelumnya" class="absolute left-1.5 sm:left-3 md:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/80 hover:bg-slate-900/95 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer touch-manipulation">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <!-- Left & Right Floating Navigation Arrows (Desktop Only so Mobile stays clean) -->
+            <button id="heroPrevBtn" type="button" onclick="window.prevHeroSlide()" aria-label="Slide Sebelumnya" class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full backdrop-blur-xl bg-slate-900/80 hover:bg-slate-900/95 border border-white/30 text-white items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer">
+              <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button id="heroNextBtn" type="button" onclick="window.nextHeroSlide()" aria-label="Slide Selanjutnya" class="absolute right-1.5 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full backdrop-blur-xl bg-slate-900/80 hover:bg-slate-900/95 border border-white/30 text-white flex items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer touch-manipulation">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <button id="heroNextBtn" type="button" onclick="window.nextHeroSlide()" aria-label="Slide Selanjutnya" class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full backdrop-blur-xl bg-slate-900/80 hover:bg-slate-900/95 border border-white/30 text-white items-center justify-center transition shadow-2xl active:scale-90 z-30 cursor-pointer">
+              <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
 
-            <!-- Bottom Floating Dots Indicator (13 Models) -->
-            <div id="heroDotsContainer" class="absolute bottom-1 sm:bottom-1.5 md:bottom-2.5 inset-x-0 flex items-center justify-center space-x-1 sm:space-x-1.5 z-30 pointer-events-auto">
-              <span class="px-1.5 py-0.5 md:px-2.5 md:py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[7.5px] sm:text-[8.5px] md:text-[10px] text-white font-mono font-bold mr-1 shadow"><span id="heroSlideCounter">1</span> / 13</span>
-              <button type="button" onclick="window.goToHeroSlide(0)" class="hero-dot w-3.5 sm:w-5 md:w-6 h-1 md:h-1.5 rounded-full bg-blue-500 shadow-sm transition-all" aria-label="Slide 1"></button>
-              <button type="button" onclick="window.goToHeroSlide(1)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 2"></button>
-              <button type="button" onclick="window.goToHeroSlide(2)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 3"></button>
-              <button type="button" onclick="window.goToHeroSlide(3)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 4"></button>
-              <button type="button" onclick="window.goToHeroSlide(4)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 5"></button>
-              <button type="button" onclick="window.goToHeroSlide(5)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 6"></button>
-              <button type="button" onclick="window.goToHeroSlide(6)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 7"></button>
-              <button type="button" onclick="window.goToHeroSlide(7)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 8"></button>
-              <button type="button" onclick="window.goToHeroSlide(8)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 9"></button>
-              <button type="button" onclick="window.goToHeroSlide(9)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 10"></button>
-              <button type="button" onclick="window.goToHeroSlide(10)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 11"></button>
-              <button type="button" onclick="window.goToHeroSlide(11)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 12"></button>
-              <button type="button" onclick="window.goToHeroSlide(12)" class="hero-dot w-1.5 sm:w-2 h-1 md:h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all" aria-label="Slide 13"></button>
+          </div>
+
+          <!-- External Pagination Row BELOW Hero Card (Centered Dots + Right Counter, matching Reference Screenshot) -->
+          <div class="relative flex items-center justify-center pt-2.5 pb-0.5 px-1">
+            <div id="heroDotsContainer" class="flex items-center justify-center space-x-1.5">
+              <button type="button" onclick="window.goToHeroSlide(0)" class="hero-dot w-2.5 h-2.5 rounded-full bg-blue-600 shadow-xs transition-all" aria-label="Slide 1"></button>
+              <button type="button" onclick="window.goToHeroSlide(1)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 2"></button>
+              <button type="button" onclick="window.goToHeroSlide(2)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 3"></button>
+              <button type="button" onclick="window.goToHeroSlide(3)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 4"></button>
+              <button type="button" onclick="window.goToHeroSlide(4)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 5"></button>
+              <button type="button" onclick="window.goToHeroSlide(5)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 6"></button>
+              <button type="button" onclick="window.goToHeroSlide(6)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 7"></button>
+              <button type="button" onclick="window.goToHeroSlide(7)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 8"></button>
+              <button type="button" onclick="window.goToHeroSlide(8)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 9"></button>
+              <button type="button" onclick="window.goToHeroSlide(9)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 10"></button>
+              <button type="button" onclick="window.goToHeroSlide(10)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 11"></button>
+              <button type="button" onclick="window.goToHeroSlide(11)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 12"></button>
+              <button type="button" onclick="window.goToHeroSlide(12)" class="hero-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all" aria-label="Slide 13"></button>
             </div>
-
+            <span class="absolute right-1 text-[11px] font-bold text-slate-500"><span id="heroSlideCounter">1</span> / 13</span>
           </div>
         </div>
 
-<!-- ======================================================== -->
+        <!-- ======================================================== -->
         <!-- MAIN DASHBOARD RESPONSIVE SPLIT (Left: 8 Cols, Right: 4 Cols) -->
         <!-- ======================================================== -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start mt-2 md:mt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 md:gap-6 items-start">
           
           <!-- LEFT COLUMN (8 cols): Vehicle Distribution Donut + Attention Banner -->
           <div class="lg:col-span-7 xl:col-span-8 space-y-4 md:space-y-5">
             
-            <!-- Distribusi Model Kendaraan (Donut Chart & Breakdown) -->
-            <div class="bg-white rounded-3xl p-5 md:p-6 border border-slate-100 shadow-saas-card">
-              <div class="flex items-center justify-between mb-4">
-                <div>
-                  <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Distribusi Model Kendaraan</h3>
-                  <p class="text-[11px] text-slate-400 mt-0.5">Komposisi stok unit fisik di pool yard Sentra Lampung</p>
+            <!-- Distribusi Model Kendaraan (Side-by-Side Donut Chart & 6-Item Legend on Mobile & Desktop) -->
+            <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-slate-100 shadow-saas-card">
+              <div class="flex items-center justify-between gap-2 mb-3.5">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h3 class="text-[13.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight truncate">Distribusi Model Kendaraan</h3>
+                    <p class="text-[10.5px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Komposisi stok unit fisik di pool yard Sentra Lampung</p>
+                  </div>
                 </div>
-                <span class="text-[10px] md:text-xs text-slate-600 font-extrabold bg-slate-100 px-3 py-1 rounded-xl border border-slate-200/60">Total 48 Unit In-Yard</span>
+                <div class="flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0">
+                  <span class="text-xs">🚘</span>
+                  <div class="text-left leading-none">
+                    <span class="text-[10px] sm:text-[11px] font-extrabold text-slate-800 block">Total 48 Unit</span>
+                    <span class="text-[9px] text-slate-500 font-semibold block mt-0.5">In-Yard</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
+              <!-- Side-by-Side Donut + Legend (Always horizontal flex-row like reference screenshot) -->
+              <div class="flex flex-row items-center justify-between gap-3 sm:gap-5 pt-1">
                 <!-- Donut SVG -->
-                <div class="relative w-32 h-32 md:w-36 md:h-36 flex-shrink-0 flex items-center justify-center">
+                <div class="relative w-[112px] h-[112px] sm:w-32 sm:h-32 md:w-36 md:h-36 flex-shrink-0 flex items-center justify-center">
                   <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                    <path class="text-slate-100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-rose-500" stroke-dasharray="35, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-blue-500" stroke-dashoffset="-35" stroke-dasharray="21, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-indigo-500" stroke-dashoffset="-56" stroke-dasharray="15, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-amber-400" stroke-dashoffset="-71" stroke-dasharray="12, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="text-emerald-500" stroke-dashoffset="-83" stroke-dasharray="10, 100" stroke-width="4.2" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-slate-100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-rose-500" stroke-dasharray="35, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-blue-500" stroke-dashoffset="-35" stroke-dasharray="21, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-indigo-500" stroke-dashoffset="-56" stroke-dasharray="15, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-emerald-500" stroke-dashoffset="-71" stroke-dasharray="10, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-amber-400" stroke-dashoffset="-81" stroke-dasharray="10, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="text-slate-300" stroke-dashoffset="-91" stroke-dasharray="9, 100" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Total</span>
-                    <span class="text-base font-black text-slate-900 mt-0.5">48 Unit</span>
+                    <span class="text-[8.5px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
+                    <span class="text-lg sm:text-xl font-black text-slate-900 leading-tight mt-0.5">48</span>
+                    <span class="text-[9.5px] sm:text-[10px] font-bold text-slate-500 leading-none">Unit</span>
                   </div>
                 </div>
 
-                <!-- Legends Breakdown -->
-                <div class="flex-1 w-full pl-0 sm:pl-3 space-y-2.5 text-xs">
-                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-rose-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Gran Max Pickup / Van</span></div>
-                    <div class="text-right"><span class="font-extrabold text-slate-900">35%</span> <span class="text-[10px] text-slate-400">(17 Unit)</span></div>
-                  </div>
-                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">All New Terios R</span></div>
-                    <div class="text-right"><span class="font-extrabold text-slate-900">21%</span> <span class="text-[10px] text-slate-400">(10 Unit)</span></div>
-                  </div>
-                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Daihatsu Sigra 1.2 R</span></div>
-                    <div class="text-right"><span class="font-extrabold text-slate-900">15%</span> <span class="text-[10px] text-slate-400">(7 Unit)</span></div>
-                  </div>
-                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-50">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0"></span><span class="text-slate-700 font-semibold">All New Xenia CVT</span></div>
-                    <div class="text-right"><span class="font-extrabold text-slate-900">12%</span> <span class="text-[10px] text-slate-400">(6 Unit)</span></div>
+                <!-- 6-Row Legends Breakdown -->
+                <div class="flex-1 min-w-0 space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Gran Max Pickup / Van</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">17 Unit</span> <span class="font-extrabold text-slate-900 ml-1">35%</span></div>
                   </div>
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold">Ayla / Rocky Turbo</span></div>
-                    <div class="text-right"><span class="font-extrabold text-slate-900">10%</span> <span class="text-[10px] text-slate-400">(5 Unit)</span></div>
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">All New Terios R</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">10 Unit</span> <span class="font-extrabold text-slate-900 ml-1">21%</span></div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Daihatsu Sigra 1.2 R</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">7 Unit</span> <span class="font-extrabold text-slate-900 ml-1">15%</span></div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Ayla / Rocky Turbo</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-1">10%</span></div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span><span class="text-slate-700 font-semibold truncate">Xenia / Avanza</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">5 Unit</span> <span class="font-extrabold text-slate-900 ml-1">10%</span></div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 min-w-0"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 flex-shrink-0"></span><span class="text-slate-500 font-semibold truncate">Lainnya</span></div>
+                    <div class="text-right flex-shrink-0 ml-1.5"><span class="text-slate-500 font-medium">4 Unit</span> <span class="font-extrabold text-slate-900 ml-1">8%</span></div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Urgent Attention Alert Card -->
-            <div class="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/90 rounded-2xl md:rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition" onclick="switchTab('inventory'); filterInventoryByStatus('Intransit')">
+            <!-- Urgent Attention Alert Card (Desktop Only so Mobile stays clean like Reference) -->
+            <div class="hidden lg:flex bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/90 rounded-3xl p-4 items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition" onclick="switchTab('inventory'); filterInventoryByStatus('Intransit')">
               <div class="flex items-center space-x-3 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -1008,11 +797,30 @@
 
           </div>
 
-          <!-- RIGHT COLUMN (4 cols): Operational Intel & Live Mutasi Stream -->
+          <!-- RIGHT COLUMN (4 cols): Live Mutasi Stream & Operational Intel -->
           <div class="lg:col-span-5 xl:col-span-4 space-y-4 md:space-y-4.5">
             
-            <!-- Yard Operational Health Card -->
-            <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-3.5">
+            <!-- Aktivitas Terbaru Card (Matches Reference Screenshot) -->
+            <div class="bg-white rounded-[24px] md:rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-saas-card">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <h3 class="text-[13.5px] sm:text-sm font-extrabold text-slate-900">Aktivitas Terbaru</h3>
+                </div>
+                <button onclick="switchTab('history')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center">
+                  <span>Lihat Semua</span>
+                  <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div id="dashboardRecentList" class="divide-y divide-slate-100">
+                <!-- Rendered by UI.js -->
+              </div>
+            </div>
+
+            <!-- Yard Operational Health Card (Desktop Only) -->
+            <div class="hidden lg:block bg-white rounded-3xl p-5 border border-slate-100 shadow-saas-card space-y-3.5">
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Status Operasional Yard</h3>
@@ -1046,20 +854,6 @@
                   <span class="text-[10px] text-emerald-500 font-semibold block leading-tight">BASTK Valid</span>
                   <span class="text-sm font-black text-emerald-900 mt-0.5 block">2 Unit</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Aktivitas Mutasi Terbaru -->
-            <div class="space-y-2.5">
-              <div class="flex items-center justify-between px-0.5">
-                <h3 class="text-xs md:text-sm font-extrabold text-slate-900">Aktivitas Mutasi Terbaru</h3>
-                <button onclick="switchTab('history')" class="text-[11px] md:text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center">
-                  <span>Lihat Semua</span>
-                  <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-              <div id="dashboardRecentList" class="space-y-2">
-                <!-- Rendered by UI.js -->
               </div>
             </div>
 
@@ -1281,17 +1075,17 @@
     </main>
 
     <!-- ======================================================== -->
-    <!-- FIXED FLOATING GLASS BOTTOM NAVIGATION BAR (Mobile Only) -->
+    <!-- FIXED CLEAN WHITE BOTTOM NAVIGATION DOCK (Mobile Only) -->
     <!-- ======================================================== -->
-    <div class="md:hidden absolute bottom-3 inset-x-3.5 z-30 select-none pointer-events-auto pb-safe">
-      <nav class="floating-glass-bar rounded-[28px] px-2 py-1.5 flex items-center justify-between shadow-nav-glass">
+    <div class="md:hidden absolute bottom-0 inset-x-0 z-30 select-none pointer-events-auto">
+      <nav class="floating-glass-bar rounded-t-[26px] px-3 pt-2 pb-2.5 flex items-center justify-between shadow-nav-glass">
         
         <!-- Tab 1: Dashboard -->
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active flex-1" aria-label="Dashboard">
           <svg class="nav-icon w-5 h-5 transition-transform" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
           </svg>
-          <span class="nav-text text-[9px] mt-0.5 tracking-tight font-bold">Dashboard</span>
+          <span class="nav-text text-[10px] mt-1 tracking-tight font-bold">Dashboard</span>
           <div class="nav-dot"></div>
         </button>
 
@@ -1300,20 +1094,17 @@
           <svg class="nav-icon w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
           </svg>
-          <span class="nav-text text-[9px] font-medium mt-0.5 tracking-tight">Inventory</span>
+          <span class="nav-text text-[10px] font-medium mt-1 tracking-tight">Inventory</span>
           <div class="nav-dot"></div>
         </button>
 
         <!-- Tab 3: CENTER FLOATING SCAN BUTTON (FAB) -->
-        <div class="flex-1 flex justify-center -mt-8 relative">
-          <!-- Pulse Ping Aura -->
-          <div class="absolute inset-0 m-auto w-12 h-12 rounded-full bg-blue-500/20 fab-aura pointer-events-none"></div>
-          
-          <button onclick="openScannerModal()" title="Buka Kamera Barcode" aria-label="Scan Barcode" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 text-white shadow-fab-glow hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
+        <div class="flex-1 flex justify-center -mt-9 relative">
+          <button onclick="openScannerModal()" title="Buka Kamera Barcode" aria-label="Scan Barcode" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white ring-4 ring-white shadow-fab-glow hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
             </svg>
-            <span class="text-[7.5px] font-black uppercase tracking-wider -mt-0.5">Scan</span>
+            <span class="text-[8px] font-black uppercase tracking-wider -mt-0.5">Scan</span>
           </button>
         </div>
 
@@ -1322,7 +1113,7 @@
           <svg class="nav-icon w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span class="nav-text text-[9px] font-medium mt-0.5 tracking-tight">History</span>
+          <span class="nav-text text-[10px] font-medium mt-1 tracking-tight">History</span>
           <div class="nav-dot"></div>
         </button>
 
@@ -1330,7 +1121,7 @@
         <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex-1" aria-label="Pengaturan">
           <svg class="nav-icon w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span class="nav-text text-[9px] font-medium mt-0.5 tracking-tight">Settings</span>
+          <span class="nav-text text-[10px] font-medium mt-1 tracking-tight">Settings</span>
           <div class="nav-dot"></div>
         </button>
 
