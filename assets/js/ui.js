@@ -833,12 +833,9 @@ const UI = {
   },
 
   /**
-   * Menampilkan pop-up kecil berisi Nama Merek, Unit, dan Persentase saat segmen warna donat diklik/disentuh
+   * Menampilkan kapsul glassmorphism kecil di LUAR lingkaran donat saat kursor diarahkan (hover / touch)
    */
-  selectDonutSegment(segmentEl, event) {
-    if (event) {
-      event.stopPropagation();
-    }
+  showDonutCapsule(segmentEl, event) {
     if (!segmentEl) return;
 
     const wrapper = document.getElementById('donutChartWrapper');
@@ -846,30 +843,21 @@ const UI = {
     const popup = document.getElementById('donutSegmentPopup');
     if (!wrapper || !svg || !popup) return;
 
-    // Jika segmen yang sama diklik ulang saat popup aktif, tutup popup (toggle)
-    if (segmentEl.dataset.active === 'true' && !popup.classList.contains('hidden')) {
-      this.resetDonutSelection();
-      return;
-    }
-
     const model = segmentEl.dataset.model || '-';
     const units = segmentEl.dataset.units || '0 Unit';
     const percent = segmentEl.dataset.percent || '0%';
     const color = segmentEl.dataset.color || '#3b82f6';
-    const filterKey = segmentEl.dataset.filter || model;
-    const offset = parseFloat(segmentEl.dataset.offset || '0');
-    const len = parseFloat(segmentEl.dataset.len || '5');
 
-    // Highlight segmen yang dipilih dan redupkan segmen lain
+    // Highlight segmen yang sedang di-hover dan redupkan segmen lain sedikit
     const allSegments = svg.querySelectorAll('.donut-segment');
     allSegments.forEach(seg => {
       seg.dataset.active = 'false';
-      seg.setAttribute('stroke-width', '5.2');
-      seg.style.opacity = '0.35';
+      seg.setAttribute('stroke-width', '5.5');
+      seg.style.opacity = '0.45';
     });
 
     segmentEl.dataset.active = 'true';
-    segmentEl.setAttribute('stroke-width', '7.6');
+    segmentEl.setAttribute('stroke-width', '7.4');
     segmentEl.style.opacity = '1';
 
     // Update label tengah donat
@@ -880,62 +868,107 @@ const UI = {
     if (centerVal) centerVal.textContent = percent;
     if (centerSub) centerSub.textContent = units;
 
-    // Isi konten pop-up
+    // Isi konten kapsul glassmorphism
     const dotEl = document.getElementById('donutPopupDot');
     const modelEl = document.getElementById('donutPopupModel');
     const unitsEl = document.getElementById('donutPopupUnits');
     const percentEl = document.getElementById('donutPopupPercent');
-    const actionBtn = document.getElementById('donutPopupActionBtn');
 
     if (dotEl) dotEl.style.backgroundColor = color;
     if (modelEl) modelEl.textContent = model;
     if (unitsEl) unitsEl.textContent = units;
     if (percentEl) percentEl.textContent = percent;
-    if (actionBtn) {
-      actionBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.resetDonutSelection();
-        this.filterInventoryByModel(filterKey);
-      };
-    }
 
-    // Tampilkan pop-up & hitung posisi di dekat segmen donat
     popup.classList.remove('hidden');
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const svgRect = svg.getBoundingClientRect();
-    const midPct = offset + (len / 2);
-    const angleRad = (midPct / 100) * Math.PI * 2 - (Math.PI / 2);
-
-    const cx = (svgRect.left - wrapperRect.left) + (svgRect.width / 2);
-    const cy = (svgRect.top - wrapperRect.top) + (svgRect.height / 2);
-    const ringRadius = (svgRect.width / 2) * 0.85;
-
-    const targetX = cx + Math.cos(angleRad) * ringRadius;
-    const targetY = cy + Math.sin(angleRad) * ringRadius;
-
-    const popupW = popup.offsetWidth || 180;
-    const popupH = popup.offsetHeight || 96;
-
-    const minLeft = 6;
-    const maxLeft = Math.max(minLeft, wrapperRect.width - popupW - 6);
-    const minTop = 4;
-    const maxTop = Math.max(minTop, wrapperRect.height - popupH - 4);
-
-    const clampedLeft = Math.min(maxLeft, Math.max(minLeft, targetX - (popupW / 2)));
-    const clampedTop = Math.min(maxTop, Math.max(minTop, targetY - (popupH / 2)));
-
-    popup.style.left = `${Math.round(clampedLeft)}px`;
-    popup.style.top = `${Math.round(clampedTop)}px`;
+    this.positionDonutCapsuleOutside(segmentEl, event);
   },
 
   /**
-   * Mereset pilihan segmen donat dan menyembunyikan pop-up
+   * Memperbarui posisi kapsul glassmorphism tetap di LUAR lingkaran donat mengikuti posisi segmen/kursor
    */
-  resetDonutSelection(event) {
+  moveDonutCapsule(segmentEl, event) {
+    if (!segmentEl) return;
+    this.positionDonutCapsuleOutside(segmentEl, event);
+  },
+
+  positionDonutCapsuleOutside(segmentEl, event) {
+    const wrapper = document.getElementById('donutChartWrapper');
+    const svg = document.getElementById('vehicleDonutSvg');
+    const popup = document.getElementById('donutSegmentPopup');
+    if (!wrapper || !svg || !popup) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+
+    const cx = (svgRect.left - wrapperRect.left) + (svgRect.width / 2);
+    const cy = (svgRect.top - wrapperRect.top) + (svgRect.height / 2);
+    const outerRadius = svgRect.width / 2;
+
+    // Hitung sudut dari titik tengah donat ke kursor (atau sudut tengah segmen jika touch/fallback)
+    let angleRad;
+    let clientX = null;
+    let clientY = null;
     if (event) {
-      event.stopPropagation();
+      if (typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+        clientX = event.clientX;
+        clientY = event.clientY;
+      } else if (event.touches && event.touches[0]) {
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+      }
     }
+
+    if (clientX !== null && clientY !== null) {
+      const svgCenterX = svgRect.left + (svgRect.width / 2);
+      const svgCenterY = svgRect.top + (svgRect.height / 2);
+      angleRad = Math.atan2(clientY - svgCenterY, clientX - svgCenterX);
+    } else {
+      const offset = parseFloat(segmentEl.dataset.offset || '0');
+      const len = parseFloat(segmentEl.dataset.len || '5');
+      const midPct = offset + (len / 2);
+      angleRad = (midPct / 100) * Math.PI * 2 - (Math.PI / 2);
+    }
+
+    const cosA = Math.cos(angleRad);
+    const sinA = Math.sin(angleRad);
+
+    const popupW = popup.offsetWidth || 165;
+    const popupH = popup.offsetHeight || 30;
+    const gap = 10;
+
+    // Posisi pusat kapsul di luar tepi lingkaran donat
+    const rawCenterX = cx + (outerRadius + gap + (popupW / 2)) * cosA;
+    const rawCenterY = cy + (outerRadius + gap + (popupH / 2)) * sinA;
+
+    const minLeft = 6;
+    const maxLeft = Math.max(minLeft, wrapperRect.width - popupW - 6);
+    const minTop = 2;
+    const maxTop = Math.max(minTop, wrapperRect.height - popupH - 2);
+
+    let left = Math.min(maxLeft, Math.max(minLeft, rawCenterX - (popupW / 2)));
+    let top = Math.min(maxTop, Math.max(minTop, rawCenterY - (popupH / 2)));
+
+    // Pastikan di layar sempit (mobile) kapsul tetap berada di LUAR lingkaran donat (tidak menutupi donat)
+    const nearestX = Math.max(left, Math.min(cx, left + popupW));
+    const nearestY = Math.max(top, Math.min(cy, top + popupH));
+    const distToDonutCenter = Math.hypot(nearestX - cx, nearestY - cy);
+
+    if (distToDonutCenter < outerRadius + 4) {
+      if (sinA < 0) {
+        top = Math.max(minTop, cy - outerRadius - popupH - 8);
+      } else {
+        top = Math.min(maxTop, cy + outerRadius + 8);
+      }
+    }
+
+    popup.style.left = `${Math.round(left)}px`;
+    popup.style.top = `${Math.round(top)}px`;
+  },
+
+  /**
+   * Menyembunyikan kapsul glassmorphism saat kursor keluar dari area donat
+   */
+  hideDonutCapsule() {
     const svg = document.getElementById('vehicleDonutSvg');
     const popup = document.getElementById('donutSegmentPopup');
     if (svg) {
@@ -956,10 +989,17 @@ const UI = {
     if (centerSub) centerSub.textContent = 'Unit';
   },
 
+  selectDonutSegment(segmentEl, event) {
+    this.showDonutCapsule(segmentEl, event);
+  },
+
+  resetDonutSelection() {
+    this.hideDonutCapsule();
+  },
+
   closeDonutPopupOnOutside(event) {
     if (event && event.target && event.target.closest('.donut-segment')) return;
-    if (event && event.target && event.target.closest('#donutSegmentPopup')) return;
-    this.resetDonutSelection();
+    this.hideDonutCapsule();
   }
 };
 
@@ -983,6 +1023,9 @@ window.prevHeroSlide = () => UI.prevHeroSlide ? UI.prevHeroSlide() : null;
 window.goToHeroSlide = (idx) => UI.goToHeroSlide ? UI.goToHeroSlide(idx) : null;
 window.filterInventoryByModel = (m) => UI.filterInventoryByModel ? UI.filterInventoryByModel(m) : null;
 window.openScannerForModel = (m) => UI.openScannerForModel ? UI.openScannerForModel(m) : null;
+window.showDonutCapsule = (el, ev) => UI.showDonutCapsule ? UI.showDonutCapsule(el, ev) : null;
+window.moveDonutCapsule = (el, ev) => UI.moveDonutCapsule ? UI.moveDonutCapsule(el, ev) : null;
+window.hideDonutCapsule = (ev) => UI.hideDonutCapsule ? UI.hideDonutCapsule(ev) : null;
 window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSegment(el, ev) : null;
 window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
