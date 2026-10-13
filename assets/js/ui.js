@@ -63,6 +63,10 @@ const UI = {
 
     const vp = document.getElementById('appMainViewport');
     if (vp) vp.scrollTop = 0;
+
+    if (typeof this.refreshScrollReveal === 'function') {
+      this.refreshScrollReveal();
+    }
   },
 
   capitalize(str) {
@@ -95,7 +99,7 @@ const UI = {
       return;
     }
 
-    container.innerHTML = recentItems.map(item => {
+    container.innerHTML = recentItems.map((item, idx) => {
       const isMasuk = item.type === 'Unit Masuk';
       const badgeColor = isMasuk 
         ? 'bg-emerald-50 text-emerald-600 border-emerald-200/80' 
@@ -109,9 +113,11 @@ const UI = {
         ? item.fullDateStr.replace('Oktober', 'Okt').replace('September', 'Sep').replace('November', 'Nov').replace('Desember', 'Des').replace('Januari', 'Jan').replace('Februari', 'Feb').replace('Agustus', 'Agu')
         : '9 Okt 2026';
 
+      const delayMs = Math.min(idx * 55, 220);
+
       return `
-        <div class="bg-slate-50/75 hover:bg-slate-50 rounded-2xl p-2.5 sm:p-3 border border-slate-200/70 transition flex items-center space-x-2.5 sm:space-x-3">
-          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0">
+        <div class="scroll-reveal bg-gradient-to-br from-white via-slate-50/85 to-slate-100/50 hover:bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/75 shadow-[0_6px_18px_-6px_rgba(15,23,42,0.06)] transition flex items-center space-x-2.5 sm:space-x-3" style="--reveal-delay: ${delayMs}ms;">
+          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0 shadow-2xs">
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1.5">
               <span class="px-2 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0 leading-none">
@@ -131,6 +137,10 @@ const UI = {
         </div>
       `;
     }).join('');
+
+    if (typeof this.refreshScrollReveal === 'function') {
+      this.refreshScrollReveal();
+    }
   },
 
   /**
@@ -210,7 +220,7 @@ const UI = {
       return;
     }
 
-    container.innerHTML = filtered.map(entry => {
+    container.innerHTML = filtered.map((entry, idx) => {
       const isEmpty = entry.totalUnits === 0;
 
       let statusBadgeClass = 'bg-slate-100 text-slate-500 border-slate-200';
@@ -230,9 +240,10 @@ const UI = {
       }
 
       const u = entry.primaryUnit;
+      const delayMs = Math.min((idx % 6) * 45, 200);
 
       return `
-        <div class="bg-white rounded-3xl p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-slate-100'} shadow-saas-card hover:shadow-md transition flex flex-col justify-between">
+        <div class="scroll-reveal bg-white/95 rounded-3xl p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between" style="--reveal-delay: ${delayMs}ms;">
           <div>
             <!-- Top Studio Catalog Image Showcase -->
             <div class="relative w-full h-36 sm:h-40 rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-2 overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
@@ -312,6 +323,10 @@ const UI = {
         </div>
       `;
     }).join('');
+
+    if (typeof this.refreshScrollReveal === 'function') {
+      this.refreshScrollReveal();
+    }
   },
 
   filterInventory() {
@@ -367,7 +382,7 @@ const UI = {
       return;
     }
 
-    container.innerHTML = filtered.map(item => {
+    container.innerHTML = filtered.map((item, idx) => {
       const isMasuk = item.type === 'Unit Masuk';
       const typeBadge = isMasuk 
         ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
@@ -377,8 +392,10 @@ const UI = {
         ? item.unitPhoto
         : (catalogItem ? catalogItem.photo : item.unitPhoto);
 
+      const delayMs = Math.min((idx % 6) * 45, 200);
+
       return `
-        <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-saas-card space-y-3">
+        <div class="scroll-reveal bg-white/95 rounded-3xl p-4 border border-white shadow-saas-card space-y-3" style="--reveal-delay: ${delayMs}ms;">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100">
             <div class="flex items-center space-x-2">
               <span class="px-2 py-0.5 rounded-lg text-[9px] font-black border ${typeBadge}">${item.type}</span>
@@ -429,6 +446,10 @@ const UI = {
         </div>
       `;
     }).join('');
+
+    if (typeof this.refreshScrollReveal === 'function') {
+      this.refreshScrollReveal();
+    }
   },
 
   filterHistoryTab(tabKey) {
@@ -819,6 +840,14 @@ const UI = {
     }
   },
 
+  filterHistoryByModelAndType(modelKeyword, mutationType) {
+    this.switchTab('history');
+    const tabKey = mutationType === 'Unit Masuk' ? 'in' : (mutationType === 'Unit Keluar' ? 'out' : 'all');
+    this.filterHistoryTab(tabKey);
+    const label = mutationType === 'Unit Masuk' ? 'Penerimaan (Masuk)' : 'Pengiriman (Keluar)';
+    this.showToast(`📋 Riwayat ${label}: ${modelKeyword}`);
+  },
+
   openScannerForModel(modelName) {
     if (typeof window.openScannerModal === 'function') {
       window.openScannerModal();
@@ -891,7 +920,10 @@ const UI = {
     const prevModel = document.getElementById('donutPreviewModel');
     const prevBar = document.getElementById('donutPreviewBar');
     const prevUnits = document.getElementById('donutPreviewUnits');
-    const prevMutation = document.getElementById('donutPreviewMutation');
+    const prevMasuk = document.getElementById('donutPreviewMasuk');
+    const prevKeluar = document.getElementById('donutPreviewKeluar');
+    const prevMasukBtn = document.getElementById('donutPreviewMasukBtn');
+    const prevKeluarBtn = document.getElementById('donutPreviewKeluarBtn');
     const prevBtn = document.getElementById('donutPreviewBtn');
 
     if (prevDot) prevDot.style.backgroundColor = color;
@@ -910,7 +942,14 @@ const UI = {
       prevBar.style.backgroundColor = color;
     }
     if (prevUnits) prevUnits.textContent = units;
-    if (prevMutation) prevMutation.textContent = `Masuk ${masuk} • Keluar ${keluar}`;
+    if (prevMasuk) prevMasuk.textContent = `Masuk ${masuk}`;
+    if (prevKeluar) prevKeluar.textContent = `Keluar ${keluar}`;
+    if (prevMasukBtn) {
+      prevMasukBtn.onclick = () => this.filterHistoryByModelAndType(filterKey, 'Unit Masuk');
+    }
+    if (prevKeluarBtn) {
+      prevKeluarBtn.onclick = () => this.filterHistoryByModelAndType(filterKey, 'Unit Keluar');
+    }
     if (prevBtn) {
       prevBtn.onclick = () => this.filterInventoryByModel(filterKey);
     }
@@ -1263,6 +1302,47 @@ const UI = {
         });
       });
     }
+  },
+
+  /**
+   * Menginisialisasi animasi scroll profesional (IntersectionObserver compositor-friendly)
+   */
+  initScrollAnimations() {
+    const vp = document.getElementById('appMainViewport');
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+
+    if (!this._scrollObserver) {
+      this._scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          } else if (entry.boundingClientRect.top > 40) {
+            // Re-animate secara halus ketika di-scroll kembali dari atas ke bawah
+            entry.target.classList.remove('is-visible');
+          }
+        });
+      }, {
+        root: vp || null,
+        rootMargin: '0px 0px -24px 0px',
+        threshold: 0.08
+      });
+    }
+
+    this.refreshScrollReveal();
+  },
+
+  refreshScrollReveal() {
+    const elements = document.querySelectorAll('.scroll-reveal');
+    if (!this._scrollObserver) {
+      elements.forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+    elements.forEach(el => {
+      this._scrollObserver.observe(el);
+    });
   }
 };
 
@@ -1285,6 +1365,7 @@ window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;
 window.prevHeroSlide = () => UI.prevHeroSlide ? UI.prevHeroSlide() : null;
 window.goToHeroSlide = (idx) => UI.goToHeroSlide ? UI.goToHeroSlide(idx) : null;
 window.filterInventoryByModel = (m) => UI.filterInventoryByModel ? UI.filterInventoryByModel(m) : null;
+window.filterHistoryByModelAndType = (m, t) => UI.filterHistoryByModelAndType ? UI.filterHistoryByModelAndType(m, t) : null;
 window.openScannerForModel = (m) => UI.openScannerForModel ? UI.openScannerForModel(m) : null;
 window.showDonutCapsule = (el, ev) => UI.showDonutCapsule ? UI.showDonutCapsule(el, ev) : null;
 window.moveDonutCapsule = (el, ev) => UI.moveDonutCapsule ? UI.moveDonutCapsule(el, ev) : null;
@@ -1294,7 +1375,7 @@ window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSe
 window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
 
-// Pastikan event touchmove pada grafik donat bersifat non-passive & custom dropdown terinisialisasi
+// Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown & animasi scroll terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {
   const donutSvg = document.getElementById('vehicleDonutSvg');
   if (donutSvg) {
@@ -1303,5 +1384,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (UI && typeof UI.initCustomDropdowns === 'function') {
     UI.initCustomDropdowns();
+  }
+  if (UI && typeof UI.initScrollAnimations === 'function') {
+    UI.initScrollAnimations();
   }
 });
