@@ -1029,6 +1029,44 @@ const UI = {
     if (centerSub) centerSub.textContent = 'Unit';
   },
 
+  /**
+   * Menangani gestur sentuh & geser jari (swipe/glide) memutar di atas grafik donat pada layar mobile
+   * Mencegah layar ikut tergeser (scroll) dan mencari segmen warna berdasarkan sudut jari terhadap titik tengah donat
+   */
+  handleDonutTouch(event) {
+    if (!event) return;
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    event.stopPropagation();
+
+    const svg = document.getElementById('vehicleDonutSvg');
+    if (!svg) return;
+
+    const touch = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]);
+    if (!touch) return;
+
+    const svgRect = svg.getBoundingClientRect();
+    const svgCenterX = svgRect.left + (svgRect.width / 2);
+    const svgCenterY = svgRect.top + (svgRect.height / 2);
+
+    // Hitung sudut jari dari titik pusat donat (12 o'clock = 0%, searah jarum jam hingga 100%)
+    const angleRad = Math.atan2(touch.clientY - svgCenterY, touch.clientX - svgCenterX);
+    const degFromTop = ((angleRad * 180 / Math.PI) + 90 + 360) % 360;
+    const pct = (degFromTop / 360) * 100;
+
+    const segments = Array.from(svg.querySelectorAll('.donut-segment'));
+    if (segments.length === 0) return;
+
+    const matchedSeg = segments.find(seg => {
+      const off = parseFloat(seg.dataset.offset || '0');
+      const len = parseFloat(seg.dataset.len || '0');
+      return pct >= off && pct <= (off + len + 0.15);
+    }) || segments[segments.length - 1];
+
+    this.showDonutCapsule(matchedSeg, event);
+  },
+
   selectDonutSegment(segmentEl, event) {
     this.showDonutCapsule(segmentEl, event);
   },
@@ -1038,7 +1076,7 @@ const UI = {
   },
 
   closeDonutPopupOnOutside(event) {
-    if (event && event.target && event.target.closest('.donut-segment')) return;
+    if (event && event.target && event.target.closest('#vehicleDonutSvg')) return;
     this.hideDonutCapsule();
   }
 };
@@ -1066,6 +1104,16 @@ window.openScannerForModel = (m) => UI.openScannerForModel ? UI.openScannerForMo
 window.showDonutCapsule = (el, ev) => UI.showDonutCapsule ? UI.showDonutCapsule(el, ev) : null;
 window.moveDonutCapsule = (el, ev) => UI.moveDonutCapsule ? UI.moveDonutCapsule(el, ev) : null;
 window.hideDonutCapsule = (ev) => UI.hideDonutCapsule ? UI.hideDonutCapsule(ev) : null;
+window.handleDonutTouch = (ev) => UI.handleDonutTouch ? UI.handleDonutTouch(ev) : null;
 window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSegment(el, ev) : null;
 window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
+
+// Pastikan event touchmove pada grafik donat bersifat non-passive agar layar mobile tidak ikut ter-scroll saat di-swipe
+document.addEventListener('DOMContentLoaded', () => {
+  const donutSvg = document.getElementById('vehicleDonutSvg');
+  if (donutSvg) {
+    donutSvg.addEventListener('touchstart', (e) => UI.handleDonutTouch(e), { passive: false });
+    donutSvg.addEventListener('touchmove', (e) => UI.handleDonutTouch(e), { passive: false });
+  }
+});
