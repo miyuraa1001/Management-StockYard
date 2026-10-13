@@ -327,18 +327,76 @@ const AppState = {
       notes: 'Unit baru tiba dari pabrik Jakarta.',
       unitPhoto: 'assets/images/Inventory_New Sigra.jpeg',
       docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'HIST-104',
+      type: 'Unit Keluar',
+      time: '16:20',
+      date: 7,
+      month: 10,
+      year: 2026,
+      fullDateStr: '7 Oktober 2026',
+      model: 'All New Ayla',
+      vin: 'MHKAA1BA2PK089112',
+      engine: '1KRVE994120',
+      pic: 'Hendra Wijaya',
+      notes: 'Pengiriman unit alokasi dealer DSO Pringsewu.',
+      unitPhoto: 'assets/images/Inventory_All New Ayla.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'HIST-105',
+      type: 'Unit Masuk',
+      time: '13:05',
+      date: 7,
+      month: 10,
+      year: 2026,
+      fullDateStr: '7 Oktober 2026',
+      model: 'Rocky e-Smart Hybrid',
+      vin: 'MHKR1EA1JSK002145',
+      engine: 'WAVEX771209',
+      pic: 'Andi Pratama',
+      notes: 'Penerimaan unit display & alokasi cabang utama.',
+      unitPhoto: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
+    },
+    {
+      id: 'HIST-106',
+      type: 'Unit Keluar',
+      time: '09:30',
+      date: 6,
+      month: 10,
+      year: 2026,
+      fullDateStr: '6 Oktober 2026',
+      model: 'All New Xenia',
+      vin: 'MHKDA4BA1LM098765',
+      engine: '2NRVE558192',
+      pic: 'Budi Santoso',
+      notes: 'Serah terima BASTK ke pelanggan fleet.',
+      unitPhoto: 'assets/images/Inventory_All New Xenia.jpeg',
+      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
     }
   ],
 
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
+      const defaultHist = [...this.historyData];
       const cachedInv = localStorage.getItem(CONFIG.CACHE_KEYS.INVENTORY);
       const cachedHist = localStorage.getItem(CONFIG.CACHE_KEYS.HISTORY);
       const cachedKpi = localStorage.getItem(CONFIG.CACHE_KEYS.KPI);
 
       if (cachedInv) this.inventoryData = JSON.parse(cachedInv);
-      if (cachedHist) this.historyData = JSON.parse(cachedHist);
+      if (cachedHist) {
+        const parsedHist = JSON.parse(cachedHist);
+        if (Array.isArray(parsedHist)) {
+          const existingIds = new Set(parsedHist.map(h => h.id));
+          defaultHist.forEach(dh => {
+            if (!existingIds.has(dh.id)) parsedHist.push(dh);
+          });
+          this.historyData = parsedHist;
+        }
+      }
       if (cachedKpi) this.kpi = JSON.parse(cachedKpi);
     } catch (e) {
       console.warn('[AppState] Gagal membaca cache local storage:', e);

@@ -87,15 +87,15 @@ const UI = {
   },
 
   /**
-   * Render 4 aktivitas mutasi terbaru di Dashboard
+   * Render 6 aktivitas mutasi terbaru di bagian paling bawah Dashboard
    */
   renderDashboardActivities() {
     const container = document.getElementById('dashboardRecentList');
     if (!container) return;
 
-    const recentItems = AppState.historyData.slice(0, 4);
+    const recentItems = AppState.historyData.slice(0, 6);
     if (recentItems.length === 0) {
-      container.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">Belum ada aktivitas mutasi.</p>`;
+      container.innerHTML = `<p class="col-span-full text-xs text-slate-400 py-4 text-center">Belum ada aktivitas mutasi.</p>`;
       return;
     }
 
@@ -113,11 +113,11 @@ const UI = {
         ? item.fullDateStr.replace('Oktober', 'Okt').replace('September', 'Sep').replace('November', 'Nov').replace('Desember', 'Des').replace('Januari', 'Jan').replace('Februari', 'Feb').replace('Agustus', 'Agu')
         : '9 Okt 2026';
 
-      const delayMs = Math.min(idx * 55, 220);
+      const delayMs = Math.min(idx * 45, 220);
 
       return `
-        <div class="scroll-reveal bg-gradient-to-br from-white via-slate-50/85 to-slate-100/50 hover:bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/75 shadow-[0_6px_18px_-6px_rgba(15,23,42,0.06)] transition flex items-center space-x-2.5 sm:space-x-3" style="--reveal-delay: ${delayMs}ms;">
-          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 rounded-xl object-contain bg-white p-0.5 border border-slate-200/70 flex-shrink-0 shadow-2xs">
+        <div onclick="switchTab('history')" class="scroll-reveal bg-gradient-to-br from-white via-slate-50/85 to-slate-100/50 hover:bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/75 hover:border-blue-200/90 shadow-[0_6px_18px_-6px_rgba(15,23,42,0.06)] transition flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer group" style="--reveal-delay: ${delayMs}ms;">
+          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 md:w-20 md:h-14 rounded-xl object-contain bg-white p-1 border border-slate-200/70 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200">
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1.5">
               <span class="px-2 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0 leading-none">
@@ -125,7 +125,7 @@ const UI = {
               </span>
               <span class="text-[9px] sm:text-[10.5px] font-medium text-slate-400 whitespace-nowrap">${shortDate} • ${item.time}</span>
             </div>
-            <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight mt-1">${item.model}</h4>
+            <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight mt-1 truncate">${item.model}</h4>
             <div class="flex items-center justify-between gap-1.5 mt-1">
               <p class="text-[9px] sm:text-[11px] text-slate-400 font-mono leading-none truncate">VIN: ${item.vin}</p>
               <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex-shrink-0 leading-none">
