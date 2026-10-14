@@ -41,13 +41,13 @@ const CONFIG = {
   // Network Timeout (milidetik)
   REQUEST_TIMEOUT: 15000,
 
-  // LocalStorage Cache Key
+  // LocalStorage Cache Key (v4 - Data Bersih & Realtime)
   CACHE_KEYS: {
-    INVENTORY: 'daihatsu_inventory_cache_v3',
-    HISTORY: 'daihatsu_history_cache_v3',
-    KPI: 'daihatsu_kpi_cache_v3',
-    PROFILE: 'daihatsu_profile_cache_v3',
-    AUTOMATION: 'daihatsu_automation_cache_v3'
+    INVENTORY: 'daihatsu_inventory_cache_v4',
+    HISTORY: 'daihatsu_history_cache_v4',
+    KPI: 'daihatsu_kpi_cache_v4',
+    PROFILE: 'daihatsu_profile_cache_v4',
+    AUTOMATION: 'daihatsu_automation_cache_v4'
   }
 };
 
