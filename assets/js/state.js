@@ -40,11 +40,11 @@ const AppState = {
     type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
   },
 
-  // KPI Metrics
+  // KPI Metrics (Mulai dari 0 - Dihitung Realtime dari Riwayat & Stok)
   kpi: {
-    masuk: 48,
-    keluar: 42,
-    intransit: 16
+    masuk: 0,
+    keluar: 0,
+    intransit: 0
   },
 
   // Master Katalog 13 Model Kendaraan Daihatsu (Tetap tampil meski stok 0 / kosong)
@@ -57,7 +57,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 1 (Hybrid)',
       photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
       heroPhoto: 'assets/images/hero-rocky-hybrid.jpg',
-      baseStock: { inYard: 5, intransit: 2, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-02',
@@ -67,7 +67,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_New Terios.jpeg',
       heroPhoto: 'assets/images/hero-new-terios.jpg',
-      baseStock: { inYard: 9, intransit: 3, allocated: 2 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-03',
@@ -87,7 +87,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
       heroPhoto: 'assets/images/hero-all-new-xenia.jpg',
-      baseStock: { inYard: 8, intransit: 2, allocated: 2 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-05',
@@ -97,7 +97,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 2 (MPV)',
       photo: 'assets/images/Inventory_New Sigra.jpeg',
       heroPhoto: 'assets/images/hero-new-sigra.jpg',
-      baseStock: { inYard: 11, intransit: 3, allocated: 2 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-06',
@@ -107,7 +107,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 3 (MPV)',
       photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
       heroPhoto: 'assets/images/hero-sigra-old.jpg',
-      baseStock: { inYard: 6, intransit: 2, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-07',
@@ -117,7 +117,7 @@ const AppState = {
       defaultLocation: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
       heroPhoto: 'assets/images/hero-all-new-ayla.jpg',
-      baseStock: { inYard: 10, intransit: 3, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-08',
@@ -127,7 +127,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_New Rocky.jpeg',
       heroPhoto: 'assets/images/hero-new-rocky.jpg',
-      baseStock: { inYard: 6, intransit: 1, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-09',
@@ -137,7 +137,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_Rocky.jpeg',
       heroPhoto: 'assets/images/hero-rocky.jpg',
-      baseStock: { inYard: 4, intransit: 1, allocated: 0 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-10',
@@ -157,7 +157,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 1 (Commercial)',
       photo: 'assets/images/Inventory_Luxio.jpeg',
       heroPhoto: 'assets/images/hero-luxio.jpg',
-      baseStock: { inYard: 3, intransit: 1, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-12',
@@ -167,7 +167,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
       heroPhoto: 'assets/images/hero-granmax-minibus.jpg',
-      baseStock: { inYard: 7, intransit: 2, allocated: 1 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     },
     {
       catalogId: 'CAT-13',
@@ -177,7 +177,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 3 (Niaga)',
       photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
       heroPhoto: 'assets/images/hero-granmax-pickup.jpg',
-      baseStock: { inYard: 14, intransit: 4, allocated: 3 }
+      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
     }
   ],
 
@@ -205,279 +205,32 @@ const AppState = {
     return this.vehicleCatalog[0];
   },
 
-  // Dataset Inventory Unit Fisik Kendaraan (Unit sampel/terbaru per model)
-  inventoryData: [
-    {
-      id: 'INV-001',
-      model: 'Rocky e-Smart Hybrid',
-      category: 'Smart Hybrid SUV',
-      plate: 'BE 1001 RKY',
-      vin: 'MHKP3FA1JXK001122',
-      engine: 'WA-VEX1029384',
-      status: 'In-Yard',
-      location: 'Yard A - Blok 1 (Hybrid)',
-      photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-002',
-      model: 'Gran Max Pick Up',
-      category: 'Niaga & Logistik Tangguh',
-      plate: 'BE 1234 KZA',
-      vin: 'MHKP3FA1JXK005678',
-      engine: '2NRX1234567',
-      status: 'In-Yard',
-      location: 'Yard D - Blok 3 (Niaga)',
-      photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-003',
-      model: 'New Terios',
-      category: '7-Seater Adventure SUV',
-      plate: 'BE 5678 TCD',
-      vin: 'MHKDA3BA1RJ012345',
-      engine: '3NRF2345678',
-      status: 'In-Yard',
-      location: 'Yard A - Blok 2 (SUV)',
-      photo: 'assets/images/Inventory_New Terios.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-004',
-      model: 'New Sigra',
-      category: 'LCGC 7-Seater Family MPV',
-      plate: 'BE 9012 VBN',
-      vin: 'MHKBR5DA3JJ056789',
-      engine: '3NRD3456789',
-      status: 'In-Yard',
-      location: 'Yard B - Blok 2 (MPV)',
-      photo: 'assets/images/Inventory_New Sigra.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-005',
-      model: 'All New Ayla',
-      category: 'Dynamic City Hatchback',
-      plate: 'BE 3456 FGH',
-      vin: 'MHKAG5DA3KL078901',
-      engine: '3NRH4567890',
-      status: 'In-Yard',
-      location: 'Yard C - Blok 1 (Hatchback)',
-      photo: 'assets/images/Inventory_All New Ayla.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-006',
-      model: 'All New Xenia',
-      category: 'Executive Family MPV',
-      plate: 'BE 7890 JKL',
-      vin: 'MHKDA4BA1LM098765',
-      engine: '3NRF5678901',
-      status: 'In-Yard',
-      location: 'Yard B - Blok 1 (MPV)',
-      photo: 'assets/images/Inventory_All New Xenia.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-007',
-      model: 'New Rocky',
-      category: 'Compact Turbo SUV',
-      plate: 'BE 2468 RKT',
-      vin: 'MHKP3FA1JXK009876',
-      engine: '1KRVET88291',
-      status: 'In-Yard',
-      location: 'Yard A - Blok 3 (SUV)',
-      photo: 'assets/images/Inventory_New Rocky.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-008',
-      model: 'Gran Max Minibus',
-      category: 'Spacious Passenger & Blind Van',
-      plate: 'BE 1357 GMB',
-      vin: 'MHKP3FA1JXK004321',
-      engine: '2NRVE77412',
-      status: 'In-Yard',
-      location: 'Yard D - Blok 2 (Commercial)',
-      photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-009',
-      model: 'New Sigra (Prod Old)',
-      category: 'Reliable Value MPV',
-      plate: 'BE 4120 SGR',
-      vin: 'MHKBR5DA2HJ019283',
-      engine: '3NRVE661920',
-      status: 'In-Yard',
-      location: 'Yard B - Blok 3 (MPV)',
-      photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-010',
-      model: 'Rocky',
-      category: 'Sporty Compact SUV (ADS)',
-      plate: 'BE 8821 RKA',
-      vin: 'MHKP3FA1JXK011409',
-      engine: 'WAVE449102',
-      status: 'In-Yard',
-      location: 'Yard A - Blok 3 (SUV)',
-      photo: 'assets/images/Inventory_Rocky.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'INV-011',
-      model: 'Luxio',
-      category: 'Prestigious Business Van',
-      plate: 'BE 6090 LUX',
-      vin: 'MHKW2CA1JLK008812',
-      engine: '3SZVE330192',
-      status: 'In-Yard',
-      location: 'Yard D - Blok 1 (Commercial)',
-      photo: 'assets/images/Inventory_Luxio.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    }
-  ],
+  // Dataset Inventory Unit Fisik Kendaraan (Mulai dari Kosong / Sesuai Realtime Scan Lapangan)
+  inventoryData: [],
 
-  // Log Mutasi & Riwayat Audit Fisik
-  historyData: [
-    {
-      id: 'HIST-101',
-      type: 'Unit Masuk',
-      time: '14:32',
-      date: 9,
-      month: 10,
-      year: 2026,
-      fullDateStr: '9 Oktober 2026',
-      model: 'Gran Max Pick Up',
-      vin: 'MHKP3FA1JTK137533',
-      engine: '2NR4F82393',
-      pic: 'Andi Pratama',
-      notes: 'Tarikan unit dari D600 ke D661, dokumen lengkap.',
-      unitPhoto: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-102',
-      type: 'Unit Keluar',
-      time: '10:15',
-      date: 9,
-      month: 10,
-      year: 2026,
-      fullDateStr: '9 Oktober 2026',
-      model: 'New Terios',
-      vin: 'MHKDA3BA1RJ012345',
-      engine: '3NRF2345678',
-      pic: 'Budi Santoso',
-      notes: 'Kirim serah terima ke cabang Raden Intan.',
-      unitPhoto: 'assets/images/Inventory_New Terios.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-103',
-      type: 'Unit Masuk',
-      time: '08:47',
-      date: 8,
-      month: 10,
-      year: 2026,
-      fullDateStr: '8 Oktober 2026',
-      model: 'New Sigra',
-      vin: 'MHKBR5DA3JJ056789',
-      engine: '3NRD3456789',
-      pic: 'Rina Marlina',
-      notes: 'Unit baru tiba dari pabrik Jakarta.',
-      unitPhoto: 'assets/images/Inventory_New Sigra.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-104',
-      type: 'Unit Keluar',
-      time: '16:20',
-      date: 7,
-      month: 10,
-      year: 2026,
-      fullDateStr: '7 Oktober 2026',
-      model: 'All New Ayla',
-      vin: 'MHKAA1BA2PK089112',
-      engine: '1KRVE994120',
-      pic: 'Hendra Wijaya',
-      notes: 'Pengiriman unit alokasi dealer DSO Pringsewu.',
-      unitPhoto: 'assets/images/Inventory_All New Ayla.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-105',
-      type: 'Unit Masuk',
-      time: '13:05',
-      date: 7,
-      month: 10,
-      year: 2026,
-      fullDateStr: '7 Oktober 2026',
-      model: 'Rocky e-Smart Hybrid',
-      vin: 'MHKR1EA1JSK002145',
-      engine: 'WAVEX771209',
-      pic: 'Andi Pratama',
-      notes: 'Penerimaan unit display & alokasi cabang utama.',
-      unitPhoto: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-106',
-      type: 'Unit Keluar',
-      time: '09:30',
-      date: 6,
-      month: 10,
-      year: 2026,
-      fullDateStr: '6 Oktober 2026',
-      model: 'All New Xenia',
-      vin: 'MHKDA4BA1LM098765',
-      engine: '2NRVE558192',
-      pic: 'Budi Santoso',
-      notes: 'Serah terima BASTK ke pelanggan fleet.',
-      unitPhoto: 'assets/images/Inventory_All New Xenia.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-107',
-      type: 'Unit Masuk',
-      time: '15:10',
-      date: 5,
-      month: 10,
-      year: 2026,
-      fullDateStr: '5 Oktober 2026',
-      model: 'Gran Max Minibus',
-      vin: 'MHKP3FA1JXK004321',
-      engine: '2NRVE774120',
-      pic: 'Rina Marlina',
-      notes: 'Unit tiba dari pabrik Sunter, kondisi bodi & segel baik.',
-      unitPhoto: 'assets/images/Inventory_Gran Max Minibus.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    },
-    {
-      id: 'HIST-108',
-      type: 'Unit Masuk',
-      time: '11:40',
-      date: 4,
-      month: 10,
-      year: 2026,
-      fullDateStr: '4 Oktober 2026',
-      model: 'New Rocky',
-      vin: 'MHKP3FA1JXK009876',
-      engine: '1KRVET88291',
-      pic: 'Hendra Wijaya',
-      notes: 'Penerimaan unit alokasi Yard A - Blok 3 (SUV).',
-      unitPhoto: 'assets/images/Inventory_New Rocky.jpeg',
-      docPhoto: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80'
-    }
-  ],
+  // Log Mutasi & Riwayat Audit Fisik (Mulai dari Kosong / Sesuai Realtime Scan Lapangan)
+  historyData: [],
+
+  /**
+   * Helper untuk memeriksa apakah kode Barcode / VIN sudah pernah tersimpan sebelumnya
+   * Mengembalikan true jika duplikat (sudah ada di historyData)
+   */
+  isVinDuplicate(vin) {
+    if (!vin) return false;
+    const cleanVin = String(vin).trim().toUpperCase();
+    return this.historyData.some(item => (item.vin && String(item.vin).trim().toUpperCase() === cleanVin));
+  },
 
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
-      const defaultInv = [...this.inventoryData];
-      const defaultHist = [...this.historyData];
+      // Bersihkan seluruh cache lama (v1, v2, v3) yang berisi data dummy/mock
+      ['v1', 'v2', 'v3'].forEach(v => {
+        ['inventory', 'history', 'kpi', 'profile', 'automation'].forEach(k => {
+          localStorage.removeItem(`daihatsu_${k}_cache_${v}`);
+        });
+      });
+
       const cachedInv = localStorage.getItem(CONFIG.CACHE_KEYS.INVENTORY);
       const cachedHist = localStorage.getItem(CONFIG.CACHE_KEYS.HISTORY);
       const cachedKpi = localStorage.getItem(CONFIG.CACHE_KEYS.KPI);
@@ -485,24 +238,20 @@ const AppState = {
       if (cachedInv) {
         const parsedInv = JSON.parse(cachedInv);
         if (Array.isArray(parsedInv)) {
-          const existingInvIds = new Set(parsedInv.map(i => i.id));
-          defaultInv.forEach(di => {
-            if (!existingInvIds.has(di.id)) parsedInv.push(di);
-          });
           this.inventoryData = parsedInv;
         }
       }
       if (cachedHist) {
         const parsedHist = JSON.parse(cachedHist);
         if (Array.isArray(parsedHist)) {
-          const existingIds = new Set(parsedHist.map(h => h.id));
-          defaultHist.forEach(dh => {
-            if (!existingIds.has(dh.id)) parsedHist.push(dh);
-          });
           this.historyData = parsedHist;
         }
       }
-      if (cachedKpi) this.kpi = JSON.parse(cachedKpi);
+      if (cachedKpi) {
+        this.kpi = JSON.parse(cachedKpi);
+      } else {
+        this.updateKpiCounts();
+      }
 
       const cachedProfile = localStorage.getItem(CONFIG.CACHE_KEYS.PROFILE);
       if (cachedProfile) {
@@ -531,7 +280,7 @@ const AppState = {
     }
   },
 
-  // Update KPI secara dinamis
+  // Update KPI secara dinamis 100% Realtime dari Data Lapangan
   updateKpiCounts() {
     let masukCount = 0;
     let keluarCount = 0;
@@ -541,16 +290,14 @@ const AppState = {
       if (item.type === 'Unit Keluar') keluarCount++;
     });
 
-    let inYardCount = 0;
     let intransitCount = 0;
     this.inventoryData.forEach(item => {
-      if (item.status === 'In-Yard') inYardCount++;
       if (item.status === 'Intransit') intransitCount++;
     });
 
-    this.kpi.masuk = Math.max(48, masukCount);
-    this.kpi.keluar = Math.max(42, keluarCount);
-    this.kpi.intransit = intransitCount || 16;
+    this.kpi.masuk = masukCount;
+    this.kpi.keluar = keluarCount;
+    this.kpi.intransit = intransitCount;
 
     this.saveToCache();
   }

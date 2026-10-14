@@ -80,6 +80,13 @@ const App = {
       return;
     }
 
+    const cleanVin = vin.trim().toUpperCase();
+    // Validasi Duplikat: Satu kode barcode yang sudah terscan hanya bisa sekali tersimpan
+    if (AppState.isVinDuplicate(cleanVin)) {
+      UI.showToast(`⛔ Barcode / VIN [${cleanVin}] sudah pernah tersimpan sebelumnya! 1 Barcode hanya bisa 1x simpan.`);
+      return;
+    }
+
     const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(model) : null;
     const modelOfficialPhoto = catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg';
     const unitImg = AppState.uploadedUnitPhotoUrl || modelOfficialPhoto;
@@ -103,8 +110,8 @@ const App = {
       fullDateStr: `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`,
       model: model,
       modelPhoto: modelOfficialPhoto,
-      vin: vin,
-      engine: engine,
+      vin: cleanVin,
+      engine: engine.toUpperCase(),
       pic: CONFIG.OPERATOR_NAME || 'Andi Pratama',
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
@@ -115,7 +122,7 @@ const App = {
     AppState.historyData.unshift(newRecord);
 
     // Update status di Inventory jika ada unit dengan VIN yang sama
-    const existingInv = AppState.inventoryData.find(item => item.vin === vin);
+    const existingInv = AppState.inventoryData.find(item => item.vin === cleanVin);
     if (existingInv) {
       existingInv.status = mutationType === 'Unit Masuk' ? 'In-Yard' : 'Allocated';
       existingInv.photo = modelOfficialPhoto;
@@ -128,8 +135,8 @@ const App = {
           model: catalogItem ? catalogItem.model : model,
           category: catalogItem ? catalogItem.category : 'Kendaraan Daihatsu',
           plate: 'BE ' + Math.floor(1000 + Math.random() * 9000) + ' DAA',
-          vin: vin,
-          engine: engine,
+          vin: cleanVin,
+          engine: engine.toUpperCase(),
           status: 'In-Yard',
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: modelOfficialPhoto,
@@ -138,13 +145,8 @@ const App = {
       }
     }
 
-    // Update KPI Counters
-    if (mutationType === 'Unit Masuk') {
-      AppState.kpi.masuk += 1;
-    } else {
-      AppState.kpi.keluar += 1;
-    }
-    AppState.saveToCache();
+    // Update KPI Counters secara dinamis dari data realtime
+    AppState.updateKpiCounts();
 
     // Reset Form Input
     const keteranganEl = document.getElementById('inputKeterangan');
