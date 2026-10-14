@@ -26,6 +26,20 @@ const AppState = {
   isLoading: false,
   isOnline: navigator.onLine,
 
+  // Profil Petugas Operator & Otomatisasi
+  userProfile: {
+    name: CONFIG.OPERATOR_NAME || 'Andi Pratama',
+    npk: CONFIG.OPERATOR_NPK || '21040889',
+    branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+    role: CONFIG.OPERATOR_ROLE || 'Staff Operasional',
+    photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+  },
+  automationConfig: {
+    schedule: 'Setiap Hari 08:00 WIB',
+    email: 'report.logistik@daihatsu.co.id',
+    type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
+  },
+
   // KPI Metrics
   kpi: {
     masuk: 48,
@@ -489,6 +503,16 @@ const AppState = {
         }
       }
       if (cachedKpi) this.kpi = JSON.parse(cachedKpi);
+
+      const cachedProfile = localStorage.getItem(CONFIG.CACHE_KEYS.PROFILE);
+      if (cachedProfile) {
+        this.userProfile = Object.assign({}, this.userProfile, JSON.parse(cachedProfile));
+      }
+
+      const cachedAutomation = localStorage.getItem(CONFIG.CACHE_KEYS.AUTOMATION);
+      if (cachedAutomation) {
+        this.automationConfig = Object.assign({}, this.automationConfig, JSON.parse(cachedAutomation));
+      }
     } catch (e) {
       console.warn('[AppState] Gagal membaca cache local storage:', e);
     }
@@ -500,6 +524,8 @@ const AppState = {
       localStorage.setItem(CONFIG.CACHE_KEYS.INVENTORY, JSON.stringify(this.inventoryData));
       localStorage.setItem(CONFIG.CACHE_KEYS.HISTORY, JSON.stringify(this.historyData));
       localStorage.setItem(CONFIG.CACHE_KEYS.KPI, JSON.stringify(this.kpi));
+      localStorage.setItem(CONFIG.CACHE_KEYS.PROFILE, JSON.stringify(this.userProfile));
+      localStorage.setItem(CONFIG.CACHE_KEYS.AUTOMATION, JSON.stringify(this.automationConfig));
     } catch (e) {
       console.warn('[AppState] Gagal menyimpan ke cache local storage:', e);
     }

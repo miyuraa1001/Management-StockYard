@@ -105,11 +105,11 @@
           <!-- Profile Avatar & Dropdown Chevron -->
           <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1 py-0.5 md:pr-2.5 bg-slate-50/90 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95 cursor-pointer" aria-label="Pengaturan Profil">
             <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
+              <img id="headerAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover">
             </div>
             <div class="hidden xl:block text-left ml-2 mr-1">
-              <span class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
-              <span class="text-[10px] text-slate-400 block leading-none">Operasional</span>
+              <span id="headerOperatorName" class="text-xs font-bold text-slate-800 block leading-tight">Andi Pratama</span>
+              <span id="headerOperatorRole" class="text-[10px] text-slate-400 block leading-none">Staff Operasional</span>
             </div>
             <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 ml-0.5 sm:ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1248,109 +1248,198 @@
       </section>
 
       <!-- ======================================================== -->
-      <!-- SECTION 4: SETTINGS (PENGATURAN) -->
+      <!-- SECTION 4: SETTINGS (PENGATURAN & PROFIL OPERATOR) -->
       <!-- ======================================================== -->
       <section id="viewSettings" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
-        <!-- Settings Header Card -->
-        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card flex items-center justify-between gap-3">
-          <div class="flex items-center space-x-3 min-w-0">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
+        
+        <!-- ======================================================== -->
+        <!-- VIEW A: PENGATURAN UTAMA -->
+        <!-- ======================================================== -->
+        <div id="settingsMainView" class="space-y-3.5 md:space-y-4">
+          <!-- Settings Header Card -->
+          <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 min-w-0">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">Pengaturan Sistem & Operator</h2>
+                <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 truncate">Kelola profil petugas lapangan, jadwal laporan otomatis, & sesi akun.</p>
+              </div>
             </div>
-            <div class="min-w-0">
-              <h2 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight truncate">Pengaturan Sistem & Operator</h2>
-              <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 truncate">Kelola profil petugas lapangan, perangkat scanner optik, & jadwal laporan otomatis.</p>
-            </div>
+            <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/80 whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Sistem Aktif
+            </span>
           </div>
-          <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200/80 whitespace-nowrap">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Sistem Aktif
-          </span>
-        </div>
 
-        <!-- Responsive Settings Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4">
-          <!-- Profile Card -->
-          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card flex items-center space-x-3.5 sm:space-x-4 md:col-span-2">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Andi Pratama" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 flex-shrink-0">
+          <!-- Profile Card dengan Icon Edit Pensil -->
+          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card flex items-center space-x-3.5 sm:space-x-4">
+            <!-- Avatar with pencil edit badge -->
+            <div class="relative flex-shrink-0 cursor-pointer group" onclick="UI.openEditProfilePage()" title="Edit Profil Petugas">
+              <img id="profileCardAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Foto Profil Andi Pratama" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-slate-200 group-hover:border-blue-400 transition shadow-2xs">
+              <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center shadow-md border-2 border-white transition group-hover:scale-110">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </div>
+            </div>
+
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2">
-                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">Andi Pratama</h3>
-                <span class="text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap flex-shrink-0">Staff Operasional</span>
+                <h3 id="profileCardName" class="text-sm sm:text-base font-extrabold text-slate-900 truncate">Andi Pratama</h3>
+                <span id="profileCardRole" class="text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap flex-shrink-0">Staff Operasional</span>
               </div>
-              <p class="text-[11px] sm:text-xs text-slate-500 font-semibold mt-0.5">NIP: 19870215201001123</p>
+              <p id="profileCardNpk" class="text-[11px] sm:text-xs text-slate-500 font-semibold mt-0.5">NPK: 21040889</p>
               <p class="text-[11px] text-slate-400 flex items-center mt-1 truncate">
                 <svg class="w-3.5 h-3.5 mr-1 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                <span class="truncate">Sentra Lampung • Astra Daihatsu DSO Lampung</span>
+                <span id="profileCardBranch" class="truncate">Sentra Lampung • Astra Daihatsu DSO Lampung</span>
               </p>
             </div>
+            
+            <button type="button" onclick="UI.openEditProfilePage()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 text-xs font-bold transition flex items-center space-x-1 flex-shrink-0 cursor-pointer" title="Edit Profil Petugas">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              <span class="hidden sm:inline">Edit</span>
+            </button>
           </div>
 
-          <!-- Hardware Settings -->
+          <!-- Automation Info Card (Informasi & Pembaruan) -->
           <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
-            <h4 class="text-[11px] font-black tracking-wider uppercase text-slate-400">Scanner & Perangkat Optik</h4>
-            
-            <div class="flex items-center justify-between py-1">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                </div>
-                <div class="min-w-0">
-                  <span class="text-xs font-bold text-slate-800 block truncate">Kamera Default</span>
-                  <span class="text-[10px] text-slate-400 block truncate">Gunakan kamera belakang untuk scan</span>
-                </div>
-              </div>
-              <span class="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-xl flex-shrink-0">Belakang</span>
-            </div>
-
-            <div class="flex items-center justify-between py-1 border-t border-slate-100 pt-3">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <div class="min-w-0">
-                  <span class="text-xs font-bold text-slate-800 block truncate">Auto Flashlight</span>
-                  <span class="text-[10px] text-slate-400 block truncate">Nyalakan senter jika area yard gelap</span>
-                </div>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input type="checkbox" checked class="sr-only peer">
-                <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Automation Settings -->
-          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
-            <h4 class="text-[11px] font-black tracking-wider uppercase text-slate-400">Otomatisasi Laporan</h4>
-            
-            <div class="flex items-center justify-between py-1">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div class="min-w-0">
-                  <span class="text-xs font-bold text-slate-800 block truncate">Email Daily Digest PDF</span>
-                  <span class="text-[10px] text-slate-400 block truncate">Kirim rekap PDF harian otomatis</span>
+                  <h4 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">Informasi Otomatisasi Laporan</h4>
+                  <p class="text-[10px] sm:text-[11px] text-slate-400 truncate">Sinkronisasi data rekap mutasi ke email & cloud</p>
                 </div>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input type="checkbox" checked class="sr-only peer">
-                <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
+              <button type="button" onclick="UI.openEditAutomationModal()" class="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[11px] font-extrabold transition cursor-pointer flex items-center space-x-1 flex-shrink-0" title="Perbarui Pengaturan Laporan">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <span>Edit Info</span>
+              </button>
             </div>
 
-            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-100 pt-2.5">
-              <span class="text-slate-500 font-medium">Jadwal Pengiriman</span>
-              <span class="font-extrabold text-slate-900">Setiap Hari 08:00 WIB</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+              <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 block uppercase">Jadwal Pengiriman</span>
+                <span id="autoScheduleDisplay" class="font-extrabold text-slate-900 block mt-0.5">Setiap Hari 08:00 WIB</span>
+                <span class="text-[9.5px] text-slate-500 mt-1 block">Rekap PDF harian serah terima yard</span>
+              </div>
+              <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 block uppercase">Target Email Penerima</span>
+                <span id="autoEmailDisplay" class="font-bold text-blue-600 truncate block mt-0.5">report.logistik@daihatsu.co.id</span>
+                <span class="text-[9.5px] text-slate-500 mt-1 block">Terkirim otomatis ke tim logistik</span>
+              </div>
             </div>
-            <div class="flex items-center justify-between text-xs py-1 border-t border-slate-100 pt-2.5">
-              <span class="text-slate-500 font-medium">Target Email</span>
-              <span class="font-bold text-blue-600 truncate ml-2">report.logistik@daihatsu.co.id</span>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+              <span class="flex items-center gap-1.5 font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Status: Layanan Otomatisasi Berjalan
+              </span>
+              <span class="text-[10px] text-slate-400">Sinkron Cloud Aktif</span>
             </div>
           </div>
+
+          <!-- Sesi Akun & Tombol Logout Card -->
+          <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">Sesi Akun Petugas</h4>
+              <p class="text-[10.5px] sm:text-xs text-slate-400 mt-0.5">Keluar dari akun jika perangkat akan dialihkan ke petugas shift berikutnya.</p>
+            </div>
+            <button type="button" onclick="UI.openLogoutModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/90 text-xs font-black flex items-center justify-center space-x-2 transition cursor-pointer active:scale-95 shadow-2xs">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              <span>Keluar (Logout)</span>
+            </button>
+          </div>
         </div>
+
+        <!-- ======================================================== -->
+        <!-- VIEW B: SUB-PAGE EDIT PROFIL OPERATOR (PAGE BARU) -->
+        <!-- ======================================================== -->
+        <div id="settingsEditProfileView" class="hidden space-y-3.5 md:space-y-4">
+          <!-- Top Bar Header Sub-Page -->
+          <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-4 border border-white shadow-saas-card flex items-center justify-between gap-3">
+            <button type="button" onclick="UI.closeEditProfilePage()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black transition cursor-pointer active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              <span>Kembali</span>
+            </button>
+
+            <div class="text-center min-w-0">
+              <h2 class="text-xs sm:text-sm font-black text-slate-900 tracking-tight truncate">Edit Profil Petugas</h2>
+              <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">Perbarui data identitas & penugasan lapangan</p>
+            </div>
+
+            <div class="w-16 flex justify-end">
+              <span class="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">PROFIL</span>
+            </div>
+          </div>
+
+          <!-- Edit Profile Form Card -->
+          <div class="bg-white/95 rounded-[26px] p-5 sm:p-6 border border-white shadow-saas-card space-y-4 max-w-2xl mx-auto">
+            
+            <!-- Foto Profil Section -->
+            <div class="flex items-center space-x-4 pb-3 border-b border-slate-100">
+              <div class="relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-slate-200 flex-shrink-0 bg-slate-100 shadow-2xs">
+                <img id="editProfileAvatarPreview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Preview Foto" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0 flex-1">
+                <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">Foto Profil Petugas</h4>
+                <p class="text-[10.5px] text-slate-400 mb-2">Gunakan foto resmi untuk identifikasi mutasi serah terima.</p>
+                
+                <input type="file" id="editProfilePhotoInput" accept="image/*" class="hidden" onchange="UI.handleProfilePhotoSelected(event)">
+                <button type="button" onclick="document.getElementById('editProfilePhotoInput').click()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 text-xs font-bold transition cursor-pointer active:scale-95">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                  <span>Ganti Foto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Form Inputs -->
+            <div class="space-y-3.5">
+              <!-- Nama -->
+              <div>
+                <label for="inputProfileName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Nama Lengkap Petugas</label>
+                <input type="text" id="inputProfileName" value="Andi Pratama" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Masukkan nama lengkap...">
+              </div>
+
+              <!-- NPK (Nomor Pokok Karyawan) -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="inputProfileNpk" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">NPK (Nomor Pokok Karyawan)</label>
+                  <span class="text-[9.5px] text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded">Astra Daihatsu ID</span>
+                </div>
+                <input type="text" id="inputProfileNpk" value="21040889" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Contoh: 21040889">
+              </div>
+
+              <!-- Cabang -->
+              <div>
+                <label for="inputProfileBranch" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Cabang Penugasan</label>
+                <input type="text" id="inputProfileBranch" value="Sentra Lampung • Astra Daihatsu DSO Lampung" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Contoh: Sentra Lampung • Astra Daihatsu DSO Lampung">
+              </div>
+
+              <!-- Jabatan -->
+              <div>
+                <label for="inputProfileRole" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Jabatan Operator</label>
+                <input type="text" id="inputProfileRole" value="Staff Operasional" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Contoh: Staff Operasional / Field Logistics Officer">
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="pt-3 flex items-center space-x-3">
+              <button type="button" onclick="UI.saveProfileData()" class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/25 active:scale-98 transition flex items-center justify-center space-x-2 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Simpan Perubahan Profil</span>
+              </button>
+              <button type="button" onclick="UI.closeEditProfilePage()" class="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
+                Batal
+              </button>
+            </div>
+
+          </div>
+        </div>
+
       </section>
 
     </main>
@@ -1718,14 +1807,100 @@
       <p class="text-center text-white/60 text-xs pb-4">Ketuk di mana saja untuk menutup</p>
     </div>
 
+    <!-- Edit Automation Modal -->
+    <div id="editAutomationModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Pengaturan Otomatisasi Laporan</h3>
+              <p class="text-[10.5px] text-slate-400 leading-tight">Perbarui jadwal & target pengiriman laporan</p>
+            </div>
+          </div>
+          <button type="button" onclick="UI.closeEditAutomationModal()" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-black transition cursor-pointer" aria-label="Tutup Modal">&times;</button>
+        </div>
+
+        <!-- Body Form -->
+        <div class="p-5 space-y-4 overflow-y-auto">
+          <!-- Jadwal Pengiriman -->
+          <div>
+            <label for="inputAutoSchedule" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Jadwal Pengiriman</label>
+            <div class="relative">
+              <select id="inputAutoSchedule" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition appearance-none">
+                <option value="Setiap Hari 08:00 WIB">Setiap Hari 08:00 WIB (Pagi)</option>
+                <option value="Setiap Hari 17:00 WIB">Setiap Hari 17:00 WIB (Sore)</option>
+                <option value="Setiap Hari 20:00 WIB">Setiap Hari 20:00 WIB (Malam)</option>
+                <option value="Setiap Senin 08:00 WIB">Setiap Senin 08:00 WIB (Mingguan)</option>
+                <option value="Akhir Bulan 18:00 WIB">Akhir Bulan 18:00 WIB (Bulanan)</option>
+              </select>
+              <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </div>
+
+          <!-- Target Email Penerima -->
+          <div>
+            <label for="inputAutoEmail" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Target Email Penerima</label>
+            <input type="email" id="inputAutoEmail" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="report.logistik@daihatsu.co.id">
+          </div>
+
+          <!-- Tipe Laporan -->
+          <div>
+            <label for="inputAutoType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Jenis Rekap Laporan</label>
+            <input type="text" id="inputAutoType" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar">
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center space-x-2.5">
+          <button type="button" onclick="UI.saveAutomationData()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-500/25 active:scale-98 transition flex items-center justify-center space-x-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Simpan Pembaruan</span>
+          </button>
+          <button type="button" onclick="UI.closeEditAutomationModal()" class="py-3 px-4 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Confirmation Modal (Pop Up Ya atau Tidak) -->
+    <div id="logoutModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-[28px] max-w-sm w-full shadow-2xl border border-white/60 overflow-hidden text-center p-6 space-y-4">
+        <!-- Icon -->
+        <div class="w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto flex items-center justify-center border-2 border-rose-100/80 shadow-2xs">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </div>
+
+        <!-- Title & Description -->
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 leading-tight">Konfirmasi Keluar Sistem</h3>
+          <p class="text-xs text-slate-500 mt-2 leading-relaxed">Apakah Anda yakin ingin keluar dari sistem Management Salvage Daihatsu?</p>
+        </div>
+
+        <!-- Action Buttons: Ya & Tidak -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button type="button" onclick="UI.closeLogoutModal()" class="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-2xl active:scale-95 transition cursor-pointer">
+            Tidak
+          </button>
+          <button type="button" onclick="UI.confirmLogout()" class="py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-2xl shadow-lg shadow-rose-600/30 active:scale-95 transition cursor-pointer">
+            Ya, Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261014-01"></script>
-  <script src="assets/js/state.js?v=20261014-01"></script>
-  <script src="assets/js/api.js?v=20261014-01"></script>
-  <script src="assets/js/scanner.js?v=20261014-01"></script>
-  <script src="assets/js/ui.js?v=20261014-01"></script>
-  <script src="assets/js/app.js?v=20261014-01"></script>
+  <script src="assets/js/config.js?v=20261014-02"></script>
+  <script src="assets/js/state.js?v=20261014-02"></script>
+  <script src="assets/js/api.js?v=20261014-02"></script>
+  <script src="assets/js/scanner.js?v=20261014-02"></script>
+  <script src="assets/js/ui.js?v=20261014-02"></script>
+  <script src="assets/js/app.js?v=20261014-02"></script>
 </body>
 </html>

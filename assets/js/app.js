@@ -19,6 +19,10 @@ const App = {
     // 2. Muat data cache lokal jika tersedia
     AppState.loadFromCache();
 
+    // Terapkan data profil operator & info otomatisasi
+    if (UI.applyUserProfile) UI.applyUserProfile();
+    if (UI.applyAutomationConfig) UI.applyAutomationConfig();
+
     // 3. Render awal komponen UI dari state
     UI.renderDashboardActivities();
     UI.updateDashboardKpis();

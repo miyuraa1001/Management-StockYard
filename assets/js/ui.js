@@ -1765,6 +1765,236 @@ const UI = {
     elements.forEach(el => {
       this._scrollObserver.observe(el);
     });
+  },
+
+  // ==========================================================================
+  // PROFILE & SETTINGS SUB-PAGES & DIALOGS
+  // ==========================================================================
+
+  /**
+   * Terapkan data profil operator ke elemen UI (header & kartu pengaturan)
+   */
+  applyUserProfile() {
+    const profile = AppState.userProfile || {
+      name: CONFIG.OPERATOR_NAME,
+      npk: CONFIG.OPERATOR_NPK,
+      branch: CONFIG.OPERATOR_BRANCH,
+      role: CONFIG.OPERATOR_ROLE,
+      photo: CONFIG.OPERATOR_PHOTO
+    };
+
+    // Update Profile Card in Settings
+    const avatarEl = document.getElementById('profileCardAvatar');
+    const nameEl = document.getElementById('profileCardName');
+    const roleEl = document.getElementById('profileCardRole');
+    const npkEl = document.getElementById('profileCardNpk');
+    const branchEl = document.getElementById('profileCardBranch');
+
+    if (avatarEl && profile.photo) avatarEl.src = profile.photo;
+    if (nameEl) nameEl.innerText = profile.name;
+    if (roleEl) roleEl.innerText = profile.role;
+    if (npkEl) npkEl.innerText = `NPK: ${profile.npk}`;
+    if (branchEl) branchEl.innerText = profile.branch;
+
+    // Update Header Avatar & Info (Desktop)
+    const headerAvatar = document.getElementById('headerAvatarImg');
+    const headerName = document.getElementById('headerOperatorName');
+    const headerRole = document.getElementById('headerOperatorRole');
+
+    if (headerAvatar && profile.photo) headerAvatar.src = profile.photo;
+    if (headerName) headerName.innerText = profile.name;
+    if (headerRole) headerRole.innerText = profile.role;
+
+    // Update Sub-Page Edit Form
+    const inputName = document.getElementById('inputProfileName');
+    const inputNpk = document.getElementById('inputProfileNpk');
+    const inputBranch = document.getElementById('inputProfileBranch');
+    const inputRole = document.getElementById('inputProfileRole');
+    const editPreview = document.getElementById('editProfileAvatarPreview');
+
+    if (inputName) inputName.value = profile.name;
+    if (inputNpk) inputNpk.value = profile.npk;
+    if (inputBranch) inputBranch.value = profile.branch;
+    if (inputRole) inputRole.value = profile.role;
+    if (editPreview && profile.photo) editPreview.src = profile.photo;
+
+    // Sync CONFIG operator name for recording PIC
+    if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
+    if (profile.npk) CONFIG.OPERATOR_NPK = profile.npk;
+  },
+
+  /**
+   * Terapkan data konfigurasi otomatisasi laporan
+   */
+  applyAutomationConfig() {
+    const auto = AppState.automationConfig || {
+      schedule: 'Setiap Hari 08:00 WIB',
+      email: 'report.logistik@daihatsu.co.id',
+      type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
+    };
+
+    const schedEl = document.getElementById('autoScheduleDisplay');
+    const emailEl = document.getElementById('autoEmailDisplay');
+    if (schedEl) schedEl.innerText = auto.schedule;
+    if (emailEl) emailEl.innerText = auto.email;
+
+    const inputSched = document.getElementById('inputAutoSchedule');
+    const inputEmail = document.getElementById('inputAutoEmail');
+    const inputType = document.getElementById('inputAutoType');
+    if (inputSched) inputSched.value = auto.schedule;
+    if (inputEmail) inputEmail.value = auto.email;
+    if (inputType) inputType.value = auto.type;
+  },
+
+  /**
+   * Buka sub-halaman edit profil operator
+   */
+  openEditProfilePage() {
+    const mainView = document.getElementById('settingsMainView');
+    const editView = document.getElementById('settingsEditProfileView');
+    if (mainView && editView) {
+      mainView.classList.add('hidden');
+      editView.classList.remove('hidden');
+    }
+    this.applyUserProfile();
+
+    const vp = document.getElementById('appMainViewport');
+    if (vp) vp.scrollTop = 0;
+  },
+
+  /**
+   * Tutup sub-halaman edit profil dan kembali ke tampilan utama pengaturan
+   */
+  closeEditProfilePage() {
+    const mainView = document.getElementById('settingsMainView');
+    const editView = document.getElementById('settingsEditProfileView');
+    if (mainView && editView) {
+      editView.classList.add('hidden');
+      mainView.classList.remove('hidden');
+    }
+    AppState._tempProfilePhoto = null;
+  },
+
+  /**
+   * Tangani pemilihan foto profil baru
+   */
+  handleProfilePhotoSelected(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Pilih file gambar yang valid!');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      AppState._tempProfilePhoto = dataUrl;
+      const previewEl = document.getElementById('editProfileAvatarPreview');
+      if (previewEl) previewEl.src = dataUrl;
+      this.showToast('Foto profil dipilih. Klik Simpan untuk menerapkan.');
+    };
+    reader.readAsDataURL(file);
+  },
+
+  /**
+   * Simpan perubahan profil operator (nama, NPK, cabang, jabatan, foto)
+   */
+  saveProfileData() {
+    const name = (document.getElementById('inputProfileName')?.value || '').trim();
+    const npk = (document.getElementById('inputProfileNpk')?.value || '').trim();
+    const branch = (document.getElementById('inputProfileBranch')?.value || '').trim();
+    const role = (document.getElementById('inputProfileRole')?.value || '').trim();
+
+    if (!name || !npk) {
+      this.showToast('Nama petugas dan NPK wajib diisi!');
+      return;
+    }
+
+    AppState.userProfile.name = name;
+    AppState.userProfile.npk = npk;
+    if (branch) AppState.userProfile.branch = branch;
+    if (role) AppState.userProfile.role = role;
+
+    if (AppState._tempProfilePhoto) {
+      AppState.userProfile.photo = AppState._tempProfilePhoto;
+      AppState._tempProfilePhoto = null;
+    }
+
+    AppState.saveToCache();
+    this.applyUserProfile();
+    this.closeEditProfilePage();
+    this.showToast('✅ Profil & NPK berhasil diperbarui!');
+  },
+
+  /**
+   * Buka modal pembaruan informasi otomatisasi laporan
+   */
+  openEditAutomationModal() {
+    this.applyAutomationConfig();
+    const modal = document.getElementById('editAutomationModal');
+    if (modal) modal.classList.remove('hidden');
+  },
+
+  /**
+   * Tutup modal pembaruan otomatisasi
+   */
+  closeEditAutomationModal() {
+    const modal = document.getElementById('editAutomationModal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Simpan pembaruan otomatisasi laporan
+   */
+  saveAutomationData() {
+    const sched = document.getElementById('inputAutoSchedule')?.value;
+    const email = (document.getElementById('inputAutoEmail')?.value || '').trim();
+    const type = (document.getElementById('inputAutoType')?.value || '').trim();
+
+    if (!email) {
+      this.showToast('Email penerima laporan wajib diisi!');
+      return;
+    }
+
+    AppState.automationConfig = {
+      schedule: sched || AppState.automationConfig.schedule,
+      email: email,
+      type: type || AppState.automationConfig.type
+    };
+
+    AppState.saveToCache();
+    this.applyAutomationConfig();
+    this.closeEditAutomationModal();
+    this.showToast('✅ Info otomatisasi laporan berhasil diperbarui!');
+  },
+
+  /**
+   * Buka dialog konfirmasi logout
+   */
+  openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) modal.classList.remove('hidden');
+  },
+
+  /**
+   * Tutup dialog konfirmasi logout
+   */
+  closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Eksekusi konfirmasi keluar sistem
+   */
+  confirmLogout() {
+    this.closeLogoutModal();
+    this.showToast('🔒 Anda telah berhasil keluar dari sesi sistem.');
+    setTimeout(() => {
+      this.switchTab('dashboard');
+    }, 400);
   }
 };
 
@@ -1773,6 +2003,16 @@ window.UI = UI;
 window.switchTab = (tab) => UI.switchTab(tab);
 window.filterInventory = () => UI.filterInventory();
 window.clearInventorySearch = () => UI.clearInventorySearch();
+window.openEditProfilePage = () => UI.openEditProfilePage();
+window.closeEditProfilePage = () => UI.closeEditProfilePage();
+window.handleProfilePhotoSelected = (e) => UI.handleProfilePhotoSelected(e);
+window.saveProfileData = () => UI.saveProfileData();
+window.openEditAutomationModal = () => UI.openEditAutomationModal();
+window.closeEditAutomationModal = () => UI.closeEditAutomationModal();
+window.saveAutomationData = () => UI.saveAutomationData();
+window.openLogoutModal = () => UI.openLogoutModal();
+window.closeLogoutModal = () => UI.closeLogoutModal();
+window.confirmLogout = () => UI.confirmLogout();
 window.filterInventoryByStatus = (status) => UI.filterInventoryByStatus(status);
 window.filterHistoryTab = (tabKey) => UI.filterHistoryTab(tabKey);
 window.clearHistorySearch = () => UI.clearHistorySearch();

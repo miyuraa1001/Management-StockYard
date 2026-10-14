@@ -11,12 +11,16 @@
  */
 
 const CONFIG = {
-  // Informasi Cabang & Aplikasi
+  // Informasi Cabang & Operator Lapangan
   APP_TITLE: 'Salvage',
   APP_SUBTITLE: 'Management Sentra Lampung',
   BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
   OPERATOR_NAME: 'Andi Pratama',
+  OPERATOR_NPK: '21040889',
   OPERATOR_NIP: '19870215201001123',
+  OPERATOR_ROLE: 'Staff Operasional',
+  OPERATOR_BRANCH: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+  OPERATOR_PHOTO: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
 
   // Mode Koneksi Backend:
   // 'proxy'  -> Menggunakan Vercel Serverless Function /api/proxy (SANGAT DIREKOMENDASIKAN untuk Vercel)
@@ -41,7 +45,9 @@ const CONFIG = {
   CACHE_KEYS: {
     INVENTORY: 'daihatsu_inventory_cache_v3',
     HISTORY: 'daihatsu_history_cache_v3',
-    KPI: 'daihatsu_kpi_cache_v3'
+    KPI: 'daihatsu_kpi_cache_v3',
+    PROFILE: 'daihatsu_profile_cache_v3',
+    AUTOMATION: 'daihatsu_automation_cache_v3'
   }
 };
 
