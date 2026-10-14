@@ -115,7 +115,7 @@ const UI = {
 
       return `
         <div onclick="switchTab('history')" class="scroll-reveal bg-gradient-to-br from-white via-slate-50/85 to-slate-100/50 hover:bg-white rounded-2xl p-2.5 sm:p-3.5 border border-slate-200/75 hover:border-blue-200/90 shadow-[0_6px_18px_-6px_rgba(15,23,42,0.06)] transition flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer group" style="--reveal-delay: ${delayMs}ms;">
-          <img src="${photoSrc}" alt="${item.model}" class="w-14 h-11 sm:w-16 sm:h-12 md:w-20 md:h-14 rounded-xl object-contain bg-white p-1 border border-slate-200/70 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+          <img src="${photoSrc}" alt="${item.model}" loading="lazy" decoding="async" class="w-14 h-11 sm:w-16 sm:h-12 md:w-20 md:h-14 rounded-xl object-contain bg-white p-1 border border-slate-200/70 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200">
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1.5">
               <span class="px-2 py-0.5 rounded-full text-[8.5px] sm:text-[9.5px] font-bold border ${badgeColor} flex-shrink-0 leading-none">
@@ -297,7 +297,7 @@ const UI = {
       const delayMs = Math.min((idx % 6) * 45, 200);
 
       return `
-        <div class="scroll-reveal bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
+        <div class="scroll-reveal heavy-section-deferred bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
           <div>
             <!-- Top Showroom Studio Image Stage -->
             <div class="relative w-full h-38 sm:h-42 md:h-44 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
@@ -316,7 +316,7 @@ const UI = {
               </span>
 
               <!-- Official Studio Car Image -->
-              <img src="${entry.photo}" alt="${entry.model}" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.07] transition-transform duration-500 select-none">
+              <img src="${entry.photo}" alt="${entry.model}" loading="lazy" decoding="async" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.07] transition-transform duration-500 select-none">
 
               <!-- Bottom-Right Zoom Hint Pill -->
               <span class="absolute bottom-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 group-hover/img:bg-slate-900 text-slate-500 group-hover/img:text-white border border-slate-200/80 shadow-xs flex items-center justify-center transition" title="Perbesar Foto Katalog">
@@ -566,7 +566,7 @@ const UI = {
           <td class="py-3 px-2.5 align-middle">
             <div class="flex items-center space-x-2.5">
               <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-11 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
-                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" loading="lazy" decoding="async" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
                 <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
