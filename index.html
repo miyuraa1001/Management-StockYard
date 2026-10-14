@@ -13,6 +13,11 @@
   <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
   <!-- jsPDF & AutoTable for Client-Side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    if (window.jspdf && window.jspdf.jsPDF) {
+      window.jsPDF = window.jspdf.jsPDF;
+    }
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js"></script>
 
   <!-- Tailwind CSS Configuration -->
@@ -2014,11 +2019,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261014-04"></script>
-  <script src="assets/js/state.js?v=20261014-04"></script>
-  <script src="assets/js/api.js?v=20261014-04"></script>
-  <script src="assets/js/scanner.js?v=20261014-04"></script>
-  <script src="assets/js/ui.js?v=20261014-04"></script>
-  <script src="assets/js/app.js?v=20261014-04"></script>
+  <script src="assets/js/config.js?v=20261014-05"></script>
+  <script src="assets/js/state.js?v=20261014-05"></script>
+  <script src="assets/js/api.js?v=20261014-05"></script>
+  <script src="assets/js/scanner.js?v=20261014-05"></script>
+  <script src="assets/js/ui.js?v=20261014-05"></script>
+  <script src="assets/js/app.js?v=20261014-05"></script>
 </body>
 </html>
