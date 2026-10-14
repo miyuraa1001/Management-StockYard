@@ -52,8 +52,8 @@ const ScannerService = {
     const displayVinEl = document.getElementById('displaySummaryVin');
     const displayEngineEl = document.getElementById('displaySummaryEngine');
 
-    const currentVin = (scanVinEl?.value || inputVinEl?.value || 'MHKP3FA1JTK137533').trim().toUpperCase();
-    const currentEngine = (scanEngineEl?.value || inputEngineEl?.value || '2NR4F82393').trim().toUpperCase();
+    const currentVin = (scanVinEl?.value !== undefined ? scanVinEl.value : (inputVinEl?.value || '')).trim().toUpperCase();
+    const currentEngine = (scanEngineEl?.value !== undefined ? scanEngineEl.value : (inputEngineEl?.value || '')).trim().toUpperCase();
 
     if (scanVinEl && scanVinEl.value !== currentVin) scanVinEl.value = currentVin;
     if (scanEngineEl && scanEngineEl.value !== currentEngine) scanEngineEl.value = currentEngine;
@@ -74,7 +74,7 @@ const ScannerService = {
     const chipContainer = document.getElementById('scanFeedbackChip');
 
     if (feedbackTitle) feedbackTitle.textContent = 'Siap Memindai Barcode';
-    if (feedbackSub) feedbackSub.textContent = 'Arahkan kamera atau periksa nomor di bawah';
+    if (feedbackSub) feedbackSub.textContent = 'Arahkan kamera ke barcode stiker kaca unit';
     if (feedbackBadge) {
       feedbackBadge.textContent = '🔍';
       feedbackBadge.className = 'w-7 h-7 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0';
@@ -89,7 +89,7 @@ const ScannerService = {
   },
 
   /**
-   * Membuka modal scanner dan selalu memulai dari Tahap 1 (Kamera & Nomor VIN/Mesin)
+   * Membuka modal scanner dan selalu memulai dari Tahap 1 (Kamera & Nomor VIN/Mesin Kosong)
    */
   async open() {
     const modal = document.getElementById('scannerModalOverlay');
@@ -101,9 +101,23 @@ const ScannerService = {
     if (step1) step1.classList.remove('hidden');
     if (step2) step2.classList.add('hidden');
 
+    // Kosongkan nilai VIN & Engine sebelum pemindaian barcode
+    const scanVinEl = document.getElementById('scanVinInput');
+    const scanEngineEl = document.getElementById('scanEngineInput');
+    const inputVinEl = document.getElementById('inputVin');
+    const inputEngineEl = document.getElementById('inputEngine');
+    if (scanVinEl) scanVinEl.value = '';
+    if (scanEngineEl) scanEngineEl.value = '';
+    if (inputVinEl) inputVinEl.value = '';
+    if (inputEngineEl) inputEngineEl.value = '';
+
+    const displayVinEl = document.getElementById('displaySummaryVin');
+    const displayEngineEl = document.getElementById('displaySummaryEngine');
+    if (displayVinEl) displayVinEl.textContent = '-';
+    if (displayEngineEl) displayEngineEl.textContent = '-';
+
     this.resetScanFeedbackChip();
     this.resetReticleStyle();
-    this.syncVinEngine();
 
     modal.classList.remove('hidden');
     AppState.isScanningActive = true;
@@ -270,7 +284,7 @@ const ScannerService = {
     const engine = (scanEngineEl?.value || '').trim();
 
     if (!vin || !engine) {
-      UI.showToast('Harap periksa nomor VIN dan nomor Mesin terlebih dahulu!');
+      UI.showToast('⚠️ Scan barcode stiker kaca atau ketik nomor VIN & Mesin!');
       return;
     }
 

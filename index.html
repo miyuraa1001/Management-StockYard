@@ -1512,7 +1512,7 @@
                   </label>
                   <span class="text-[8.5px] text-blue-400 font-semibold bg-blue-500/10 px-1.5 py-0.5 rounded">Dapat diedit</span>
                 </div>
-                <input type="text" id="scanVinInput" value="MHKP3FA1JTK137533" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-blue-400 uppercase tracking-wider" placeholder="Contoh: MHKP3FA1JTK137533" aria-label="Nomor VIN">
+                <input type="text" id="scanVinInput" value="" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-blue-400 uppercase tracking-wider" placeholder="Arahkan scan / ketik VIN..." aria-label="Nomor VIN">
               </div>
 
               <!-- Box ENGINE NUMBER -->
@@ -1524,7 +1524,7 @@
                   </label>
                   <span class="text-[8.5px] text-indigo-400 font-semibold bg-indigo-500/10 px-1.5 py-0.5 rounded">Dapat diedit</span>
                 </div>
-                <input type="text" id="scanEngineInput" value="2NR4F82393" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-indigo-400 uppercase tracking-wider" placeholder="Contoh: 2NR4F82393" aria-label="Nomor Mesin">
+                <input type="text" id="scanEngineInput" value="" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-indigo-400 uppercase tracking-wider" placeholder="Arahkan scan / ketik No. Mesin..." aria-label="Nomor Mesin">
               </div>
             </div>
 
@@ -1575,18 +1575,18 @@
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div class="bg-white/80 rounded-xl p-2 border border-blue-100">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">VIN</span>
-                  <span id="displaySummaryVin" class="font-mono font-black text-slate-900 text-xs truncate block">MHKP3FA1JTK137533</span>
+                  <span id="displaySummaryVin" class="font-mono font-black text-slate-900 text-xs truncate block">-</span>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 border border-blue-100">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">No. Mesin</span>
-                  <span id="displaySummaryEngine" class="font-mono font-black text-slate-900 text-xs truncate block">2NR4F82393</span>
+                  <span id="displaySummaryEngine" class="font-mono font-black text-slate-900 text-xs truncate block">-</span>
                 </div>
               </div>
             </div>
 
             <!-- Hidden Input for Form Submission Compatibility -->
-            <input type="hidden" id="inputVin" value="MHKP3FA1JTK137533">
-            <input type="hidden" id="inputEngine" value="2NR4F82393">
+            <input type="hidden" id="inputVin" value="">
+            <input type="hidden" id="inputEngine" value="">
 
             <!-- Field 1: Jenis Mutasi -->
             <div>
@@ -1731,11 +1731,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261013-20"></script>
-  <script src="assets/js/state.js?v=20261013-20"></script>
-  <script src="assets/js/api.js?v=20261013-20"></script>
-  <script src="assets/js/scanner.js?v=20261013-20"></script>
-  <script src="assets/js/ui.js?v=20261013-20"></script>
-  <script src="assets/js/app.js?v=20261013-20"></script>
+  <script src="assets/js/config.js?v=20261013-21"></script>
+  <script src="assets/js/state.js?v=20261013-21"></script>
+  <script src="assets/js/api.js?v=20261013-21"></script>
+  <script src="assets/js/scanner.js?v=20261013-21"></script>
+  <script src="assets/js/ui.js?v=20261013-21"></script>
+  <script src="assets/js/app.js?v=20261013-21"></script>
 </body>
 </html>
