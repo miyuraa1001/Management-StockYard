@@ -321,9 +321,16 @@ const ScannerService = {
     const video = document.getElementById('scannerVideo');
     if (!video) return;
 
-    const detectFrame = async () => {
+    let isProcessing = false;
+    let lastScanTime = 0;
+
+    const detectFrame = async (timestamp) => {
       if (!AppState.isScanningActive) return;
-      if (video.readyState >= 2 && !video.paused) {
+
+      // Throttle pemeriksaan setiap 140ms & pastikan proses sebelumnya selesai agar CPU/GPU tidak freeze
+      if (timestamp - lastScanTime >= 140 && !isProcessing && video.readyState >= 2 && !video.paused) {
+        isProcessing = true;
+        lastScanTime = timestamp;
         try {
           const barcodes = await this.nativeDetector.detect(video);
           if (barcodes && barcodes.length > 0 && AppState.isScanningActive) {
@@ -332,8 +339,12 @@ const ScannerService = {
               this.onBarcodeDetected(rawValue);
             }
           }
-        } catch (e) {}
+        } catch (e) {
+        } finally {
+          isProcessing = false;
+        }
       }
+
       if (AppState.isScanningActive) {
         this.detectorAnimationId = requestAnimationFrame(detectFrame);
       }

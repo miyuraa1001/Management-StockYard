@@ -19,14 +19,6 @@ html {
 
 body {
   background-color: #EEF2F8;
-  background-image:
-    radial-gradient(at 8% 12%, rgba(37, 99, 235, 0.09) 0px, transparent 48%),
-    radial-gradient(at 92% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 45%),
-    radial-gradient(at 50% 55%, rgba(14, 165, 233, 0.06) 0px, transparent 55%),
-    radial-gradient(at 85% 90%, rgba(16, 185, 129, 0.07) 0px, transparent 48%),
-    radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 24px 24px;
-  background-attachment: fixed;
   font-family: 'Plus Jakarta Sans', sans-serif;
   margin: 0;
   padding: 0;
@@ -34,6 +26,23 @@ body {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+}
+
+/* GPU-accelerated fixed background canvas (avoids repaints during mobile touch scroll) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    radial-gradient(at 8% 12%, rgba(37, 99, 235, 0.09) 0px, transparent 48%),
+    radial-gradient(at 92% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 55%, rgba(14, 165, 233, 0.06) 0px, transparent 55%),
+    radial-gradient(at 85% 90%, rgba(16, 185, 129, 0.07) 0px, transparent 48%),
+    radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+  transform: translateZ(0);
 }
 
 /* --------------------------------------------------------------------------
@@ -324,6 +333,15 @@ body {
     box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@media (max-width: 768px) {
+  /* Disable expensive backdrop blurs on mobile GPU for smooth 60fps touch scroll */
+  .shadow-saas-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #FFFFFF;
+  }
+}
+
 .shadow-saas-card:hover {
   transform: translateY(-2.5px);
   box-shadow:
@@ -331,6 +349,14 @@ body {
     0 8px 18px -4px rgba(37, 99, 235, 0.06),
     0 0 0 1px rgba(191, 219, 254, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Rendering Deferral & Content Visibility (Modern Web Guidance)
+   -------------------------------------------------------------------------- */
+.heavy-section-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 380px;
 }
 
 /* Compositor-accelerated Scroll Reveal Effect */

@@ -2319,15 +2319,14 @@ const UI = {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
-          } else if (entry.boundingClientRect.top > 40) {
-            // Re-animate secara halus ketika di-scroll kembali dari atas ke bawah
-            entry.target.classList.remove('is-visible');
+            // Unobserve setelah tampil agar browser tidak terus-menerus kalkulasi ulang saat scrolling (mencegah lag)
+            this._scrollObserver.unobserve(entry.target);
           }
         });
       }, {
         root: vp || null,
-        rootMargin: '0px 0px -24px 0px',
-        threshold: 0.08
+        rootMargin: '50px 0px 50px 0px',
+        threshold: 0.05
       });
     }
 
