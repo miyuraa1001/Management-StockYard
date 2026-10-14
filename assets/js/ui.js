@@ -968,8 +968,8 @@ const UI = {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const dateFormatted = `${day}-${month}-${year}`; // Format DD-MM-YYYY untuk nama file sistem
-    const dateSlash = `${day}/${month}/${year}`;     // Format DD/MM/YYYY untuk tampilan teks dokumen
-    const printDateStr = `${dateSlash} • ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WIB`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${now.getFullYear()}, ${timeStr} WIB`;
     const docNumber = `SALVAGE/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
 
     // ==========================================
@@ -1011,7 +1011,7 @@ const UI = {
     doc.setTextColor(71, 85, 105);
     doc.text('No. Dokumen', margin + 3, 30.5);
     doc.text('Periode Audit', margin + 3, 34.5);
-    doc.text('Tgl Cetak (DD/MM/YYYY)', margin + 3, 38.5);
+    doc.text('Waktu Cetak', margin + 3, 38.5);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(15, 23, 42);
@@ -1061,7 +1061,7 @@ const UI = {
 
     const tableRows = records.map((item, idx) => ({
       no: String(idx + 1).padStart(2, '0'),
-      datetime: `${item.fullDateStr || dateSlash}\n${item.time || ''} • ${item.id || ''}`,
+      datetime: `${item.fullDateStr || `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}`}\n${item.time || ''} • ${item.id || ''}`,
       type: item.type,
       model: item.model,
       vin: item.vin,
@@ -1157,7 +1157,7 @@ const UI = {
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184); // slate-400
       doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text(`Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Format: ${dateSlash} (DD/MM/YYYY)`, margin, pageHeight - 5);
+      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Salvage Enterprise', margin, pageHeight - 5);
     }
 
     // ==========================================
@@ -1183,8 +1183,9 @@ const UI = {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const dateFormatted = `${day}-${month}-${year}`; // DD-MM-YYYY untuk judul & nama file simpan
-    const dateSlash = `${day}/${month}/${year}`;     // DD/MM/YYYY untuk tampilan cetak
+    const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}, ${timeStr} WIB`;
     const docNumber = `SALVAGE/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
 
     const printWindow = window.open('', '_blank');
@@ -1196,7 +1197,7 @@ const UI = {
     const rowsHtml = records.map((item, idx) => `
       <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8.5px;">
         <td style="padding: 3px 5px; text-align: center; font-weight: 700; color: #64748b;">${String(idx + 1).padStart(2, '0')}</td>
-        <td style="padding: 3px 5px; white-space: nowrap;"><strong>${item.fullDateStr || dateSlash}</strong><br><span style="color:#64748b; font-size: 8px;">${item.time || ''} • ${item.id || ''}</span></td>
+        <td style="padding: 3px 5px; white-space: nowrap;"><strong>${item.fullDateStr || `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}`}</strong><br><span style="color:#64748b; font-size: 8px;">${item.time || ''} • ${item.id || ''}</span></td>
         <td style="padding: 3px 5px; text-align: center;"><span style="display:inline-block; padding: 1.5px 6px; border-radius: 9999px; font-weight: 700; font-size: 8px; background: ${item.type === 'Unit Masuk' ? '#ecfdf5' : '#eff6ff'}; color: ${item.type === 'Unit Masuk' ? '#047857' : '#1d4ed8'}; border: 1px solid ${item.type === 'Unit Masuk' ? '#a7f3d0' : '#bfdbfe'};">${item.type}</span></td>
         <td style="padding: 3px 5px;"><strong>${item.model}</strong></td>
         <td style="padding: 3px 5px; font-family: monospace; font-weight: 700; font-size: 8.5px; color: #0f172a;">${item.vin}</td>
@@ -1336,7 +1337,7 @@ const UI = {
 
         <div class="info-box">
           <div>
-            <strong>Tanggal Cetak:</strong> ${dateSlash} (DD/MM/YYYY) • ${timeStr} WIB<br>
+            <strong>Waktu Cetak:</strong> ${printDateStr}<br>
             <strong>Total Rekaman:</strong> ${records.length} Unit Fisik Terdata
           </div>
           <div>
@@ -1390,7 +1391,7 @@ const UI = {
 
         <div class="footer-note">
           <div>Dokumen Resmi Sistem Management Salvage • PT Astra Daihatsu Motor (Sentra Lampung)</div>
-          <div>Format Tanggal: ${dateSlash} (DD/MM/YYYY)</div>
+          <div>Dicetak secara otomatis via sistem Management Salvage</div>
         </div>
 
         <script>
