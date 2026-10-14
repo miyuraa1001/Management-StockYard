@@ -2576,6 +2576,196 @@ const UI = {
     setTimeout(() => {
       this.switchTab('dashboard');
     }, 400);
+  },
+
+  /**
+   * Mobile Pull-to-Refresh Controller
+   * Mengaktifkan gestur scroll/tarik ke bawah dari posisi paling atas untuk me-reload aplikasi secara native
+   */
+  initPullToRefresh() {
+    const viewport = document.getElementById('appMainViewport');
+    const indicator = document.getElementById('pullToRefreshIndicator');
+    const arrow = document.getElementById('pullToRefreshArrow');
+    const spinner = document.getElementById('pullToRefreshSpinner');
+    const label = document.getElementById('pullToRefreshText');
+
+    if (!viewport || !indicator) return;
+
+    let startY = 0;
+    let startX = 0;
+    let currentY = 0;
+    let isTracking = false;
+    let isPulling = false;
+    let isRefreshing = false;
+    let pullArmed = false;
+    let hasVibrated = false;
+
+    const PULL_THRESHOLD = 60; // Ambang jarak tarik (px) untuk trigger reload
+    const MAX_PULL = 95;      // Jarak visual maksimum indikator
+
+    const isAnyModalOpen = () => {
+      const openModal = document.querySelector('#scannerModalOverlay:not(.hidden), #logoutModal:not(.hidden), #customSelectModal:not(.hidden), #imagePreviewModal:not(.hidden)');
+      return !!openModal;
+    };
+
+    const resetIndicator = () => {
+      indicator.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease';
+      indicator.style.transform = 'translateY(-80px)';
+      indicator.style.opacity = '0';
+      setTimeout(() => {
+        if (arrow) {
+          arrow.classList.remove('hidden');
+          arrow.style.transform = 'rotate(0deg)';
+          arrow.classList.remove('text-emerald-600');
+          arrow.classList.add('text-blue-600');
+        }
+        if (spinner) spinner.classList.add('hidden');
+        if (label) label.textContent = 'Tarik ke bawah untuk reload';
+      }, 250);
+    };
+
+    const triggerReload = () => {
+      isRefreshing = true;
+      indicator.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
+      indicator.style.transform = 'translateY(55px)';
+
+      if (arrow) arrow.classList.add('hidden');
+      if (spinner) spinner.classList.remove('hidden');
+      if (label) label.textContent = 'Memuat ulang...';
+
+      // Berikan animasi spinner yang halus selama 300ms agar user mendapat konfirmasi visual
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    };
+
+    const handleStart = (clientY, clientX) => {
+      if (isRefreshing || isAnyModalOpen()) return;
+      if (viewport.scrollTop <= 2) {
+        startY = clientY;
+        startX = clientX;
+        currentY = clientY;
+        isTracking = true;
+        isPulling = false;
+        pullArmed = false;
+        hasVibrated = false;
+      }
+    };
+
+    const handleMove = (clientY, clientX, e) => {
+      if (!isTracking || isRefreshing) return;
+
+      if (viewport.scrollTop > 2) {
+        if (isPulling) {
+          isPulling = false;
+          resetIndicator();
+        }
+        isTracking = false;
+        return;
+      }
+
+      currentY = clientY;
+      const dy = currentY - startY;
+      const dx = clientX - startX;
+
+      // Jika geseran horizontal lebih dominan (e.g. geser carousel/tabel), abaikan pull to refresh
+      if (Math.abs(dx) > dy && dy > 0) {
+        isTracking = false;
+        isPulling = false;
+        return;
+      }
+
+      if (dy > 6) {
+        isPulling = true;
+        const pullDistance = Math.min(Math.pow(dy, 0.85) * 1.5, MAX_PULL);
+        const progress = Math.min(pullDistance / PULL_THRESHOLD, 1);
+
+        indicator.style.transition = 'none';
+        indicator.style.transform = `translateY(${pullDistance}px)`;
+        indicator.style.opacity = String(Math.min(progress * 1.3, 1));
+
+        if (arrow) {
+          arrow.style.transform = `rotate(${progress * 180}deg)`;
+        }
+
+        if (pullDistance >= PULL_THRESHOLD) {
+          pullArmed = true;
+          if (!hasVibrated) {
+            if (navigator.vibrate) navigator.vibrate(15);
+            hasVibrated = true;
+          }
+          if (label) label.textContent = 'Lepaskan untuk memuat ulang';
+          if (arrow) {
+            arrow.classList.add('text-emerald-600');
+            arrow.classList.remove('text-blue-600');
+          }
+        } else {
+          pullArmed = false;
+          hasVibrated = false;
+          if (label) label.textContent = 'Tarik ke bawah untuk reload';
+          if (arrow) {
+            arrow.classList.remove('text-emerald-600');
+            arrow.classList.add('text-blue-600');
+          }
+        }
+
+        if (e && e.cancelable) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    const handleEnd = () => {
+      if (!isTracking || isRefreshing) return;
+      isTracking = false;
+
+      if (isPulling) {
+        isPulling = false;
+        if (pullArmed) {
+          triggerReload();
+        } else {
+          resetIndicator();
+        }
+      }
+    };
+
+    // Touch events listener (untuk smartphone & tablet)
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length === 1) {
+        handleStart(e.touches[0].clientY, e.touches[0].clientX);
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length === 1) {
+        handleMove(e.touches[0].clientY, e.touches[0].clientX, e);
+      }
+    }, { passive: false });
+
+    viewport.addEventListener('touchend', handleEnd, { passive: true });
+    viewport.addEventListener('touchcancel', handleEnd, { passive: true });
+
+    // Desktop/DevTools mouse drag support
+    let isMouseDown = false;
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.button === 0 && viewport.scrollTop <= 2) {
+        isMouseDown = true;
+        handleStart(e.clientY, e.clientX);
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isMouseDown) {
+        handleMove(e.clientY, e.clientX, e);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        handleEnd();
+      }
+    });
   }
 };
 
@@ -2621,7 +2811,7 @@ window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSe
 window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
 
-// Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown & animasi scroll terinisialisasi
+// Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {
   const donutSvg = document.getElementById('vehicleDonutSvg');
   if (donutSvg) {
@@ -2633,5 +2823,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (UI && typeof UI.initScrollAnimations === 'function') {
     UI.initScrollAnimations();
+  }
+  if (UI && typeof UI.initPullToRefresh === 'function') {
+    UI.initPullToRefresh();
   }
 });

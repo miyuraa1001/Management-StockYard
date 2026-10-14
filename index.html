@@ -46,7 +46,7 @@
   </script>
 
   <!-- Modular Stylesheet -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261013-16">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014-07">
 </head>
 <body class="h-[100dvh] text-slate-800 flex flex-col antialiased overflow-hidden">
 
@@ -124,6 +124,26 @@
         </div>
       </div>
     </header>
+
+    <!-- Native-Like Mobile Pull to Refresh Indicator -->
+    <div id="pullToRefreshIndicator" class="fixed top-14 sm:top-16 inset-x-0 z-40 pointer-events-none flex justify-center items-center select-none" style="transform: translateY(-80px); opacity: 0; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;">
+      <div class="inline-flex items-center space-x-2.5 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_28px_-6px_rgba(15,23,42,0.18)] text-slate-700 text-xs font-bold ring-1 ring-black/5">
+        <!-- Circular Spinner / Arrow Icon -->
+        <div id="pullToRefreshIconWrap" class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-blue-600">
+          <svg id="pullToRefreshArrow" class="w-4 h-4 transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+          </svg>
+          <svg id="pullToRefreshSpinner" class="w-4 h-4 hidden animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </div>
+        <!-- Status Label -->
+        <span id="pullToRefreshText" class="tracking-tight text-[11px] font-extrabold text-slate-800">
+          Tarik ke bawah untuk reload
+        </span>
+      </div>
+    </div>
 
     <!-- Main Scrollable Area -->
     <main id="appMainViewport" class="flex-1 min-h-0 overflow-y-auto max-md:hide-scrollbar custom-scrollbar smooth-scroll pb-28 md:pb-12 pt-3 md:pt-4 px-3.5 sm:px-5 md:px-6 lg:px-8">
@@ -2019,11 +2039,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261014-06"></script>
-  <script src="assets/js/state.js?v=20261014-06"></script>
-  <script src="assets/js/api.js?v=20261014-06"></script>
-  <script src="assets/js/scanner.js?v=20261014-06"></script>
-  <script src="assets/js/ui.js?v=20261014-06"></script>
-  <script src="assets/js/app.js?v=20261014-06"></script>
+  <script src="assets/js/config.js?v=20261014-07"></script>
+  <script src="assets/js/state.js?v=20261014-07"></script>
+  <script src="assets/js/api.js?v=20261014-07"></script>
+  <script src="assets/js/scanner.js?v=20261014-07"></script>
+  <script src="assets/js/ui.js?v=20261014-07"></script>
+  <script src="assets/js/app.js?v=20261014-07"></script>
 </body>
 </html>

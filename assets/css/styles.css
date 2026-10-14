@@ -57,7 +57,11 @@ body {
 .smooth-scroll {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  overscroll-behavior-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+#pullToRefreshIndicator {
+  will-change: transform, opacity;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

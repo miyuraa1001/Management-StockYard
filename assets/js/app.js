@@ -29,6 +29,7 @@ const App = {
     UI.renderInventoryList();
     UI.renderHistoryList();
     UI.initHeroCarousel();
+    if (UI.initPullToRefresh) UI.initPullToRefresh();
 
     // 4. Sinkronisasi data real-time dari Google Spreadsheet (Background Sync)
     this.syncBackendData();
