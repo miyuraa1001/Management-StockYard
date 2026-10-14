@@ -2568,7 +2568,12 @@ const UI = {
     if (savedUrl && savedUrl.trim().startsWith('http')) {
       this.setDatabaseBadge('saved', 'Tersimpan');
     } else {
-      this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+      const endpoint = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : {};
+      if (endpoint.isProxy) {
+        this.setDatabaseBadge('connected', 'Proxy Vercel Aktif');
+      } else {
+        this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+      }
     }
   },
 
@@ -2632,8 +2637,15 @@ const UI = {
       localStorage.removeItem(CONFIG.CACHE_KEYS?.DRIVE_FOLDER_ID || 'daihatsu_drive_folder_id');
       CONFIG.DIRECT_APPSCRIPT_URL = '';
       CONFIG.DRIVE_FOLDER_ID = '';
-      this.setDatabaseBadge('disconnected', 'Belum Terhubung');
-      this.showToast('⚠️ Pengaturan database dikosongkan. Aplikasi berjalan dalam mode offline.');
+      
+      const endpoint = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : {};
+      if (endpoint.isProxy) {
+        this.setDatabaseBadge('connected', 'Proxy Vercel Aktif');
+        this.showToast('ℹ️ Menggunakan Vercel Environment Variables (/api/proxy).');
+      } else {
+        this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+        this.showToast('⚠️ Pengaturan database dikosongkan.');
+      }
       return;
     }
 
@@ -2658,20 +2670,26 @@ const UI = {
    */
   async testDatabaseConnection() {
     const inputUrl = document.getElementById('inputAppScriptUrl');
-    const url = inputUrl ? inputUrl.value.trim() : (CONFIG.DIRECT_APPSCRIPT_URL || '');
+    const endpoint = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : {};
+    let url = inputUrl ? inputUrl.value.trim() : (CONFIG.DIRECT_APPSCRIPT_URL || '');
+
+    // Jika input URL di browser kosong, otomatis gunakan endpoint Vercel Proxy (/api/proxy)
+    if (!url && endpoint.isProxy) {
+      url = endpoint.url;
+    }
 
     if (!url) {
-      this.showToast('Masukkan URL Web App Google Apps Script terlebih dahulu!');
+      this.showToast('Masukkan URL Web App atau gunakan deployment Vercel!');
       this.setDatabaseBadge('disconnected', 'Belum Terhubung');
       return;
     }
 
     this.setDatabaseBadge('testing', 'Menguji...');
-    this.showToast('⏳ Menghubungi Google Apps Script...', 3000);
+    this.showToast('⏳ Menghubungi backend database...', 3000);
 
     const testRes = await ApiService.testConnection(url);
     if (testRes && testRes.success) {
-      this.setDatabaseBadge('connected', 'Terhubung');
+      this.setDatabaseBadge('connected', endpoint.isProxy ? 'Proxy Terhubung' : 'Terhubung');
       this.showToast('✅ Berhasil terhubung ke Google Apps Script & Spreadsheet!', 4000);
       
       // Sinkronisasi data awal
@@ -2682,8 +2700,8 @@ const UI = {
       this.renderHistoryList();
     } else {
       this.setDatabaseBadge('error', 'Koneksi Gagal');
-      const errorMsg = testRes.error || 'Server tidak merespons';
-      this.showToast(`❌ Gagal terhubung: ${errorMsg}. Pastikan deployment Web App berizin "Anyone".`, 7000);
+      const errorMsg = testRes.message || testRes.error || 'Server tidak merespons';
+      this.showToast(`❌ Gagal terhubung: ${errorMsg}`, 7000);
     }
   },
 

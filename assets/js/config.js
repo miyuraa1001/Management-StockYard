@@ -60,18 +60,21 @@ const CONFIG = {
     const savedUrl = typeof localStorage !== 'undefined' ? localStorage.getItem(this.CACHE_KEYS.APPSCRIPT_URL) : '';
     const directUrl = savedUrl || this.DIRECT_APPSCRIPT_URL;
 
-    // Jika URL direct Apps Script terisi, utamakan direct mode
+    // 1. Jika pengguna sengaja memasukkan URL direct di Pengaturan aplikasi, prioritaskan direct URL tersebut
     if (directUrl && directUrl.trim().startsWith('http')) {
       return { url: directUrl.trim(), isProxy: false, isConfigured: true };
     }
 
-    // Jika di Vercel dan mode 'proxy'
-    if (this.API_MODE === 'proxy') {
-      return { url: this.PROXY_ENDPOINT, isProxy: true, isConfigured: true };
+    // 2. Jika diakses via file:/// lokal atau GitHub Pages murni (tanpa server proxy Vercel)
+    const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+    const isLocalFile = typeof window !== 'undefined' && window.location.protocol === 'file:';
+    if (isGitHubPages || isLocalFile) {
+      return { url: '', isProxy: false, isConfigured: false, isOffline: true };
     }
 
-    // Static host (GitHub Pages, localhost, file:///) tanpa Apps Script URL
-    return { url: '', isProxy: false, isConfigured: false, isOffline: true };
+    // 3. Default di Vercel / server hosting: Gunakan Vercel Serverless Proxy (/api/proxy)
+    // Mode ini otomatis memanfaatkan APPSCRIPT_URL & API_SECRET_TOKEN dari Environment Variables Vercel!
+    return { url: this.PROXY_ENDPOINT, isProxy: true, isConfigured: true };
   }
 };
 

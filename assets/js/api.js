@@ -121,6 +121,14 @@ const ApiService = {
         json = { success: res.ok, raw: text };
       }
 
+      if (!res.ok || json.success === false) {
+        return {
+          success: false,
+          status: res.status,
+          message: json.message || json.error || `HTTP ${res.status}: ${text}`
+        };
+      }
+
       return {
         success: true,
         status: res.status,

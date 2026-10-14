@@ -5,13 +5,10 @@
  * Endpoint: /api/proxy
  * 
  * FUNGSI:
- * 1. Mencegah kendala CORS antara browser client dan Google Apps Script.
- * 2. Mengamankan URL Google Apps Script dan Secret API Token di sisi server Vercel.
- * 3. Menghindari kebocoran API Key di inspeksi browser (Network tab) & git repo.
- * 
- * VARIABLE ENVIRONMENT (Dikonfigurasi di Dashboard Vercel / .env.local):
- * - APPSCRIPT_URL     : URL Web App Google Apps Script (https://script.google.com/macros/s/.../exec)
- * - API_SECRET_TOKEN  : Token rahasia otentikasi
+ * 1. Menjembatani request dari frontend ke Google Apps Script tanpa hambatan CORS.
+ * 2. Mengamankan URL Google Apps Script dan Secret API Token di sisi server Vercel
+ *    melalui Vercel Environment Variables.
+ * 3. Mendukung multi-alias environment variable (APPSCRIPT_URL, APP_SCRIPT_URL, dll).
  */
 
 export default async function handler(req, res) {
@@ -29,14 +26,45 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const appScriptUrl = process.env.APPSCRIPT_URL;
-  const apiSecretToken = process.env.API_SECRET_TOKEN || '';
+  // Baca environment variables dengan dukungan multi-alias
+  const appScriptUrl = (
+    process.env.APPSCRIPT_URL || 
+    process.env.APP_SCRIPT_URL || 
+    process.env.GOOGLE_APPS_SCRIPT_URL || 
+    process.env.APPS_SCRIPT_URL || 
+    process.env.NEXT_PUBLIC_APPSCRIPT_URL || 
+    ''
+  ).trim();
+
+  const apiSecretToken = (
+    process.env.API_SECRET_TOKEN || 
+    process.env.API_TOKEN || 
+    process.env.SECRET_TOKEN || 
+    process.env.SECRET_KEY || 
+    ''
+  ).trim();
+
+  // Endpoint Health Check / Diagnostik Vercel Proxy
+  const queryAction = req.query?.action || '';
+  if (queryAction === 'health') {
+    return res.status(200).json({
+      success: true,
+      proxyStatus: 'ACTIVE',
+      hasAppScriptUrl: !!appScriptUrl,
+      appScriptHost: appScriptUrl ? (tryGetHostname(appScriptUrl) || 'Valid URL') : 'NOT_CONFIGURED',
+      hasSecretToken: !!apiSecretToken,
+      tip: !appScriptUrl 
+        ? 'Environment variable APPSCRIPT_URL belum terdeteksi. Harap redeploy proyek di dashboard Vercel setelah menambahkan Environment Variable.' 
+        : 'Environment Variable Vercel siap digunakan.'
+    });
+  }
 
   // Validasi konfigurasi environment
   if (!appScriptUrl) {
     return res.status(500).json({
       success: false,
-      message: 'Server Error: Environment variable APPSCRIPT_URL belum dikonfigurasi di Vercel.'
+      code: 'ENV_APPSCRIPT_MISSING',
+      message: 'Server Error: Environment variable APPSCRIPT_URL belum aktif di Vercel. PENTING: Jika Anda baru saja menambahkannya di Vercel Settings, Anda WAJIB melakukan Redeploy (di tab Deployments > Redeploy) agar variabel masuk ke sistem.'
     });
   }
 
@@ -44,6 +72,7 @@ export default async function handler(req, res) {
     let targetUrl = appScriptUrl;
     let fetchOptions = {
       method: req.method,
+      redirect: 'follow', // Wajib untuk mengikuti 302 redirect dari Google Apps Script
       headers: {
         'Accept': 'application/json'
       }
@@ -57,7 +86,7 @@ export default async function handler(req, res) {
           urlObj.searchParams.set(key, value);
         }
       }
-      // Sisipkan secret token secara aman dari sisi server
+      // Sisipkan secret token secara aman dari sisi server Vercel
       if (apiSecretToken) {
         urlObj.searchParams.set('token', apiSecretToken);
       }
@@ -74,7 +103,9 @@ export default async function handler(req, res) {
         }
       }
       if (typeof payload === 'object' && payload !== null) {
-        payload.token = apiSecretToken;
+        if (apiSecretToken) {
+          payload.token = apiSecretToken;
+        }
       }
       fetchOptions.body = JSON.stringify(payload);
     }
@@ -107,3 +138,10 @@ export default async function handler(req, res) {
   }
 }
 
+function tryGetHostname(urlString) {
+  try {
+    return new URL(urlString).hostname;
+  } catch (e) {
+    return null;
+  }
+}
