@@ -1794,7 +1794,10 @@ const UI = {
     if (nameEl) nameEl.innerText = profile.name;
     if (roleEl) roleEl.innerText = profile.role;
     if (npkEl) npkEl.innerText = `NPK: ${profile.npk}`;
-    if (branchEl) branchEl.innerText = profile.branch;
+    if (branchEl) {
+      branchEl.innerText = profile.branch;
+      branchEl.title = profile.branch;
+    }
 
     // Update Header Avatar & Info (Desktop)
     const headerAvatar = document.getElementById('headerAvatarImg');
