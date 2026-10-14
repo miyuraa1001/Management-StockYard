@@ -1472,14 +1472,14 @@
               <div class="space-y-1.5 z-20">
                 <button type="button" onclick="triggerSampleBarcodeScan()" class="w-full py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-[10px] font-bold rounded-xl border border-white/20 flex items-center justify-center space-x-1.5 active:scale-95 transition shadow cursor-pointer">
                   <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                  <span>Tes Scan Cepat (Simulasi Stiker Kaca)</span>
+                  <span>Tes Scan Cepat</span>
                 </button>
               </div>
             </div>
 
             <div class="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none z-10">
               <span class="text-[9.5px] md:text-[10px] font-medium text-white/75 bg-black/50 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
-                Posisikan barcode stiker kaca unit di dalam kotak
+                Posisikan barcode unit di dalam kotak
               </span>
             </div>
           </div>
@@ -1512,7 +1512,7 @@
                   </label>
                   <span class="text-[8.5px] text-blue-400 font-semibold bg-blue-500/10 px-1.5 py-0.5 rounded">Dapat diedit</span>
                 </div>
-                <input type="text" id="scanVinInput" value="" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-blue-400 uppercase tracking-wider" placeholder="Arahkan scan / ketik VIN..." aria-label="Nomor VIN">
+                <input type="text" id="scanVinInput" value="MHKP3FA1JTK137533" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-blue-400 uppercase tracking-wider" placeholder="Contoh: MHKP3FA1JTK137533" aria-label="Nomor VIN">
               </div>
 
               <!-- Box ENGINE NUMBER -->
@@ -1524,7 +1524,7 @@
                   </label>
                   <span class="text-[8.5px] text-indigo-400 font-semibold bg-indigo-500/10 px-1.5 py-0.5 rounded">Dapat diedit</span>
                 </div>
-                <input type="text" id="scanEngineInput" value="" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-indigo-400 uppercase tracking-wider" placeholder="Arahkan scan / ketik No. Mesin..." aria-label="Nomor Mesin">
+                <input type="text" id="scanEngineInput" value="2NR4F82393" oninput="syncVinEngineValues()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-1.5 px-2.5 text-xs font-mono font-black text-white focus:outline-none focus:border-indigo-400 uppercase tracking-wider" placeholder="Contoh: 2NR4F82393" aria-label="Nomor Mesin">
               </div>
             </div>
 
@@ -1575,18 +1575,18 @@
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div class="bg-white/80 rounded-xl p-2 border border-blue-100">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">VIN</span>
-                  <span id="displaySummaryVin" class="font-mono font-black text-slate-900 text-xs truncate block">-</span>
+                  <span id="displaySummaryVin" class="font-mono font-black text-slate-900 text-xs truncate block">MHKP3FA1JTK137533</span>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 border border-blue-100">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">No. Mesin</span>
-                  <span id="displaySummaryEngine" class="font-mono font-black text-slate-900 text-xs truncate block">-</span>
+                  <span id="displaySummaryEngine" class="font-mono font-black text-slate-900 text-xs truncate block">2NR4F82393</span>
                 </div>
               </div>
             </div>
 
             <!-- Hidden Input for Form Submission Compatibility -->
-            <input type="hidden" id="inputVin" value="">
-            <input type="hidden" id="inputEngine" value="">
+            <input type="hidden" id="inputVin" value="MHKP3FA1JTK137533">
+            <input type="hidden" id="inputEngine" value="2NR4F82393">
 
             <!-- Field 1: Jenis Mutasi -->
             <div>
@@ -1731,11 +1731,11 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261013-21"></script>
-  <script src="assets/js/state.js?v=20261013-21"></script>
-  <script src="assets/js/api.js?v=20261013-21"></script>
-  <script src="assets/js/scanner.js?v=20261013-21"></script>
-  <script src="assets/js/ui.js?v=20261013-21"></script>
-  <script src="assets/js/app.js?v=20261013-21"></script>
+  <script src="assets/js/config.js?v=20261013-20"></script>
+  <script src="assets/js/state.js?v=20261013-20"></script>
+  <script src="assets/js/api.js?v=20261013-20"></script>
+  <script src="assets/js/scanner.js?v=20261013-20"></script>
+  <script src="assets/js/ui.js?v=20261013-20"></script>
+  <script src="assets/js/app.js?v=20261013-20"></script>
 </body>
 </html>
