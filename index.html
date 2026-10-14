@@ -1391,6 +1391,57 @@
             <!-- RIGHT COLUMN (lg:col-span-7): Automation + Logout + System Status Cards -->
             <div class="lg:col-span-7 space-y-4 md:space-y-5">
               
+              <!-- Card 0: Koneksi Google Spreadsheet & Google Drive -->
+              <div class="bg-white/95 rounded-[28px] p-4 sm:p-5 md:p-6 border border-white shadow-saas-card space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 gap-2">
+                  <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-emerald-50 border border-emerald-100/80 text-emerald-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7zM9 4v16M4 11h16M4 16h16"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 truncate">Koneksi Google Spreadsheet &amp; Drive</h4>
+                      <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium truncate">Database mutasi VIN, stok yard, dan foto bukti cloud</p>
+                    </div>
+                  </div>
+                  <span id="dbConnectionBadge" class="px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center space-x-1.5 bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">
+                    <span id="dbConnectionIndicatorDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span id="dbConnectionStatusText">Belum Terhubung</span>
+                  </span>
+                </div>
+
+                <!-- Form URL Web App Google Apps Script -->
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <label for="inputAppScriptUrl" class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                      URL Web App Google Apps Script <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="url" id="inputAppScriptUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" autocomplete="off">
+                    <p class="text-[10px] text-slate-400 mt-1">Dapatkan URL dari menu <strong>Deploy &gt; New Deployment &gt; Web App</strong> di Google Apps Script spreadsheet Anda.</p>
+                  </div>
+
+                  <div>
+                    <label for="inputDriveFolderId" class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                      ID / Link Folder Google Drive (Penyimpanan Foto Bukti)
+                    </label>
+                    <input type="text" id="inputDriveFolderId" placeholder="Contoh: 1ABCxyz... atau paste link lengkap folder drive" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" autocomplete="off">
+                    <p class="text-[10px] text-slate-400 mt-1">Foto unit &amp; bukti DO hasil scan otomatis diupload ke Google Drive ini.</p>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                    <button type="button" onclick="UI.saveDatabaseConfig()" class="w-full sm:flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-md shadow-emerald-500/20 active:scale-98 transition flex items-center justify-center space-x-1.5 cursor-pointer">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
+                      <span>Simpan &amp; Hubungkan</span>
+                    </button>
+
+                    <button type="button" onclick="UI.testDatabaseConnection()" class="w-full sm:w-auto py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition flex items-center justify-center space-x-1.5 cursor-pointer">
+                      <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                      <span>Tes Koneksi</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Card 1: Informasi Otomatisasi Laporan -->
               <div class="bg-white/95 rounded-[28px] p-4 sm:p-5 md:p-6 border border-white shadow-saas-card space-y-3.5">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 gap-2">

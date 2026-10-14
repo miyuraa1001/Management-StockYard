@@ -22,6 +22,7 @@ const App = {
     // Terapkan data profil operator & info otomatisasi
     if (UI.applyUserProfile) UI.applyUserProfile();
     if (UI.applyAutomationConfig) UI.applyAutomationConfig();
+    if (UI.initDatabaseSettings) UI.initDatabaseSettings();
 
     // 3. Render awal komponen UI dari state
     UI.renderDashboardActivities();
@@ -154,9 +155,9 @@ const App = {
     UI.removeImagePreview('unitPhoto');
     UI.removeImagePreview('docPhoto');
 
-    // Tutup Scanner Modal & Notifikasi
+    // Tutup Scanner Modal & Notifikasi Awal
     ScannerService.close();
-    UI.showToast('✅ Data mutasi berhasil diverifikasi & disimpan!');
+    UI.showToast('⏳ Menyimpan mutasi ke Google Spreadsheet & Drive...', 2500);
 
     // Refresh UI & ganti tab ke Riwayat
     UI.updateDashboardKpis();
@@ -171,11 +172,17 @@ const App = {
     // Background Async: Kirim data ke Google Spreadsheet backend
     try {
       const response = await ApiService.saveMutation(newRecord);
-      if (response && response.success) {
-        console.log('[App] Data mutasi berhasil tersinkron ke Google Spreadsheet backend');
+      if (response && response.success && !response.isFallback && !response.isOffline) {
+        console.log('[App] Data mutasi berhasil tersinkron ke Google Spreadsheet backend:', response);
+        UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
+      } else {
+        const reason = response?.message || response?.error || 'URL Web App belum terhubung';
+        console.warn('[App] Mutasi tersimpan lokal (belum ke database Google):', reason);
+        UI.showToast('⚠️ Data tersimpan di HP/Lokal (Offline). Buka menu Settings untuk memasukkan Web App URL agar masuk ke Google Spreadsheet.', 6000);
       }
     } catch (e) {
       console.warn('[App] Gagal mengirim mutasi ke server (tersimpan lokal):', e);
+      UI.showToast('⚠️ Data tersimpan di HP/Lokal (Koneksi offline). Periksa jaringan Anda.', 5000);
     }
   }
 };

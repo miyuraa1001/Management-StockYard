@@ -4,10 +4,11 @@
  * ============================================================================
  * Menampung konfigurasi aplikasi, endpoint API, dan opsi koneksi backend.
  * 
- * ARSITEKTUR KEAMANAN:
- * - Secara default, aplikasi menggunakan endpoint '/api/proxy' (Vercel Serverless).
- * - Dengan mode ini, URL Google Apps Script dan Secret Token tersimpan aman di 
- *   Environment Variables Vercel (tidak terekspos di browser / source code).
+ * ARSITEKTUR KONEKSI DATABASE:
+ * - Direct Mode: Browser menghubungi Google Apps Script Web App secara langsung (via safe CORS text/plain POST).
+ * - Proxy Mode : Menggunakan Vercel Serverless Function '/api/proxy' jika di-deploy di Vercel.
+ * - Auto Detect: Jika URL Web App tersimpan di LocalStorage atau diatur di tab Pengaturan,
+ *   aplikasi langsung menghubungkan data ke Google Apps Script & Drive!
  */
 
 const CONFIG = {
@@ -22,24 +23,23 @@ const CONFIG = {
   OPERATOR_BRANCH: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
   OPERATOR_PHOTO: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
 
-  // Mode Koneksi Backend:
-  // 'proxy'  -> Menggunakan Vercel Serverless Function /api/proxy (SANGAT DIREKOMENDASIKAN untuk Vercel)
-  // 'direct' -> Menghubungi Google Apps Script Web App langsung via browser
-  // 'mock'   -> Mode offline/demo dengan data lokal
-  API_MODE: 'proxy',
+  // Mode Koneksi Backend: 'auto' | 'direct' | 'proxy' | 'mock'
+  API_MODE: 'auto',
 
   // Endpoint Vercel Serverless Reverse Proxy
   PROXY_ENDPOINT: '/api/proxy',
 
-  // Fallback Direct URL Google Apps Script (Hanya jika mode = 'direct' dan tidak lewat Vercel)
-  // Catatan: Jika deploy di Vercel, kosongkan ini dan gunakan Vercel Environment Variables!
-  DIRECT_APPSCRIPT_URL: '',
+  // Fallback Direct URL Google Apps Script (Bisa diisi manual atau via UI Pengaturan)
+  DIRECT_APPSCRIPT_URL: (typeof localStorage !== 'undefined' ? localStorage.getItem('daihatsu_appscript_url') : '') || '',
 
-  // Secret Token untuk otentikasi (Hanya dipakai jika mode 'direct')
-  API_TOKEN: '',
+  // ID Folder Google Drive tempat foto unit & bukti dokumen disimpan
+  DRIVE_FOLDER_ID: (typeof localStorage !== 'undefined' ? localStorage.getItem('daihatsu_drive_folder_id') : '') || '',
+
+  // Secret Token untuk otentikasi (Opsional)
+  API_TOKEN: (typeof localStorage !== 'undefined' ? localStorage.getItem('daihatsu_api_token') : '') || '',
 
   // Network Timeout (milidetik)
-  REQUEST_TIMEOUT: 15000,
+  REQUEST_TIMEOUT: 20000,
 
   // LocalStorage Cache Key (v4 - Data Bersih & Realtime)
   CACHE_KEYS: {
@@ -47,10 +47,33 @@ const CONFIG = {
     HISTORY: 'daihatsu_history_cache_v4',
     KPI: 'daihatsu_kpi_cache_v4',
     PROFILE: 'daihatsu_profile_cache_v4',
-    AUTOMATION: 'daihatsu_automation_cache_v4'
+    AUTOMATION: 'daihatsu_automation_cache_v4',
+    APPSCRIPT_URL: 'daihatsu_appscript_url',
+    DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
+    API_TOKEN: 'daihatsu_api_token'
+  },
+
+  /**
+   * Helper untuk menentukan endpoint aktif secara dinamis
+   */
+  getActiveEndpoint() {
+    const savedUrl = typeof localStorage !== 'undefined' ? localStorage.getItem(this.CACHE_KEYS.APPSCRIPT_URL) : '';
+    const directUrl = savedUrl || this.DIRECT_APPSCRIPT_URL;
+
+    // Jika URL direct Apps Script terisi, utamakan direct mode
+    if (directUrl && directUrl.trim().startsWith('http')) {
+      return { url: directUrl.trim(), isProxy: false, isConfigured: true };
+    }
+
+    // Jika di Vercel dan mode 'proxy'
+    if (this.API_MODE === 'proxy') {
+      return { url: this.PROXY_ENDPOINT, isProxy: true, isConfigured: true };
+    }
+
+    // Static host (GitHub Pages, localhost, file:///) tanpa Apps Script URL
+    return { url: '', isProxy: false, isConfigured: false, isOffline: true };
   }
 };
 
 // Export ke window untuk kemudahan akses modular di browser
 window.CONFIG = CONFIG;
-

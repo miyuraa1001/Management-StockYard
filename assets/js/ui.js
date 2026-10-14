@@ -60,6 +60,7 @@ const UI = {
     }
     if (target === 'inventory') this.renderInventoryList();
     if (target === 'history') this.renderHistoryList();
+    if (target === 'settings' && typeof this.initDatabaseSettings === 'function') this.initDatabaseSettings();
 
     const vp = document.getElementById('appMainViewport');
     if (vp) vp.scrollTop = 0;
@@ -2551,6 +2552,142 @@ const UI = {
   },
 
   /**
+   * Inisialisasi tampilan form pengaturan database Google Spreadsheet
+   */
+  initDatabaseSettings() {
+    const inputUrl = document.getElementById('inputAppScriptUrl');
+    const inputFolder = document.getElementById('inputDriveFolderId');
+    if (!inputUrl) return;
+
+    const savedUrl = localStorage.getItem(CONFIG.CACHE_KEYS?.APPSCRIPT_URL || 'daihatsu_appscript_url') || CONFIG.DIRECT_APPSCRIPT_URL || '';
+    const savedFolder = localStorage.getItem(CONFIG.CACHE_KEYS?.DRIVE_FOLDER_ID || 'daihatsu_drive_folder_id') || CONFIG.DRIVE_FOLDER_ID || '';
+
+    inputUrl.value = savedUrl;
+    if (inputFolder) inputFolder.value = savedFolder;
+
+    if (savedUrl && savedUrl.trim().startsWith('http')) {
+      this.setDatabaseBadge('saved', 'Tersimpan');
+    } else {
+      this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+    }
+  },
+
+  /**
+   * Mengatur indikator status badge koneksi database di UI
+   */
+  setDatabaseBadge(state, text) {
+    const badge = document.getElementById('dbConnectionBadge');
+    const dot = document.getElementById('dbConnectionIndicatorDot');
+    const statusText = document.getElementById('dbConnectionStatusText');
+    if (!badge || !statusText) return;
+
+    statusText.innerText = text;
+
+    badge.className = 'px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center space-x-1.5 flex-shrink-0 ';
+    if (dot) dot.className = 'w-1.5 h-1.5 rounded-full ';
+
+    if (state === 'connected') {
+      badge.className += 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      if (dot) dot.className += 'bg-emerald-500 animate-pulse';
+    } else if (state === 'testing') {
+      badge.className += 'bg-blue-50 text-blue-700 border-blue-200';
+      if (dot) dot.className += 'bg-blue-500 animate-spin';
+    } else if (state === 'error') {
+      badge.className += 'bg-rose-50 text-rose-700 border-rose-200';
+      if (dot) dot.className += 'bg-rose-500';
+    } else if (state === 'saved') {
+      badge.className += 'bg-teal-50 text-teal-700 border-teal-200';
+      if (dot) dot.className += 'bg-teal-500';
+    } else {
+      badge.className += 'bg-amber-50 text-amber-700 border-amber-200';
+      if (dot) dot.className += 'bg-amber-500 animate-pulse';
+    }
+  },
+
+  /**
+   * Simpan pengaturan URL Web App Google Apps Script & ID Folder Drive
+   */
+  async saveDatabaseConfig() {
+    const inputUrl = document.getElementById('inputAppScriptUrl');
+    const inputFolder = document.getElementById('inputDriveFolderId');
+    if (!inputUrl) return;
+
+    let url = (inputUrl.value || '').trim();
+    let folder = (inputFolder ? inputFolder.value : '').trim();
+
+    // Ekstrak ID Folder Google Drive jika user memasukkan link lengkap Drive
+    if (folder.includes('drive.google.com') || folder.includes('/folders/')) {
+      const match = folder.match(/folders\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        folder = match[1];
+        if (inputFolder) inputFolder.value = folder;
+      } else {
+        folder = folder.split('?')[0].split('/').pop().trim();
+        if (inputFolder) inputFolder.value = folder;
+      }
+    }
+
+    if (!url) {
+      localStorage.removeItem(CONFIG.CACHE_KEYS?.APPSCRIPT_URL || 'daihatsu_appscript_url');
+      localStorage.removeItem(CONFIG.CACHE_KEYS?.DRIVE_FOLDER_ID || 'daihatsu_drive_folder_id');
+      CONFIG.DIRECT_APPSCRIPT_URL = '';
+      CONFIG.DRIVE_FOLDER_ID = '';
+      this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+      this.showToast('⚠️ Pengaturan database dikosongkan. Aplikasi berjalan dalam mode offline.');
+      return;
+    }
+
+    if (!url.startsWith('https://script.google.com/')) {
+      this.showToast('⚠️ URL Web App harus diawali https://script.google.com/macros/s/.../exec');
+      return;
+    }
+
+    localStorage.setItem(CONFIG.CACHE_KEYS?.APPSCRIPT_URL || 'daihatsu_appscript_url', url);
+    if (folder) {
+      localStorage.setItem(CONFIG.CACHE_KEYS?.DRIVE_FOLDER_ID || 'daihatsu_drive_folder_id', folder);
+      CONFIG.DRIVE_FOLDER_ID = folder;
+    }
+    CONFIG.DIRECT_APPSCRIPT_URL = url;
+
+    this.showToast('💾 Pengaturan tersimpan! Menguji koneksi...');
+    await this.testDatabaseConnection();
+  },
+
+  /**
+   * Menguji koneksi aktif ke Google Apps Script Web App
+   */
+  async testDatabaseConnection() {
+    const inputUrl = document.getElementById('inputAppScriptUrl');
+    const url = inputUrl ? inputUrl.value.trim() : (CONFIG.DIRECT_APPSCRIPT_URL || '');
+
+    if (!url) {
+      this.showToast('Masukkan URL Web App Google Apps Script terlebih dahulu!');
+      this.setDatabaseBadge('disconnected', 'Belum Terhubung');
+      return;
+    }
+
+    this.setDatabaseBadge('testing', 'Menguji...');
+    this.showToast('⏳ Menghubungi Google Apps Script...', 3000);
+
+    const testRes = await ApiService.testConnection(url);
+    if (testRes && testRes.success) {
+      this.setDatabaseBadge('connected', 'Terhubung');
+      this.showToast('✅ Berhasil terhubung ke Google Apps Script & Spreadsheet!', 4000);
+      
+      // Sinkronisasi data awal
+      await ApiService.fetchInitialData();
+      this.renderDashboardActivities();
+      this.updateDashboardKpis();
+      this.renderInventoryList();
+      this.renderHistoryList();
+    } else {
+      this.setDatabaseBadge('error', 'Koneksi Gagal');
+      const errorMsg = testRes.error || 'Server tidak merespons';
+      this.showToast(`❌ Gagal terhubung: ${errorMsg}. Pastikan deployment Web App berizin "Anyone".`, 7000);
+    }
+  },
+
+  /**
    * Buka dialog konfirmasi logout
    */
   openLogoutModal() {
@@ -2807,8 +2944,9 @@ window.moveDonutCapsule = (el, ev) => UI.moveDonutCapsule ? UI.moveDonutCapsule(
 window.hideDonutCapsule = (ev) => UI.hideDonutCapsule ? UI.hideDonutCapsule(ev) : null;
 window.handleDonutTouch = (ev) => UI.handleDonutTouch ? UI.handleDonutTouch(ev) : null;
 window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSegment(el, ev) : null;
-window.resetDonutSelection = (ev) => UI.resetDonutSelection ? UI.resetDonutSelection(ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
+window.saveDatabaseConfig = () => UI.saveDatabaseConfig ? UI.saveDatabaseConfig() : null;
+window.testDatabaseConnection = () => UI.testDatabaseConnection ? UI.testDatabaseConnection() : null;
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {

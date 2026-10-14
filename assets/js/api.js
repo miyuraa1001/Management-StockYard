@@ -3,70 +3,134 @@
  * API Service Module - Daihatsu Vehicle Logistics Tracker
  * ============================================================================
  * Menghubungkan antarmuka frontend dengan backend Google Apps Script / Vercel Proxy.
+ * 
+ * TEKNOLOGI CORS-SAFE:
+ * - Mengirim POST dengan 'Content-Type: text/plain;charset=utf-8' agar browser
+ *   TIDAK memicu CORS preflight (OPTIONS).
+ * - Google Apps Script doPost(e) mem-parsing payload JSON dari e.postData.contents.
+ * - Mendukung direct Google Apps Script Web App dan proxy Vercel secara transparan.
  */
 
 const ApiService = {
   /**
-   * Mengirim request HTTP dengan mode proxy atau direct ke Google Apps Script
+   * Mengirim request HTTP dengan mode direct atau proxy ke Google Apps Script
    */
   async request(action, method = 'GET', data = null) {
-    const isProxy = CONFIG.API_MODE === 'proxy' || (!CONFIG.DIRECT_APPSCRIPT_URL && CONFIG.API_MODE !== 'mock');
-    let url = isProxy ? CONFIG.PROXY_ENDPOINT : CONFIG.DIRECT_APPSCRIPT_URL;
+    const endpointInfo = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : { url: CONFIG.DIRECT_APPSCRIPT_URL, isProxy: false };
+    let url = endpointInfo.url;
 
-    // Jika mode mock atau endpoint belum diset sama sekali, return mock fallback
-    if (CONFIG.API_MODE === 'mock' || (!url && !isProxy)) {
+    // Jika mode mock atau endpoint belum diset sama sekali
+    if (CONFIG.API_MODE === 'mock' || !url) {
       console.log(`[ApiService] Mode Mock/Offline: Menjalankan action '${action}' secara lokal.`);
-      return { success: true, isMock: true };
+      return { 
+        success: false, 
+        isOffline: true, 
+        isMock: true, 
+        message: 'Endpoint Google Apps Script belum dikonfigurasi di Pengaturan.' 
+      };
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
+    const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT || 20000);
 
     try {
+      const token = (typeof localStorage !== 'undefined' ? localStorage.getItem(CONFIG.CACHE_KEYS?.API_TOKEN) : '') || CONFIG.API_TOKEN || '';
+      const folderId = (typeof localStorage !== 'undefined' ? localStorage.getItem(CONFIG.CACHE_KEYS?.DRIVE_FOLDER_ID) : '') || CONFIG.DRIVE_FOLDER_ID || '';
+
       let options = {
         method: method,
         signal: controller.signal,
-        headers: {
-          'Accept': 'application/json'
-        }
+        mode: 'cors',
+        redirect: 'follow'
       };
 
       if (method === 'GET') {
         const queryParams = new URLSearchParams({ action: action });
-        if (!isProxy && CONFIG.API_TOKEN) {
-          queryParams.append('token', CONFIG.API_TOKEN);
-        }
+        if (token) queryParams.append('token', token);
+        if (folderId) queryParams.append('folderId', folderId);
         url += (url.includes('?') ? '&' : '?') + queryParams.toString();
       } else {
-        options.headers['Content-Type'] = 'application/json';
+        // PENTING: Gunakan 'text/plain;charset=utf-8' untuk request direct ke Google Apps Script.
+        // MIME type ini terdaftar sebagai CORS-safelisted sehingga browser TIDAK akan
+        // mengirim preflight OPTIONS yang ditolak oleh server Google.
+        options.headers = {
+          'Content-Type': 'text/plain;charset=utf-8',
+          'Accept': 'application/json'
+        };
+
         const payload = {
           action: action,
           data: data,
+          token: token,
+          folderId: folderId,
           timestamp: new Date().toISOString()
         };
-        if (!isProxy && CONFIG.API_TOKEN) {
-          payload.token = CONFIG.API_TOKEN;
-        }
         options.body = JSON.stringify(payload);
       }
 
       const response = await fetch(url, options);
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseErr) {
+        // Jika server mengembalikan teks biasa atau redirect HTML
+        result = {
+          success: response.ok,
+          raw: responseText
+        };
       }
-
-      const result = await response.json();
       return result;
     } catch (err) {
       clearTimeout(timeoutId);
       console.warn(`[ApiService] Gagal request ke server (${action}):`, err.message);
-      // Return safe fallback agar UI tetap responsif
       return {
         success: false,
         error: err.message,
         isFallback: true
+      };
+    }
+  },
+
+  /**
+   * Tes koneksi langsung ke URL Google Apps Script Web App
+   */
+  async testConnection(targetUrl) {
+    const endpointInfo = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : { url: '' };
+    const url = (targetUrl || endpointInfo.url || '').trim();
+
+    if (!url) {
+      return { success: false, message: 'URL Web App masih kosong.' };
+    }
+
+    try {
+      const pingUrl = url + (url.includes('?') ? '&' : '?') + 'action=ping&ts=' + Date.now();
+      const res = await fetch(pingUrl, {
+        method: 'GET',
+        mode: 'cors',
+        redirect: 'follow'
+      });
+
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        json = { success: res.ok, raw: text };
+      }
+
+      return {
+        success: true,
+        status: res.status,
+        data: json
+      };
+    } catch (err) {
+      console.error('[ApiService] Test connection error:', err);
+      return {
+        success: false,
+        error: err.message || 'Gagal terhubung ke Google Apps Script'
       };
     }
   },
@@ -97,7 +161,7 @@ const ApiService = {
   },
 
   /**
-   * Menyimpan data mutasi hasil pemindaian VIN ke Google Spreadsheet
+   * Menyimpan data mutasi hasil pemindaian VIN ke Google Spreadsheet & Google Drive
    */
   async saveMutation(mutationRecord) {
     try {
@@ -125,4 +189,3 @@ const ApiService = {
 };
 
 window.ApiService = ApiService;
-
