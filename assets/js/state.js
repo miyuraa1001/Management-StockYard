@@ -36,7 +36,7 @@ const AppState = {
   },
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
-    email: 'report.logistik@daihatsu.co.id',
+    email: 'syafirafira08162@gmail.com',
     type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
   },
 

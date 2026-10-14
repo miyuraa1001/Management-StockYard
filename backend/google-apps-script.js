@@ -199,7 +199,7 @@ function sendDailyScheduledReport() {
   Logger.log("Ditemukan " + yesterdayRecords.length + " transaksi untuk tanggal " + yesterdayDateStr + ". Memproses pembuatan PDF...");
 
   // 3. Baca Konfigurasi Tujuan Email
-  let targetEmail = "report.logistik@daihatsu.co.id";
+  let targetEmail = "syafirafira08162@gmail.com";
   if (sheetConfig) {
     const configData = sheetConfig.getDataRange().getValues();
     for (let i = 1; i < configData.length; i++) {
