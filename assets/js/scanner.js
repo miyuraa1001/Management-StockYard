@@ -14,6 +14,7 @@ const ScannerService = {
   lastScannedIsDuplicate: false,
   scanMode: 'barcode', // 'barcode' | 'ocr'
   isOcrRunning: false,
+  scanCooldown: false,
   lastExtractedData: null,
 
   /**
@@ -230,6 +231,7 @@ const ScannerService = {
 
     this.lastScannedIsDuplicate = false;
     this.isOcrRunning = false;
+    this.scanCooldown = false;
     this.lastExtractedData = null;
     this.setScanMode('barcode');
 
@@ -242,7 +244,10 @@ const ScannerService = {
     // Selalu reset ke Tahap 1 saat baru dibuka
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');
-    if (step1) step1.classList.remove('hidden');
+    if (step1) {
+      step1.classList.remove('hidden');
+      step1.scrollTop = 0;
+    }
     if (step2) step2.classList.add('hidden');
 
     // Kosongkan nilai VIN & Engine sebelum pemindaian barcode
@@ -266,7 +271,8 @@ const ScannerService = {
     modal.classList.remove('hidden');
     AppState.isScanningActive = true;
 
-    // Inisialisasi Native BarcodeDetector jika didukung browser smartphone
+    // Periksa dukungan Hardware BarcodeDetector
+    let hasNativeDetector = false;
     if ('BarcodeDetector' in window) {
       try {
         const supported = await BarcodeDetector.getSupportedFormats();
@@ -274,102 +280,67 @@ const ScannerService = {
           this.nativeDetector = new BarcodeDetector({
             formats: supported.filter(f => ['code_128', 'code_39', 'qr_code', 'data_matrix', 'itf', 'ean_13', 'upc_a'].includes(f))
           });
+          hasNativeDetector = true;
         }
       } catch (e) {
         this.nativeDetector = null;
+        hasNativeDetector = false;
       }
     }
 
+    // Resolusi kamera optimal 720p (sangat ringan, 60fps mulus, tanpa CPU lag / freeze)
+    const cameraConstraints = {
+      audio: false,
+      video: {
+        facingMode: { ideal: AppState.facingMode || 'environment' },
+        width: { ideal: 1280, max: 1920 },
+        height: { ideal: 720, max: 1080 }
+      }
+    };
+
     try {
-      // Setup ZXing dengan konfigurasi TryHarder & Automotive Barcode Formats
-      if (typeof ZXing !== 'undefined') {
+      // 1. Prioritaskan Native BarcodeDetector (GPU hardware-accelerated, 0% CPU lag)
+      if (hasNativeDetector && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        AppState.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
+        const videoEl = document.getElementById('scannerVideo');
+        if (videoEl) {
+          videoEl.srcObject = AppState.cameraStream;
+          await videoEl.play().catch(() => {});
+          this.startNativeDetectorLoop();
+        }
+      } 
+      // 2. Fallback untuk browser tanpa BarcodeDetector: Gunakan ZXing dengan interval aman (200ms)
+      else if (typeof ZXing !== 'undefined') {
         const hints = new Map();
         hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-
-        // Prioritaskan format barcode otomotif (Code 128, Code 39, QR, Data Matrix)
         const formats = [
           ZXing.BarcodeFormat.CODE_128,
           ZXing.BarcodeFormat.CODE_39,
           ZXing.BarcodeFormat.QR_CODE,
-          ZXing.BarcodeFormat.DATA_MATRIX,
-          ZXing.BarcodeFormat.ITF,
-          ZXing.BarcodeFormat.EAN_13,
-          ZXing.BarcodeFormat.EAN_8,
-          ZXing.BarcodeFormat.UPC_A,
-          ZXing.BarcodeFormat.UPC_E,
-          ZXing.BarcodeFormat.CODABAR
+          ZXing.BarcodeFormat.DATA_MATRIX
         ];
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
 
-        AppState.codeReader = new ZXing.BrowserMultiFormatReader(hints, 120);
-        const videoInputDevices = await AppState.codeReader.listVideoInputDevices();
-
-        // Cari kamera belakang utama
-        let selectedDeviceId = undefined;
-        if (videoInputDevices && videoInputDevices.length > 0) {
-          const backCam = videoInputDevices.find(device => {
-            const label = device.label.toLowerCase();
-            return label.includes('back') || label.includes('rear') || label.includes('environment');
-          });
-          selectedDeviceId = backCam ? backCam.deviceId : videoInputDevices[0].deviceId;
-        }
-
-        // Panggil decode dengan resolusi tinggi (1080p / 720p) agar barcode kecil/tajam terbaca
-        const cameraConstraints = {
-          audio: false,
-          video: {
-            deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-            facingMode: selectedDeviceId ? undefined : { ideal: AppState.facingMode || 'environment' },
-            width: { ideal: 1920, min: 1280 },
-            height: { ideal: 1080, min: 720 }
+        AppState.codeReader = new ZXing.BrowserMultiFormatReader(hints, 200);
+        await AppState.codeReader.decodeFromConstraints(cameraConstraints, 'scannerVideo', (result, err) => {
+          if (result && AppState.isScanningActive && this.scanMode !== 'ocr' && !this.isOcrRunning && !this.scanCooldown) {
+            const code = result.getText();
+            const smart = this.smartFilterBarcodes([code]);
+            if (smart.vin) {
+              this.scanCooldown = true;
+              this.applyExtractedStickerData(smart, 'BARCODE AUTO');
+              setTimeout(() => { this.scanCooldown = false; }, 3000);
+            } else {
+              this.onBarcodeDetected(code);
+            }
           }
-        };
-
-        try {
-          await AppState.codeReader.decodeFromConstraints(cameraConstraints, 'scannerVideo', (result, err) => {
-            if (result && AppState.isScanningActive && this.scanMode !== 'ocr' && !this.isOcrRunning) {
-              const code = result.getText();
-              const smart = this.smartFilterBarcodes([code]);
-              if (smart.vin) {
-                this.applyExtractedStickerData(smart, 'BARCODE AUTO');
-              } else {
-                this.onBarcodeDetected(code);
-              }
-            }
-          });
-        } catch (constraintErr) {
-          // Fallback ke device ID standar jika constraints resolusi tinggi tidak didukung perangkat
-          AppState.codeReader.decodeFromVideoDevice(selectedDeviceId, 'scannerVideo', (result, err) => {
-            if (result && AppState.isScanningActive && this.scanMode !== 'ocr' && !this.isOcrRunning) {
-              const code = result.getText();
-              const smart = this.smartFilterBarcodes([code]);
-              if (smart.vin) {
-                this.applyExtractedStickerData(smart, 'BARCODE AUTO');
-              } else {
-                this.onBarcodeDetected(code);
-              }
-            }
-          });
-        }
-
-        // Jalankan loop pembacaan Native BarcodeDetector secara paralel untuk respon instan
-        this.startNativeDetectorLoop();
-      } else {
-        // Fallback standar getUserMedia
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          AppState.cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-              facingMode: AppState.facingMode,
-              width: { ideal: 1920, min: 1280 },
-              height: { ideal: 1080, min: 720 }
-            }
-          });
-          const videoEl = document.getElementById('scannerVideo');
-          if (videoEl) {
-            videoEl.srcObject = AppState.cameraStream;
-            videoEl.play();
-            this.startNativeDetectorLoop();
-          }
+        });
+      } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        AppState.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
+        const videoEl = document.getElementById('scannerVideo');
+        if (videoEl) {
+          videoEl.srcObject = AppState.cameraStream;
+          await videoEl.play().catch(() => {});
         }
       }
     } catch (err) {
@@ -392,24 +363,26 @@ const ScannerService = {
     const detectFrame = async (timestamp) => {
       if (!AppState.isScanningActive) return;
 
-      // Jika dalam mode OCR atau proses OCR sedang berlangsung, lewati deteksi loop
-      if (this.scanMode === 'ocr' || this.isOcrRunning) {
+      // Jika dalam mode OCR atau sedang cooling down atau proses OCR berjalan, lewati deteksi
+      if (this.scanMode === 'ocr' || this.isOcrRunning || this.scanCooldown) {
         this.detectorAnimationId = requestAnimationFrame(detectFrame);
         return;
       }
 
-      // Throttle pemeriksaan setiap 140ms & pastikan proses sebelumnya selesai agar CPU/GPU tidak freeze
-      if (timestamp - lastScanTime >= 140 && !isProcessing && video.readyState >= 2 && !video.paused) {
+      // Throttle pemeriksaan setiap 160ms agar GPU/CPU tetap dingin & hemat baterai
+      if (timestamp - lastScanTime >= 160 && !isProcessing && video.readyState >= 2 && !video.paused) {
         isProcessing = true;
         lastScanTime = timestamp;
         try {
           const barcodes = await this.nativeDetector.detect(video);
-          if (barcodes && barcodes.length > 0 && AppState.isScanningActive) {
+          if (barcodes && barcodes.length > 0 && AppState.isScanningActive && !this.scanCooldown) {
             const rawValues = barcodes.map(b => b.rawValue).filter(Boolean);
             const smart = this.smartFilterBarcodes(rawValues);
 
             if (smart.vin) {
+              this.scanCooldown = true;
               this.applyExtractedStickerData(smart, 'BARCODE AUTO');
+              setTimeout(() => { this.scanCooldown = false; }, 3000);
             } else if (rawValues.length > 0) {
               this.onBarcodeDetected(rawValues[0]);
             }
@@ -850,6 +823,14 @@ const ScannerService = {
     this.setFeedbackChipSuccess(vin);
     UI.showToast(`🎯 ${sourceLabel}: Berhasil Membaca ${vin}`);
 
+    // Auto-scroll halus ke bagian bawah agar tombol Lanjut ke Formulir Mutasi langsung terlihat
+    setTimeout(() => {
+      const step1 = document.getElementById('scanStep1_Camera');
+      if (step1) {
+        step1.scrollTo({ top: step1.scrollHeight, behavior: 'smooth' });
+      }
+    }, 250);
+
     setTimeout(() => {
       if (AppState.isScanningActive && !this.lastScannedIsDuplicate) {
         this.resetReticleStyle();
@@ -862,7 +843,7 @@ const ScannerService = {
    * Menganalisis nomor VIN, memeriksa duplikat, dan mengupdate form Step 1 & Step 2
    */
   onBarcodeDetected(detectedCode, optEngine, optModel) {
-    if (!AppState.isScanningActive) return;
+    if (!AppState.isScanningActive || this.scanCooldown) return;
 
     // Bersihkan teks barcode dari tanda khusus Code 39 (*) atau prefix
     let raw = String(detectedCode || '').trim();
@@ -876,7 +857,36 @@ const ScannerService = {
     // Cek apakah raw adalah VIN atau identitas stiker menggunakan smartFilterBarcodes
     const smart = this.smartFilterBarcodes([raw]);
     if (smart.vin) {
+      this.scanCooldown = true;
       this.applyExtractedStickerData(smart, 'BARCODE AUTO');
+      setTimeout(() => { this.scanCooldown = false; }, 3000);
+      return;
+    }
+
+    // Jika yang terdeteksi HANYA nomor DO (10 digit):
+    if (smart.doNumber) {
+      const pillDo = document.getElementById('pillExtractedDo');
+      const summaryCard = document.getElementById('scanExtractedSummary');
+      if (pillDo) pillDo.textContent = smart.doNumber;
+      if (summaryCard) summaryCard.classList.remove('hidden');
+      UI.showToast(`ℹ️ No. DO terdeteksi (${smart.doNumber}). Arahkan ke barcode VIN (MHK...)`);
+      return;
+    }
+
+    // Jika yang terdeteksi HANYA nomor mesin:
+    if (smart.engine) {
+      const scanEngineEl = document.getElementById('scanEngineInput');
+      const pillEngine = document.getElementById('pillExtractedEngine');
+      const summaryCard = document.getElementById('scanExtractedSummary');
+      if (scanEngineEl) scanEngineEl.value = smart.engine;
+      if (pillEngine) pillEngine.textContent = smart.engine;
+      if (summaryCard) summaryCard.classList.remove('hidden');
+      UI.showToast(`ℹ️ No. Mesin terdeteksi (${smart.engine}). Arahkan ke barcode VIN (MHK...)`);
+      return;
+    }
+
+    // Abaikan nomor PO atau kode acak bukan VIN
+    if (raw.length < 12 || /^\d{10}$/.test(raw) || raw.startsWith('632') || raw.startsWith('11000')) {
       return;
     }
 
