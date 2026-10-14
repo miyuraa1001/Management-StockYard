@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <!-- Tesseract.js for Optical Character Recognition (OCR Text Reading) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <!-- jsPDF & AutoTable for Client-Side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
@@ -1654,18 +1656,22 @@
         <!-- ======================================================== -->
         <div id="scanStep1_Camera" class="w-full h-full flex flex-col justify-between overflow-hidden bg-black relative">
           
+          <!-- Hidden Off-screen Processing Canvas & File Input for OCR -->
+          <canvas id="scannerCaptureCanvas" class="hidden"></canvas>
+          <input type="file" id="stickerGalleryInput" accept="image/*" class="hidden" onchange="ScannerService.handleStickerPhotoUploaded(event)" aria-label="Unggah Foto Stiker">
+
           <!-- Top Bar Controls -->
-          <div class="px-4 pt-4 pb-2.5 flex items-center justify-between text-white z-20 bg-gradient-to-b from-black/85 via-black/50 to-transparent flex-shrink-0">
+          <div class="px-4 pt-3.5 pb-2 flex items-center justify-between text-white z-20 bg-gradient-to-b from-black/90 via-black/60 to-transparent flex-shrink-0">
             <button type="button" onclick="closeScannerModal()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition border border-white/15 shadow-md cursor-pointer" aria-label="Tutup Scanner" title="Tutup Scanner">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             
             <div class="text-center">
-              <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 shadow">
+              <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 shadow">
                 <span id="scanStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span id="scanStatusText" class="text-[10px] font-black uppercase tracking-wider text-emerald-300">Live Camera Barcode</span>
+                <span id="scanStatusText" class="text-[10px] font-black uppercase tracking-wider text-emerald-300">Live Camera Barcode & OCR</span>
               </div>
-              <span class="text-[9.5px] text-white/70 block mt-0.5">Arahkan ke barcode stiker kaca unit</span>
+              <span id="scanGuideSubtext" class="text-[9px] text-white/70 block mt-0.5">Arahkan ke barcode atau tulisan kode di stiker kaca</span>
             </div>
 
             <div class="flex items-center space-x-1.5">
@@ -1680,13 +1686,35 @@
             </div>
           </div>
 
+          <!-- Dual Mode Selector Segmented Tabs -->
+          <div class="px-4 pb-2 z-20 flex items-center justify-center space-x-2">
+            <button type="button" id="scanModeBtn_Barcode" onclick="ScannerService.setScanMode('barcode')" class="px-3 py-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-blue-600 text-white shadow-sm border border-blue-400/40">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <span>║▌║ Barcode Auto</span>
+            </button>
+            <button type="button" id="scanModeBtn_OCR" onclick="ScannerService.setScanMode('ocr')" class="px-3 py-1 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 text-slate-300 border border-white/15">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>🔤 Baca Teks (OCR)</span>
+            </button>
+          </div>
+
           <!-- Viewfinder Viewport (Live Video) -->
           <div class="relative flex-1 flex items-center justify-center overflow-hidden min-h-[220px]">
             <video id="scannerVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
             <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
 
+            <!-- OCR Real-time Processing Overlay -->
+            <div id="ocrProcessingOverlay" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 animate-spin border border-emerald-500/40 shadow-lg">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+              </div>
+              <h4 class="text-xs sm:text-sm font-black text-white">Membaca Baris Teks Stiker (OCR)...</h4>
+              <p id="ocrProgressStatus" class="text-[10.5px] text-emerald-300 font-mono mt-1">Mengekstrak baris kode VIN, No. Mesin & No. DO</p>
+              <span class="text-[9.5px] text-slate-400 mt-2 block">Kamera menangkap resolusi penuh untuk akurasi 100%</span>
+            </div>
+
             <!-- Laser Reticle Frame -->
-            <div id="scannerReticle" class="relative w-64 h-40 md:w-72 md:h-44 border-2 border-blue-400/80 rounded-2xl p-2 z-10 flex flex-col justify-between transition-all duration-300">
+            <div id="scannerReticle" class="relative w-64 h-44 md:w-76 md:h-48 border-2 border-blue-400/80 rounded-2xl p-2 z-10 flex flex-col justify-between transition-all duration-300">
               <div id="cornerTL" class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl transition-colors"></div>
               <div id="cornerTR" class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr transition-colors"></div>
               <div id="cornerBL" class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl transition-colors"></div>
@@ -1694,24 +1722,38 @@
 
               <div id="scannerLaser" class="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent laser-line shadow-[0_0_14px_#3b82f6]"></div>
 
-              <div class="bg-black/55 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-white/10 shadow pointer-events-none">
+              <div class="bg-black/60 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-white/10 shadow pointer-events-none">
                 <span class="text-[8.5px] font-bold text-white tracking-widest flex items-center justify-center">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-                  DETEKSI OTOMATIS VIN / MESIN
+                  DETEKSI BARCODE & TEKS STIKER
                 </span>
               </div>
 
+              <!-- Action Bar Inside Reticle: Foto & Baca Teks (OCR) + Unggah + Sample -->
               <div class="space-y-1.5 z-20">
-                <button type="button" onclick="triggerSampleBarcodeScan()" class="w-full py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-[10px] font-bold rounded-xl border border-white/20 flex items-center justify-center space-x-1.5 active:scale-95 transition shadow cursor-pointer">
-                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                  <span>Tes Scan Cepat</span>
+                <!-- Primary Snapshot OCR Action -->
+                <button type="button" onclick="ScannerService.captureAndScanOCR()" class="w-full py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[10.5px] font-extrabold rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-1.5 cursor-pointer border border-emerald-400/40">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+                  <span>📸 Foto & Baca Teks Stiker (OCR)</span>
                 </button>
+
+                <!-- 2 Mini Buttons: Unggah Galeri & Tes Cepat -->
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button type="button" onclick="document.getElementById('stickerGalleryInput').click()" class="py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-[9.5px] font-bold rounded-xl border border-white/20 flex items-center justify-center space-x-1 active:scale-95 transition shadow cursor-pointer" title="Unggah Foto Stiker dari Galeri HP">
+                    <svg class="w-3.5 h-3.5 text-blue-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>Pilih Galeri</span>
+                  </button>
+                  <button type="button" onclick="triggerSampleBarcodeScan()" class="py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-[9.5px] font-bold rounded-xl border border-white/20 flex items-center justify-center space-x-1 active:scale-95 transition shadow cursor-pointer">
+                    <svg class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Tes Cepat</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             <div class="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none z-10">
-              <span class="text-[9.5px] md:text-[10px] font-medium text-white/75 bg-black/50 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
-                Posisikan barcode unit di dalam kotak
+              <span class="text-[9.5px] md:text-[10px] font-medium text-white/75 bg-black/60 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+                Posisikan stiker barcode kaca di dalam kotak
               </span>
             </div>
           </div>
@@ -1726,11 +1768,36 @@
                   🔍
                 </div>
                 <div>
-                  <p id="scanFeedbackTitle" class="text-[11px] font-black text-white leading-tight">Siap Memindai Barcode</p>
-                  <p id="scanFeedbackSubtitle" class="text-[9.5px] text-slate-300 font-mono mt-0.5">Arahkan kamera atau periksa nomor di bawah</p>
+                  <p id="scanFeedbackTitle" class="text-[11px] font-black text-white leading-tight">Siap Memindai Barcode / Teks</p>
+                  <p id="scanFeedbackSubtitle" class="text-[9.5px] text-slate-300 font-mono mt-0.5">Arahkan kamera atau tekan "Foto & Baca Teks"</p>
                 </div>
               </div>
               <span id="scanFeedbackPill" class="text-[9px] font-extrabold text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded-lg border border-blue-500/30 uppercase tracking-wide">READY</span>
+            </div>
+
+            <!-- Multi-Field Extracted Summary Pills (Dynamic) -->
+            <div id="scanExtractedSummary" class="hidden p-2.5 rounded-2xl bg-slate-950/80 border border-blue-500/30 text-xs">
+              <div class="flex items-center justify-between pb-1.5 border-b border-white/10">
+                <span class="text-[10px] font-extrabold text-emerald-400 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Hasil Ekstraksi Stiker Lengkap:</span>
+                </span>
+                <span id="scanExtractedSource" class="text-[9px] font-bold text-slate-400 uppercase">OCR TEKS</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mt-2">
+                <div class="bg-slate-900/90 rounded-xl p-1.5 border border-white/10">
+                  <span class="text-[8.5px] text-slate-400 block font-bold">No. Rangka (VIN)</span>
+                  <span id="pillExtractedVin" class="text-[10.5px] font-mono font-black text-white truncate block">-</span>
+                </div>
+                <div class="bg-slate-900/90 rounded-xl p-1.5 border border-white/10">
+                  <span class="text-[8.5px] text-slate-400 block font-bold">No. Mesin</span>
+                  <span id="pillExtractedEngine" class="text-[10.5px] font-mono font-black text-indigo-300 truncate block">-</span>
+                </div>
+                <div class="bg-slate-900/90 rounded-xl p-1.5 border border-white/10 col-span-2 sm:col-span-1">
+                  <span class="text-[8.5px] text-slate-400 block font-bold">No. Delivery Note (DO)</span>
+                  <span id="pillExtractedDo" class="text-[10.5px] font-mono font-black text-emerald-300 truncate block">-</span>
+                </div>
+              </div>
             </div>
 
             <!-- Two Columns / Fields: VIN & ENGINE NUMBER -->
@@ -1740,7 +1807,7 @@
                 <div class="flex items-center justify-between mb-1">
                   <label for="scanVinInput" class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Nomor VIN</span>
+                    <span>Nomor VIN (17 Digit)</span>
                   </label>
                   <span class="text-[8.5px] text-blue-400 font-semibold bg-blue-500/10 px-1.5 py-0.5 rounded">Dapat diedit</span>
                 </div>
