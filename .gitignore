@@ -6,6 +6,7 @@
 *.gs
 kode.gs
 Kode.gs
+backend/
 
 # Vercel deployment artifacts
 .vercel
