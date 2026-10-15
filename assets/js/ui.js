@@ -542,7 +542,7 @@ const UI = {
     if (filtered.length === 0) {
       container.innerHTML = `
         <tr>
-          <td colspan="7" class="py-10 px-6 text-center">
+          <td colspan="8" class="py-10 px-6 text-center">
             <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
@@ -560,42 +560,107 @@ const UI = {
     container.innerHTML = filtered.map((item, idx) => {
       const isMasuk = item.type === 'Unit Masuk';
       const typeBadge = isMasuk
-        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/90'
-        : 'bg-blue-50 text-blue-700 border-blue-200/90';
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+        : 'bg-blue-50 text-blue-700 border-blue-300';
       const typeArrow = isMasuk ? '↓' : '↑';
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(item.model) : null;
-      // Foto Kolom Kendaraan: selalu foto katalog resmi 13 model yang sama persis seperti di inventory
+      // Foto Kolom Kendaraan: selalu foto katalog resmi 13 model
       const catalogPhotoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
-      // Foto Bukti Fisik Lapangan: foto aktual hasil jepretan kamera / upload mutasi
-      const physicalPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
+      
+      // Foto Bukti Fisik Lapangan (Foto Unit & Foto Dokumen)
+      const unitPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
         ? item.unitPhoto
         : catalogPhotoSrc;
+      const docPhotoSrc = item.docPhoto || '';
 
       const rowNum = String(idx + 1).padStart(2, '0');
 
+      // Format Waktu sesuai request: jam,DD/MM/YYYY (contoh: 10:45, 15/10/2026)
+      let timeFormatted = item.time || '08:00';
+      timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
+
+      let dateFormatted = '';
+      if (item.date && item.month && item.year) {
+        dateFormatted = `${String(item.date).padStart(2, '0')}/${String(item.month).padStart(2, '0')}/${item.year}`;
+      } else if (item.timestamp) {
+        const dObj = new Date(item.timestamp);
+        if (!isNaN(dObj.getTime())) {
+          dateFormatted = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth() + 1).padStart(2, '0')}/${dObj.getFullYear()}`;
+          const hh = String(dObj.getHours()).padStart(2, '0');
+          const mm = String(dObj.getMinutes()).padStart(2, '0');
+          timeFormatted = `${hh}:${mm}`;
+        }
+      }
+      if (!dateFormatted && item.fullDateStr) {
+        if (item.fullDateStr.includes('/')) {
+          dateFormatted = item.fullDateStr;
+        } else {
+          const parts = item.fullDateStr.split(' ');
+          if (parts.length === 3) {
+            const months = ['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+            const mIdx = months.indexOf(parts[1].toLowerCase());
+            dateFormatted = `${parts[0].padStart(2, '0')}/${String(mIdx !== -1 ? mIdx + 1 : 1).padStart(2, '0')}/${parts[2]}`;
+          }
+        }
+      }
+      if (!dateFormatted) {
+        const now = new Date();
+        dateFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      }
+
+      const fullTimeDisplay = `${timeFormatted}, ${dateFormatted}`;
+
+      // Thumbnail Bukti Fisik Langsung Tampil
+      const unitThumbnailHtml = unitPhotoSrc 
+        ? `<div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-500 hover:ring-2 hover:ring-blue-400/40 transition" title="Klik untuk memperbesar Foto Unit">
+             <img src="${unitPhotoSrc}" alt="Foto Unit" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+             <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[7.5px] font-bold text-center py-0.2">Unit</span>
+           </div>`
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Unit</div>`;
+
+      const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO / Stiker">
+             <img src="${docPhotoSrc}" alt="Foto Dokumen" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">Stiker</span>
+           </div>`
+        : (docPhotoSrc 
+            ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO">
+                 <img src="${docPhotoSrc}" alt="Dokumen DO" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+                 <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">DO</span>
+               </div>`
+            : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`
+          );
+
       return `
-        <tr class="hover:bg-blue-50/35 transition-colors group">
-          <!-- Kolom 1: Waktu & ID -->
-          <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap">
+        <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
+          <!-- Kolom 1: ID Mutasi (TERPISAH) -->
+          <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
-              <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200/80">#${rowNum}</span>
-              <span class="text-[10.5px] font-mono font-bold text-slate-700">${item.id || '-'}</span>
+              <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">#${rowNum}</span>
+              <span class="text-[11px] font-mono font-bold text-slate-800 tracking-tight">${item.id || '-'}</span>
             </div>
-            <div class="text-[11px] font-bold text-slate-800 mt-0.5">${item.fullDateStr} <span class="text-slate-400 font-semibold">• ${item.time}</span></div>
           </td>
 
-          <!-- Kolom 2: Jenis Mutasi -->
-          <td class="py-3 px-2.5 align-middle whitespace-nowrap">
+          <!-- Kolom 2: Waktu Mutasi (TERPISAH - Format: jam,DD/MM/YYYY) -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="inline-flex items-center space-x-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80 font-mono text-[11px] font-extrabold text-slate-800">
+              <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>${fullTimeDisplay}</span>
+            </div>
+          </td>
+
+          <!-- Kolom 3: Jenis Mutasi -->
+          <td class="py-3 px-2.5 align-middle whitespace-nowrap text-center border-r border-slate-200">
             <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold border shadow-2xs ${typeBadge}">
               <span class="font-black leading-none">${typeArrow}</span>
               <span>${item.type}</span>
             </span>
           </td>
 
-          <!-- Kolom 3: Kendaraan (Foto Otomatis Sesuai Model & Sama dengan Inventory) -->
-          <td class="py-3 px-2.5 align-middle">
+          <!-- Kolom 4: Kendaraan -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-2.5">
-              <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-11 h-8 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
+              <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-10 h-7 rounded-md bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
                 <img src="${catalogPhotoSrc}" alt="${item.model}" loading="lazy" decoding="async" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
@@ -607,44 +672,38 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 4: No. Rangka (VIN) & Mesin -->
-          <td class="py-3 px-2.5 align-middle whitespace-nowrap">
-            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/70 font-mono text-[10px] font-bold text-slate-800">
+          <!-- Kolom 5: No. Rangka (VIN) & Mesin -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-900">
               ${item.vin}
             </div>
-            <div class="text-[9.5px] font-mono text-slate-400 mt-0.5">
-              ENG: <span class="font-semibold text-slate-600">${item.engine}</span>
+            <div class="text-[9.5px] font-mono text-slate-500 mt-0.5">
+              ENG: <span class="font-bold text-slate-700">${item.engine}</span>
             </div>
           </td>
 
-          <!-- Kolom 5: Petugas PIC & Catatan Audit -->
-          <td class="py-3 px-2.5 align-middle">
+          <!-- Kolom 6: Petugas PIC & Catatan Audit -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
-              <span class="w-4 h-4 rounded-full bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+              <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
                 ${(item.pic || 'A').charAt(0).toUpperCase()}
               </span>
               <span class="text-[11px] font-extrabold text-slate-800">${item.pic}</span>
             </div>
-            <p class="text-[10px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-snug max-w-[240px]" title="${item.notes || ''}">
-              ${item.notes || 'Pemeriksaan standar serah terima unit di lapangan.'}
+            <p class="text-[10px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-snug max-w-[200px]" title="${item.notes || ''}">
+              ${item.notes || 'Pemeriksaan standar unit.'}
             </p>
           </td>
 
-          <!-- Kolom 6: Bukti Fisik (Foto Mobil & Dokumen DO) -->
-          <td class="py-3 px-2.5 align-middle whitespace-nowrap text-center">
-            <div class="inline-flex items-center justify-center space-x-1">
-              <button type="button" onclick="openImagePreviewModal('${physicalPhotoSrc}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Foto Fisik Mobil">
-                <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                <span>Mobil</span>
-              </button>
-              <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-200 text-[10px] font-bold transition cursor-pointer" title="Lihat Dokumen Serah Terima DO">
-                <svg class="w-3 h-3 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>DO</span>
-              </button>
+          <!-- Kolom 7: Bukti Fisik (FOTO LANGSUNG TAMPIL) -->
+          <td class="py-2.5 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
+            <div class="flex items-center justify-center space-x-2">
+              ${unitThumbnailHtml}
+              ${docThumbnailHtml}
             </div>
           </td>
 
-          <!-- Kolom 7: Status Verifikasi -->
+          <!-- Kolom 8: Status -->
           <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle whitespace-nowrap text-right">
             <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
               <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
