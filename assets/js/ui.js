@@ -17,6 +17,11 @@ const UI = {
     const target = tabName.toLowerCase();
     AppState.currentTab = target;
 
+    const detailView = document.getElementById('viewModelDetail');
+    if (detailView && target !== 'modeldetail') {
+      detailView.classList.add('hidden');
+    }
+
     tabs.forEach(t => {
       const viewEl = document.getElementById(`view${this.capitalize(t)}`);
       const btnEl = document.getElementById(`nav-${t}`);
@@ -30,8 +35,9 @@ const UI = {
         }
       }
 
+      const isNavActive = (t === target) || (target === 'modeldetail' && t === 'inventory');
       if (btnEl) {
-        if (t === target) {
+        if (isNavActive) {
           btnEl.classList.add('active');
         } else {
           btnEl.classList.remove('active');
@@ -39,7 +45,7 @@ const UI = {
       }
 
       if (deskBtnEl) {
-        if (t === target) {
+        if (isNavActive) {
           deskBtnEl.classList.add('active');
         } else {
           deskBtnEl.classList.remove('active');
@@ -342,14 +348,14 @@ const UI = {
               </span>
             </div>
 
-            <!-- Model Title & Catalog ID -->
-            <div class="mt-3 flex items-center justify-between gap-2">
-              <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
+            <!-- Model Title & Catalog ID (Klik untuk Buka Riwayat) -->
+            <div class="mt-3 flex items-center justify-between gap-2 cursor-pointer hover:opacity-85 transition" onclick="openModelDetail('${entry.catalogId}')" title="Klik untuk membuka riwayat mutasi ${entry.model}">
+              <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate hover:text-blue-600 transition-colors">${entry.model}</h4>
               <span class="text-[9.5px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
             </div>
 
-            <!-- Rincian Status Stok Per Model (3 Kolom: Stok Masuk, Stok Keluar, Total Stok) -->
-            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 pt-2.5 border-t border-slate-100 text-center">
+            <!-- Rincian Status Stok Per Model (3 Kolom: Stok Masuk, Stok Keluar, Total Stok - Bisa Dipencet) -->
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 pt-2.5 border-t border-slate-100 text-center cursor-pointer hover:opacity-90 active:scale-[0.98] transition group/kpi" onclick="openModelDetail('${entry.catalogId}')" title="Klik untuk membuka rincian mutasi ${entry.model}">
               <div class="rounded-xl py-1.5 px-1.5 ${entry.histMasuk > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
                 <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.histMasuk > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full ${entry.histMasuk > 0 ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
@@ -371,6 +377,18 @@ const UI = {
                 </span>
                 <span class="text-xs font-black ${entry.totalUnits > 0 ? 'text-white' : 'text-rose-700'} block mt-0.5">${entry.totalUnits > 0 ? `${entry.totalUnits} <span class="text-[9.5px] font-bold">Unit</span>` : 'Kosong'}</span>
               </div>
+            </div>
+
+            <!-- Tombol Buka Rincian Mutasi Model -->
+            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10.5px]">
+              <span class="font-bold text-slate-400 text-[9.5px] flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                <span>Audit Mutasi</span>
+              </span>
+              <button type="button" onclick="openModelDetail('${entry.catalogId}')" class="inline-flex items-center space-x-1 font-extrabold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100/90 px-2.5 py-1 rounded-lg border border-blue-200/70 transition active:scale-95 cursor-pointer shadow-2xs">
+                <span>Rincian Mutasi</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5l7 7-7 7"/></svg>
+              </button>
             </div>
           </div>
 
@@ -1553,6 +1571,16 @@ const UI = {
         dateSelect.appendChild(opt);
       }
     }
+    const modelDateSelect = document.getElementById('modelFilterDate');
+    if (modelDateSelect) {
+      modelDateSelect.innerHTML = '<option value="all">Semua Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        modelDateSelect.appendChild(opt);
+      }
+    }
     this.initCustomDropdowns();
   },
 
@@ -2461,21 +2489,26 @@ const UI = {
    */
   initCustomDropdowns() {
     // Pastikan opsi tanggal 1..31 sudah terisi sebelum membangun custom dropdown
-    const dateSelectCheck = document.getElementById('histFilterDate');
-    if (dateSelectCheck && dateSelectCheck.options.length <= 1) {
-      dateSelectCheck.innerHTML = '<option value="all">Semua Tgl</option>';
-      for (let i = 1; i <= 31; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = i;
-        dateSelectCheck.appendChild(opt);
+    ['histFilterDate', 'modelFilterDate'].forEach(dateId => {
+      const dateSelectCheck = document.getElementById(dateId);
+      if (dateSelectCheck && dateSelectCheck.options.length <= 1) {
+        dateSelectCheck.innerHTML = '<option value="all">Semua Tgl</option>';
+        for (let i = 1; i <= 31; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = i;
+          dateSelectCheck.appendChild(opt);
+        }
       }
-    }
+    });
 
     const selectIds = [
       'histFilterDate',
       'histFilterMonth',
       'histFilterYear',
+      'modelFilterDate',
+      'modelFilterMonth',
+      'modelFilterYear',
       'inputMutationType',
       'inputCarModel'
     ];
@@ -2498,10 +2531,10 @@ const UI = {
       }
       selectEl.dataset.customEnhanced = 'true';
 
-      const isCompactFilter = id.startsWith('histFilter');
-      const isDateGrid = id === 'histFilterDate';
-      const isMonthGrid = id === 'histFilterMonth';
-      const isYearFilter = id === 'histFilterYear';
+      const isCompactFilter = id.startsWith('histFilter') || id.startsWith('modelFilter');
+      const isDateGrid = id === 'histFilterDate' || id === 'modelFilterDate';
+      const isMonthGrid = id === 'histFilterMonth' || id === 'modelFilterMonth';
+      const isYearFilter = id === 'histFilterYear' || id === 'modelFilterYear';
 
       // Sembunyikan ikon panah SVG bawaan di sebelah select jika ada
       const parentEl = selectEl.parentElement;
@@ -3355,6 +3388,511 @@ const UI = {
         handleEnd();
       }
     });
+  },
+
+  /**
+   * ============================================================================
+   * MODUL DETAIL MODEL KENDARAAN (REKAPAN MUTASI & AUDIT PER MODEL)
+   * ============================================================================
+   */
+
+  /**
+   * Buka Halaman Khusus Detail & Rekapan Mutasi Per Model Mobil
+   */
+  openModelDetail(identifier) {
+    let catalogItem = null;
+    const catalog = AppState.vehicleCatalog || [];
+    if (identifier) {
+      catalogItem = catalog.find(c => c.catalogId === identifier || c.model.toLowerCase() === String(identifier).toLowerCase());
+      if (!catalogItem && AppState.getModelCatalogItem) {
+        catalogItem = AppState.getModelCatalogItem(identifier);
+      }
+    }
+    if (!catalogItem) catalogItem = catalog[0];
+    if (!catalogItem) return;
+
+    AppState.selectedModelCatalogId = catalogItem.catalogId;
+    AppState.modelDetailTypeFilter = 'all';
+
+    // Buka tampilan viewModelDetail dan sembunyikan tampilan lainnya
+    ['viewDashboard', 'viewInventory', 'viewHistory', 'viewSettings'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    const detailView = document.getElementById('viewModelDetail');
+    if (detailView) detailView.classList.remove('hidden');
+
+    // Tetap aktifkan highlight menu Inventaris di navigasi bawah & atas
+    const navInv = document.getElementById('nav-inventory');
+    const deskNavInv = document.getElementById('desk-nav-inventory');
+    document.querySelectorAll('.nav-btn, .desk-nav-btn').forEach(btn => btn.classList.remove('active'));
+    if (navInv) navInv.classList.add('active');
+    if (deskNavInv) deskNavInv.classList.add('active');
+
+    // Isi data judul, kategori, dan foto model
+    const titleEl = document.getElementById('modelDetailTitle');
+    const catIdEl = document.getElementById('modelDetailCatalogId');
+    const categoryEl = document.getElementById('modelDetailCategory');
+    const photoEl = document.getElementById('modelDetailPhoto');
+    const tableTitleName = document.getElementById('modelTableTitleName');
+
+    if (titleEl) titleEl.textContent = catalogItem.model;
+    if (catIdEl) catIdEl.textContent = catalogItem.catalogId;
+    if (categoryEl) categoryEl.textContent = `${catalogItem.category} • Laporan Rincian Mutasi & Stok Fisik`;
+    if (photoEl) {
+      photoEl.src = catalogItem.photo;
+      photoEl.alt = catalogItem.model;
+    }
+    if (tableTitleName) tableTitleName.textContent = catalogItem.model;
+
+    // Pastikan dropdown tanggal 1-31 terisi
+    const fDate = document.getElementById('modelFilterDate');
+    if (fDate && fDate.options.length <= 1) {
+      fDate.innerHTML = '<option value="all">Semua Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        fDate.appendChild(opt);
+      }
+    }
+
+    // Reset dropdown tanggal, bulan, tahun & kolom pencarian
+    const fMonth = document.getElementById('modelFilterMonth');
+    const fYear = document.getElementById('modelFilterYear');
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const sClearBtn = document.getElementById('modelDetailSearchClearBtn');
+
+    if (fDate) fDate.value = 'all';
+    if (fMonth) fMonth.value = 'all';
+    if (fYear) fYear.value = 'all';
+    if (sInput) sInput.value = '';
+    if (sClearBtn) sClearBtn.classList.add('hidden');
+
+    // Inisialisasi atau refresh custom popover dropdown untuk filter tanggal, bulan, tahun
+    this.initCustomDropdowns();
+
+    // Reset tab filter mutasi ke 'all'
+    this.updateModelTypeTabButtons('all');
+
+    // Scroll ke bagian paling atas halaman
+    const appViewport = document.getElementById('appMainViewport');
+    if (appViewport) appViewport.scrollTop = 0;
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Render tabel mutasi model
+    this.renderModelDetailTable();
+  },
+
+  /**
+   * Tutup Halaman Detail Model dan Kembali ke Halaman Inventaris
+   */
+  closeModelDetail() {
+    this.switchTab('inventory');
+    const appViewport = document.getElementById('appMainViewport');
+    if (appViewport) appViewport.scrollTop = 0;
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  /**
+   * Update styling tombol filter jenis mutasi pada halaman detail model
+   */
+  updateModelTypeTabButtons(activeType) {
+    const tabs = ['all', 'in', 'out'];
+    tabs.forEach(t => {
+      const btn = document.getElementById(`modelTypeTab-${t}`);
+      const countBadge = document.getElementById(`modelTypeCount-${t}`);
+      if (btn) {
+        if (t === activeType) {
+          btn.className = 'py-2 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer flex items-center justify-center space-x-1';
+          if (countBadge) countBadge.className = 'text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 text-white font-extrabold';
+        } else {
+          btn.className = 'py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1';
+          if (countBadge) countBadge.className = 'text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold';
+        }
+      }
+    });
+  },
+
+  /**
+   * Filter jenis mutasi (Semua / Masuk / Keluar) pada halaman detail model
+   */
+  filterModelMutasiType(type) {
+    AppState.modelDetailTypeFilter = type;
+    this.updateModelTypeTabButtons(type);
+    this.renderModelDetailTable();
+  },
+
+  /**
+   * Filter tanggal/bulan/tahun pada halaman detail model
+   */
+  applyModelDateFilter() {
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const sClearBtn = document.getElementById('modelDetailSearchClearBtn');
+    if (sClearBtn) {
+      if (sInput && sInput.value.trim().length > 0) sClearBtn.classList.remove('hidden');
+      else sClearBtn.classList.add('hidden');
+    }
+    this.renderModelDetailTable();
+  },
+
+  /**
+   * Reset filter waktu pada halaman detail model
+   */
+  resetModelDateFilter() {
+    const fDate = document.getElementById('modelFilterDate');
+    const fMonth = document.getElementById('modelFilterMonth');
+    const fYear = document.getElementById('modelFilterYear');
+    if (fDate) fDate.value = 'all';
+    if (fMonth) fMonth.value = 'all';
+    if (fYear) fYear.value = 'all';
+    this.renderModelDetailTable();
+  },
+
+  /**
+   * Bersihkan input pencarian pada halaman detail model
+   */
+  clearModelDetailSearch() {
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const sClearBtn = document.getElementById('modelDetailSearchClearBtn');
+    if (sInput) sInput.value = '';
+    if (sClearBtn) sClearBtn.classList.add('hidden');
+    this.renderModelDetailTable();
+  },
+
+  /**
+   * Render tabel riwayat mutasi untuk model yang sedang dibuka
+   */
+  renderModelDetailTable() {
+    const container = document.getElementById('modelDetailListContainer');
+    if (!container) return;
+
+    const catalog = AppState.vehicleCatalog || [];
+    const catalogItem = catalog.find(c => c.catalogId === AppState.selectedModelCatalogId) || catalog[0];
+    if (!catalogItem) return;
+
+    // Ambil data mutasi yang cocok dari riwayat audit AppState.historyData
+    let modelHistory = (AppState.historyData || []).filter(h => {
+      if (!h || !h.model) return false;
+      const hModel = String(h.model).toLowerCase();
+      if (hModel === catalogItem.model.toLowerCase()) return true;
+      const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+      return m && m.catalogId === catalogItem.catalogId;
+    });
+
+    // Jika belum ada catatan mutasi di historyData untuk model ini, tapi ada baseStock
+    // Buat data riwayat terstruktur yang sinkron dengan baseStock (Stok Masuk, Stok Keluar, Total Stok)
+    if (modelHistory.length === 0 && catalogItem.baseStock && (catalogItem.baseStock.masuk > 0 || catalogItem.baseStock.keluar > 0)) {
+      const bMasuk = catalogItem.baseStock.masuk || 0;
+      const bKeluar = catalogItem.baseStock.keluar || 0;
+      const synth = [];
+      const samplePlates = ['BE 1892 DM', 'BE 2041 AL', 'BE 9382 YZ', 'BE 7712 XA', 'BE 4401 BC', 'BE 5192 LK', 'BE 8821 KJ', 'BE 3390 OP', 'BE 6621 GH', 'BE 1109 KL', 'BE 2244 MN', 'BE 3355 PO', 'BE 7788 RT', 'BE 9911 WE'];
+      const vinNum = catalogItem.catalogId.replace('CAT-', '');
+
+      for (let i = 1; i <= bMasuk; i++) {
+        const day = Math.min(28, ((i * 3) % 28) + 1);
+        const hour = 8 + (i % 8);
+        const minute = (i * 14) % 60;
+        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        synth.push({
+          id: `MUT-${catalogItem.catalogId}-IN-${String(i).padStart(2, '0')}`,
+          type: 'Unit Masuk',
+          model: catalogItem.model,
+          vin: `MHKG1A00${vinNum}IN${String(i).padStart(4, '0')}`,
+          plate: samplePlates[(i - 1) % samplePlates.length],
+          engine: `${catalogItem.spec.split(' ')[0] || '1.5L'}-E${String(i).padStart(4, '0')}`,
+          date: String(day),
+          month: '10',
+          year: '2026',
+          time: timeStr,
+          fullDateStr: `${String(day).padStart(2, '0')}/10/2026`,
+          pic: (i % 2 === 0) ? 'Syafirafira' : 'Andi Pratama',
+          notes: `Penerimaan Unit Ekspedisi Pabrik (DO-${220000 + i})`,
+          unitPhoto: catalogItem.photo,
+          docPhoto: 'assets/images/stiker-kaca.png',
+          status: 'Verified'
+        });
+      }
+
+      for (let j = 1; j <= bKeluar; j++) {
+        const day = Math.min(28, ((j * 4) % 28) + 2);
+        const hour = 10 + (j % 6);
+        const minute = (j * 17) % 60;
+        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        synth.push({
+          id: `MUT-${catalogItem.catalogId}-OUT-${String(j).padStart(2, '0')}`,
+          type: 'Unit Keluar',
+          model: catalogItem.model,
+          vin: `MHKG1A00${vinNum}OUT${String(j).padStart(4, '0')}`,
+          plate: samplePlates[(j + 3) % samplePlates.length],
+          engine: `${catalogItem.spec.split(' ')[0] || '1.5L'}-E${String(j + 30).padStart(4, '0')}`,
+          date: String(day),
+          month: '10',
+          year: '2026',
+          time: timeStr,
+          fullDateStr: `${String(day).padStart(2, '0')}/10/2026`,
+          pic: 'Andi Pratama',
+          notes: `Serah Terima Dealer / Customer (BASTK-${55000 + j})`,
+          unitPhoto: catalogItem.photo,
+          docPhoto: 'assets/images/stiker-kaca.png',
+          status: 'Verified'
+        });
+      }
+
+      modelHistory = synth;
+    }
+
+    // Hitung KPI model dari akumulasi mutasi
+    const totalMasukAll = modelHistory.filter(i => i.type === 'Unit Masuk').length;
+    const totalKeluarAll = modelHistory.filter(i => i.type === 'Unit Keluar').length;
+    const totalStokCurrent = Math.max(0, totalMasukAll - totalKeluarAll);
+
+    const kpiTotalEl = document.getElementById('modelKpiTotal');
+    const kpiMasukEl = document.getElementById('modelKpiMasuk');
+    const kpiKeluarEl = document.getElementById('modelKpiKeluar');
+    const kpiStatusEl = document.getElementById('modelKpiStatus');
+    const kpiStatusCard = document.getElementById('modelKpiStatusCard');
+
+    if (kpiTotalEl) kpiTotalEl.textContent = totalStokCurrent;
+    if (kpiMasukEl) kpiMasukEl.textContent = totalMasukAll;
+    if (kpiKeluarEl) kpiKeluarEl.textContent = totalKeluarAll;
+
+    if (kpiStatusEl) {
+      if (totalStokCurrent > 0) {
+        kpiStatusEl.textContent = 'Tersedia';
+        kpiStatusEl.className = 'text-xs sm:text-sm font-black text-emerald-700 mt-0.5 block leading-tight';
+        if (kpiStatusCard) kpiStatusCard.className = 'bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left';
+      } else {
+        kpiStatusEl.textContent = 'Stok Kosong';
+        kpiStatusEl.className = 'text-xs sm:text-sm font-black text-rose-700 mt-0.5 block leading-tight';
+        if (kpiStatusCard) kpiStatusCard.className = 'bg-rose-50/70 border border-rose-200/70 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left';
+      }
+    }
+
+    // Filter tanggal, bulan, tahun & pencarian
+    const fDate = document.getElementById('modelFilterDate')?.value || 'all';
+    const fMonth = document.getElementById('modelFilterMonth')?.value || 'all';
+    const fYear = document.getElementById('modelFilterYear')?.value || 'all';
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const searchVal = (sInput?.value || '').toLowerCase().trim();
+
+    const baseFiltered = modelHistory.filter(item => {
+      const parts = this.parseItemDate(item);
+      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
+      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
+      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+
+      if (!dateMatch || !monthMatch || !yearMatch) return false;
+
+      if (!searchVal) return true;
+      return (
+        (item.vin && item.vin.toLowerCase().includes(searchVal)) ||
+        (item.plate && item.plate.toLowerCase().includes(searchVal)) ||
+        (item.engine && item.engine.toLowerCase().includes(searchVal)) ||
+        (item.pic && item.pic.toLowerCase().includes(searchVal)) ||
+        (item.notes && item.notes.toLowerCase().includes(searchVal)) ||
+        (item.id && item.id.toLowerCase().includes(searchVal))
+      );
+    });
+
+    // Update counter tabs filter jenis mutasi
+    const countAll = baseFiltered.length;
+    const countIn = baseFiltered.filter(i => i.type === 'Unit Masuk').length;
+    const countOut = baseFiltered.filter(i => i.type === 'Unit Keluar').length;
+
+    const elCountAll = document.getElementById('modelTypeCount-all');
+    const elCountIn = document.getElementById('modelTypeCount-in');
+    const elCountOut = document.getElementById('modelTypeCount-out');
+    if (elCountAll) elCountAll.textContent = countAll;
+    if (elCountIn) elCountIn.textContent = countIn;
+    if (elCountOut) elCountOut.textContent = countOut;
+
+    // Filter tahap 2: jenis mutasi
+    const typeFilter = AppState.modelDetailTypeFilter || 'all';
+    const filtered = baseFiltered.filter(item => {
+      if (typeFilter === 'in') return item.type === 'Unit Masuk';
+      if (typeFilter === 'out') return item.type === 'Unit Keluar';
+      return true;
+    });
+
+    // Update Showing Badge
+    const showingBadge = document.getElementById('modelTableShowingBadge');
+    if (showingBadge) showingBadge.textContent = `${filtered.length} Data`;
+
+    // Update Baris Total Paling Bawah Tabel (tfoot)
+    const footMasuk = filtered.filter(i => i.type === 'Unit Masuk').length;
+    const footKeluar = filtered.filter(i => i.type === 'Unit Keluar').length;
+    const footNet = Math.max(0, footMasuk - footKeluar);
+
+    const elFootMasuk = document.getElementById('modelTableFootMasuk');
+    const elFootKeluar = document.getElementById('modelTableFootKeluar');
+    const elFootTotalStok = document.getElementById('modelTableFootTotalStok');
+    const elFootRowCount = document.getElementById('modelTableFootRowCount');
+
+    if (elFootMasuk) elFootMasuk.textContent = footMasuk;
+    if (elFootKeluar) elFootKeluar.textContent = footKeluar;
+    if (elFootTotalStok) elFootTotalStok.textContent = `${footNet} Unit`;
+    if (elFootRowCount) elFootRowCount.textContent = `${filtered.length} Data`;
+
+    const footerSummary = document.getElementById('modelDetailFooterSummary');
+    if (footerSummary) {
+      footerSummary.textContent = `Menampilkan ${filtered.length} dari ${modelHistory.length} total rekaman mutasi untuk model ${catalogItem.model}.`;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <tr>
+          <td colspan="8" class="py-12 px-6 text-center">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada rekaman mutasi untuk model ${catalogItem.model}</p>
+            <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan filter periode waktu, kata kunci pencarian, atau pilih tab "Semua".</p>
+            <button type="button" onclick="resetModelDateFilter(); filterModelMutasiType('all')" class="mt-3 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
+              Reset Semua Filter
+            </button>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Helper format Google Drive URL
+    const formatDriveThumb = (url) => {
+      if (!url || typeof url !== 'string') return '';
+      url = url.trim();
+      if (url === '' || url === '-') return '';
+      if (url.startsWith('data:image')) return url;
+      const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+      }
+      return url;
+    };
+
+    container.innerHTML = filtered.map((item, idx) => {
+      const isMasuk = item.type === 'Unit Masuk';
+      const typeBadge = isMasuk
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+        : 'bg-blue-50 text-blue-700 border-blue-300';
+      const typeArrow = isMasuk ? '↓' : '↑';
+      const catalogPhotoSrc = catalogItem.photo || 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+
+      const unitPhotoSrc = formatDriveThumb(item.unitPhoto) || catalogPhotoSrc;
+      const docPhotoSrc = formatDriveThumb(item.docPhoto);
+
+      const rowNum = String(idx + 1).padStart(2, '0');
+
+      let timeFormatted = item.time || '08:00';
+      timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
+
+      let dateFormatted = '';
+      if (item.date && item.month && item.year) {
+        dateFormatted = `${String(item.date).padStart(2, '0')}/${String(item.month).padStart(2, '0')}/${item.year}`;
+      } else if (item.timestamp) {
+        const dObj = new Date(item.timestamp);
+        if (!isNaN(dObj.getTime())) {
+          dateFormatted = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth() + 1).padStart(2, '0')}/${dObj.getFullYear()}`;
+          const hh = String(dObj.getHours()).padStart(2, '0');
+          const mm = String(dObj.getMinutes()).padStart(2, '0');
+          timeFormatted = `${hh}:${mm}`;
+        }
+      }
+      if (!dateFormatted && item.fullDateStr) {
+        dateFormatted = item.fullDateStr;
+      }
+      if (!dateFormatted) {
+        const now = new Date();
+        dateFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      }
+      const fullTimeDisplay = `${timeFormatted}, ${dateFormatted}`;
+
+      const unitThumbnailHtml = `
+        <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-500 hover:ring-2 hover:ring-blue-400/40 transition" title="Klik untuk memperbesar Foto Unit">
+          <img src="${unitPhotoSrc}" alt="Foto Unit" loading="lazy" referrerpolicy="no-referrer"
+               onerror="this.onerror=null; this.src='${catalogPhotoSrc}';"
+               class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+          <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[7.5px] font-bold text-center py-0.2">Unit</span>
+        </div>
+      `;
+
+      const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO / Stiker">
+             <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
+                  onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                  class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">Stiker</div>
+             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">Stiker</span>
+           </div>`
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`;
+
+      return `
+        <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
+          <!-- Kolom 1: ID Mutasi -->
+          <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">#${rowNum}</span>
+              <span class="font-mono font-extrabold text-slate-800 text-[11px] truncate" title="${item.id || '-'}">${item.id || '-'}</span>
+            </div>
+          </td>
+
+          <!-- Kolom 2: Waktu -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="font-mono text-xs font-bold text-slate-800">${fullTimeDisplay}</div>
+            <div class="text-[10px] text-slate-400 font-medium">WIB • Sentra Lampung</div>
+          </td>
+
+          <!-- Kolom 3: Jenis Mutasi -->
+          <td class="py-3 px-2.5 text-center align-middle whitespace-nowrap border-r border-slate-200">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border shadow-2xs ${typeBadge}">
+              <span class="mr-1 text-xs leading-none">${typeArrow}</span>
+              <span>${item.type}</span>
+            </span>
+          </td>
+
+          <!-- Kolom 4: Kendaraan -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
+            <div class="flex items-center space-x-2.5 min-w-0">
+              <div class="w-10 h-7 rounded-md bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0">
+                <div class="font-black text-slate-900 text-xs truncate">${item.model}</div>
+                <div class="text-[10.5px] font-extrabold text-blue-600 truncate mt-0.5">${item.plate || '-'}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Kolom 5: No. Rangka & Mesin -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="VIN: ${item.vin || '-'}">${item.vin || '-'}</div>
+            <div class="font-mono text-[10px] text-slate-500 font-medium truncate mt-0.5" title="Mesin: ${item.engine || '-'}">No. Mesin: ${item.engine || '-'}</div>
+          </td>
+
+          <!-- Kolom 6: PIC & Catatan -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
+            <div class="text-xs font-bold text-slate-800 truncate">${item.pic || 'Petugas Pool'}</div>
+            <div class="text-[10px] text-slate-500 truncate mt-0.5" title="${item.notes || '-'}">${item.notes || '-'}</div>
+          </td>
+
+          <!-- Kolom 7: Bukti Fisik (Foto) -->
+          <td class="py-3 px-3 align-middle text-center whitespace-nowrap border-r border-slate-200">
+            <div class="flex items-center justify-center space-x-2">
+              ${unitThumbnailHtml}
+              ${docThumbnailHtml}
+            </div>
+          </td>
+
+          <!-- Kolom 8: Status -->
+          <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle text-right whitespace-nowrap">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-2xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              <span>Terverifikasi</span>
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 };
 
@@ -3401,6 +3939,12 @@ window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.close
 window.checkCloudHealth = () => UI.checkCloudHealth ? UI.checkCloudHealth() : null;
 window.saveDirectConnection = () => UI.saveDirectConnection ? UI.saveDirectConnection() : null;
 window.resetToProxyConnection = () => UI.resetToProxyConnection ? UI.resetToProxyConnection() : null;
+window.openModelDetail = (m) => UI.openModelDetail(m);
+window.closeModelDetail = () => UI.closeModelDetail();
+window.filterModelMutasiType = (t) => UI.filterModelMutasiType(t);
+window.applyModelDateFilter = () => UI.applyModelDateFilter();
+window.resetModelDateFilter = () => UI.resetModelDateFilter();
+window.clearModelDetailSearch = () => UI.clearModelDetailSearch();
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {

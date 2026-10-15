@@ -1022,6 +1022,200 @@
       </section>
 
       <!-- ======================================================== -->
+      <!-- SECTION 2.5: MODEL DETAIL & MUTASI RIWAYAT (PER MODEL) -->
+      <!-- ======================================================== -->
+      <section id="viewModelDetail" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
+        
+        <!-- Header Card Detail Model -->
+        <div class="relative z-30 bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 border border-white shadow-saas-card space-y-4">
+          <!-- Row 1: Back Button & Model Title & Category Badge -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
+            <div class="flex items-center space-x-3 min-w-0">
+              <button type="button" onclick="closeModelDetail()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center flex-shrink-0 transition active:scale-95 cursor-pointer shadow-2xs" title="Kembali ke Inventaris">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <div class="w-12 h-10 sm:w-14 sm:h-11 rounded-xl bg-slate-50 border border-slate-200 p-0.5 flex-shrink-0 overflow-hidden flex items-center justify-center shadow-2xs">
+                <img id="modelDetailPhoto" src="assets/images/Inventory_New Terios.jpeg" alt="Foto Model" class="w-full h-full object-contain">
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h2 id="modelDetailTitle" class="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">New Terios</h2>
+                  <span id="modelDetailCatalogId" class="px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap flex-shrink-0">CAT-02</span>
+                </div>
+                <p id="modelDetailCategory" class="text-[11px] sm:text-xs text-slate-400 font-semibold mt-0.5 truncate">Laporan Rincian Mutasi & Stok Fisik Pool Yard</p>
+              </div>
+            </div>
+
+            <!-- 4 Quick KPI Summary Badges for this Model -->
+            <div class="grid grid-cols-4 sm:flex sm:items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-slate-300 uppercase block leading-none">Total Stok</span>
+                <span class="text-xs sm:text-sm font-black text-white mt-0.5 block leading-tight"><span id="modelKpiTotal">0</span> <span class="text-[9px] font-semibold text-slate-400 hidden sm:inline">Unit</span></span>
+              </div>
+              <div class="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-emerald-600 uppercase block leading-none">Stok Masuk</span>
+                <span class="text-xs sm:text-sm font-black text-emerald-700 mt-0.5 block leading-tight"><span id="modelKpiMasuk">0</span> <span class="text-[9px] font-semibold text-emerald-600/80 hidden sm:inline">Unit</span></span>
+              </div>
+              <div class="bg-blue-50/70 border border-blue-200/70 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-blue-600 uppercase block leading-none">Stok Keluar</span>
+                <span class="text-xs sm:text-sm font-black text-blue-700 mt-0.5 block leading-tight"><span id="modelKpiKeluar">0</span> <span class="text-[9px] font-semibold text-blue-600/80 hidden sm:inline">Unit</span></span>
+              </div>
+              <div id="modelKpiStatusCard" class="bg-emerald-50/70 border border-emerald-200/70 rounded-xl px-2.5 sm:px-3 py-1.5 text-center sm:text-left">
+                <span class="text-[8.5px] sm:text-[9.5px] font-bold text-emerald-600 uppercase block leading-none">Status</span>
+                <span id="modelKpiStatus" class="text-xs sm:text-sm font-black text-emerald-700 mt-0.5 block leading-tight">Tersedia</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Filter Mutasi, Search, & Dropdown Tanggal/Bulan/Tahun -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
+            <!-- Filter Jenis Mutasi -->
+            <div class="lg:col-span-4">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5 px-0.5">Filter Jenis Mutasi</span>
+              <div class="grid grid-cols-3 bg-slate-100/90 p-1 rounded-2xl text-xs font-bold text-center border border-slate-200/60">
+                <button type="button" onclick="filterModelMutasiType('all')" id="modelTypeTab-all" class="py-2 rounded-xl bg-white text-slate-900 shadow-xs transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Semua</span>
+                  <span id="modelTypeCount-all" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 text-white font-extrabold">0</span>
+                </button>
+                <button type="button" onclick="filterModelMutasiType('in')" id="modelTypeTab-in" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Masuk</span>
+                  <span id="modelTypeCount-in" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">0</span>
+                </button>
+                <button type="button" onclick="filterModelMutasiType('out')" id="modelTypeTab-out" class="py-2 rounded-xl text-slate-500 hover:text-slate-800 transition cursor-pointer flex items-center justify-center space-x-1">
+                  <span>Keluar</span>
+                  <span id="modelTypeCount-out" class="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-200/80 text-slate-600 font-bold">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search Input -->
+            <div class="lg:col-span-4">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5 px-0.5">Pencarian Cepat</span>
+              <div class="relative">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" id="modelDetailSearchInput" oninput="applyModelDateFilter()" placeholder="Cari VIN, plat nomor, mesin, petugas PIC..." class="w-full bg-slate-50/90 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-2xl py-2.5 pl-9 pr-16 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                <button type="button" id="modelDetailSearchClearBtn" onclick="clearModelDetailSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-600 text-[10px] font-extrabold transition cursor-pointer">
+                  Reset ×
+                </button>
+              </div>
+            </div>
+
+            <!-- Dropdown Tanggal, Bulan, Tahun -->
+            <div class="lg:col-span-4">
+              <div class="flex items-center justify-between mb-1.5 px-0.5">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center">
+                  <svg class="w-3 h-3 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  Filter Periode Waktu
+                </span>
+                <button type="button" onclick="resetModelDateFilter()" class="text-[10px] font-extrabold text-rose-500 hover:text-rose-600 hover:underline cursor-pointer">Reset Waktu</button>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-2">
+                <!-- Dropdown Tanggal -->
+                <select id="modelFilterDate" onchange="applyModelDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
+                  <option value="all">Semua Tgl</option>
+                </select>
+
+                <!-- Dropdown Bulan -->
+                <select id="modelFilterMonth" onchange="applyModelDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
+                  <option value="all" selected>Semua Bln</option>
+                  <option value="1">Januari</option>
+                  <option value="2">Februari</option>
+                  <option value="3">Maret</option>
+                  <option value="4">April</option>
+                  <option value="5">Mei</option>
+                  <option value="6">Juni</option>
+                  <option value="7">Juli</option>
+                  <option value="8">Agustus</option>
+                  <option value="9">September</option>
+                  <option value="10">Oktober</option>
+                  <option value="11">November</option>
+                  <option value="12">Desember</option>
+                </select>
+
+                <!-- Dropdown Tahun -->
+                <select id="modelFilterYear" onchange="applyModelDateFilter()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none">
+                  <option value="all" selected>Semua Thn</option>
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Rekapitulasi Mutasi Model (Persis seperti History + Row Total di Bawah) -->
+        <div class="relative z-10 bg-white/95 rounded-[24px] md:rounded-[26px] border border-white shadow-saas-card overflow-hidden">
+          <!-- Table Top Header Bar -->
+          <div class="px-4 sm:px-5 py-3 border-b border-slate-100 flex items-center justify-between gap-2 bg-slate-50/50">
+            <div class="flex items-center space-x-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0"></span>
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">
+                Tabel Riwayat Mutasi: <span id="modelTableTitleName" class="text-blue-600">New Terios</span>
+              </h3>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <span class="md:hidden text-[10px] font-semibold text-slate-400">Geser &leftrightarrow;</span>
+              <span id="modelTableShowingBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">
+                0 Data
+              </span>
+            </div>
+          </div>
+
+          <!-- Responsive Table Scroll Container -->
+          <div class="w-full overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[980px]">
+              <thead>
+                <tr class="bg-slate-100/90 border-b-2 border-slate-300 text-[10px] font-black uppercase tracking-wider text-slate-700 select-none">
+                  <th class="py-3 pl-4 sm:pl-5 pr-2.5 w-[110px] border-r border-slate-200">ID Mutasi</th>
+                  <th class="py-3 px-3 w-[150px] border-r border-slate-200">Waktu</th>
+                  <th class="py-3 px-2.5 w-[100px] text-center border-r border-slate-200">Mutasi</th>
+                  <th class="py-3 px-3 w-[185px] border-r border-slate-200">Kendaraan</th>
+                  <th class="py-3 px-3 w-[165px] border-r border-slate-200">No. Rangka & Mesin</th>
+                  <th class="py-3 px-3 w-[160px] border-r border-slate-200">PIC & Catatan</th>
+                  <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
+                  <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="modelDetailListContainer" class="divide-y divide-slate-200 text-xs">
+                <!-- Rendered by UI.js -->
+              </tbody>
+              <!-- Baris Total Paling Bawah Tabel -->
+              <tfoot id="modelDetailTableFoot" class="bg-slate-100/95 border-t-2 border-slate-300 font-extrabold text-slate-800">
+                <tr>
+                  <td colspan="2" class="py-3 px-4 text-xs uppercase tracking-wider font-black text-slate-700 border-r border-slate-200">
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+                      TOTAL AKUMULASI:
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-2.5 text-center whitespace-nowrap border-r border-slate-200">
+                    <div class="inline-flex flex-col items-center gap-1">
+                      <span class="text-[10px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-md">↓ <span id="modelTableFootMasuk">0</span> Masuk</span>
+                      <span class="text-[10px] font-black text-blue-800 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded-md">↑ <span id="modelTableFootKeluar">0</span> Keluar</span>
+                    </div>
+                  </td>
+                  <td colspan="2" class="py-3 px-3 text-xs text-slate-800 font-black border-r border-slate-200">
+                    Sisa Total Stok: <span id="modelTableFootTotalStok" class="text-sm font-black text-white bg-slate-900 px-2.5 py-0.5 rounded-lg ml-1">0 Unit</span>
+                  </td>
+                  <td colspan="3" class="py-3 pl-3 pr-4 text-right text-xs text-slate-500">
+                    Total Baris: <strong id="modelTableFootRowCount" class="text-slate-800 font-black text-xs">0 Data</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Table Footer Bar -->
+          <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
+            <span id="modelDetailFooterSummary">Menampilkan seluruh mutasi unit model ini.</span>
+            <span>Klik <strong class="text-slate-600">Foto Unit</strong> atau <strong class="text-slate-600">Dokumen DO</strong> untuk zoom bukti fisik.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
       <!-- SECTION 3: HISTORY (RIWAYAT AUDIT & SERAH TERIMA - TABEL) -->
       <!-- ======================================================== -->
       <section id="viewHistory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
