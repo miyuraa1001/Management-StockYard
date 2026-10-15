@@ -285,19 +285,36 @@ const AppState = {
     let masukCount = 0;
     let keluarCount = 0;
     
-    this.historyData.forEach(item => {
+    (this.historyData || []).forEach(item => {
       if (item.type === 'Unit Masuk') masukCount++;
       if (item.type === 'Unit Keluar') keluarCount++;
     });
 
     let intransitCount = 0;
-    this.inventoryData.forEach(item => {
-      if (item.status === 'Intransit') intransitCount++;
+    let inYardCount = 0;
+    (this.inventoryData || []).forEach(item => {
+      if (typeof item.stockTransit === 'number') {
+        intransitCount += item.stockTransit;
+      } else if (item.status === 'Intransit') {
+        intransitCount++;
+      }
+
+      if (typeof item.stockYard === 'number') {
+        inYardCount += item.stockYard;
+      } else if (item.status === 'In-Yard' || !item.status) {
+        inYardCount++;
+      }
     });
+
+    // Jika stockYard di inventory belum terisi tetapi mutasi masuk ada di riwayat
+    if (inYardCount === 0 && (masukCount - keluarCount) > 0) {
+      inYardCount = Math.max(0, masukCount - keluarCount);
+    }
 
     this.kpi.masuk = masukCount;
     this.kpi.keluar = keluarCount;
     this.kpi.intransit = intransitCount;
+    this.kpi.inYard = inYardCount;
 
     this.saveToCache();
   }

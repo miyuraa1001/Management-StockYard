@@ -1647,7 +1647,7 @@
         <!-- ======================================================== -->
         <!-- TAHAP 1: KAMERA SCANNER & VALIDASI IDENTITAS UNIT -->
         <!-- ======================================================== -->
-        <div id="scanStep1_Camera" class="w-full h-full flex flex-col overflow-y-auto bg-slate-950 relative hide-scrollbar">
+        <div id="scanStep1_Camera" class="w-full h-full flex flex-col overflow-y-auto overscroll-contain bg-slate-950 relative hide-scrollbar" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
           
           <!-- Hidden Off-screen Processing Canvas & File Input for OCR -->
           <canvas id="scannerCaptureCanvas" class="hidden"></canvas>
@@ -1692,12 +1692,12 @@
           </div>
 
           <!-- Viewfinder Viewport (Live Video) -->
-          <div class="relative h-[220px] sm:h-[260px] md:h-[280px] w-full flex items-center justify-center overflow-hidden bg-black flex-shrink-0">
-            <video id="scannerVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
+          <div class="relative h-[200px] sm:h-[230px] md:h-[250px] w-full flex items-center justify-center overflow-hidden bg-black flex-shrink-0" style="touch-action: pan-y;">
+            <video id="scannerVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover pointer-events-none"></video>
             <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
 
             <!-- OCR Real-time Processing Overlay -->
-            <div id="ocrProcessingOverlay" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center">
+            <div id="ocrProcessingOverlay" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center pointer-events-none">
               <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 animate-spin border border-emerald-500/40 shadow-lg">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
               </div>
@@ -1706,68 +1706,68 @@
               <span class="text-[9.5px] text-slate-400 mt-2 block">Kamera menangkap resolusi penuh untuk akurasi 100%</span>
             </div>
 
-            <!-- Laser Reticle Frame (100% Bersih & Transparan Tanpa Tombol Menutupi) -->
-            <div id="scannerReticle" class="relative w-64 h-36 sm:w-72 sm:h-40 border-2 border-blue-400/80 rounded-2xl p-2 z-10 flex flex-col justify-between transition-all duration-300">
-              <div id="cornerTL" class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl transition-colors"></div>
-              <div id="cornerTR" class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr transition-colors"></div>
-              <div id="cornerBL" class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl transition-colors"></div>
-              <div id="cornerBR" class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-blue-500 rounded-br transition-colors"></div>
+            <!-- Laser Reticle Frame (Ukuran Ideal 3:1 Stiker Kaca Daihatsu, Tidak Bertabrakan dengan Tombol) -->
+            <div id="scannerReticle" class="relative w-60 h-28 sm:w-68 sm:h-32 border-2 border-blue-400/80 rounded-2xl p-1.5 z-10 flex flex-col justify-between transition-all duration-300 pointer-events-none">
+              <div id="cornerTL" class="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-blue-500 rounded-tl transition-colors"></div>
+              <div id="cornerTR" class="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-blue-500 rounded-tr transition-colors"></div>
+              <div id="cornerBL" class="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-blue-500 rounded-bl transition-colors"></div>
+              <div id="cornerBR" class="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-blue-500 rounded-br transition-colors"></div>
 
               <div id="scannerLaser" class="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent laser-line shadow-[0_0_14px_#3b82f6]"></div>
 
-              <div class="bg-black/60 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-white/10 shadow pointer-events-none">
-                <span class="text-[8px] sm:text-[8.5px] font-bold text-white tracking-widest flex items-center justify-center">
+              <div class="bg-black/60 backdrop-blur-md rounded-lg py-0.5 px-2 text-center mx-auto border border-white/10 shadow pointer-events-none">
+                <span class="text-[7.5px] sm:text-[8px] font-bold text-white tracking-widest flex items-center justify-center">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
                   KOTAK BIDIK STIKER KACA
                 </span>
               </div>
 
               <div class="text-center pointer-events-none">
-                <span class="text-[7.5px] text-white/70 font-mono tracking-wider">PAS-KAN BARCODE ATAU TEKS DI SINI</span>
+                <span class="text-[7px] text-white/70 font-mono tracking-wider">PAS-KAN BARCODE ATAU TEKS DI SINI</span>
               </div>
-            </div>
-
-            <div class="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none z-10">
-              <span class="text-[9px] md:text-[9.5px] font-medium text-white/75 bg-black/60 px-3 py-0.5 rounded-full backdrop-blur-md border border-white/10">
-                Arahkan ke barcode atau teks di bawah barcode
-              </span>
             </div>
           </div>
 
-          <!-- Dedicated Action Control Bar (DILUAR KOTAK RETICLE, BERSIH & MUDAH DIJANGKAU) -->
-          <div class="px-3 py-2 bg-slate-900 border-y border-white/10 z-20 flex items-center justify-between gap-2 flex-shrink-0 shadow-md">
+          <!-- Dedicated Action Control Bar (DILUAR KOTAK RETICLE DENGAN JARAK AMAN & NYAMAN) -->
+          <div class="mx-3 my-2 p-2.5 bg-slate-900/90 rounded-2xl border border-white/10 z-20 flex items-center justify-between gap-2 flex-shrink-0 shadow-lg">
             <!-- Primary Snapshot OCR Action -->
-            <button type="button" onclick="ScannerService.captureAndScanOCR()" class="flex-1 py-2.5 px-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[11px] font-black rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-1.5 cursor-pointer border border-emerald-400/40">
+            <button type="button" onclick="ScannerService.captureAndScanOCR()" class="flex-1 py-2 px-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[11px] font-black rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-1.5 cursor-pointer border border-emerald-400/40">
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
               <span>📸 Foto & Baca Teks (OCR)</span>
             </button>
             <!-- Gallery Button -->
-            <button type="button" onclick="document.getElementById('stickerGalleryInput').click()" class="py-2.5 px-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[10.5px] font-bold rounded-xl border border-white/15 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0" title="Unggah Foto Stiker dari Galeri HP">
+            <button type="button" onclick="document.getElementById('stickerGalleryInput').click()" class="py-2 px-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[10.5px] font-bold rounded-xl border border-white/15 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0" title="Unggah Foto Stiker dari Galeri HP">
               <svg class="w-3.5 h-3.5 text-blue-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              <span>Pilih Galeri</span>
+              <span>Galeri</span>
             </button>
             <!-- Quick Test Sample Button -->
-            <button type="button" onclick="triggerSampleBarcodeScan()" class="py-2.5 px-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[10.5px] font-bold rounded-xl border border-white/15 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0" title="Simulasi Scan Cepat">
+            <button type="button" onclick="triggerSampleBarcodeScan()" class="py-2 px-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[10.5px] font-bold rounded-xl border border-white/15 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0" title="Simulasi Scan Cepat">
               <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               <span>Tes Cepat</span>
             </button>
           </div>
 
           <!-- Bottom Card: Tampilan VIN & Engine Number + Tombol Lanjut -->
-          <div class="relative z-30 bg-slate-900/95 backdrop-blur-xl p-4 md:p-5 shadow-2xl flex flex-col space-y-3 flex-shrink-0 pb-12">
+          <div class="relative z-30 bg-slate-900/95 backdrop-blur-xl p-4 md:p-5 shadow-2xl flex flex-col space-y-3 flex-shrink-0 pb-16">
             
             <!-- Realtime Scan Status Feedback -->
             <div id="scanFeedbackChip" class="p-2.5 bg-slate-800/80 border border-slate-700/80 rounded-2xl flex items-center justify-between transition-colors">
-              <div class="flex items-center space-x-2.5">
+              <div class="flex items-center space-x-2.5 min-w-0">
                 <div id="scanFeedbackBadgeIcon" class="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0">
                   🔍
                 </div>
-                <div>
-                  <p id="scanFeedbackTitle" class="text-[11px] font-black text-white leading-tight">Siap Memindai Barcode / Teks</p>
-                  <p id="scanFeedbackSubtitle" class="text-[9.5px] text-slate-300 font-mono mt-0.5">Arahkan kamera atau tekan "Foto & Baca Teks"</p>
+                <div class="min-w-0">
+                  <p id="scanFeedbackTitle" class="text-[11px] font-black text-white leading-tight truncate">Siap Memindai Barcode / Teks</p>
+                  <p id="scanFeedbackSubtitle" class="text-[9.5px] text-slate-300 font-mono mt-0.5 truncate">Arahkan kamera atau tekan "Foto & Baca Teks"</p>
                 </div>
               </div>
-              <span id="scanFeedbackPill" class="text-[9px] font-extrabold text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded-lg border border-blue-500/30 uppercase tracking-wide">READY</span>
+              <div class="flex items-center space-x-1.5 flex-shrink-0">
+                <span id="scanFeedbackPill" class="text-[9px] font-extrabold text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded-lg border border-blue-500/30 uppercase tracking-wide">READY</span>
+                <!-- Tombol Akses Cepat Langsung ke Form -->
+                <button type="button" onclick="goToMutationFormStep()" class="px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-[10px] font-black rounded-lg shadow transition flex items-center space-x-1 active:scale-95 cursor-pointer border border-blue-400/30">
+                  <span>Form →</span>
+                </button>
+              </div>
             </div>
 
             <!-- Multi-Field Extracted Summary Pills (Dynamic) -->

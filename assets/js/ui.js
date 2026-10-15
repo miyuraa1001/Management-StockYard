@@ -179,21 +179,38 @@ const UI = {
     // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData
     const catalogWithStock = catalog.map(cat => {
       const units = (AppState.inventoryData || []).filter(u => {
-        if (!u || !u.model) return false;
-        if (u.model.toLowerCase() === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      // Hitung unit tambahan hasil scan baru di luar sampel awal INV-001..INV-011
-      const extraUnits = units.filter(u => !/^INV-0(0[1-9]|1[01])$/.test(String(u.id)));
-      const baseInYard = cat.baseStock ? cat.baseStock.inYard : units.filter(u => u.status === 'In-Yard').length;
-      const baseIntransit = cat.baseStock ? cat.baseStock.intransit : units.filter(u => u.status === 'Intransit').length;
-      const baseAllocated = cat.baseStock ? cat.baseStock.allocated : units.filter(u => u.status === 'Allocated').length;
+      // Hitung dari data stok spreadsheet (stockYard, stockTransit, allocated)
+      const sheetYardStock = units.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+      const sheetTransitStock = units.reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
+      const sheetAllocatedStock = units.reduce((acc, u) => acc + (parseInt(u.stockAllocated || u.allocated, 10) || 0), 0);
 
-      const inYardCount = baseInYard + extraUnits.filter(u => u.status === 'In-Yard').length;
-      const intransitCount = baseIntransit + extraUnits.filter(u => u.status === 'Intransit').length;
-      const allocatedCount = baseAllocated + extraUnits.filter(u => u.status === 'Allocated').length;
+      // Hitung unit individual jika ada
+      const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || !u.status)).length;
+      const unitTransit = units.filter(u => typeof u.stockTransit !== 'number' && u.status === 'Intransit').length;
+      const unitAllocated = units.filter(u => u.status === 'Allocated').length;
+
+      // Cek mutasi masuk & keluar dari riwayat audit
+      const matchingHistory = (AppState.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+      const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const netFromHistory = Math.max(0, histMasuk - histKeluar);
+
+      const inYardCount = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      const intransitCount = sheetTransitStock + unitTransit;
+      const allocatedCount = sheetAllocatedStock + unitAllocated;
       const totalUnits = inYardCount + intransitCount + allocatedCount;
 
       let primaryStatus = 'Kosong';
@@ -1740,22 +1757,35 @@ const UI = {
     const catalog = AppState.vehicleCatalog || [];
     const modelStats = catalog.map(cat => {
       const matchingUnits = (AppState.inventoryData || []).filter(u => {
-        if (!u || !u.model) return false;
-        if (u.model.toLowerCase() === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
         return matched && matched.catalogId === cat.catalogId;
       });
 
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
-        if (h.model.toLowerCase() === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(h.model) : null;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
         return matched && matched.catalogId === cat.catalogId;
       });
 
       const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      const count = matchingUnits.length;
+      
+      let count = 0;
+      const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
+      if (hasStockYardField) {
+        count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+      } else {
+        count = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
+      }
+      // Sinkronkan dari riwayat jika stok inventory belum terupdate
+      if (count === 0 && (masuk - keluar) > 0) {
+        count = Math.max(0, masuk - keluar);
+      }
 
       return {
         catalogId: cat.catalogId,
@@ -1916,7 +1946,18 @@ const UI = {
     const alertIconBox = document.getElementById('yardAttentionIconBox');
 
     const totalCapacity = 120;
-    const inYardUnits = (AppState.inventoryData || []).filter(u => u && (u.status === 'In-Yard' || !u.status)).length;
+    let inYardUnits = 0;
+    const hasSummaryStock = (AppState.inventoryData || []).some(u => typeof u.stockYard === 'number');
+    if (hasSummaryStock) {
+      inYardUnits = (AppState.inventoryData || []).reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+    } else {
+      inYardUnits = (AppState.inventoryData || []).filter(u => u && (u.status === 'In-Yard' || !u.status)).length;
+    }
+    if (inYardUnits === 0 && (AppState.historyData || []).length > 0) {
+      const masuk = (AppState.historyData || []).filter(h => h.type === 'Unit Masuk').length;
+      const keluar = (AppState.historyData || []).filter(h => h.type === 'Unit Keluar').length;
+      inYardUnits = Math.max(0, masuk - keluar);
+    }
     const occupancyPct = totalCapacity > 0 ? ((inYardUnits / totalCapacity) * 100).toFixed(1) : 0;
     const availableSlots = Math.max(0, totalCapacity - inYardUnits);
 
@@ -1934,7 +1975,13 @@ const UI = {
     if (slotsEl) slotsEl.textContent = `Tersedia: ${availableSlots} Slot`;
 
     // DO Siap Verifikasi: Unit yang masih berstatus Intransit (menunggu verifikasi DO dan fisik yard)
-    const doReadyCount = (AppState.inventoryData || []).filter(u => u && u.status === 'Intransit').length;
+    let doReadyCount = 0;
+    const hasTransitStock = (AppState.inventoryData || []).some(u => typeof u.stockTransit === 'number');
+    if (hasTransitStock) {
+      doReadyCount = (AppState.inventoryData || []).reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
+    } else {
+      doReadyCount = (AppState.inventoryData || []).filter(u => u && u.status === 'Intransit').length;
+    }
     if (doReadyEl) doReadyEl.textContent = `${doReadyCount} Unit`;
 
     // BASTK Valid: Mutasi pengiriman unit keluar / BASTK yang sudah terverifikasi
@@ -1977,23 +2024,37 @@ const UI = {
       if (!catalogItem) return;
 
       const matchingUnits = (AppState.inventoryData || []).filter(u => {
-        if (!u || !u.model) return false;
-        if (u.model.toLowerCase() === catalogItem.model.toLowerCase()) return true;
-        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
         return m && m.catalogId === catalogItem.catalogId;
       });
 
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
-        if (h.model.toLowerCase() === catalogItem.model.toLowerCase()) return true;
-        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(h.model) : null;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
         return m && m.catalogId === catalogItem.catalogId;
       });
 
       const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      const inYard = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
-      const intransit = matchingUnits.filter(u => u.status === 'Intransit').length;
+
+      let inYard = 0;
+      let intransit = 0;
+      const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
+      if (hasSummary) {
+        inYard = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+        intransit = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
+      } else {
+        inYard = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
+        intransit = matchingUnits.filter(u => u.status === 'Intransit').length;
+      }
+      if (inYard === 0 && (masuk - keluar) > 0) {
+        inYard = Math.max(0, masuk - keluar);
+      }
 
       // Update pills masuk & keluar
       const spans = slide.querySelectorAll('span');

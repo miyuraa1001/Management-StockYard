@@ -174,6 +174,8 @@ const App = {
       if (response && response.success && !response.isFallback && !response.isOffline) {
         console.log('[App] Data mutasi berhasil tersinkron ke Google Spreadsheet backend:', response);
         UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
+        // Segera sinkronkan ulang database agar chart donat & stok unit yard langsung terupdate
+        this.syncBackendData();
       } else {
         const reason = response?.message || response?.error || 'URL Web App belum terhubung';
         console.warn('[App] Mutasi tersimpan lokal (belum ke database Google):', reason);

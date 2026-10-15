@@ -960,6 +960,14 @@ const ScannerService = {
 
     UI.showToast(`🎯 Barcode Terbaca: ${parsedVin}`);
 
+    // Auto-scroll halus ke bagian bawah agar tombol Lanjut ke Formulir Mutasi langsung terlihat
+    setTimeout(() => {
+      const step1 = document.getElementById('scanStep1_Camera');
+      if (step1) {
+        step1.scrollTo({ top: step1.scrollHeight, behavior: 'smooth' });
+      }
+    }, 250);
+
     // Beri jeda sebelum kamera boleh membaca kode lain
     setTimeout(() => {
       if (AppState.isScanningActive && !this.lastScannedIsDuplicate) {
@@ -1016,11 +1024,17 @@ const ScannerService = {
     const scanVinEl = document.getElementById('scanVinInput');
     const scanEngineEl = document.getElementById('scanEngineInput');
     const vin = (scanVinEl?.value || '').trim().toUpperCase();
-    const engine = (scanEngineEl?.value || '').trim().toUpperCase();
+    let engine = (scanEngineEl?.value || '').trim().toUpperCase();
 
-    if (!vin || !engine) {
-      UI.showToast('⚠️ Scan barcode stiker kaca atau ketik nomor VIN & Mesin!');
+    if (!vin) {
+      UI.showToast('⚠️ Scan barcode stiker kaca atau ketik nomor VIN!');
       return;
+    }
+
+    if (!engine) {
+      const detectedModel = document.getElementById('inputCarModel')?.value || this.inferDaihatsuModelFromVin(vin);
+      engine = this.inferEngineNumber(detectedModel, vin);
+      if (scanEngineEl) scanEngineEl.value = engine;
     }
 
     // PENCEGAHAN DUPLIKAT: Satu kode barcode hanya bisa sekali tersimpan!
@@ -1040,7 +1054,10 @@ const ScannerService = {
     const step2 = document.getElementById('scanStep2_Form');
 
     if (step1) step1.classList.add('hidden');
-    if (step2) step2.classList.remove('hidden');
+    if (step2) {
+      step2.classList.remove('hidden');
+      step2.scrollTop = 0;
+    }
 
     // Hentikan sementara deteksi scanner agar tidak memicu deteksi di background
     AppState.isScanningActive = false;

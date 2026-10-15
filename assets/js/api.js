@@ -149,13 +149,20 @@ const ApiService = {
       const res = await this.request('getInitialData', 'GET');
       if (res && res.success && res.data) {
         if (Array.isArray(res.data.inventory) && res.data.inventory.length > 0) {
-          AppState.inventoryData = res.data.inventory;
+          AppState.inventoryData = res.data.inventory.map(item => ({
+            ...item,
+            model: item.model || item.name || '',
+            name: item.name || item.model || '',
+            stockYard: parseInt(item.stockYard != null ? item.stockYard : (item.inYard || 0), 10) || 0,
+            stockTransit: parseInt(item.stockTransit != null ? item.stockTransit : (item.inTransit || 0), 10) || 0,
+            status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'In-Yard' : 'Kosong'
+          }));
         }
-        if (Array.isArray(res.data.history) && res.data.history.length > 0) {
+        if (Array.isArray(res.data.history)) {
           AppState.historyData = res.data.history;
         }
-        if (res.data.kpi) {
-          AppState.kpi = res.data.kpi;
+        if (typeof AppState.updateKpiCounts === 'function') {
+          AppState.updateKpiCounts();
         }
         AppState.saveToCache();
         return true;
