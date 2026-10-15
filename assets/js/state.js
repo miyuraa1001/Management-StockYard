@@ -44,7 +44,8 @@ const AppState = {
   kpi: {
     masuk: 0,
     keluar: 0,
-    intransit: 0
+    totalStok: 0,
+    stokKosong: 0
   },
 
   // Master Katalog 13 Model Kendaraan Daihatsu (Tetap tampil meski stok 0 / kosong)
@@ -57,7 +58,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 1 (Hybrid)',
       photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
       heroPhoto: 'assets/images/hero-rocky-hybrid.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-02',
@@ -67,7 +68,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_New Terios.jpeg',
       heroPhoto: 'assets/images/hero-new-terios.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-03',
@@ -77,7 +78,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_Terios SE.jpeg',
       heroPhoto: 'assets/images/hero-terios-se.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-04',
@@ -87,7 +88,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
       heroPhoto: 'assets/images/hero-all-new-xenia.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-05',
@@ -97,7 +98,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 2 (MPV)',
       photo: 'assets/images/Inventory_New Sigra.jpeg',
       heroPhoto: 'assets/images/hero-new-sigra.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-06',
@@ -107,7 +108,7 @@ const AppState = {
       defaultLocation: 'Yard B - Blok 3 (MPV)',
       photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
       heroPhoto: 'assets/images/hero-sigra-old.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-07',
@@ -117,7 +118,7 @@ const AppState = {
       defaultLocation: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
       heroPhoto: 'assets/images/hero-all-new-ayla.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-08',
@@ -127,7 +128,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_New Rocky.jpeg',
       heroPhoto: 'assets/images/hero-new-rocky.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-09',
@@ -137,7 +138,7 @@ const AppState = {
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_Rocky.jpeg',
       heroPhoto: 'assets/images/hero-rocky.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-10',
@@ -147,7 +148,7 @@ const AppState = {
       defaultLocation: 'Yard C - Blok 2 (City Car)',
       photo: 'assets/images/Inventory_New Sirion.jpeg',
       heroPhoto: 'assets/images/hero-new-sirion.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-11',
@@ -157,7 +158,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 1 (Commercial)',
       photo: 'assets/images/Inventory_Luxio.jpeg',
       heroPhoto: 'assets/images/hero-luxio.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-12',
@@ -167,7 +168,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
       heroPhoto: 'assets/images/hero-granmax-minibus.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     },
     {
       catalogId: 'CAT-13',
@@ -177,7 +178,7 @@ const AppState = {
       defaultLocation: 'Yard D - Blok 3 (Niaga)',
       photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
       heroPhoto: 'assets/images/hero-granmax-pickup.jpg',
-      baseStock: { inYard: 0, intransit: 0, allocated: 0 }
+      baseStock: { masuk: 0, keluar: 0, total: 0 }
     }
   ],
 
@@ -286,35 +287,53 @@ const AppState = {
     let keluarCount = 0;
     
     (this.historyData || []).forEach(item => {
-      if (item.type === 'Unit Masuk') masukCount++;
-      if (item.type === 'Unit Keluar') keluarCount++;
+      if (item && item.type === 'Unit Masuk') masukCount++;
+      if (item && item.type === 'Unit Keluar') keluarCount++;
     });
 
-    let intransitCount = 0;
-    let inYardCount = 0;
-    (this.inventoryData || []).forEach(item => {
-      if (typeof item.stockTransit === 'number') {
-        intransitCount += item.stockTransit;
-      } else if (item.status === 'Intransit') {
-        intransitCount++;
-      }
+    const catalog = this.vehicleCatalog || [];
+    let totalStokCount = 0;
+    let kosongCount = 0;
 
-      if (typeof item.stockYard === 'number') {
-        inYardCount += item.stockYard;
-      } else if (item.status === 'In-Yard' || !item.status) {
-        inYardCount++;
+    catalog.forEach(cat => {
+      const units = (this.inventoryData || []).filter(u => {
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel === cat.model.toLowerCase()) return true;
+        const matched = this.getModelCatalogItem ? this.getModelCatalogItem(uModel) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+
+      const sheetYardStock = units.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+      const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || u.status === 'Tersedia' || !u.status)).length;
+
+      const matchingHistory = (this.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === cat.model.toLowerCase()) return true;
+        const matched = this.getModelCatalogItem ? this.getModelCatalogItem(hModel) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+      const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const netFromHistory = Math.max(0, histMasuk - histKeluar);
+
+      const modelStock = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      totalStokCount += modelStock;
+      if (modelStock === 0) {
+        kosongCount++;
       }
     });
 
-    // Jika stockYard di inventory belum terisi tetapi mutasi masuk ada di riwayat
-    if (inYardCount === 0 && (masukCount - keluarCount) > 0) {
-      inYardCount = Math.max(0, masukCount - keluarCount);
+    if (totalStokCount === 0 && (masukCount - keluarCount) > 0) {
+      totalStokCount = Math.max(0, masukCount - keluarCount);
     }
 
     this.kpi.masuk = masukCount;
     this.kpi.keluar = keluarCount;
-    this.kpi.intransit = intransitCount;
-    this.kpi.inYard = inYardCount;
+    this.kpi.totalStok = totalStokCount;
+    this.kpi.stokKosong = kosongCount;
+    this.kpi.inYard = totalStokCount; // Compatibility alias
 
     this.saveToCache();
   }

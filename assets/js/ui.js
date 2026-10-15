@@ -82,11 +82,11 @@ const UI = {
   updateDashboardKpis() {
     const kpiMasuk = document.getElementById('kpiMasukVal');
     const kpiKeluar = document.getElementById('kpiKeluarVal');
-    const kpiIntransit = document.getElementById('kpiIntransitVal');
+    const kpiTotalStok = document.getElementById('kpiTotalStokVal') || document.getElementById('kpiIntransitVal');
 
     if (kpiMasuk) kpiMasuk.innerText = AppState.kpi.masuk;
     if (kpiKeluar) kpiKeluar.innerText = AppState.kpi.keluar;
-    if (kpiIntransit) kpiIntransit.innerText = AppState.kpi.intransit;
+    if (kpiTotalStok) kpiTotalStok.innerText = AppState.kpi.totalStok;
 
     if (typeof this.renderDashboardDonut === 'function') {
       this.renderDashboardDonut();
@@ -176,7 +176,7 @@ const UI = {
 
     const catalog = AppState.vehicleCatalog || [];
 
-    // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData
+    // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData & riwayat mutasi
     const catalogWithStock = catalog.map(cat => {
       const units = (AppState.inventoryData || []).filter(u => {
         if (!u) return false;
@@ -186,15 +186,9 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      // Hitung dari data stok spreadsheet (stockYard, stockTransit, allocated)
+      // Hitung dari data stok spreadsheet
       const sheetYardStock = units.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
-      const sheetTransitStock = units.reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
-      const sheetAllocatedStock = units.reduce((acc, u) => acc + (parseInt(u.stockAllocated || u.allocated, 10) || 0), 0);
-
-      // Hitung unit individual jika ada
-      const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || !u.status)).length;
-      const unitTransit = units.filter(u => typeof u.stockTransit !== 'number' && u.status === 'Intransit').length;
-      const unitAllocated = units.filter(u => u.status === 'Allocated').length;
+      const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || u.status === 'Tersedia' || !u.status)).length;
 
       // Cek mutasi masuk & keluar dari riwayat audit
       const matchingHistory = (AppState.historyData || []).filter(h => {
@@ -208,50 +202,41 @@ const UI = {
       const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       const netFromHistory = Math.max(0, histMasuk - histKeluar);
 
-      const inYardCount = Math.max(sheetYardStock + unitInYard, netFromHistory);
-      const intransitCount = sheetTransitStock + unitTransit;
-      const allocatedCount = sheetAllocatedStock + unitAllocated;
-      const totalUnits = inYardCount + intransitCount + allocatedCount;
-
-      let primaryStatus = 'Kosong';
-      if (inYardCount > 0) primaryStatus = 'In-Yard';
-      else if (intransitCount > 0) primaryStatus = 'Intransit';
-      else if (allocatedCount > 0) primaryStatus = 'Allocated';
+      const totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
 
       return {
         ...cat,
         units,
         totalUnits,
-        inYardCount,
-        intransitCount,
-        allocatedCount,
-        primaryStatus,
+        histMasuk,
+        histKeluar,
         primaryUnit: units[0] || null
       };
     });
 
-    // Update KPI Ringkasan Inventory & Badge Counter pada Filter Chips
+    // Update KPI Ringkasan Inventory (Total Stok, Stok Masuk, Stok Keluar, Stok Kosong)
     const sumTotal = catalogWithStock.reduce((acc, item) => acc + item.totalUnits, 0);
-    const sumInYard = catalogWithStock.reduce((acc, item) => acc + item.inYardCount, 0);
-    const sumIntransit = catalogWithStock.reduce((acc, item) => acc + item.intransitCount, 0);
-    const sumAllocated = catalogWithStock.reduce((acc, item) => acc + item.allocatedCount, 0);
+    const sumMasuk = catalogWithStock.reduce((acc, item) => acc + item.histMasuk, 0);
+    const sumKeluar = catalogWithStock.reduce((acc, item) => acc + item.histKeluar, 0);
+    const countKosong = catalogWithStock.filter(item => item.totalUnits === 0).length;
 
     const elTotal = document.getElementById('invKpiTotalUnits');
-    const elInYard = document.getElementById('invKpiInYard');
-    const elIntransit = document.getElementById('invKpiIntransit');
-    const elAllocated = document.getElementById('invKpiAllocated');
+    const elMasuk = document.getElementById('invKpiMasukUnits');
+    const elKeluar = document.getElementById('invKpiKeluarUnits');
+    const elKosong = document.getElementById('invKpiKosongUnits');
 
     if (elTotal) elTotal.textContent = sumTotal;
-    if (elInYard) elInYard.textContent = sumInYard;
-    if (elIntransit) elIntransit.textContent = sumIntransit;
-    if (elAllocated) elAllocated.textContent = sumAllocated;
+    if (elMasuk) elMasuk.textContent = sumMasuk;
+    if (elKeluar) elKeluar.textContent = sumKeluar;
+    if (elKosong) elKosong.textContent = countKosong;
 
+    // Update Counter pada Filter Chips
     const chipCounts = {
       'all': catalogWithStock.length,
-      'In-Yard': catalogWithStock.filter(e => e.inYardCount > 0).length,
-      'Intransit': catalogWithStock.filter(e => e.intransitCount > 0).length,
-      'Allocated': catalogWithStock.filter(e => e.allocatedCount > 0).length,
-      'Kosong': catalogWithStock.filter(e => e.totalUnits === 0).length
+      'Total-Stok': catalogWithStock.filter(e => e.totalUnits > 0).length,
+      'Stok-Masuk': catalogWithStock.filter(e => e.histMasuk > 0).length,
+      'Stok-Keluar': catalogWithStock.filter(e => e.histKeluar > 0).length,
+      'Kosong': countKosong
     };
     Object.keys(chipCounts).forEach(key => {
       const badge = document.getElementById(`chipCount-${key}`);
@@ -261,9 +246,9 @@ const UI = {
     // Filter berdasarkan chip status & pencarian kata kunci
     const filtered = catalogWithStock.filter(entry => {
       let matchesStatus = true;
-      if (AppState.inventoryFilter === 'In-Yard') matchesStatus = entry.inYardCount > 0;
-      else if (AppState.inventoryFilter === 'Intransit') matchesStatus = entry.intransitCount > 0;
-      else if (AppState.inventoryFilter === 'Allocated') matchesStatus = entry.allocatedCount > 0;
+      if (AppState.inventoryFilter === 'Total-Stok') matchesStatus = entry.totalUnits > 0;
+      else if (AppState.inventoryFilter === 'Stok-Masuk') matchesStatus = entry.histMasuk > 0;
+      else if (AppState.inventoryFilter === 'Stok-Keluar') matchesStatus = entry.histKeluar > 0;
       else if (AppState.inventoryFilter === 'Kosong') matchesStatus = entry.totalUnits === 0;
 
       if (!searchVal) return matchesStatus;
@@ -303,31 +288,21 @@ const UI = {
     container.innerHTML = filtered.map((entry, idx) => {
       const isEmpty = entry.totalUnits === 0;
 
-      let statusBadgeClass = 'bg-slate-100/95 text-slate-500 border-slate-200/90';
-      let statusDotClass = 'bg-slate-400';
-      let statusLabel = 'Stok Kosong (0)';
+      let statusBadgeClass = 'bg-emerald-50/95 text-emerald-700 border-emerald-200/90';
+      let statusDotClass = 'bg-emerald-500 animate-pulse';
+      let statusLabel = `Total Stok: ${entry.totalUnits} Unit`;
 
-      if (!isEmpty) {
-        if (entry.primaryStatus === 'In-Yard') {
-          statusBadgeClass = 'bg-emerald-50/95 text-emerald-700 border-emerald-200/90';
-          statusDotClass = 'bg-emerald-500';
-          statusLabel = `Total ${entry.totalUnits} Unit`;
-        } else if (entry.primaryStatus === 'Intransit') {
-          statusBadgeClass = 'bg-amber-50/95 text-amber-700 border-amber-200/90';
-          statusDotClass = 'bg-amber-500';
-          statusLabel = `Total ${entry.totalUnits} Unit`;
-        } else {
-          statusBadgeClass = 'bg-blue-50/95 text-blue-700 border-blue-200/90';
-          statusDotClass = 'bg-blue-500';
-          statusLabel = `Total ${entry.totalUnits} Unit`;
-        }
+      if (isEmpty) {
+        statusBadgeClass = 'bg-rose-50/95 text-rose-700 border-rose-200/90';
+        statusDotClass = 'bg-rose-500';
+        statusLabel = 'Stok Kosong';
       }
 
       const u = entry.primaryUnit;
       const delayMs = Math.min((idx % 6) * 45, 200);
 
       return `
-        <div class="scroll-reveal heavy-section-deferred bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-slate-200/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
+        <div class="scroll-reveal heavy-section-deferred bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-rose-100/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
           <div>
             <!-- Top Showroom Studio Image Stage -->
             <div class="relative w-full h-38 sm:h-42 md:h-44 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
@@ -339,7 +314,7 @@ const UI = {
                 ${entry.category}
               </span>
 
-              <!-- Status Stok Badge (Top-Right) -->
+              <!-- Status Stok Badge (Top-Right: Total Stok / Stok Kosong) -->
               <span class="absolute top-2.5 right-2.5 z-10 inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold border backdrop-blur-sm shadow-2xs ${statusBadgeClass}">
                 <span class="w-1.5 h-1.5 rounded-full ${statusDotClass}"></span>
                 <span>${statusLabel}</span>
@@ -371,28 +346,28 @@ const UI = {
               </div>
             </div>
 
-            <!-- Rincian Status Stok Per Model (3 Kolom Presisi) -->
+            <!-- Rincian Status Stok Per Model (3 Kolom: Stok Masuk, Stok Keluar, Total Stok) -->
             <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 pt-2.5 border-t border-slate-100 text-center">
-              <div class="rounded-xl py-1.5 px-1.5 ${entry.inYardCount > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.inYardCount > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full ${entry.inYardCount > 0 ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
-                  <span>In-Yard</span>
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.histMasuk > 0 ? 'bg-emerald-50/75 border border-emerald-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.histMasuk > 0 ? 'text-emerald-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.histMasuk > 0 ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                  <span>Stok Masuk</span>
                 </span>
-                <span class="text-xs font-black ${entry.inYardCount > 0 ? 'text-emerald-700' : 'text-slate-400'} block mt-0.5">${entry.inYardCount} <span class="text-[9.5px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.histMasuk > 0 ? 'text-emerald-700' : 'text-slate-400'} block mt-0.5">${entry.histMasuk} <span class="text-[9.5px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1.5 px-1.5 ${entry.intransitCount > 0 ? 'bg-amber-50/75 border border-amber-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.intransitCount > 0 ? 'text-amber-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full ${entry.intransitCount > 0 ? 'bg-amber-500' : 'bg-slate-300'}"></span>
-                  <span>Intransit</span>
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.histKeluar > 0 ? 'bg-blue-50/75 border border-blue-200/80' : 'bg-slate-50/80 border border-slate-100'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.histKeluar > 0 ? 'text-blue-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.histKeluar > 0 ? 'bg-blue-500' : 'bg-slate-300'}"></span>
+                  <span>Stok Keluar</span>
                 </span>
-                <span class="text-xs font-black ${entry.intransitCount > 0 ? 'text-amber-700' : 'text-slate-400'} block mt-0.5">${entry.intransitCount} <span class="text-[9.5px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.histKeluar > 0 ? 'text-blue-700' : 'text-slate-400'} block mt-0.5">${entry.histKeluar} <span class="text-[9.5px] font-bold">Unit</span></span>
               </div>
-              <div class="rounded-xl py-1.5 px-1.5 ${entry.allocatedCount > 0 ? 'bg-blue-50/75 border border-blue-200/80' : 'bg-slate-50/80 border border-slate-100'}">
-                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.allocatedCount > 0 ? 'text-blue-600' : 'text-slate-400'} uppercase tracking-wider flex items-center justify-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full ${entry.allocatedCount > 0 ? 'bg-blue-500' : 'bg-slate-300'}"></span>
-                  <span>Allocated</span>
+              <div class="rounded-xl py-1.5 px-1.5 ${entry.totalUnits > 0 ? 'bg-slate-900 text-white' : 'bg-rose-50/75 border border-rose-200/80'}">
+                <span class="text-[8.5px] sm:text-[9px] font-extrabold ${entry.totalUnits > 0 ? 'text-slate-300' : 'text-rose-600'} uppercase tracking-wider flex items-center justify-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full ${entry.totalUnits > 0 ? 'bg-emerald-400' : 'bg-rose-500'}"></span>
+                  <span>Total Stok</span>
                 </span>
-                <span class="text-xs font-black ${entry.allocatedCount > 0 ? 'text-blue-700' : 'text-slate-400'} block mt-0.5">${entry.allocatedCount} <span class="text-[9.5px] font-bold">Unit</span></span>
+                <span class="text-xs font-black ${entry.totalUnits > 0 ? 'text-white' : 'text-rose-700'} block mt-0.5">${entry.totalUnits > 0 ? `${entry.totalUnits} <span class="text-[9.5px] font-bold">Unit</span>` : 'Kosong'}</span>
               </div>
             </div>
           </div>
@@ -415,7 +390,7 @@ const UI = {
               </div>
             ` : `
               <div class="bg-slate-50/75 rounded-xl px-2.5 py-2 border border-dashed border-slate-200 flex items-center justify-between gap-2 text-[10px]">
-                <span class="font-bold text-slate-500 truncate">Stok unit fisik kosong</span>
+                <span class="font-bold text-slate-500 truncate">Stok unit fisik model ini kosong</span>
                 <span class="text-slate-400 font-semibold flex items-center truncate flex-shrink-0">
                   <svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                   <span class="truncate">${entry.defaultLocation.split('(')[0].trim()}</span>
@@ -444,7 +419,7 @@ const UI = {
 
   filterInventoryByStatus(status) {
     AppState.inventoryFilter = status;
-    const chips = ['all', 'In-Yard', 'Intransit', 'Allocated', 'Kosong'];
+    const chips = ['all', 'Total-Stok', 'Stok-Masuk', 'Stok-Keluar', 'Kosong'];
     chips.forEach(c => {
       const chipEl = document.getElementById(`chip-${c}`);
       const countEl = document.getElementById(`chipCount-${c}`);
@@ -2114,13 +2089,13 @@ const UI = {
     }
     if (slotsEl) slotsEl.textContent = `Tersedia: ${availableSlots} Slot`;
 
-    // DO Siap Verifikasi: Unit yang masih berstatus Intransit (menunggu verifikasi DO dan fisik yard)
+    // DO Siap Verifikasi: Unit yang masih menunggu verifikasi DO dan fisik yard
     let doReadyCount = 0;
     const hasTransitStock = (AppState.inventoryData || []).some(u => typeof u.stockTransit === 'number');
     if (hasTransitStock) {
       doReadyCount = (AppState.inventoryData || []).reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
     } else {
-      doReadyCount = (AppState.inventoryData || []).filter(u => u && u.status === 'Intransit').length;
+      doReadyCount = (AppState.inventoryData || []).filter(u => u && (u.status === 'Intransit' || u.status === 'Pending')).length;
     }
     if (doReadyEl) doReadyEl.textContent = `${doReadyCount} Unit`;
 
@@ -2132,12 +2107,12 @@ const UI = {
     if (alertTitle && alertDesc) {
       if (doReadyCount > 0) {
         alertTitle.textContent = `${doReadyCount} Unit Memerlukan Verifikasi Fisik`;
-        alertDesc.textContent = `${doReadyCount} unit intransit perlu inspeksi dokumen DO dan fisik lapangan.`;
+        alertDesc.textContent = `${doReadyCount} unit mutasi masuk perlu inspeksi dokumen DO dan fisik lapangan.`;
         if (alertCard) alertCard.className = 'bg-gradient-to-r from-rose-50 via-rose-50/90 to-orange-50 border border-rose-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition scroll-reveal flex-shrink-0';
         if (alertIconBox) alertIconBox.className = 'w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0 border border-rose-200/60';
       } else if (inYardUnits > 0) {
         alertTitle.textContent = 'Operasional Pool Yard Optimal';
-        alertDesc.textContent = `${inYardUnits} unit terdata rapi di pool yard. Seluruh dokumen fisik sinkron.`;
+        alertDesc.textContent = `${inYardUnits} total unit terdata di pool yard. Seluruh dokumen fisik sinkron.`;
         if (alertCard) alertCard.className = 'bg-gradient-to-r from-emerald-50 via-teal-50/90 to-emerald-50 border border-emerald-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-emerald-300 transition scroll-reveal flex-shrink-0';
         if (alertIconBox) alertIconBox.className = 'w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-200/60';
       } else {
@@ -2182,18 +2157,15 @@ const UI = {
       const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
 
-      let inYard = 0;
-      let intransit = 0;
+      let totalStock = 0;
       const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
       if (hasSummary) {
-        inYard = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
-        intransit = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockTransit, 10) || 0), 0);
+        totalStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
       } else {
-        inYard = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
-        intransit = matchingUnits.filter(u => u.status === 'Intransit').length;
+        totalStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
       }
-      if (inYard === 0 && (masuk - keluar) > 0) {
-        inYard = Math.max(0, masuk - keluar);
+      if (totalStock === 0 && (masuk - keluar) > 0) {
+        totalStock = Math.max(0, masuk - keluar);
       }
 
       // Update pills masuk & keluar
@@ -2207,16 +2179,15 @@ const UI = {
         }
       });
 
-      // Update label in-yard & intransit
-      const strongs = slide.querySelectorAll('strong');
-      strongs.forEach(st => {
-        const parentText = st.parentElement ? st.parentElement.textContent : '';
-        if (parentText.includes('In-Yard')) {
-          st.textContent = `${inYard} Unit`;
-        } else if (parentText.includes('Intransit')) {
-          st.textContent = `${intransit} Unit`;
+      // Update badge Total Stok / Stok Kosong
+      const heroStockEl = slide.querySelector('.hero-total-stock');
+      if (heroStockEl) {
+        if (totalStock > 0) {
+          heroStockEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span>Total Stok: <strong class="ml-1 font-extrabold text-white">${totalStock} Unit</strong>`;
+        } else {
+          heroStockEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400 mr-1.5"></span><strong class="font-extrabold text-white">Stok Kosong</strong>`;
         }
-      });
+      }
     });
   },
 

@@ -124,7 +124,7 @@ const App = {
     // Update status di Inventory jika ada unit dengan VIN yang sama
     const existingInv = AppState.inventoryData.find(item => item.vin === cleanVin);
     if (existingInv) {
-      existingInv.status = mutationType === 'Unit Masuk' ? 'In-Yard' : 'Allocated';
+      existingInv.status = mutationType === 'Unit Masuk' ? 'Tersedia' : 'Keluar';
       existingInv.photo = modelOfficialPhoto;
       existingInv.docPhoto = docImg;
     } else {
@@ -137,7 +137,7 @@ const App = {
           plate: 'BE ' + Math.floor(1000 + Math.random() * 9000) + ' DAA',
           vin: cleanVin,
           engine: engine.toUpperCase(),
-          status: 'In-Yard',
+          status: 'Tersedia',
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: modelOfficialPhoto,
           docPhoto: docImg

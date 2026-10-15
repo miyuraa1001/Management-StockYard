@@ -155,7 +155,7 @@ const ApiService = {
             name: item.name || item.model || '',
             stockYard: parseInt(item.stockYard != null ? item.stockYard : (item.inYard || 0), 10) || 0,
             stockTransit: parseInt(item.stockTransit != null ? item.stockTransit : (item.inTransit || 0), 10) || 0,
-            status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'In-Yard' : 'Kosong'
+            status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'Tersedia' : 'Kosong'
           }));
         }
         if (Array.isArray(res.data.history)) {
