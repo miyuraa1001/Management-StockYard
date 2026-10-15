@@ -462,6 +462,71 @@ const UI = {
   },
 
   /**
+  /**
+   * Helper untuk mengekstrak komponen tanggal, bulan, dan tahun dari item mutasi secara konsisten
+   */
+  parseItemDate(item) {
+    let d = item.date;
+    let m = item.month;
+    let y = item.year;
+
+    // 1. Ekstrak dari timestamp ISO jika ada
+    if ((!d || !m || !y) && item.timestamp) {
+      try {
+        const dt = new Date(item.timestamp);
+        if (!isNaN(dt.getTime())) {
+          d = d || dt.getDate();
+          m = m || (dt.getMonth() + 1);
+          y = y || dt.getFullYear();
+        }
+      } catch (e) {}
+    }
+
+    // 2. Ekstrak dari fullDateStr (contoh: '15/10/2026' atau '15 Oktober 2026')
+    if ((!d || !m || !y) && item.fullDateStr) {
+      const str = String(item.fullDateStr).trim();
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length === 3) {
+          d = d || parseInt(parts[0], 10);
+          m = m || parseInt(parts[1], 10);
+          y = y || parseInt(parts[2], 10);
+        }
+      } else if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3) {
+          d = d || parseInt(parts[0], 10);
+          m = m || parseInt(parts[1], 10);
+          y = y || parseInt(parts[2], 10);
+        }
+      } else {
+        const parts = str.split(/\s+/);
+        if (parts.length >= 3) {
+          d = d || parseInt(parts[0], 10);
+          const monthMap = {
+            'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
+            'juli': 7, 'agustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'desember': 12
+          };
+          const mName = parts[1].toLowerCase();
+          m = m || monthMap[mName] || 1;
+          y = y || parseInt(parts[2], 10);
+        }
+      }
+    }
+
+    // Fallback ke tanggal hari ini jika tidak terbaca
+    if (!y) y = new Date().getFullYear();
+    if (!m) m = new Date().getMonth() + 1;
+    if (!d) d = new Date().getDate();
+
+    return {
+      date: String(d),
+      month: String(m),
+      year: String(y)
+    };
+  },
+
+  /**
    * Mengambil data riwayat mutasi yang sedang difilter oleh pengguna
    */
   getFilteredHistoryData() {
@@ -471,11 +536,14 @@ const UI = {
     const searchInput = document.getElementById('historySearchInput');
     const searchVal = (searchInput?.value || '').toLowerCase().trim();
 
-    // Filter tahap 1: Berdasarkan Periode Waktu & Kata Kunci Pencarian (untuk counter tab)
+    // Filter tahap 1: Periode Waktu & Pencarian (Setiap dropdown tanggal, bulan, tahun bekerja independen!)
     const baseFiltered = (AppState.historyData || []).filter(item => {
-      const dateMatch = fDate === 'all' || item.date?.toString() === fDate;
-      const monthMatch = fMonth === 'all' || item.month?.toString() === fMonth;
-      const yearMatch = fYear === 'all' || item.year?.toString() === fYear;
+      const parts = this.parseItemDate(item);
+
+      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
+      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
+      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+
       if (!dateMatch || !monthMatch || !yearMatch) return false;
 
       if (!searchVal) return true;
@@ -567,11 +635,24 @@ const UI = {
       // Foto Kolom Kendaraan: selalu foto katalog resmi 13 model
       const catalogPhotoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
       
-      // Foto Bukti Fisik Lapangan (Foto Unit & Foto Dokumen)
-      const unitPhotoSrc = (item.unitPhoto && !item.unitPhoto.includes('unsplash.com'))
-        ? item.unitPhoto
-        : catalogPhotoSrc;
-      const docPhotoSrc = item.docPhoto || '';
+      // Helper format Google Drive URL agar bisa di-embed langsung di browser tanpa terblokir 403
+      const formatDriveThumb = (url) => {
+        if (!url || typeof url !== 'string') return '';
+        url = url.trim();
+        if (url === '' || url === '-') return '';
+        if (url.startsWith('data:image')) return url;
+        const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+        }
+        return url;
+      };
+
+      const rawUnitPhoto = item.unitPhoto || '';
+      const rawDocPhoto = item.docPhoto || '';
+
+      const unitPhotoSrc = formatDriveThumb(rawUnitPhoto) || catalogPhotoSrc;
+      const docPhotoSrc = formatDriveThumb(rawDocPhoto);
 
       const rowNum = String(idx + 1).padStart(2, '0');
 
@@ -610,26 +691,25 @@ const UI = {
 
       const fullTimeDisplay = `${timeFormatted}, ${dateFormatted}`;
 
-      // Thumbnail Bukti Fisik Langsung Tampil
-      const unitThumbnailHtml = unitPhotoSrc 
-        ? `<div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-500 hover:ring-2 hover:ring-blue-400/40 transition" title="Klik untuk memperbesar Foto Unit">
-             <img src="${unitPhotoSrc}" alt="Foto Unit" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-             <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[7.5px] font-bold text-center py-0.2">Unit</span>
-           </div>`
-        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Unit</div>`;
+      // Thumbnail Bukti Fisik Langsung Tampil (Dengan Fallback Anti-Rusak)
+      const unitThumbnailHtml = `
+        <div onclick="openImagePreviewModal('${unitPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-500 hover:ring-2 hover:ring-blue-400/40 transition" title="Klik untuk memperbesar Foto Unit">
+          <img src="${unitPhotoSrc}" alt="Foto Unit" loading="lazy" referrerpolicy="no-referrer"
+               onerror="this.onerror=null; this.src='${catalogPhotoSrc}';"
+               class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+          <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[7.5px] font-bold text-center py-0.2">Unit</span>
+        </div>
+      `;
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
         ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO / Stiker">
-             <img src="${docPhotoSrc}" alt="Foto Dokumen" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+             <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
+                  onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                  class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">Stiker</div>
              <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">Stiker</span>
            </div>`
-        : (docPhotoSrc 
-            ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO">
-                 <img src="${docPhotoSrc}" alt="Dokumen DO" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-                 <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">DO</span>
-               </div>`
-            : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`
-          );
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`;
 
       return `
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
@@ -785,6 +865,7 @@ const UI = {
     const modal = document.getElementById('imagePreviewModal');
     const img = document.getElementById('enlargedPreviewImg');
     if (modal && img) {
+      img.referrerPolicy = 'no-referrer';
       img.src = imgSrc;
       modal.classList.remove('hidden');
     }

@@ -90,7 +90,7 @@ const App = {
     const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(model) : null;
     const modelOfficialPhoto = catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg';
     const unitImg = AppState.uploadedUnitPhotoUrl || modelOfficialPhoto;
-    const docImg = AppState.uploadedDocPhotoUrl || 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=260&q=80';
+    const docImg = AppState.uploadedDocPhotoUrl || '';
 
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');

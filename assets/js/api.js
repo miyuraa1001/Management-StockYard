@@ -159,7 +159,67 @@ const ApiService = {
           }));
         }
         if (Array.isArray(res.data.history)) {
-          AppState.historyData = res.data.history;
+          const monthMap = {
+            'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
+            'juli': 7, 'agustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'desember': 12
+          };
+
+          const formatDriveThumb = (url) => {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
+            if (url === '' || url === '-') return '';
+            const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+              return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+            }
+            return url;
+          };
+
+          AppState.historyData = res.data.history.map(item => {
+            let d = item.date;
+            let m = item.month;
+            let y = item.year;
+
+            if ((!d || !m || !y) && item.timestamp) {
+              try {
+                const dt = new Date(item.timestamp);
+                if (!isNaN(dt.getTime())) {
+                  d = d || dt.getDate();
+                  m = m || (dt.getMonth() + 1);
+                  y = y || dt.getFullYear();
+                }
+              } catch (e) {}
+            }
+
+            if ((!d || !m || !y) && item.fullDateStr) {
+              const str = String(item.fullDateStr).trim();
+              if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 3) {
+                  d = d || parseInt(parts[0], 10);
+                  m = m || parseInt(parts[1], 10);
+                  y = y || parseInt(parts[2], 10);
+                }
+              } else {
+                const parts = str.split(/\s+/);
+                if (parts.length >= 3) {
+                  d = d || parseInt(parts[0], 10);
+                  const mName = parts[1].toLowerCase();
+                  m = m || monthMap[mName] || 1;
+                  y = y || parseInt(parts[2], 10);
+                }
+              }
+            }
+
+            return {
+              ...item,
+              date: d ? parseInt(d, 10) : new Date().getDate(),
+              month: m ? parseInt(m, 10) : (new Date().getMonth() + 1),
+              year: y ? parseInt(y, 10) : new Date().getFullYear(),
+              unitPhoto: formatDriveThumb(item.unitPhoto),
+              docPhoto: formatDriveThumb(item.docPhoto)
+            };
+          });
         }
         if (typeof AppState.updateKpiCounts === 'function') {
           AppState.updateKpiCounts();
