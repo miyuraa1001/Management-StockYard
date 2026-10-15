@@ -1050,28 +1050,220 @@ function verifyUserCredentials(ss, username, password) {
   return null;
 }
 
+
+/**
+ * Helper untuk mengambil seluruh konfigurasi sistem dari tab SystemConfig
+ */
+function getSystemConfigData(ss) {
+  if (!ss) ss = getSpreadsheet();
+  if (!ss) return {};
+
+  const sheet = ss.getSheetByName(TAB_CONFIG);
+  if (!sheet) return {};
+  const rows = sheet.getDataRange().getValues();
+  const config = {};
+  for (let i = 1; i < rows.length; i++) {
+    const k = String(rows[i][0]).trim();
+    const v = rows[i][1];
+    if (k) config[k] = v;
+  }
+  return config;
+}
+
+/**
+ * Helper untuk mengambil data profil user/petugas aktif dari sheet UserPIC
+ */
+function getActiveUserProfile(ss) {
+  if (!ss) ss = getSpreadsheet();
+  if (!ss) return null;
+
+  const sheet = ss.getSheetByName(TAB_USERS);
+  if (!sheet) return null;
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length <= 1) return null;
+
+  for (let i = 1; i < rows.length; i++) {
+    const status = String(rows[i][9] || "").toLowerCase().trim();
+    if (status !== "suspended" && status !== "nonaktif") {
+      return {
+        id: rows[i][0],
+        username: rows[i][1],
+        name: rows[i][3],
+        npk: rows[i][4],
+        branch: rows[i][5],
+        role: rows[i][6],
+        email: rows[i][7],
+        photo: rows[i][8] || ""
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Helper untuk memperbarui konfigurasi sistem di tab SystemConfig
+ */
+function updateSystemConfig(ss, data) {
+  if (!ss) ss = getSpreadsheet();
+  if (!ss) return { success: false, message: "Spreadsheet tidak ditemukan." };
+
+  let sheet = ss.getSheetByName(TAB_CONFIG);
+  if (!sheet) {
+    sheet = ss.insertSheet(TAB_CONFIG);
+    sheet.appendRow(["Parameter Key", "Nilai / Value", "Deskripsi / Keterangan"]);
+  }
+
+  const rows = sheet.getDataRange().getValues();
+
+  const email = (data.email || data.targetEmail || "").trim();
+  const schedule = (data.schedule || data.sched || "").trim();
+  const type = (data.type || data.reportType || "").trim();
+
+  // Ekstrak jam pengiriman (misal "Setiap Hari 08:00 WIB" -> "8")
+  let hour = "";
+  if (schedule) {
+    const match = schedule.match(/(\d{1,2}):00/);
+    if (match && match[1]) {
+      hour = String(parseInt(match[1], 10));
+    }
+  }
+
+  let emailUpdated = false;
+  let hourUpdated = false;
+  let scheduleUpdated = false;
+  let typeUpdated = false;
+
+  for (let i = 1; i < rows.length; i++) {
+    const key = String(rows[i][0]).trim();
+    if (key === "TARGET_EMAIL" && email) {
+      sheet.getRange(i + 1, 2).setValue(email);
+      emailUpdated = true;
+    }
+    if (key === "DAILY_REPORT_HOUR" && hour) {
+      sheet.getRange(i + 1, 2).setValue(hour);
+      hourUpdated = true;
+    }
+    if (key === "AUTO_SCHEDULE_TEXT" && schedule) {
+      sheet.getRange(i + 1, 2).setValue(schedule);
+      scheduleUpdated = true;
+    }
+    if (key === "REPORT_TYPE_DESC" && type) {
+      sheet.getRange(i + 1, 2).setValue(type);
+      typeUpdated = true;
+    }
+  }
+
+  // Jika parameter belum ada di baris manapun, append baris baru
+  if (!emailUpdated && email) {
+    sheet.appendRow(["TARGET_EMAIL", email, "Email penerima rekapitulasi PDF harian"]);
+  }
+  if (!hourUpdated && hour) {
+    sheet.appendRow(["DAILY_REPORT_HOUR", hour, "Jam pengiriman rekapitulasi harian WIB"]);
+  }
+  if (!scheduleUpdated && schedule) {
+    sheet.appendRow(["AUTO_SCHEDULE_TEXT", schedule, "Label jadwal pengiriman laporan otomatis"]);
+  }
+  if (!typeUpdated && type) {
+    sheet.appendRow(["REPORT_TYPE_DESC", type, "Jenis format rekapitulasi mutasi"]);
+  }
+
+  return {
+    success: true,
+    message: "Konfigurasi otomatisasi laporan berhasil disimpan ke database SystemConfig.",
+    config: {
+      TARGET_EMAIL: email || DEFAULT_TARGET_EMAIL,
+      DAILY_REPORT_HOUR: hour || "8",
+      AUTO_SCHEDULE_TEXT: schedule || "Setiap Hari 08:00 WIB",
+      REPORT_TYPE_DESC: type || "Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar"
+    }
+  };
+}
+
 function updateUserProfile(ss, data) {
   if (!ss) ss = getSpreadsheet();
   if (!ss) return { success: false, message: "Spreadsheet tidak ditemukan." };
 
-  const sheet = ss.getSheetByName(TAB_USERS);
+  let sheet = ss.getSheetByName(TAB_USERS);
   if (!sheet) return { success: false, message: "Sheet UserPIC tidak ditemukan." };
   const rows = sheet.getDataRange().getValues();
 
-  const targetNpk = String(data.npk || "").trim();
+  const searchNpk = String(data.oldNpk || data.npk || "").trim();
+  const searchUsername = String(data.username || "").trim().toLowerCase();
+  const searchId = String(data.id || "").trim();
+
+  // Simpan foto profil ke Google Drive jika berupa data Base64
+  let photoUrl = data.photo || "";
+  if (photoUrl && photoUrl.startsWith("data:image")) {
+    try {
+      const driveFolderId = (data.folderId || getDriveFolderId(ss) || "").trim();
+      const cleanNpk = (data.npk || data.oldNpk || "PIC").replace(/[^A-Za-z0-9]/g, "");
+      const fileSlug = "AVATAR_" + cleanNpk + "_" + Utilities.formatDate(new Date(), TIMEZONE, "yyyyMMdd-HHmmss") + ".jpg";
+      photoUrl = saveBase64ImageToDrive(photoUrl, fileSlug, driveFolderId);
+    } catch (uploadErr) {
+      Logger.log("Peringatan upload avatar: " + uploadErr.toString());
+    }
+  }
+
+  let userMatched = false;
   for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][4]).trim() === targetNpk) {
+    const rowId = String(rows[i][0]).trim();
+    const rowUser = String(rows[i][1]).trim().toLowerCase();
+    const rowNpk = String(rows[i][4]).trim();
+
+    const isMatch = (searchNpk && rowNpk === searchNpk) ||
+                    (searchUsername && rowUser === searchUsername) ||
+                    (searchId && rowId === searchId);
+
+    if (isMatch) {
       if (data.name) sheet.getRange(i + 1, 4).setValue(data.name);
+      if (data.npk) sheet.getRange(i + 1, 5).setValue(data.npk); // Update Kolom NPK
       if (data.branch) sheet.getRange(i + 1, 6).setValue(data.branch);
       if (data.role) sheet.getRange(i + 1, 7).setValue(data.role);
       if (data.email) sheet.getRange(i + 1, 8).setValue(data.email);
-      if (data.photo) sheet.getRange(i + 1, 9).setValue(data.photo);
+      if (photoUrl) sheet.getRange(i + 1, 9).setValue(photoUrl);
       if (data.password) sheet.getRange(i + 1, 3).setValue(data.password);
 
-      return { success: true, message: "Profil petugas berhasil diperbarui di database." };
+      userMatched = true;
+      return { 
+        success: true, 
+        message: "Profil petugas berhasil diperbarui di database Google Sheets (UserPIC).",
+        user: {
+          id: rowId,
+          username: rowUser,
+          name: data.name || rows[i][3],
+          npk: data.npk || rowNpk,
+          branch: data.branch || rows[i][5],
+          role: data.role || rows[i][6],
+          email: data.email || rows[i][7],
+          photo: photoUrl || rows[i][8]
+        }
+      };
     }
   }
-  return { success: false, message: "Petugas dengan NPK " + targetNpk + " tidak ditemukan." };
+
+  // Fallback: jika user belum cocok tetapi ada data baris operator pertama, update baris tersebut
+  if (!userMatched && rows.length > 1) {
+    if (data.name) sheet.getRange(2, 4).setValue(data.name);
+    if (data.npk) sheet.getRange(2, 5).setValue(data.npk);
+    if (data.branch) sheet.getRange(2, 6).setValue(data.branch);
+    if (data.role) sheet.getRange(2, 7).setValue(data.role);
+    if (photoUrl) sheet.getRange(2, 9).setValue(photoUrl);
+    return { 
+      success: true, 
+      message: "Profil operator utama berhasil diperbarui di database UserPIC.",
+      user: {
+        id: rows[1][0],
+        username: rows[1][1],
+        name: data.name || rows[1][3],
+        npk: data.npk || rows[1][4],
+        branch: data.branch || rows[1][5],
+        role: data.role || rows[1][6],
+        photo: photoUrl || rows[1][8]
+      }
+    };
+  }
+
+  return { success: false, message: "Petugas tidak ditemukan di sheet UserPIC." };
 }
 
 function getUsersData(ss) {

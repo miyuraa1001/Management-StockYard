@@ -221,6 +221,36 @@ const ApiService = {
             };
           });
         }
+        // Sinkronisasi data User PIC jika dikembalikan oleh database
+        if (res.data.user) {
+          const u = res.data.user;
+          if (u.name) AppState.userProfile.name = u.name;
+          if (u.npk) AppState.userProfile.npk = u.npk;
+          if (u.branch) AppState.userProfile.branch = u.branch;
+          if (u.role) AppState.userProfile.role = u.role;
+          if (u.photo) {
+            AppState.userProfile.photo = formatDriveThumb(u.photo);
+          }
+          if (typeof UI !== 'undefined' && UI.applyUserProfile) {
+            UI.applyUserProfile();
+          }
+        }
+
+        // Sinkronisasi data SystemConfig (Email & Jadwal) jika dikembalikan oleh database
+        if (res.data.config) {
+          const c = res.data.config;
+          if (c.TARGET_EMAIL) AppState.automationConfig.email = c.TARGET_EMAIL;
+          if (c.AUTO_SCHEDULE_TEXT) {
+            AppState.automationConfig.schedule = c.AUTO_SCHEDULE_TEXT;
+          } else if (c.DAILY_REPORT_HOUR) {
+            const h = String(c.DAILY_REPORT_HOUR).padStart(2, '0');
+            AppState.automationConfig.schedule = 'Setiap Hari ' + h + ':00 WIB';
+          }
+          if (typeof UI !== 'undefined' && UI.applyAutomationConfig) {
+            UI.applyAutomationConfig();
+          }
+        }
+
         if (typeof AppState.updateKpiCounts === 'function') {
           AppState.updateKpiCounts();
         }
@@ -242,6 +272,30 @@ const ApiService = {
       return res;
     } catch (e) {
       console.error('[ApiService] Gagal menyimpan mutasi ke spreadsheet:', e);
+      return { success: false, error: e.message };
+    }
+  },
+
+  /**
+   * Memperbarui profil petugas di database Google Sheets (tab UserPIC)
+   */
+  async updateProfile(profileData) {
+    try {
+      return await this.request('updateProfile', 'POST', profileData);
+    } catch (e) {
+      console.error('[ApiService] Gagal update profil di server:', e);
+      return { success: false, error: e.message };
+    }
+  },
+
+  /**
+   * Memperbarui konfigurasi otomatisasi laporan di database Google Sheets (tab SystemConfig)
+   */
+  async updateConfig(configData) {
+    try {
+      return await this.request('updateConfig', 'POST', configData);
+    } catch (e) {
+      console.error('[ApiService] Gagal update config di server:', e);
       return { success: false, error: e.message };
     }
   },

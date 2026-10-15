@@ -2988,9 +2988,9 @@ const UI = {
   },
 
   /**
-   * Simpan perubahan profil operator (nama, NPK, cabang, jabatan, foto)
+   * Simpan perubahan profil operator (nama, NPK, cabang, jabatan, foto) ke database Google Sheets
    */
-  saveProfileData() {
+  async saveProfileData() {
     const name = (document.getElementById('inputProfileName')?.value || '').trim();
     const npk = (document.getElementById('inputProfileNpk')?.value || '').trim();
     const branch = (document.getElementById('inputProfileBranch')?.value || '').trim();
@@ -3001,20 +3001,64 @@ const UI = {
       return;
     }
 
+    const saveBtn = document.querySelector('button[onclick*="saveProfileData"]');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin text-white inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        <span>Menyimpan ke Database...</span>
+      `;
+    }
+
+    const oldNpk = AppState.userProfile.npk;
+    const newPhoto = AppState._tempProfilePhoto || null;
+
+    // Terapkan ke state lokal terlebih dahulu
     AppState.userProfile.name = name;
     AppState.userProfile.npk = npk;
     if (branch) AppState.userProfile.branch = branch;
     if (role) AppState.userProfile.role = role;
-
-    if (AppState._tempProfilePhoto) {
-      AppState.userProfile.photo = AppState._tempProfilePhoto;
-      AppState._tempProfilePhoto = null;
-    }
+    if (newPhoto) AppState.userProfile.photo = newPhoto;
 
     AppState.saveToCache();
     this.applyUserProfile();
-    this.closeEditProfilePage();
-    this.showToast('✅ Profil & NPK berhasil diperbarui!');
+
+    try {
+      this.showToast('⏳ Menyinkronkan profil ke database Google Sheets...');
+      const payload = {
+        oldNpk: oldNpk,
+        npk: npk,
+        name: name,
+        branch: branch,
+        role: role,
+        photo: newPhoto || AppState.userProfile.photo
+      };
+
+      const res = await ApiService.updateProfile(payload);
+      if (res && res.success) {
+        if (res.user && res.user.photo) {
+          AppState.userProfile.photo = res.user.photo;
+        }
+        AppState._tempProfilePhoto = null;
+        AppState.saveToCache();
+        this.applyUserProfile();
+        this.closeEditProfilePage();
+        this.showToast('✅ Berhasil! Perubahan profil & NPK tersimpan di database Google Sheets!');
+      } else {
+        this.closeEditProfilePage();
+        this.showToast('⚠️ Tersimpan di browser. Database: ' + (res?.message || 'Gagal tersambung'));
+      }
+    } catch (err) {
+      console.error('[UI] Gagal simpan profil ke backend:', err);
+      this.closeEditProfilePage();
+      this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHtml;
+      }
+    }
   },
 
   /**
@@ -3037,7 +3081,10 @@ const UI = {
   /**
    * Simpan pembaruan otomatisasi laporan
    */
-  saveAutomationData() {
+    /**
+   * Simpan pembaruan otomatisasi laporan (Jadwal & Email) ke database Google Sheets
+   */
+  async saveAutomationData() {
     const sched = document.getElementById('inputAutoSchedule')?.value;
     const email = (document.getElementById('inputAutoEmail')?.value || '').trim();
     const type = (document.getElementById('inputAutoType')?.value || '').trim();
@@ -3047,6 +3094,17 @@ const UI = {
       return;
     }
 
+    const saveBtn = document.querySelector('button[onclick*="saveAutomationData"]');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin text-white inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        <span>Menyimpan ke Database...</span>
+      `;
+    }
+
+    // Terapkan ke state lokal terlebih dahulu
     AppState.automationConfig = {
       schedule: sched || AppState.automationConfig.schedule,
       email: email,
@@ -3055,8 +3113,33 @@ const UI = {
 
     AppState.saveToCache();
     this.applyAutomationConfig();
-    this.closeEditAutomationModal();
-    this.showToast('✅ Info otomatisasi laporan berhasil diperbarui!');
+
+    try {
+      this.showToast('⏳ Menyimpan konfigurasi ke database SystemConfig...');
+      const payload = {
+        email: email,
+        schedule: sched,
+        type: type
+      };
+
+      const res = await ApiService.updateConfig(payload);
+      if (res && res.success) {
+        this.closeEditAutomationModal();
+        this.showToast('✅ Berhasil! Jadwal & email laporan tersimpan di database Google Sheets!');
+      } else {
+        this.closeEditAutomationModal();
+        this.showToast('⚠️ Tersimpan di browser. Database: ' + (res?.message || 'Gagal tersambung'));
+      }
+    } catch (err) {
+      console.error('[UI] Gagal simpan otomatisasi ke backend:', err);
+      this.closeEditAutomationModal();
+      this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHtml;
+      }
+    }
   },
 
   /**
