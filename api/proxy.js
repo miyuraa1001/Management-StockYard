@@ -27,9 +27,11 @@ export default async function handler(req, res) {
   }
 
   // Baca environment variables dengan dukungan multi-alias yang lengkap
-  const appScriptUrl = (
+  let appScriptUrl = (
     process.env.APPSCRIPT_URL || 
     process.env.APP_SCRIPT_URL || 
+    process.env.NEXT_PUBLIC_APPS_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_APPSCRIPT_URL || 
     process.env.GOOGLE_APPS_SCRIPT_URL || 
     process.env.APPS_SCRIPT_URL || 
     process.env.WEB_APP_URL || 
@@ -41,10 +43,20 @@ export default async function handler(req, res) {
     process.env.GOOGLE_SHEET_URL || 
     process.env.SPREADSHEET_URL || 
     process.env.URL || 
-    process.env.NEXT_PUBLIC_APPSCRIPT_URL || 
     process.env.NEXT_PUBLIC_WEB_APP_URL || 
     ''
   ).trim();
+
+  // Auto-deteksi cerdas jika pengguna menamai env var dengan nama lain:
+  // Cari di process.env key manapun yang nilainya mengandung script.google.com
+  if (!appScriptUrl) {
+    for (const [k, v] of Object.entries(process.env)) {
+      if (typeof v === 'string' && v.includes('script.google.com/macros/s/')) {
+        appScriptUrl = v.trim();
+        break;
+      }
+    }
+  }
 
   const apiSecretToken = (
     process.env.API_SECRET_TOKEN || 
