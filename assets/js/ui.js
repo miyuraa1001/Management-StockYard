@@ -177,6 +177,9 @@ const UI = {
     const catalog = AppState.vehicleCatalog || [];
 
     // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData & riwayat mutasi
+    const hasRealHistory = (AppState.historyData || []).length > 0;
+    const hasRealInventory = (AppState.inventoryData || []).length > 0;
+
     const catalogWithStock = catalog.map(cat => {
       const units = (AppState.inventoryData || []).filter(u => {
         if (!u) return false;
@@ -198,11 +201,21 @@ const UI = {
         const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
         return matched && matched.catalogId === cat.catalogId;
       });
-      const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-      const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      const netFromHistory = Math.max(0, histMasuk - histKeluar);
 
-      const totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      let histMasuk = 0;
+      let histKeluar = 0;
+      let totalUnits = 0;
+
+      if (hasRealInventory || hasRealHistory) {
+        histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+        histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+        const netFromHistory = Math.max(0, histMasuk - histKeluar);
+        totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      } else {
+        histMasuk = cat.baseStock ? (cat.baseStock.masuk || 0) : 0;
+        histKeluar = cat.baseStock ? (cat.baseStock.keluar || 0) : 0;
+        totalUnits = cat.baseStock ? (cat.baseStock.total || 0) : 0;
+      }
 
       return {
         ...cat,
@@ -329,21 +342,10 @@ const UI = {
               </span>
             </div>
 
-            <!-- Model Title, Catalog ID & Technical Spec -->
-            <div class="mt-3">
-              <div class="flex items-center justify-between gap-2">
-                <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
-                <span class="text-[9.5px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
-              </div>
-              <div class="flex items-center justify-between gap-2 mt-1 text-[11px] text-slate-500 font-semibold">
-                <span class="truncate flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                  <span class="truncate">${entry.spec}</span>
-                </span>
-                <span class="text-[10px] font-bold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md truncate max-w-[46%] flex-shrink-0">
-                  ${entry.defaultLocation.split('(')[0].trim()}
-                </span>
-              </div>
+            <!-- Model Title & Catalog ID -->
+            <div class="mt-3 flex items-center justify-between gap-2">
+              <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">${entry.model}</h4>
+              <span class="text-[9.5px] font-extrabold text-blue-600 bg-blue-50/90 px-2 py-0.5 rounded-lg border border-blue-200/70 flex-shrink-0">${entry.catalogId}</span>
             </div>
 
             <!-- Rincian Status Stok Per Model (3 Kolom: Stok Masuk, Stok Keluar, Total Stok) -->
@@ -372,32 +374,16 @@ const UI = {
             </div>
           </div>
 
-          <!-- Detail Unit Aktif & Lokasi Yard (Tanpa Tombol Scan) -->
-          <div class="mt-2.5 pt-2.5 border-t border-slate-100">
-            ${!isEmpty && u ? `
-              <div class="bg-slate-50/90 rounded-xl px-2.5 py-2 border border-slate-200/60 space-y-1.5">
-                <div class="flex items-center justify-between gap-2 text-[10px]">
-                  <span class="font-extrabold px-2 py-0.5 rounded-md bg-white text-slate-800 border border-slate-200/90 shadow-2xs flex-shrink-0">${u.plate || '-'}</span>
-                  <span class="font-mono font-bold text-slate-600 truncate">VIN: ${u.vin}</span>
-                </div>
-                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/50 text-[10px]">
-                  <span class="font-semibold text-slate-500 flex items-center truncate min-w-0">
-                    <svg class="w-3.5 h-3.5 text-blue-500 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                    <span class="truncate">${u.location || entry.defaultLocation}</span>
-                  </span>
-                  <span class="font-mono text-[9.5px] font-semibold text-slate-400 flex-shrink-0">${u.engine || ''}</span>
-                </div>
+          <!-- Unit Info Footer (Hanya jika unit fisik spesifik terdaftar) -->
+          ${!isEmpty && u && (u.plate || u.vin) ? `
+            <div class="mt-2.5 pt-2 border-t border-slate-100">
+              <div class="bg-slate-50/90 rounded-xl px-2.5 py-1.5 border border-slate-200/60 flex items-center justify-between gap-2 text-[10px]">
+                <span class="font-extrabold px-2 py-0.5 rounded-md bg-white text-slate-800 border border-slate-200/90 shadow-2xs flex-shrink-0">${u.plate || '-'}</span>
+                <span class="font-mono font-bold text-slate-600 truncate">VIN: ${u.vin}</span>
+                ${u.engine ? `<span class="font-mono text-[9.5px] font-semibold text-slate-400 flex-shrink-0">${u.engine}</span>` : ''}
               </div>
-            ` : `
-              <div class="bg-slate-50/75 rounded-xl px-2.5 py-2 border border-dashed border-slate-200 flex items-center justify-between gap-2 text-[10px]">
-                <span class="font-bold text-slate-500 truncate">Stok unit fisik model ini kosong</span>
-                <span class="text-slate-400 font-semibold flex items-center truncate flex-shrink-0">
-                  <svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                  <span class="truncate">${entry.defaultLocation.split('(')[0].trim()}</span>
-                </span>
-              </div>
-            `}
-          </div>
+            </div>
+          ` : ''}
         </div>
       `;
     }).join('');
@@ -1887,19 +1873,29 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      
+      let masuk = 0;
+      let keluar = 0;
       let count = 0;
-      const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
-      if (hasStockYardField) {
-        count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+
+      const hasRealHistory = (AppState.historyData || []).length > 0;
+      const hasRealInventory = (AppState.inventoryData || []).length > 0;
+
+      if (hasRealInventory || hasRealHistory) {
+        masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+        keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+        const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
+        if (hasStockYardField) {
+          count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+        } else {
+          count = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
+        }
+        if (count === 0 && (masuk - keluar) > 0) {
+          count = Math.max(0, masuk - keluar);
+        }
       } else {
-        count = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
-      }
-      // Sinkronkan dari riwayat jika stok inventory belum terupdate
-      if (count === 0 && (masuk - keluar) > 0) {
-        count = Math.max(0, masuk - keluar);
+        masuk = cat.baseStock ? (cat.baseStock.masuk || 0) : 0;
+        keluar = cat.baseStock ? (cat.baseStock.keluar || 0) : 0;
+        count = cat.baseStock ? (cat.baseStock.total || 0) : 0;
       }
 
       return {
@@ -2138,34 +2134,46 @@ const UI = {
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(modelName) : null;
       if (!catalogItem) return;
 
-      const matchingUnits = (AppState.inventoryData || []).filter(u => {
-        if (!u) return false;
-        const uModel = String(u.model || u.name || '').toLowerCase();
-        if (uModel === catalogItem.model.toLowerCase()) return true;
-        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
-        return m && m.catalogId === catalogItem.catalogId;
-      });
-
-      const matchingHistory = (AppState.historyData || []).filter(h => {
-        if (!h || !h.model) return false;
-        const hModel = String(h.model || '').toLowerCase();
-        if (hModel === catalogItem.model.toLowerCase()) return true;
-        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
-        return m && m.catalogId === catalogItem.catalogId;
-      });
-
-      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-
+      let masuk = 0;
+      let keluar = 0;
       let totalStock = 0;
-      const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
-      if (hasSummary) {
-        totalStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+
+      const hasRealHistory = (AppState.historyData || []).length > 0;
+      const hasRealInventory = (AppState.inventoryData || []).length > 0;
+
+      if (hasRealInventory || hasRealHistory) {
+        const matchingUnits = (AppState.inventoryData || []).filter(u => {
+          if (!u) return false;
+          const uModel = String(u.model || u.name || '').toLowerCase();
+          if (uModel === catalogItem.model.toLowerCase()) return true;
+          const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
+          return m && m.catalogId === catalogItem.catalogId;
+        });
+
+        const matchingHistory = (AppState.historyData || []).filter(h => {
+          if (!h || !h.model) return false;
+          const hModel = String(h.model || '').toLowerCase();
+          if (hModel === catalogItem.model.toLowerCase()) return true;
+          const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+          return m && m.catalogId === catalogItem.catalogId;
+        });
+
+        masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+        keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+
+        const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
+        if (hasSummary) {
+          totalStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+        } else {
+          totalStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
+        }
+        if (totalStock === 0 && (masuk - keluar) > 0) {
+          totalStock = Math.max(0, masuk - keluar);
+        }
       } else {
-        totalStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
-      }
-      if (totalStock === 0 && (masuk - keluar) > 0) {
-        totalStock = Math.max(0, masuk - keluar);
+        masuk = catalogItem.baseStock ? (catalogItem.baseStock.masuk || 0) : 0;
+        keluar = catalogItem.baseStock ? (catalogItem.baseStock.keluar || 0) : 0;
+        totalStock = catalogItem.baseStock ? (catalogItem.baseStock.total || 0) : 0;
       }
 
       // Update pills masuk & keluar
