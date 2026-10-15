@@ -60,6 +60,9 @@ const UI = {
     }
     if (target === 'inventory') this.renderInventoryList();
     if (target === 'history') this.renderHistoryList();
+    if (target === 'settings' && typeof this.checkCloudHealth === 'function') {
+      this.checkCloudHealth();
+    }
 
     const vp = document.getElementById('appMainViewport');
     if (vp) vp.scrollTop = 0;
@@ -764,8 +767,8 @@ const UI = {
       const rawDataUrl = e.target.result;
       const img = new Image();
       img.onload = () => {
-        // Kompresi gambar client-side (Max 1280px) agar lancar di HP dan tidak membebani local storage
-        const maxDim = 1280;
+        // Kompresi gambar client-side (Max 960px, JPEG 0.72) agar transmisi super cepat & hemat kuota
+        const maxDim = 960;
         let w = img.width;
         let h = img.height;
         if (w > maxDim || h > maxDim) {
@@ -782,7 +785,7 @@ const UI = {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
         this.setPhotoPreview(targetType, optimizedDataUrl);
         this.showToast(targetType === 'unitPhoto' ? '✅ Foto fisik unit berhasil dipasang!' : '✅ Foto dokumen DO berhasil dipasang!');
       };
@@ -812,7 +815,7 @@ const UI = {
       canvas.height = videoEl.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
       this.setPhotoPreview(targetType, dataUrl);
       this.showToast(targetType === 'unitPhoto' ? '📸 Berhasil jepret foto unit dari scanner!' : '📄 Berhasil jepret dokumen DO dari scanner!');
     } catch (e) {
@@ -2873,6 +2876,91 @@ const UI = {
   },
 
   /**
+   * Periksa status kesehatan koneksi cloud (Vercel Proxy & Google Apps Script)
+   */
+  async checkCloudHealth() {
+    const dotEl = document.getElementById('cloudGasStatusDot');
+    const textEl = document.getElementById('cloudGasStatusText');
+    const tipEl = document.getElementById('cloudGasStatusTip');
+    const directInput = document.getElementById('inputDirectAppScriptUrl');
+
+    const directUrl = localStorage.getItem(CONFIG.CACHE_KEYS.DIRECT_URL) || '';
+    if (directInput && directUrl) {
+      directInput.value = directUrl;
+    }
+
+    // Jika mode direct URL manual aktif
+    if (directUrl) {
+      if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500';
+      if (textEl) textEl.textContent = 'Sambungan Langsung Aktif';
+      if (tipEl) tipEl.textContent = 'Menggunakan URL Google Apps Script dari penyimpanan perangkat.';
+      return;
+    }
+
+    if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
+    if (textEl) textEl.textContent = 'Memeriksa...';
+    if (tipEl) tipEl.textContent = 'Menghubungi endpoint /api/proxy...';
+
+    try {
+      const res = await fetch('/api/proxy?action=health');
+      const data = await res.json();
+
+      if (data && data.hasAppScriptUrl) {
+        if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        if (textEl) textEl.textContent = 'Terhubung ke Google';
+        if (tipEl) tipEl.textContent = `Host: ${data.appScriptHost || 'Google Apps Script'}`;
+      } else {
+        if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-500';
+        if (textEl) textEl.textContent = 'APPSCRIPT_URL Belum Aktif';
+        if (tipEl) tipEl.textContent = 'Pastikan centang Production di Vercel Settings lalu Redeploy.';
+      }
+    } catch (err) {
+      if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-rose-500';
+      if (textEl) textEl.textContent = 'Gagal Cek Proxy';
+      if (tipEl) tipEl.textContent = 'Aplikasi berjalan di luar serverless Vercel.';
+    }
+  },
+
+  /**
+   * Simpan URL Google Apps Script secara langsung (Fallback jika Vercel env belum diredeploy)
+   */
+  async saveDirectConnection() {
+    const input = document.getElementById('inputDirectAppScriptUrl');
+    const url = (input?.value || '').trim();
+
+    if (!url || !url.startsWith('http')) {
+      this.showToast('Masukkan URL Web App Google Apps Script yang valid (berawalan https://)!');
+      return;
+    }
+
+    this.showToast('⏳ Menguji koneksi ke Google Apps Script...');
+    const testResult = await ApiService.testConnection(url);
+
+    if (testResult && testResult.success) {
+      localStorage.setItem(CONFIG.CACHE_KEYS.DIRECT_URL, url);
+      this.showToast('✅ Berhasil terhubung langsung ke Google Apps Script!');
+      this.checkCloudHealth();
+      if (typeof App !== 'undefined' && App.syncBackendData) {
+        App.syncBackendData();
+      }
+    } else {
+      const errMsg = testResult?.message || testResult?.error || 'Gagal tersambung ke URL';
+      this.showToast(`⛔ Koneksi gagal: ${errMsg}`, 5000);
+    }
+  },
+
+  /**
+   * Reset ke mode Vercel Serverless Proxy
+   */
+  resetToProxyConnection() {
+    localStorage.removeItem(CONFIG.CACHE_KEYS.DIRECT_URL);
+    const input = document.getElementById('inputDirectAppScriptUrl');
+    if (input) input.value = '';
+    this.showToast('🔄 Beralih kembali ke mode Vercel Proxy.');
+    this.checkCloudHealth();
+  },
+
+  /**
    * Buka dialog konfirmasi logout
    */
   openLogoutModal() {
@@ -3130,6 +3218,9 @@ window.hideDonutCapsule = (ev) => UI.hideDonutCapsule ? UI.hideDonutCapsule(ev) 
 window.handleDonutTouch = (ev) => UI.handleDonutTouch ? UI.handleDonutTouch(ev) : null;
 window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSegment(el, ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
+window.checkCloudHealth = () => UI.checkCloudHealth ? UI.checkCloudHealth() : null;
+window.saveDirectConnection = () => UI.saveDirectConnection ? UI.saveDirectConnection() : null;
+window.resetToProxyConnection = () => UI.resetToProxyConnection ? UI.resetToProxyConnection() : null;
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {

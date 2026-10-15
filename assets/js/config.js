@@ -38,14 +38,22 @@ const CONFIG = {
     HISTORY: 'daihatsu_history_cache_v4',
     KPI: 'daihatsu_kpi_cache_v4',
     PROFILE: 'daihatsu_profile_cache_v4',
-    AUTOMATION: 'daihatsu_automation_cache_v4'
+    AUTOMATION: 'daihatsu_automation_cache_v4',
+    DIRECT_URL: 'daihatsu_direct_appscript_url',
+    API_TOKEN: 'daihatsu_api_secret_token',
+    DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id'
   },
 
   /**
-   * Endpoint aktif menggunakan Vercel Serverless Proxy (/api/proxy)
-   * Menyambungkan ke Google Apps Script via Environment Variables Vercel
+   * Endpoint aktif:
+   * 1. Jika pengguna memasukkan URL Web App langsung di Settings, gunakan direct connection
+   * 2. Default: menggunakan Vercel Serverless Reverse Proxy (/api/proxy) via Vercel Environment Variables
    */
   getActiveEndpoint() {
+    const directUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem(this.CACHE_KEYS.DIRECT_URL) : '') || '';
+    if (directUrl && directUrl.trim().startsWith('http')) {
+      return { url: directUrl.trim(), isProxy: false, isConfigured: true };
+    }
     return { url: this.PROXY_ENDPOINT, isProxy: true, isConfigured: true };
   }
 };

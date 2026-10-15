@@ -26,13 +26,23 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Baca environment variables dengan dukungan multi-alias
+  // Baca environment variables dengan dukungan multi-alias yang lengkap
   const appScriptUrl = (
     process.env.APPSCRIPT_URL || 
     process.env.APP_SCRIPT_URL || 
     process.env.GOOGLE_APPS_SCRIPT_URL || 
     process.env.APPS_SCRIPT_URL || 
+    process.env.WEB_APP_URL || 
+    process.env.WEBAPP_URL || 
+    process.env.URL_WEB_APP || 
+    process.env.GAS_URL || 
+    process.env.SCRIPT_URL || 
+    process.env.GOOGLE_SCRIPT_URL || 
+    process.env.GOOGLE_SHEET_URL || 
+    process.env.SPREADSHEET_URL || 
+    process.env.URL || 
     process.env.NEXT_PUBLIC_APPSCRIPT_URL || 
+    process.env.NEXT_PUBLIC_WEB_APP_URL || 
     ''
   ).trim();
 
@@ -41,20 +51,29 @@ export default async function handler(req, res) {
     process.env.API_TOKEN || 
     process.env.SECRET_TOKEN || 
     process.env.SECRET_KEY || 
+    process.env.TOKEN || 
     ''
   ).trim();
 
   // Endpoint Health Check / Diagnostik Vercel Proxy
   const queryAction = req.query?.action || '';
   if (queryAction === 'health') {
+    const customKeys = Object.keys(process.env).filter(k => 
+      !k.startsWith('VERCEL') && 
+      !k.startsWith('AWS') && 
+      !k.startsWith('NODE') &&
+      !['PATH', 'PWD', 'HOME', 'USER', 'LANG', 'TZ', 'SHLVL', '_'].includes(k)
+    );
+
     return res.status(200).json({
       success: true,
       proxyStatus: 'ACTIVE',
       hasAppScriptUrl: !!appScriptUrl,
       appScriptHost: appScriptUrl ? (tryGetHostname(appScriptUrl) || 'Valid URL') : 'NOT_CONFIGURED',
       hasSecretToken: !!apiSecretToken,
+      availableCustomEnvKeys: customKeys,
       tip: !appScriptUrl 
-        ? 'Environment variable APPSCRIPT_URL belum terdeteksi. Harap redeploy proyek di dashboard Vercel setelah menambahkan Environment Variable.' 
+        ? 'Environment variable APPSCRIPT_URL belum terdeteksi di Vercel. Pastikan key bernama "APPSCRIPT_URL" dengan checklist Production dicentang di Settings > Environment Variables, lalu lakukan Redeploy.' 
         : 'Environment Variable Vercel siap digunakan.'
     });
   }
@@ -64,7 +83,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       code: 'ENV_APPSCRIPT_MISSING',
-      message: 'Server Error: Environment variable APPSCRIPT_URL belum aktif di Vercel. PENTING: Jika Anda baru saja menambahkannya di Vercel Settings, Anda WAJIB melakukan Redeploy (di tab Deployments > Redeploy) agar variabel masuk ke sistem.'
+      message: 'Server Error: Environment variable APPSCRIPT_URL belum aktif di Vercel. PENTING: Buka dashboard Vercel > Settings > Environment Variables, pastikan key bernama APPSCRIPT_URL (centang Production), lalu klik tab Deployments > klik titik tiga (...) pada deployment terbaru > Redeploy agar variabel terbaca sistem.'
     });
   }
 
@@ -92,8 +111,8 @@ export default async function handler(req, res) {
       }
       targetUrl = urlObj.toString();
     } else {
-      // POST Request
-      fetchOptions.headers['Content-Type'] = 'application/json';
+      // POST Request: kirim sebagai text/plain agar Google Apps Script doPost(e) mem-parsing dari e.postData.contents
+      fetchOptions.headers['Content-Type'] = 'text/plain;charset=utf-8';
       let payload = req.body;
       if (typeof payload === 'string') {
         try {

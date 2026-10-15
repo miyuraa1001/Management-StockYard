@@ -50,11 +50,9 @@ const ApiService = {
         if (folderId) queryParams.append('folderId', folderId);
         url += (url.includes('?') ? '&' : '?') + queryParams.toString();
       } else {
-        // PENTING: Gunakan 'text/plain;charset=utf-8' untuk request direct ke Google Apps Script.
-        // MIME type ini terdaftar sebagai CORS-safelisted sehingga browser TIDAK akan
-        // mengirim preflight OPTIONS yang ditolak oleh server Google.
+        const isProxy = endpointInfo.isProxy || url.includes('/api/proxy');
         options.headers = {
-          'Content-Type': 'text/plain;charset=utf-8',
+          'Content-Type': isProxy ? 'application/json' : 'text/plain;charset=utf-8',
           'Accept': 'application/json'
         };
 

@@ -1,12 +1,7 @@
-# Environment variables (SANGAT RAHASIA - Jangan pernah di-commit!)
+# Local environment configs
 .env*
 *.env
 
-# Google Apps Script files (agar kode rahasia / API backend tidak ter-commit ke git)
-*.gs
-kode.gs
-Kode.gs
-backend/
 
 # Vercel deployment artifacts
 .vercel
