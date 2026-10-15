@@ -173,6 +173,9 @@ const App = {
       const response = await ApiService.saveMutation(newRecord);
       if (response && response.success && !response.isFallback && !response.isOffline) {
         console.log('[App] Data mutasi berhasil tersinkron ke Google Spreadsheet backend:', response);
+        if (response.unitPhotoUrl) newRecord.unitPhoto = response.unitPhotoUrl;
+        if (response.docPhotoUrl) newRecord.docPhoto = response.docPhotoUrl;
+        AppState.saveToCache();
         UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
         // Segera sinkronkan ulang database agar chart donat & stok unit yard langsung terupdate
         this.syncBackendData();
