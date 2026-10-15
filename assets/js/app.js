@@ -31,10 +31,13 @@ const App = {
     UI.initHeroCarousel();
     if (UI.initPullToRefresh) UI.initPullToRefresh();
 
-    // 4. Sinkronisasi data real-time dari Google Spreadsheet (Background Sync)
+    // 4. Sinkronisasi data real-time dari Google Spreadsheet (Initial Sync)
     this.syncBackendData();
 
-    // 5. Setup event listener koneksi online/offline
+    // 5. Mulai Realtime Polling Timer (Interval sinkronisasi background)
+    this.startRealtimeSync();
+
+    // 6. Setup event listener koneksi online/offline & focus/visibility
     window.addEventListener('online', () => {
       AppState.isOnline = true;
       UI.showToast('🟢 Terhubung kembali ke jaringan');
@@ -45,12 +48,38 @@ const App = {
       AppState.isOnline = false;
       UI.showToast('🟡 Mode offline aktif (Data tersimpan di perangkat)');
     });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && AppState.isOnline) {
+        this.syncBackendData(true);
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      if (AppState.isOnline) {
+        this.syncBackendData(true);
+      }
+    });
   },
 
   /**
-   * Sinkronisasi data dari Google Spreadsheet via ApiService
+   * Timer sinkronisasi otomatis realtime di background
    */
-  async syncBackendData() {
+  _realtimeTimer: null,
+  startRealtimeSync() {
+    if (this._realtimeTimer) clearInterval(this._realtimeTimer);
+    const intervalMs = (window.CONFIG && CONFIG.REALTIME_SYNC_INTERVAL) ? CONFIG.REALTIME_SYNC_INTERVAL : 15000;
+    this._realtimeTimer = setInterval(() => {
+      if (AppState.isOnline && !AppState.isLoading && !document.hidden) {
+        this.syncBackendData(true);
+      }
+    }, intervalMs);
+  },
+
+  /**
+   * Sinkronisasi data dari Google Spreadsheet via ApiService secara realtime
+   */
+  async syncBackendData(isSilent = false) {
     try {
       const isUpdated = await ApiService.fetchInitialData();
       if (isUpdated) {
@@ -58,7 +87,10 @@ const App = {
         UI.updateDashboardKpis();
         UI.renderInventoryList();
         UI.renderHistoryList();
-        console.log('[App] Berhasil sinkronisasi data dari Google Spreadsheet');
+        if (AppState.selectedModelCatalogId && typeof UI.renderModelDetailTable === 'function') {
+          UI.renderModelDetailTable();
+        }
+        console.log('[App] Berhasil sinkronisasi data dari Google Spreadsheet secara realtime');
       }
     } catch (err) {
       console.warn('[App] Gagal sinkronisasi ke server Google Apps Script:', err);
@@ -134,7 +166,7 @@ const App = {
           id: 'INV-' + Date.now().toString().slice(-4),
           model: catalogItem ? catalogItem.model : model,
           category: catalogItem ? catalogItem.category : 'Kendaraan Daihatsu',
-          plate: 'BE ' + Math.floor(1000 + Math.random() * 9000) + ' DAA',
+          plate: '-',
           vin: cleanVin,
           engine: engine.toUpperCase(),
           status: 'Tersedia',

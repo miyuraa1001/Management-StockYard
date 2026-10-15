@@ -48,7 +48,7 @@ const AppState = {
     stokKosong: 0
   },
 
-  // Master Katalog 13 Model Kendaraan Daihatsu (Tetap tampil meski stok 0 / kosong)
+  // Master Katalog 13 Model Kendaraan Daihatsu (Murni dari Database & Scan Lapangan)
   vehicleCatalog: [
     {
       catalogId: 'CAT-01',
@@ -57,8 +57,7 @@ const AppState = {
       spec: '1.2L WA-VEX e-Smart Hybrid',
       defaultLocation: 'Yard A - Blok 1 (Hybrid)',
       photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
-      heroPhoto: 'assets/images/hero-rocky-hybrid.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #1
+      heroPhoto: 'assets/images/hero-rocky-hybrid.jpg'
     },
     {
       catalogId: 'CAT-02',
@@ -67,8 +66,7 @@ const AppState = {
       spec: '1.5L 2NR-VE Dual VVT-i',
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_New Terios.jpeg',
-      heroPhoto: 'assets/images/hero-new-terios.jpg',
-      baseStock: { masuk: 14, keluar: 4, total: 10 }
+      heroPhoto: 'assets/images/hero-new-terios.jpg'
     },
     {
       catalogId: 'CAT-03',
@@ -77,8 +75,7 @@ const AppState = {
       spec: '1.5L 2NR-VE Special Edition',
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_Terios SE.jpeg',
-      heroPhoto: 'assets/images/hero-terios-se.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #2
+      heroPhoto: 'assets/images/hero-terios-se.jpg'
     },
     {
       catalogId: 'CAT-04',
@@ -87,8 +84,7 @@ const AppState = {
       spec: '1.5L 2NR-VE D-CVT FWD',
       defaultLocation: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
-      heroPhoto: 'assets/images/hero-all-new-xenia.jpg',
-      baseStock: { masuk: 15, keluar: 5, total: 10 }
+      heroPhoto: 'assets/images/hero-all-new-xenia.jpg'
     },
     {
       catalogId: 'CAT-05',
@@ -97,8 +93,7 @@ const AppState = {
       spec: '1.2L 3NR-VE Dual VVT-i',
       defaultLocation: 'Yard B - Blok 2 (MPV)',
       photo: 'assets/images/Inventory_New Sigra.jpeg',
-      heroPhoto: 'assets/images/hero-new-sigra.jpg',
-      baseStock: { masuk: 20, keluar: 6, total: 14 }
+      heroPhoto: 'assets/images/hero-new-sigra.jpg'
     },
     {
       catalogId: 'CAT-06',
@@ -107,8 +102,7 @@ const AppState = {
       spec: '1.2L 3NR-VE MT/AT',
       defaultLocation: 'Yard B - Blok 3 (MPV)',
       photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
-      heroPhoto: 'assets/images/hero-sigra-old.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #3
+      heroPhoto: 'assets/images/hero-sigra-old.jpg'
     },
     {
       catalogId: 'CAT-07',
@@ -117,8 +111,7 @@ const AppState = {
       spec: '1.2L WA-VE D-CVT',
       defaultLocation: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
-      heroPhoto: 'assets/images/hero-all-new-ayla.jpg',
-      baseStock: { masuk: 18, keluar: 6, total: 12 }
+      heroPhoto: 'assets/images/hero-all-new-ayla.jpg'
     },
     {
       catalogId: 'CAT-08',
@@ -127,8 +120,7 @@ const AppState = {
       spec: '1.0L 1KR-VET Turbocharged',
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_New Rocky.jpeg',
-      heroPhoto: 'assets/images/hero-new-rocky.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #4
+      heroPhoto: 'assets/images/hero-new-rocky.jpg'
     },
     {
       catalogId: 'CAT-09',
@@ -137,8 +129,7 @@ const AppState = {
       spec: '1.2L WA-VE ADS Styling',
       defaultLocation: 'Yard A - Blok 3 (SUV)',
       photo: 'assets/images/Inventory_Rocky.jpeg',
-      heroPhoto: 'assets/images/hero-rocky.jpg',
-      baseStock: { masuk: 10, keluar: 2, total: 8 }
+      heroPhoto: 'assets/images/hero-rocky.jpg'
     },
     {
       catalogId: 'CAT-10',
@@ -147,8 +138,7 @@ const AppState = {
       spec: '1.3L 1NR-VE Dual VVT-i D-CVT',
       defaultLocation: 'Yard C - Blok 2 (City Car)',
       photo: 'assets/images/Inventory_New Sirion.jpeg',
-      heroPhoto: 'assets/images/hero-new-sirion.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #5
+      heroPhoto: 'assets/images/hero-new-sirion.jpg'
     },
     {
       catalogId: 'CAT-11',
@@ -157,8 +147,7 @@ const AppState = {
       spec: '1.5L 3SZ-VE DOHC VVT-i',
       defaultLocation: 'Yard D - Blok 1 (Commercial)',
       photo: 'assets/images/Inventory_Luxio.jpeg',
-      heroPhoto: 'assets/images/hero-luxio.jpg',
-      baseStock: { masuk: 0, keluar: 0, total: 0 } // Stok Kosong #6
+      heroPhoto: 'assets/images/hero-luxio.jpg'
     },
     {
       catalogId: 'CAT-12',
@@ -167,8 +156,7 @@ const AppState = {
       spec: '1.5L 2NR-VE / 1.3L DOHC',
       defaultLocation: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
-      heroPhoto: 'assets/images/hero-granmax-minibus.jpg',
-      baseStock: { masuk: 12, keluar: 3, total: 9 }
+      heroPhoto: 'assets/images/hero-granmax-minibus.jpg'
     },
     {
       catalogId: 'CAT-13',
@@ -177,8 +165,7 @@ const AppState = {
       spec: '1.5L 2NR-VE Heavy Duty Deck',
       defaultLocation: 'Yard D - Blok 3 (Niaga)',
       photo: 'assets/images/Inventory_Gran Max Pick Up.jpeg',
-      heroPhoto: 'assets/images/hero-granmax-pickup.jpg',
-      baseStock: { masuk: 22, keluar: 5, total: 17 }
+      heroPhoto: 'assets/images/hero-granmax-pickup.jpg'
     }
   ],
 
@@ -225,8 +212,8 @@ const AppState = {
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
-      // Bersihkan seluruh cache lama (v1, v2, v3) yang berisi data dummy/mock
-      ['v1', 'v2', 'v3'].forEach(v => {
+      // Bersihkan seluruh cache lama (v1, v2, v3, v4) yang berisi data dummy/mock
+      ['v1', 'v2', 'v3', 'v4'].forEach(v => {
         ['inventory', 'history', 'kpi', 'profile', 'automation'].forEach(k => {
           localStorage.removeItem(`daihatsu_${k}_cache_${v}`);
         });
@@ -281,7 +268,7 @@ const AppState = {
     }
   },
 
-  // Update KPI secara dinamis 100% Realtime dari Data Lapangan
+  // Update KPI secara dinamis 100% Realtime dari Database & Scan Lapangan (Tanpa Data Fiktif)
   updateKpiCounts() {
     let masukCount = 0;
     let keluarCount = 0;
@@ -290,9 +277,6 @@ const AppState = {
       if (item && item.type === 'Unit Masuk') masukCount++;
       if (item && item.type === 'Unit Keluar') keluarCount++;
     });
-
-    const hasRealHistory = (this.historyData || []).length > 0;
-    const hasRealInventory = (this.inventoryData || []).length > 0;
 
     const catalog = this.vehicleCatalog || [];
     let totalStokCount = 0;
@@ -318,17 +302,10 @@ const AppState = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      let modelStock = 0;
-      if (hasRealInventory || hasRealHistory) {
-        const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-        const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-        const netFromHistory = Math.max(0, histMasuk - histKeluar);
-        modelStock = Math.max(sheetYardStock + unitInYard, netFromHistory);
-      } else {
-        modelStock = cat.baseStock ? (cat.baseStock.total || 0) : 0;
-        masukCount += cat.baseStock ? (cat.baseStock.masuk || 0) : 0;
-        keluarCount += cat.baseStock ? (cat.baseStock.keluar || 0) : 0;
-      }
+      const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const netFromHistory = Math.max(0, histMasuk - histKeluar);
+      const modelStock = Math.max(sheetYardStock + unitInYard, netFromHistory);
 
       totalStokCount += modelStock;
       if (modelStock === 0) {

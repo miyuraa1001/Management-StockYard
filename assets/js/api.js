@@ -148,7 +148,7 @@ const ApiService = {
     try {
       const res = await this.request('getInitialData', 'GET');
       if (res && res.success && res.data) {
-        if (Array.isArray(res.data.inventory) && res.data.inventory.length > 0) {
+        if (Array.isArray(res.data.inventory)) {
           AppState.inventoryData = res.data.inventory.map(item => ({
             ...item,
             model: item.model || item.name || '',

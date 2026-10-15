@@ -70,6 +70,11 @@ const UI = {
       this.checkCloudHealth();
     }
 
+    // Trigger realtime sync di background saat berganti menu
+    if (window.App && typeof App.syncBackendData === 'function') {
+      App.syncBackendData(true);
+    }
+
     const vp = document.getElementById('appMainViewport');
     if (vp) vp.scrollTop = 0;
 
@@ -208,20 +213,10 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      let histMasuk = 0;
-      let histKeluar = 0;
-      let totalUnits = 0;
-
-      if (hasRealInventory || hasRealHistory) {
-        histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-        histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-        const netFromHistory = Math.max(0, histMasuk - histKeluar);
-        totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
-      } else {
-        histMasuk = cat.baseStock ? (cat.baseStock.masuk || 0) : 0;
-        histKeluar = cat.baseStock ? (cat.baseStock.keluar || 0) : 0;
-        totalUnits = cat.baseStock ? (cat.baseStock.total || 0) : 0;
-      }
+      const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const netFromHistory = Math.max(0, histMasuk - histKeluar);
+      const totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
 
       return {
         ...cat,
@@ -1901,29 +1896,17 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      let masuk = 0;
-      let keluar = 0;
+      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       let count = 0;
-
-      const hasRealHistory = (AppState.historyData || []).length > 0;
-      const hasRealInventory = (AppState.inventoryData || []).length > 0;
-
-      if (hasRealInventory || hasRealHistory) {
-        masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-        keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-        const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
-        if (hasStockYardField) {
-          count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
-        } else {
-          count = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
-        }
-        if (count === 0 && (masuk - keluar) > 0) {
-          count = Math.max(0, masuk - keluar);
-        }
+      const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
+      if (hasStockYardField) {
+        count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
       } else {
-        masuk = cat.baseStock ? (cat.baseStock.masuk || 0) : 0;
-        keluar = cat.baseStock ? (cat.baseStock.keluar || 0) : 0;
-        count = cat.baseStock ? (cat.baseStock.total || 0) : 0;
+        count = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
+      }
+      if (count === 0 && (masuk - keluar) > 0) {
+        count = Math.max(0, masuk - keluar);
       }
 
       return {
@@ -2162,46 +2145,34 @@ const UI = {
       const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(modelName) : null;
       if (!catalogItem) return;
 
-      let masuk = 0;
-      let keluar = 0;
+      const matchingUnits = (AppState.inventoryData || []).filter(u => {
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
+        return m && m.catalogId === catalogItem.catalogId;
+      });
+
+      const matchingHistory = (AppState.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+        return m && m.catalogId === catalogItem.catalogId;
+      });
+
+      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+
       let totalStock = 0;
-
-      const hasRealHistory = (AppState.historyData || []).length > 0;
-      const hasRealInventory = (AppState.inventoryData || []).length > 0;
-
-      if (hasRealInventory || hasRealHistory) {
-        const matchingUnits = (AppState.inventoryData || []).filter(u => {
-          if (!u) return false;
-          const uModel = String(u.model || u.name || '').toLowerCase();
-          if (uModel === catalogItem.model.toLowerCase()) return true;
-          const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
-          return m && m.catalogId === catalogItem.catalogId;
-        });
-
-        const matchingHistory = (AppState.historyData || []).filter(h => {
-          if (!h || !h.model) return false;
-          const hModel = String(h.model || '').toLowerCase();
-          if (hModel === catalogItem.model.toLowerCase()) return true;
-          const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
-          return m && m.catalogId === catalogItem.catalogId;
-        });
-
-        masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-        keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-
-        const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
-        if (hasSummary) {
-          totalStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
-        } else {
-          totalStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
-        }
-        if (totalStock === 0 && (masuk - keluar) > 0) {
-          totalStock = Math.max(0, masuk - keluar);
-        }
+      const hasSummary = matchingUnits.some(u => typeof u.stockYard === 'number');
+      if (hasSummary) {
+        totalStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
       } else {
-        masuk = catalogItem.baseStock ? (catalogItem.baseStock.masuk || 0) : 0;
-        keluar = catalogItem.baseStock ? (catalogItem.baseStock.keluar || 0) : 0;
-        totalStock = catalogItem.baseStock ? (catalogItem.baseStock.total || 0) : 0;
+        totalStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
+      }
+      if (totalStock === 0 && (masuk - keluar) > 0) {
+        totalStock = Math.max(0, masuk - keluar);
       }
 
       // Update pills masuk & keluar
@@ -3580,69 +3551,7 @@ const UI = {
       return m && m.catalogId === catalogItem.catalogId;
     });
 
-    // Jika belum ada catatan mutasi di historyData untuk model ini, tapi ada baseStock
-    // Buat data riwayat terstruktur yang sinkron dengan baseStock (Stok Masuk, Stok Keluar, Total Stok)
-    if (modelHistory.length === 0 && catalogItem.baseStock && (catalogItem.baseStock.masuk > 0 || catalogItem.baseStock.keluar > 0)) {
-      const bMasuk = catalogItem.baseStock.masuk || 0;
-      const bKeluar = catalogItem.baseStock.keluar || 0;
-      const synth = [];
-      const samplePlates = ['BE 1892 DM', 'BE 2041 AL', 'BE 9382 YZ', 'BE 7712 XA', 'BE 4401 BC', 'BE 5192 LK', 'BE 8821 KJ', 'BE 3390 OP', 'BE 6621 GH', 'BE 1109 KL', 'BE 2244 MN', 'BE 3355 PO', 'BE 7788 RT', 'BE 9911 WE'];
-      const vinNum = catalogItem.catalogId.replace('CAT-', '');
-
-      for (let i = 1; i <= bMasuk; i++) {
-        const day = Math.min(28, ((i * 3) % 28) + 1);
-        const hour = 8 + (i % 8);
-        const minute = (i * 14) % 60;
-        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        synth.push({
-          id: `MUT-${catalogItem.catalogId}-IN-${String(i).padStart(2, '0')}`,
-          type: 'Unit Masuk',
-          model: catalogItem.model,
-          vin: `MHKG1A00${vinNum}IN${String(i).padStart(4, '0')}`,
-          plate: samplePlates[(i - 1) % samplePlates.length],
-          engine: `${catalogItem.spec.split(' ')[0] || '1.5L'}-E${String(i).padStart(4, '0')}`,
-          date: String(day),
-          month: '10',
-          year: '2026',
-          time: timeStr,
-          fullDateStr: `${String(day).padStart(2, '0')}/10/2026`,
-          pic: (i % 2 === 0) ? 'Syafirafira' : 'Andi Pratama',
-          notes: `Penerimaan Unit Ekspedisi Pabrik (DO-${220000 + i})`,
-          unitPhoto: catalogItem.photo,
-          docPhoto: 'assets/images/stiker-kaca.png',
-          status: 'Verified'
-        });
-      }
-
-      for (let j = 1; j <= bKeluar; j++) {
-        const day = Math.min(28, ((j * 4) % 28) + 2);
-        const hour = 10 + (j % 6);
-        const minute = (j * 17) % 60;
-        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        synth.push({
-          id: `MUT-${catalogItem.catalogId}-OUT-${String(j).padStart(2, '0')}`,
-          type: 'Unit Keluar',
-          model: catalogItem.model,
-          vin: `MHKG1A00${vinNum}OUT${String(j).padStart(4, '0')}`,
-          plate: samplePlates[(j + 3) % samplePlates.length],
-          engine: `${catalogItem.spec.split(' ')[0] || '1.5L'}-E${String(j + 30).padStart(4, '0')}`,
-          date: String(day),
-          month: '10',
-          year: '2026',
-          time: timeStr,
-          fullDateStr: `${String(day).padStart(2, '0')}/10/2026`,
-          pic: 'Andi Pratama',
-          notes: `Serah Terima Dealer / Customer (BASTK-${55000 + j})`,
-          unitPhoto: catalogItem.photo,
-          docPhoto: 'assets/images/stiker-kaca.png',
-          status: 'Verified'
-        });
-      }
-
-      modelHistory = synth;
-    }
-
-    // Hitung KPI model dari akumulasi mutasi
+    // Hitung KPI model dari akumulasi mutasi murni database
     const totalMasukAll = modelHistory.filter(i => i.type === 'Unit Masuk').length;
     const totalKeluarAll = modelHistory.filter(i => i.type === 'Unit Keluar').length;
     const totalStokCurrent = Math.max(0, totalMasukAll - totalKeluarAll);
