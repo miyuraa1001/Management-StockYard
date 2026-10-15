@@ -84,6 +84,16 @@ const UI = {
     if (kpiMasuk) kpiMasuk.innerText = AppState.kpi.masuk;
     if (kpiKeluar) kpiKeluar.innerText = AppState.kpi.keluar;
     if (kpiIntransit) kpiIntransit.innerText = AppState.kpi.intransit;
+
+    if (typeof this.renderDashboardDonut === 'function') {
+      this.renderDashboardDonut();
+    }
+    if (typeof this.updateDashboardYardStatus === 'function') {
+      this.updateDashboardYardStatus();
+    }
+    if (typeof this.updateHeroSlidesData === 'function') {
+      this.updateHeroSlidesData();
+    }
   },
 
   /**
@@ -1695,6 +1705,318 @@ const UI = {
   },
 
   /**
+   * Render grafik donat distribusi model kendaraan di Dashboard
+   * Dihitung secara dinamis dari database AppState.inventoryData & AppState.historyData
+   */
+  renderDashboardDonut() {
+    const svg = document.getElementById('vehicleDonutSvg');
+    const totalEl = document.getElementById('donutHeaderTotalUnits');
+    const modelCountEl = document.getElementById('donutHeaderModelCount');
+    const centerVal = document.getElementById('donutCenterValue');
+    const centerSub = document.getElementById('donutCenterSub');
+    const centerLabel = document.getElementById('donutCenterLabel');
+
+    if (!svg) return;
+
+    const modelColors = {
+      'Rocky e-Smart Hybrid': '#10b981',
+      'New Terios': '#3b82f6',
+      'Terios SE': '#ef4444',
+      'All New Xenia': '#f59e0b',
+      'New Sigra': '#6366f1',
+      'New Sigra (Prod Old)': '#0ea5e9',
+      'All New Ayla': '#14b8a6',
+      'New Rocky': '#ec4899',
+      'Rocky': '#8b5cf6',
+      'New Sirion': '#06b6d4',
+      'Luxio': '#a855f7',
+      'Gran Max Minibus': '#f97316',
+      'Gran Max Pick Up': '#f43f5e'
+    };
+
+    const catalog = AppState.vehicleCatalog || [];
+    const modelStats = catalog.map(cat => {
+      const matchingUnits = (AppState.inventoryData || []).filter(u => {
+        if (!u || !u.model) return false;
+        if (u.model.toLowerCase() === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+
+      const matchingHistory = (AppState.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        if (h.model.toLowerCase() === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(h.model) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+
+      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const count = matchingUnits.length;
+
+      return {
+        catalogId: cat.catalogId,
+        model: cat.model,
+        category: cat.category,
+        photo: cat.photo,
+        color: modelColors[cat.model] || '#3b82f6',
+        count: count,
+        masuk: masuk,
+        keluar: keluar
+      };
+    });
+
+    const totalUnits = modelStats.reduce((sum, m) => sum + m.count, 0);
+    AppState._totalDonutUnits = totalUnits;
+
+    const modelsWithUnits = modelStats.filter(m => m.count > 0).sort((a, b) => b.count - a.count);
+    const distinctModelCount = modelsWithUnits.length;
+
+    if (totalEl) totalEl.textContent = `${totalUnits} Unit`;
+    if (modelCountEl) modelCountEl.textContent = `${distinctModelCount} Model`;
+
+    if (centerLabel) centerLabel.textContent = 'TOTAL';
+    if (centerVal) centerVal.textContent = String(totalUnits);
+    if (centerSub) centerSub.textContent = 'Unit';
+
+    const bgTrack = `<path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />`;
+
+    if (totalUnits === 0) {
+      svg.innerHTML = bgTrack;
+      this.updateDonutPreviewCard(null);
+      return;
+    }
+
+    let cumulativeOffset = 0;
+    const segmentsHtml = modelsWithUnits.map(item => {
+      const pctRaw = (item.count / totalUnits) * 100;
+      const len = pctRaw;
+      const pctDisplay = Math.round(pctRaw) + '%';
+      const offset = cumulativeOffset;
+      cumulativeOffset += len;
+
+      return `
+        <path class="donut-segment cursor-pointer transition-all duration-150" 
+          stroke-dasharray="${len.toFixed(2)}, 100" 
+          stroke-dashoffset="-${offset.toFixed(2)}" 
+          stroke-width="6" 
+          stroke="${item.color}" 
+          fill="none"
+          data-model="${item.model}" 
+          data-units="${item.count} Unit" 
+          data-percent="${pctDisplay}" 
+          data-color="${item.color}" 
+          data-filter="${item.model}" 
+          data-offset="${offset.toFixed(2)}" 
+          data-len="${len.toFixed(2)}"
+          data-photo="${item.photo}" 
+          data-category="${item.category}" 
+          data-masuk="${item.masuk}" 
+          data-keluar="${item.keluar}"
+          onmouseenter="showDonutCapsule(this, event)" 
+          onmousemove="moveDonutCapsule(this, event)"
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      `;
+    }).join('');
+
+    svg.innerHTML = bgTrack + segmentsHtml;
+    this.updateDonutPreviewCard(modelsWithUnits[0]);
+  },
+
+  /**
+   * Perbarui Kartu Preview Mobil Dinamis di samping kanan grafik donat
+   */
+  updateDonutPreviewCard(item) {
+    const prevDot = document.getElementById('donutPreviewDot');
+    const prevCategory = document.getElementById('donutPreviewCategory');
+    const prevBadge = document.getElementById('donutPreviewPercentBadge');
+    const prevImg = document.getElementById('donutPreviewImg');
+    const prevModel = document.getElementById('donutPreviewModel');
+    const prevBar = document.getElementById('donutPreviewBar');
+    const prevUnits = document.getElementById('donutPreviewUnits');
+    const prevMasuk = document.getElementById('donutPreviewMasuk');
+    const prevKeluar = document.getElementById('donutPreviewKeluar');
+    const prevMasukBtn = document.getElementById('donutPreviewMasukBtn');
+    const prevKeluarBtn = document.getElementById('donutPreviewKeluarBtn');
+    const prevBtn = document.getElementById('donutPreviewBtn');
+
+    if (!item) {
+      if (prevDot) prevDot.style.backgroundColor = '#94a3b8';
+      if (prevCategory) prevCategory.textContent = 'Menunggu Data Unit';
+      if (prevBadge) {
+        prevBadge.textContent = '0%';
+        prevBadge.style.backgroundColor = '#94a3b8';
+      }
+      if (prevImg) {
+        prevImg.src = 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+        prevImg.alt = 'Unit Daihatsu';
+      }
+      if (prevModel) prevModel.textContent = 'Belum Ada Unit';
+      if (prevBar) {
+        prevBar.style.width = '0%';
+        prevBar.style.backgroundColor = '#94a3b8';
+      }
+      if (prevUnits) prevUnits.textContent = '0 Unit';
+      if (prevMasuk) prevMasuk.textContent = 'Masuk 0';
+      if (prevKeluar) prevKeluar.textContent = 'Keluar 0';
+      if (prevMasukBtn) prevMasukBtn.onclick = () => this.filterHistoryTab('in');
+      if (prevKeluarBtn) prevKeluarBtn.onclick = () => this.filterHistoryTab('out');
+      if (prevBtn) prevBtn.onclick = () => this.switchTab('inventory');
+      return;
+    }
+
+    const total = AppState._totalDonutUnits || 1;
+    const pct = Math.round((item.count / total) * 100) + '%';
+
+    if (prevDot) prevDot.style.backgroundColor = item.color;
+    if (prevCategory) prevCategory.textContent = item.category;
+    if (prevBadge) {
+      prevBadge.textContent = pct;
+      prevBadge.style.backgroundColor = item.color;
+    }
+    if (prevImg) {
+      prevImg.src = item.photo;
+      prevImg.alt = item.model;
+    }
+    if (prevModel) prevModel.textContent = item.model;
+    if (prevBar) {
+      prevBar.style.width = pct;
+      prevBar.style.backgroundColor = item.color;
+    }
+    if (prevUnits) prevUnits.textContent = `${item.count} Unit`;
+    if (prevMasuk) prevMasuk.textContent = `Masuk ${item.masuk || 0}`;
+    if (prevKeluar) prevKeluar.textContent = `Keluar ${item.keluar || 0}`;
+    if (prevMasukBtn) {
+      prevMasukBtn.onclick = () => this.filterHistoryByModelAndType(item.model, 'Unit Masuk');
+    }
+    if (prevKeluarBtn) {
+      prevKeluarBtn.onclick = () => this.filterHistoryByModelAndType(item.model, 'Unit Keluar');
+    }
+    if (prevBtn) {
+      prevBtn.onclick = () => this.filterInventoryByModel(item.model);
+    }
+  },
+
+  /**
+   * Perbarui Status Operasional Yard & Kartu Peringatan Fisik
+   * Sinkron 100% dengan kapasitas dan status unit di AppState
+   */
+  updateDashboardYardStatus() {
+    const textEl = document.getElementById('yardOccupancyText');
+    const barEl = document.getElementById('yardOccupancyBar');
+    const slotsEl = document.getElementById('yardAvailableSlots');
+    const doReadyEl = document.getElementById('yardDoReadyCount');
+    const bastkValidEl = document.getElementById('yardBastkValidCount');
+    const alertTitle = document.getElementById('yardAttentionTitle');
+    const alertDesc = document.getElementById('yardAttentionDesc');
+    const alertCard = document.getElementById('yardAttentionCard');
+    const alertIconBox = document.getElementById('yardAttentionIconBox');
+
+    const totalCapacity = 120;
+    const inYardUnits = (AppState.inventoryData || []).filter(u => u && (u.status === 'In-Yard' || !u.status)).length;
+    const occupancyPct = totalCapacity > 0 ? ((inYardUnits / totalCapacity) * 100).toFixed(1) : 0;
+    const availableSlots = Math.max(0, totalCapacity - inYardUnits);
+
+    if (textEl) textEl.textContent = `${inYardUnits} / ${totalCapacity} Unit (${occupancyPct}%)`;
+    if (barEl) {
+      barEl.style.width = `${Math.min(100, Math.max(0, occupancyPct))}%`;
+      if (occupancyPct >= 85) {
+        barEl.className = 'bg-rose-500 h-full rounded-full transition-all duration-500';
+      } else if (occupancyPct >= 70) {
+        barEl.className = 'bg-amber-500 h-full rounded-full transition-all duration-500';
+      } else {
+        barEl.className = 'bg-indigo-600 h-full rounded-full transition-all duration-500';
+      }
+    }
+    if (slotsEl) slotsEl.textContent = `Tersedia: ${availableSlots} Slot`;
+
+    // DO Siap Verifikasi: Unit yang masih berstatus Intransit (menunggu verifikasi DO dan fisik yard)
+    const doReadyCount = (AppState.inventoryData || []).filter(u => u && u.status === 'Intransit').length;
+    if (doReadyEl) doReadyEl.textContent = `${doReadyCount} Unit`;
+
+    // BASTK Valid: Mutasi pengiriman unit keluar / BASTK yang sudah terverifikasi
+    const bastkCount = (AppState.historyData || []).filter(h => h && (h.type === 'Unit Keluar' || h.type === 'BASTK')).length;
+    if (bastkValidEl) bastkValidEl.textContent = `${bastkCount} Unit`;
+
+    // Alert Card Dinamis
+    if (alertTitle && alertDesc) {
+      if (doReadyCount > 0) {
+        alertTitle.textContent = `${doReadyCount} Unit Memerlukan Verifikasi Fisik`;
+        alertDesc.textContent = `${doReadyCount} unit intransit perlu inspeksi dokumen DO dan fisik lapangan.`;
+        if (alertCard) alertCard.className = 'bg-gradient-to-r from-rose-50 via-rose-50/90 to-orange-50 border border-rose-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-rose-300 transition scroll-reveal flex-shrink-0';
+        if (alertIconBox) alertIconBox.className = 'w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-600 flex items-center justify-center flex-shrink-0 border border-rose-200/60';
+      } else if (inYardUnits > 0) {
+        alertTitle.textContent = 'Operasional Pool Yard Optimal';
+        alertDesc.textContent = `${inYardUnits} unit terdata rapi di pool yard. Seluruh dokumen fisik sinkron.`;
+        if (alertCard) alertCard.className = 'bg-gradient-to-r from-emerald-50 via-teal-50/90 to-emerald-50 border border-emerald-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-emerald-300 transition scroll-reveal flex-shrink-0';
+        if (alertIconBox) alertIconBox.className = 'w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-200/60';
+      } else {
+        alertTitle.textContent = 'Monitoring Pool Yard Aktif';
+        alertDesc.textContent = 'Kapasitas 120 slot tersedia. Siap menerima pemindaian barcode unit baru.';
+        if (alertCard) alertCard.className = 'bg-gradient-to-r from-slate-50 to-slate-100/90 border border-slate-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 transition scroll-reveal flex-shrink-0';
+        if (alertIconBox) alertIconBox.className = 'w-10 h-10 rounded-2xl bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0 border border-slate-300';
+      }
+    }
+  },
+
+  /**
+   * Perbarui statistik stok & mutasi pada setiap slide Hero Carousel di Dashboard
+   */
+  updateHeroSlidesData() {
+    const slides = document.querySelectorAll('.hero-slide');
+    if (!slides || slides.length === 0) return;
+
+    slides.forEach(slide => {
+      const titleEl = slide.querySelector('h3');
+      if (!titleEl) return;
+      const modelName = titleEl.textContent.trim();
+      const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(modelName) : null;
+      if (!catalogItem) return;
+
+      const matchingUnits = (AppState.inventoryData || []).filter(u => {
+        if (!u || !u.model) return false;
+        if (u.model.toLowerCase() === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(u.model) : null;
+        return m && m.catalogId === catalogItem.catalogId;
+      });
+
+      const matchingHistory = (AppState.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        if (h.model.toLowerCase() === catalogItem.model.toLowerCase()) return true;
+        const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(h.model) : null;
+        return m && m.catalogId === catalogItem.catalogId;
+      });
+
+      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      const inYard = matchingUnits.filter(u => u.status === 'In-Yard' || !u.status).length;
+      const intransit = matchingUnits.filter(u => u.status === 'Intransit').length;
+
+      // Update pills masuk & keluar
+      const spans = slide.querySelectorAll('span');
+      spans.forEach(span => {
+        const text = span.textContent.trim();
+        if (/^\d+\s+Masuk$/i.test(text)) {
+          span.textContent = `${masuk} Masuk`;
+        } else if (/^\d+\s+Keluar$/i.test(text)) {
+          span.textContent = `${keluar} Keluar`;
+        }
+      });
+
+      // Update label in-yard & intransit
+      const strongs = slide.querySelectorAll('strong');
+      strongs.forEach(st => {
+        const parentText = st.parentElement ? st.parentElement.textContent : '';
+        if (parentText.includes('In-Yard')) {
+          st.textContent = `${inYard} Unit`;
+        } else if (parentText.includes('Intransit')) {
+          st.textContent = `${intransit} Unit`;
+        }
+      });
+    });
+  },
+
+  /**
    * Menampilkan kapsul glassmorphism kecil di LUAR lingkaran donat dan memperbarui Kartu Preview Mobil Dinamis saat kursor diarahkan (hover / touch)
    */
   showDonutCapsule(segmentEl, event) {
@@ -1894,7 +2216,7 @@ const UI = {
     const centerVal = document.getElementById('donutCenterValue');
     const centerSub = document.getElementById('donutCenterSub');
     if (centerLabel) centerLabel.textContent = 'TOTAL';
-    if (centerVal) centerVal.textContent = '89';
+    if (centerVal) centerVal.textContent = String(AppState._totalDonutUnits != null ? AppState._totalDonutUnits : 0);
     if (centerSub) centerSub.textContent = 'Unit';
   },
 

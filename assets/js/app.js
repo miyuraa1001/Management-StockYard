@@ -177,7 +177,7 @@ const App = {
       } else {
         const reason = response?.message || response?.error || 'URL Web App belum terhubung';
         console.warn('[App] Mutasi tersimpan lokal (belum ke database Google):', reason);
-        UI.showToast('⚠️ Data tersimpan di HP/Lokal (Offline). Buka menu Settings untuk memasukkan Web App URL agar masuk ke Google Spreadsheet.', 6000);
+        UI.showToast('⚠️ Data tersimpan di HP/Lokal (Offline / Proxy Vercel sedang proses). Periksa koneksi atau redeploy Vercel jika variabel belum aktif.', 6000);
       }
     } catch (e) {
       console.warn('[App] Gagal mengirim mutasi ke server (tersimpan lokal):', e);
