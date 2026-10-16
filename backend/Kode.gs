@@ -913,28 +913,28 @@ function normalizeDateToYmd(val) {
   if (val instanceof Date && !isNaN(val.getTime())) {
     return Utilities.formatDate(val, TIMEZONE, "yyyy-MM-dd");
   }
+  if (typeof val === 'number') {
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    if (!isNaN(d.getTime())) {
+      return Utilities.formatDate(d, TIMEZONE, "yyyy-MM-dd");
+    }
+  }
   const str = String(val).trim();
   if (!str || str === "-") return "";
 
-  // 1. Format ISO: 2026-10-15T04:13:57.257Z atau 2026-10-15
-  const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  // 1. Ekstrak dari ID Mutasi jika ada format MUT-YYYYMMDD (misal: MUT-20261015-142500)
+  const mutMatch = str.match(/MUT-(\d{4})(\d{2})(\d{2})/i);
+  if (mutMatch) {
+    return mutMatch[1] + "-" + mutMatch[2] + "-" + mutMatch[3];
+  }
+
+  // 2. Format ISO atau YYYY-MM-DD atau YYYY/MM/DD
+  const isoMatch = str.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
   if (isoMatch) {
-    return isoMatch[1] + "-" + isoMatch[2] + "-" + isoMatch[3];
+    return isoMatch[1] + "-" + isoMatch[2].padStart(2, "0") + "-" + isoMatch[3].padStart(2, "0");
   }
 
-  // 2. Format slash: 15/10/2026
-  const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (slashMatch) {
-    return slashMatch[3] + "-" + slashMatch[2].padStart(2, "0") + "-" + slashMatch[1].padStart(2, "0");
-  }
-
-  // 3. Format dash: 15-10-2026
-  const dashMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
-  if (dashMatch) {
-    return dashMatch[3] + "-" + dashMatch[2].padStart(2, "0") + "-" + dashMatch[1].padStart(2, "0");
-  }
-
-  // 4. Format teks Indonesia: 15 Oktober 2026 atau 15 Okt 2026
+  // 3. Format teks Indonesia (dengan atau tanpa awalan nama hari seperti "Kamis, 15 Oktober 2026")
   const monthMap = {
     "januari": "01", "jan": "01",
     "februari": "02", "feb": "02",
@@ -949,10 +949,18 @@ function normalizeDateToYmd(val) {
     "november": "11", "nov": "11",
     "desember": "12", "des": "12", "dec": "12"
   };
-  const indoMatch = str.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})/);
+  const indoMatch = str.match(/(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})/);
   if (indoMatch) {
-    const m = monthMap[indoMatch[2].toLowerCase()] || "01";
-    return indoMatch[3] + "-" + m + "-" + indoMatch[1].padStart(2, "0");
+    const m = monthMap[indoMatch[2].toLowerCase()];
+    if (m) {
+      return indoMatch[3] + "-" + m + "-" + indoMatch[1].padStart(2, "0");
+    }
+  }
+
+  // 4. Format DD/MM/YYYY atau DD-MM-YYYY
+  const slashMatch = str.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/);
+  if (slashMatch) {
+    return slashMatch[3] + "-" + slashMatch[2].padStart(2, "0") + "-" + slashMatch[1].padStart(2, "0");
   }
 
   // 5. Fallback Date constructor
@@ -981,7 +989,7 @@ function getHistoryData(ss) {
     if (!r[0]) continue;
     const rawIso = r[1];
     const rawDate = r[2];
-    const ymd = normalizeDateToYmd(rawIso) || normalizeDateToYmd(rawDate);
+    const ymd = normalizeDateToYmd(rawIso) || normalizeDateToYmd(rawDate) || normalizeDateToYmd(r[0]);
 
     history.push({
       id: r[0],
@@ -1013,9 +1021,33 @@ function updateInventoryStock(ss, modelName, mutationType) {
   const rows = sheet.getDataRange().getValues();
   const cleanModel = String(modelName || "").toLowerCase().trim();
 
+  // Helper normalisasi alias model kendaraan sesuai 13 model resmi
+  function normalizeModelKey(m) {
+    const s = String(m || "").toLowerCase().trim();
+    if (s.includes("special edition") || s === "terios se" || s.includes("da3se")) return "terios special edition";
+    if (s === "new sirion" || s.includes("sirion")) return "sirion";
+    if (s.includes("blind van") || s.includes("blindvan")) return "gran max blind van";
+    if (s.includes("minibus") || s.includes("mini bus")) return "gran max minibus";
+    if (s.includes("pick up") || s.includes("pickup") || s.includes("pu")) return "gran max pick up";
+    if (s.includes("salvage") || s.includes("prod old") || s.includes("old model")) return "old model salvage part";
+    if (s.includes("hybrid")) return "rocky e-smart hybrid";
+    if (s.includes("new rocky") || s.includes("turbo")) return "new rocky";
+    if (s === "rocky") return "new rocky";
+    if (s.includes("xenia")) return "all new xenia";
+    if (s.includes("ayla")) return "all new ayla";
+    if (s.includes("sigra")) return "new sigra";
+    if (s.includes("terios")) return "new terios";
+    if (s.includes("luxio")) return "luxio";
+    return s;
+  }
+
+  const normTarget = normalizeModelKey(cleanModel);
+
   for (let i = 1; i < rows.length; i++) {
     const rowModel = String(rows[i][1] || "").toLowerCase().trim();
-    if (rowModel === cleanModel || cleanModel.includes(rowModel) || rowModel.includes(cleanModel)) {
+    const normRow = normalizeModelKey(rowModel);
+
+    if (rowModel === cleanModel || normRow === normTarget || rowModel.includes(cleanModel) || cleanModel.includes(rowModel)) {
       let totalIn = parseInt(rows[i][3], 10) || 0;
       let totalOut = parseInt(rows[i][4], 10) || 0;
 
@@ -1379,117 +1411,47 @@ function buildEmailHtmlTemplate(dateStr, totalCount, masukCount, keluarCount) {
 
 /**
  * Memicu pembuatan PDF dan pengiriman email nyata via GmailApp
+ * Standar Otomatisasi Astra Daihatsu: Secara default merekapitulasi aktivitas fisik KEMARIN (24 jam terakhir)
  */
 function triggerReportEmail(ss, data) {
   if (!ss) ss = getSpreadsheet();
   const targetEmail = (data && data.email) ? data.email : getTargetEmail(ss);
 
-  let records = [];
+  let allHistory = [];
   try {
-    records = getHistoryData(ss);
+    allHistory = getHistoryData(ss);
   } catch (e) {
     Logger.log("Peringatan saat mengambil riwayat: " + e.toString());
   }
 
-  const todayStr = Utilities.formatDate(new Date(), TIMEZONE, "dd/MM/yyyy");
-  const nowStr = Utilities.formatDate(new Date(), TIMEZONE, "dd/MM/yyyy HH:mm 'WIB'");
-
-  const htmlReport = buildHtmlReport(records, todayStr, nowStr);
-  const htmlOutput = HtmlService.createHtmlOutput(htmlReport);
-  const pdfBlob = htmlOutput.getAs("application/pdf").setName("Laporan_Mutasi_Daihatsu_" + todayStr.replace(/\//g, "-") + ".pdf");
-
-  const totalCount = records ? records.length : 0;
-  const masukCount = records ? records.filter(r => (r.type || r[7]) === "Unit Masuk").length : 0;
-  const keluarCount = records ? records.filter(r => (r.type || r[7]) === "Unit Keluar").length : 0;
-
-  const subject = "Laporan Rekapitulasi Mutasi Fisik Kendaraan Yard Lampung - " + todayStr;
-  const emailBodyText = 
-    "Yth. Tim Operasional & Manajemen Logistik Daihatsu,\n\n" +
-    "Berikut terlampir berkas PDF rekapitulasi operasional fisik kendaraan (Salvage Logistics) pada tanggal " + todayStr + ".\n\n" +
-    "Ringkasan Operasional Lapangan:\n" +
-    "- Total Unit Diperiksa : " + totalCount + " Unit\n" +
-    "- Unit Masuk (Inbound) : " + masukCount + " Unit\n" +
-    "- Unit Keluar (Outbound): " + keluarCount + " Unit\n\n" +
-    "Salam hormat,\n" +
-    "Sistem Management Salvage Daihatsu\n" +
-    "Astra Daihatsu - DSO Lampung";
-
-  const emailBodyHtml = buildEmailHtmlTemplate(todayStr, totalCount, masukCount, keluarCount);
-
-  GmailApp.sendEmail(targetEmail, subject, emailBodyText, {
-    attachments: [pdfBlob],
-    name: "Astra Daihatsu-Dso Lampung",
-    htmlBody: emailBodyHtml
-  });
-
-  return {
-    success: true,
-    message: "Laporan harian PDF resmi berhasil diproses dan dikirim via email ke " + targetEmail,
-    targetEmail: targetEmail,
-    timestamp: nowStr,
-    totalRecords: totalCount
-  };
-}
-
-/**
- * Uji coba langsung pengiriman email dari editor Google Apps Script
- */
-function testKirimEmailSekarang() {
-  Logger.log("🚀 Memulai pengujian pengiriman email...");
-  const res = triggerReportEmail();
-  Logger.log("Hasil: " + JSON.stringify(res));
-}
-
-/**
- * Eksekusi harian otomatis oleh Time-Driven Trigger jam 08:00 WIB
- * Mengirimkan laporan PDF rekapitulasi mutasi kendaraan tanggal kemarin (24 jam terakhir)
- */
-function sendDailyScheduledReport() {
-  const ss = getSpreadsheet();
-  const config = getSystemConfigData(ss);
-  const isEnabled = String(config.AUTO_EMAIL_ENABLED || "TRUE").toUpperCase() === "TRUE";
-
-  if (!isEnabled) {
-    Logger.log("ℹ️ Otomatisasi email harian dinonaktifkan di SystemConfig.");
-    return;
-  }
-
-  const targetEmail = getTargetEmail(ss);
   const now = new Date();
   const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
   const yesterdayYmd = Utilities.formatDate(yesterday, TIMEZONE, "yyyy-MM-dd");
   const yesterdayDisplayStr = Utilities.formatDate(yesterday, TIMEZONE, "dd/MM/yyyy");
   const nowPrintStr = Utilities.formatDate(now, TIMEZONE, "dd/MM/yyyy HH:mm 'WIB'");
 
-  Logger.log("🔍 [sendDailyScheduledReport] Memeriksa mutasi tanggal kemarin: " + yesterdayYmd + " (" + yesterdayDisplayStr + ")...");
-
-  const allHistory = getHistoryData(ss);
-  Logger.log("📁 Total catatan di HistoryMutasi: " + allHistory.length + " transaksi");
-
-  // Filter mutasi tanggal kemarin menggunakan normalisasi tanggal YMD
-  let targetRecords = allHistory.filter(item => item.ymd === yesterdayYmd);
-  Logger.log("📊 Ditemukan " + targetRecords.length + " transaksi untuk tanggal " + yesterdayDisplayStr);
-
+  // Tentukan target tanggal rekap (Default: KEMARIN / YESTERDAY)
+  let targetYmd = yesterdayYmd;
   let reportPeriodStr = yesterdayDisplayStr;
 
-  // Jika kemarin kosong (misal hari libur/Minggu atau pengujian langsung saat baru setup):
-  if (targetRecords.length === 0) {
-    const todayYmd = Utilities.formatDate(now, TIMEZONE, "yyyy-MM-dd");
-    const todayDisplayStr = Utilities.formatDate(now, TIMEZONE, "dd/MM/yyyy");
-
-    const todayRecords = allHistory.filter(item => item.ymd === todayYmd);
-    if (todayRecords.length > 0) {
-      Logger.log("ℹ️ Tanggal kemarin (" + yesterdayDisplayStr + ") tidak ada transaksi. Menggunakan transaksi hari ini (" + todayRecords.length + " unit pada " + todayDisplayStr + ").");
-      targetRecords = todayRecords;
-      reportPeriodStr = todayDisplayStr;
-    } else if (allHistory.length > 0) {
-      Logger.log("ℹ️ Menggunakan seluruh catatan transaksi terkini (" + allHistory.length + " unit).");
-      targetRecords = allHistory;
-      reportPeriodStr = "Rekap Operasional Terkini (" + yesterdayDisplayStr + ")";
-    } else {
-      Logger.log("⚠️ Tidak ada aktivitas mutasi fisik pada database Spreadsheet. PDF tidak dikirim.");
-      return;
+  if (data && data.targetDate) {
+    const parsed = normalizeDateToYmd(data.targetDate);
+    if (parsed) {
+      targetYmd = parsed;
+      const parts = parsed.split("-");
+      if (parts.length === 3) reportPeriodStr = parts[2] + "/" + parts[1] + "/" + parts[0];
     }
+  }
+
+  // Filter HANYA data mutasi fisik pada tanggal kemarin (target)
+  let targetRecords = allHistory.filter(item => item.ymd === targetYmd);
+  Logger.log("🔍 Rekapitulasi mutasi tanggal " + reportPeriodStr + " (" + targetYmd + "): ditemukan " + targetRecords.length + " transaksi dari total " + allHistory.length + " riwayat.");
+
+  // Jika kemarin kosong, jangan ganti tanggal hari ini tanpa instruksi khusus! Tetap terbitkan laporan resmi kemarin
+  // Kecuali jika user meminta paksa seluruh mutasi terkini dengan data.forceAll:
+  if (targetRecords.length === 0 && data && data.forceAll && allHistory.length > 0) {
+    targetRecords = allHistory;
+    reportPeriodStr = "Rekap Operasional Terkini (" + yesterdayDisplayStr + ")";
   }
 
   const htmlContent = buildHtmlReport(targetRecords, reportPeriodStr, nowPrintStr);
@@ -1520,6 +1482,41 @@ function sendDailyScheduledReport() {
     htmlBody: emailBodyHtml
   });
 
-  Logger.log("🎉 BERHASIL! Laporan PDF resmi tanggal " + reportPeriodStr + " (" + totalCount + " transaksi) berhasil dikirimkan ke: " + targetEmail);
+  return {
+    success: true,
+    message: "Laporan PDF resmi tanggal " + reportPeriodStr + " (" + totalCount + " unit) berhasil dikirim via email ke " + targetEmail,
+    targetEmail: targetEmail,
+    reportDate: reportPeriodStr,
+    timestamp: nowPrintStr,
+    totalRecords: totalCount
+  };
+}
+
+/**
+ * Uji coba langsung pengiriman email dari editor Google Apps Script
+ * Mengirimkan rekapitulasi resmi tanggal KEMARIN (24 jam terakhir)
+ */
+function testKirimEmailSekarang() {
+  Logger.log("🚀 Memulai pengujian pengiriman email laporan rekapitulasi kemarin...");
+  const res = triggerReportEmail();
+  Logger.log("Hasil: " + JSON.stringify(res));
+}
+
+/**
+ * Eksekusi harian otomatis oleh Time-Driven Trigger
+ * Mengirimkan laporan PDF rekapitulasi mutasi kendaraan tanggal kemarin (24 jam terakhir)
+ */
+function sendDailyScheduledReport() {
+  const ss = getSpreadsheet();
+  const config = getSystemConfigData(ss);
+  const isEnabled = String(config.AUTO_EMAIL_ENABLED || "TRUE").toUpperCase() === "TRUE";
+
+  if (!isEnabled) {
+    Logger.log("ℹ️ Otomatisasi email harian dinonaktifkan di SystemConfig.");
+    return;
+  }
+
+  const res = triggerReportEmail(ss);
+  Logger.log("Eksekusi laporan harian terjadwal selesai: " + JSON.stringify(res));
 }
 

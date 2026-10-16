@@ -1872,18 +1872,18 @@ const UI = {
 
     const modelColors = {
       'Rocky e-Smart Hybrid': '#10b981',
+      'Gran Max Pick Up': '#f43f5e',
       'New Terios': '#3b82f6',
-      'Terios SE': '#ef4444',
-      'All New Xenia': '#f59e0b',
       'New Sigra': '#6366f1',
-      'New Sigra (Prod Old)': '#0ea5e9',
+      'All New Xenia': '#f59e0b',
       'All New Ayla': '#14b8a6',
       'New Rocky': '#ec4899',
-      'Rocky': '#8b5cf6',
-      'New Sirion': '#06b6d4',
+      'Sirion': '#06b6d4',
       'Luxio': '#a855f7',
+      'Gran Max Blind Van': '#eab308',
       'Gran Max Minibus': '#f97316',
-      'Gran Max Pick Up': '#f43f5e'
+      'Terios Special Edition': '#ef4444',
+      'Old Model Salvage Part': '#64748b'
     };
 
     const catalog = AppState.vehicleCatalog || [];

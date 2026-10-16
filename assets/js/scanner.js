@@ -1051,17 +1051,18 @@ const ScannerService = {
   inferDaihatsuModelFromVin(vin) {
     const v = String(vin).toUpperCase();
     if (v.includes('R1EA') || v.includes('HYBRID')) return 'Rocky e-Smart Hybrid';
-    if (v.includes('DA3SE')) return 'Terios SE';
+    if (v.includes('DA3SE') || v.includes('SPECIAL')) return 'Terios Special Edition';
     if (v.includes('DA3') || v.includes('F800')) return 'New Terios';
     if (v.includes('W1BA') || v.includes('W100') || v.includes('W101')) return 'All New Xenia';
     if (v.includes('BR5D') || v.includes('B400') || v.includes('B401')) return 'New Sigra';
     if (v.includes('AA1B') || v.includes('A300') || v.includes('A301')) return 'All New Ayla';
     if (v.includes('P3FA') && v.includes('TURBO')) return 'New Rocky';
     if (v.includes('P3FA') && (v.includes('PICK') || v.includes('DECK') || v.includes('PU'))) return 'Gran Max Pick Up';
-    if (v.includes('P3FA2') || v.includes('VAN')) return 'Gran Max Blind Van';
-    if (v.includes('P3FA3') || v.includes('BUS')) return 'Gran Max Minibus';
-    if (v.includes('M4BA') || v.includes('M800')) return 'New Sirion';
-    if (v.includes('W2CA') || v.includes('S400')) return 'Luxio';
+    if (v.includes('P3FA2') || v.includes('VAN') || v.includes('BLIND')) return 'Gran Max Blind Van';
+    if (v.includes('P3FA3') || v.includes('BUS') || v.includes('MINIBUS')) return 'Gran Max Minibus';
+    if (v.includes('M4BA') || v.includes('M800') || v.includes('SIRION')) return 'Sirion';
+    if (v.includes('W2CA') || v.includes('S400') || v.includes('LUXIO')) return 'Luxio';
+    if (v.includes('SALVAGE') || v.includes('OLD') || v.includes('PART')) return 'Old Model Salvage Part';
     if (v.includes('P3FA')) return 'Gran Max Pick Up';
     return 'Gran Max Pick Up';
   },
