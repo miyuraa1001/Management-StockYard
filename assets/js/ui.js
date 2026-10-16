@@ -2968,13 +2968,31 @@ const UI = {
     const schedEl = document.getElementById('autoScheduleDisplay');
     const emailEl = document.getElementById('autoEmailDisplay');
     if (schedEl) schedEl.innerText = auto.schedule || 'Setiap Hari 08:00 WIB';
-    if (emailEl) emailEl.innerText = auto.email || 'syafirafira08162@gmail.com';
+
+    // Parse daftar email
+    let emailList = [];
+    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
+      emailList = auto.emails;
+    } else if (auto.email) {
+      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    }
+    if (emailList.length === 0) emailList = ['syafirafira08162@gmail.com'];
+
+    if (emailEl) {
+      if (emailList.length > 1) {
+        emailEl.innerText = `${emailList[0]} (+${emailList.length - 1} lainnya)`;
+        emailEl.title = emailList.join(', ');
+      } else {
+        emailEl.innerText = emailList[0] || 'syafirafira08162@gmail.com';
+        emailEl.title = emailList[0] || '';
+      }
+    }
 
     const inputSched = document.getElementById('inputAutoSchedule');
     const inputEmail = document.getElementById('inputAutoEmail');
     const inputType = document.getElementById('inputAutoType');
     if (inputSched) inputSched.value = auto.schedule || 'Setiap Hari 08:00 WIB';
-    if (inputEmail) inputEmail.value = auto.email || 'syafirafira08162@gmail.com';
+    if (inputEmail) inputEmail.value = emailList.join(', ');
     if (inputType) inputType.value = auto.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
   },
 
@@ -3108,11 +3126,98 @@ const UI = {
     }
   },
 
+  automationState: {
+    frequency: 'daily', // 'daily' | 'weekly' | 'monthly'
+    dayOfWeek: 'Senin',
+    dayOfMonth: 'Akhir Bulan',
+    period: 'pagi', // 'pagi' | 'siang' | 'sore' | 'malam'
+    hour12: 8,
+    minute: 0,
+    emails: ['syafirafira08162@gmail.com']
+  },
+
+  /**
+   * Menginisialisasi state modal otomatisasi dari AppState saat dibuka
+   */
+  initAutomationModal() {
+    const auto = AppState.automationConfig || {};
+    const schedStr = auto.schedule || 'Setiap Hari 08:00 WIB';
+    const lowerSched = schedStr.toLowerCase();
+
+    // 1. Ekstrak Frekuensi
+    if (lowerSched.includes('senin') || lowerSched.includes('selasa') || lowerSched.includes('rabu') || lowerSched.includes('kamis') || lowerSched.includes('jumat') || lowerSched.includes('sabtu') || lowerSched.includes('minggu')) {
+      this.automationState.frequency = 'weekly';
+      if (lowerSched.includes('selasa')) this.automationState.dayOfWeek = 'Selasa';
+      else if (lowerSched.includes('rabu')) this.automationState.dayOfWeek = 'Rabu';
+      else if (lowerSched.includes('kamis')) this.automationState.dayOfWeek = 'Kamis';
+      else if (lowerSched.includes('jumat')) this.automationState.dayOfWeek = 'Jumat';
+      else if (lowerSched.includes('sabtu')) this.automationState.dayOfWeek = 'Sabtu';
+      else if (lowerSched.includes('minggu')) this.automationState.dayOfWeek = 'Minggu';
+      else this.automationState.dayOfWeek = 'Senin';
+    } else if (lowerSched.includes('bulan') || lowerSched.includes('tgl') || lowerSched.includes('tanggal')) {
+      this.automationState.frequency = 'monthly';
+      if (lowerSched.includes('15')) this.automationState.dayOfMonth = 'Tanggal 15';
+      else if (lowerSched.includes('25')) this.automationState.dayOfMonth = 'Tanggal 25';
+      else if (lowerSched.includes('28')) this.automationState.dayOfMonth = 'Tanggal 28';
+      else if (lowerSched.includes(' 1') || lowerSched.includes('01')) this.automationState.dayOfMonth = 'Tanggal 1';
+      else this.automationState.dayOfMonth = 'Akhir Bulan';
+    } else {
+      this.automationState.frequency = 'daily';
+    }
+
+    // 2. Ekstrak Jam & Menit
+    const timeMatch = schedStr.match(/(\d{1,2})[:.](\d{2})/);
+    let h24 = 8;
+    let m = 0;
+    if (timeMatch) {
+      h24 = parseInt(timeMatch[1], 10);
+      m = parseInt(timeMatch[2], 10);
+    }
+    if (isNaN(h24) || h24 < 0 || h24 > 23) h24 = 8;
+    this.automationState.minute = [0, 15, 30, 45].includes(m) ? m : 0;
+
+    // Mapping 24h ke period dan hour12
+    if (h24 >= 0 && h24 < 12) {
+      this.automationState.period = 'pagi';
+      this.automationState.hour12 = h24 === 0 ? 12 : h24;
+    } else if (h24 >= 12 && h24 <= 14) {
+      this.automationState.period = 'siang';
+      this.automationState.hour12 = h24 === 12 ? 12 : (h24 - 12);
+    } else if (h24 >= 15 && h24 <= 18) {
+      this.automationState.period = 'sore';
+      this.automationState.hour12 = (h24 - 12);
+    } else {
+      this.automationState.period = 'malam';
+      this.automationState.hour12 = (h24 - 12);
+    }
+
+    // 3. Ekstrak Daftar Target Email
+    let emailList = [];
+    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
+      emailList = [...auto.emails];
+    } else if (auto.email) {
+      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    }
+    if (emailList.length === 0) emailList = ['syafirafira08162@gmail.com'];
+    this.automationState.emails = Array.from(new Set(emailList));
+
+    // Update Tipe Dokumen
+    const inputType = document.getElementById('inputAutoType');
+    if (inputType) inputType.value = auto.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
+
+    // Update Seluruh Komponen Tampilan Modal
+    this.updateFrequencyUI();
+    this.updateClockUI();
+    this.renderEmailChips();
+    this.syncHiddenScheduleInput();
+    this.syncHiddenEmailInput();
+  },
+
   /**
    * Buka modal pembaruan informasi otomatisasi laporan
    */
   openEditAutomationModal() {
-    this.applyAutomationConfig();
+    this.initAutomationModal();
     const modal = document.getElementById('editAutomationModal');
     if (modal) modal.classList.remove('hidden');
   },
@@ -3126,18 +3231,356 @@ const UI = {
   },
 
   /**
-   * Simpan pembaruan otomatisasi laporan
+   * Ganti Frekuensi (Harian, Mingguan, Bulanan)
    */
-    /**
+  setFrequency(freq) {
+    this.automationState.frequency = freq;
+    this.updateFrequencyUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Pilih Hari Mingguan (Senin - Minggu)
+   */
+  setDayOfWeek(day) {
+    this.automationState.dayOfWeek = day;
+    this.updateFrequencyUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Pilih Tanggal Bulanan (Akhir Bulan, Tgl 1, dsb)
+   */
+  setDayOfMonth(mday) {
+    this.automationState.dayOfMonth = mday;
+    this.updateFrequencyUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Render Tab Frekuensi dan opsi hari/tanggal yang sesuai
+   */
+  updateFrequencyUI() {
+    const f = this.automationState.frequency;
+    const tabDaily = document.getElementById('tabFreqDaily');
+    const tabWeekly = document.getElementById('tabFreqWeekly');
+    const tabMonthly = document.getElementById('tabFreqMonthly');
+    const weeklyContainer = document.getElementById('weeklyDayContainer');
+    const monthlyContainer = document.getElementById('monthlyDayContainer');
+
+    const activeTabClasses = ['bg-white', 'text-indigo-600', 'shadow-xs', 'font-black'];
+    const inactiveTabClasses = ['text-slate-600', 'hover:text-slate-900', 'font-bold'];
+
+    [tabDaily, tabWeekly, tabMonthly].forEach(btn => {
+      if (btn) {
+        btn.classList.remove(...activeTabClasses);
+        btn.classList.add(...inactiveTabClasses);
+      }
+    });
+
+    if (f === 'weekly') {
+      if (tabWeekly) {
+        tabWeekly.classList.remove(...inactiveTabClasses);
+        tabWeekly.classList.add(...activeTabClasses);
+      }
+      if (weeklyContainer) weeklyContainer.classList.remove('hidden');
+      if (monthlyContainer) monthlyContainer.classList.add('hidden');
+
+      // Highlight tombol hari
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        const isMatch = btn.getAttribute('data-day') === this.automationState.dayOfWeek;
+        btn.className = `day-btn py-1.5 text-[11px] font-bold rounded-xl transition cursor-pointer text-center ${
+          isMatch ? 'border border-indigo-200 bg-indigo-50 text-indigo-700 font-black' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+        }`;
+      });
+    } else if (f === 'monthly') {
+      if (tabMonthly) {
+        tabMonthly.classList.remove(...inactiveTabClasses);
+        tabMonthly.classList.add(...activeTabClasses);
+      }
+      if (weeklyContainer) weeklyContainer.classList.add('hidden');
+      if (monthlyContainer) monthlyContainer.classList.remove('hidden');
+
+      // Highlight tombol tanggal bulanan
+      document.querySelectorAll('.month-day-btn').forEach(btn => {
+        const isMatch = btn.getAttribute('data-mday') === this.automationState.dayOfMonth;
+        btn.className = `month-day-btn py-1.5 text-[11px] font-bold rounded-xl transition cursor-pointer text-center ${
+          isMatch ? 'border border-indigo-200 bg-indigo-50 text-indigo-700 font-black' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+        }`;
+      });
+    } else {
+      if (tabDaily) {
+        tabDaily.classList.remove(...inactiveTabClasses);
+        tabDaily.classList.add(...activeTabClasses);
+      }
+      if (weeklyContainer) weeklyContainer.classList.add('hidden');
+      if (monthlyContainer) monthlyContainer.classList.add('hidden');
+    }
+  },
+
+  /**
+   * Set Periode Waktu (Pagi, Siang, Sore, Malam)
+   */
+  setTimePeriod(p) {
+    this.automationState.period = p;
+    // Sesuaikan default hour12 jika tidak pas dengan periode
+    if (p === 'pagi' && (this.automationState.hour12 < 1 || this.automationState.hour12 > 11)) {
+      this.automationState.hour12 = 8;
+    } else if (p === 'siang' && ![12, 1, 2].includes(this.automationState.hour12)) {
+      this.automationState.hour12 = 12;
+    } else if (p === 'sore' && ![3, 4, 5, 6].includes(this.automationState.hour12)) {
+      this.automationState.hour12 = 5;
+    } else if (p === 'malam' && ![7, 8, 9, 10, 11].includes(this.automationState.hour12)) {
+      this.automationState.hour12 = 8;
+    }
+    this.updateClockUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Set Jam dari klik jam bulet analog
+   */
+  setHourFromClock(h) {
+    this.automationState.hour12 = h;
+    // Otomatis sesuaikan periode jika user memilih jam yang khas
+    if (h >= 7 && h <= 11) {
+      if (this.automationState.period !== 'malam') this.automationState.period = 'pagi';
+    } else if (h === 12 || h === 1 || h === 2) {
+      if (this.automationState.period === 'pagi' && h === 12) this.automationState.period = 'siang';
+      else if (this.automationState.period === 'sore' || this.automationState.period === 'malam') this.automationState.period = 'siang';
+    } else if (h >= 3 && h <= 6) {
+      this.automationState.period = 'sore';
+    }
+    this.updateClockUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Set Menit (:00, :15, :30, :45)
+   */
+  setMinute(m) {
+    this.automationState.minute = parseInt(m, 10) || 0;
+    this.updateClockUI();
+    this.syncHiddenScheduleInput();
+  },
+
+  /**
+   * Dapatkan Jam Format 24 Jam
+   */
+  getHour24() {
+    const h = this.automationState.hour12;
+    const p = this.automationState.period;
+    if (p === 'pagi') {
+      return (h === 12) ? 0 : h;
+    } else if (p === 'siang') {
+      if (h === 12) return 12;
+      return (h <= 3) ? h + 12 : 12;
+    } else if (p === 'sore') {
+      return (h <= 6) ? h + 12 : 17;
+    } else { // malam
+      return (h < 12) ? h + 12 : 20;
+    }
+  },
+
+  /**
+   * Update Jarum Jam, Tombol Angka Jam, dan Tampilan Digital
+   */
+  updateClockUI() {
+    const h12 = this.automationState.hour12;
+    const h24 = this.getHour24();
+    const m = this.automationState.minute;
+    const period = this.automationState.period;
+
+    // 1. Putar Jarum Jam (Needle)
+    const needle = document.getElementById('clockNeedle');
+    if (needle) {
+      const rot = (h12 % 12) * 30;
+      needle.style.transform = `translateX(-50%) rotate(${rot}deg)`;
+    }
+
+    // 2. Highlight Angka Jam yang terpilih di jam bulet
+    document.querySelectorAll('.clock-num-btn').forEach(btn => {
+      const btnHour = parseInt(btn.getAttribute('data-hour'), 10);
+      if (btnHour === h12) {
+        btn.className = 'clock-num-btn absolute w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white bg-indigo-600 shadow-md shadow-indigo-500/40 scale-110 transition cursor-pointer z-15';
+      } else {
+        btn.className = 'clock-num-btn absolute w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition cursor-pointer z-15';
+      }
+    });
+
+    // 3. Highlight Tombol Periode (Pagi, Siang, Sore, Malam)
+    const periods = ['pagi', 'siang', 'sore', 'malam'];
+    periods.forEach(p => {
+      const cap = p.charAt(0).toUpperCase() + p.slice(1);
+      const btn = document.getElementById('btnPeriod' + cap);
+      if (btn) {
+        if (p === period) {
+          btn.className = 'period-btn py-1.5 text-[11px] font-black rounded-xl transition cursor-pointer bg-white text-indigo-600 shadow-xs';
+        } else {
+          btn.className = 'period-btn py-1.5 text-[11px] font-bold rounded-xl transition cursor-pointer text-slate-600 hover:text-slate-900';
+        }
+      }
+    });
+
+    // 4. Highlight Menit
+    document.querySelectorAll('.min-btn').forEach(btn => {
+      const minVal = parseInt(btn.getAttribute('data-min'), 10);
+      if (minVal === m) {
+        btn.className = 'min-btn px-2.5 py-1 text-[11px] font-black rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 transition cursor-pointer';
+      } else {
+        btn.className = 'min-btn px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition cursor-pointer';
+      }
+    });
+
+    // 5. Digital Preview Readout
+    const digitalEl = document.getElementById('clockDigitalDisplay');
+    const badgeEl = document.getElementById('clockPeriodTextBadge');
+    if (digitalEl) {
+      digitalEl.innerText = `${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+    if (badgeEl) {
+      const labelMap = { pagi: 'Pagi', siang: 'Siang', sore: 'Sore', malam: 'Malam' };
+      badgeEl.innerText = labelMap[period] || 'WIB';
+    }
+  },
+
+  /**
+   * Susun string teks jadwal alami (contoh: "Setiap Hari 08:00 WIB", "Setiap Senin 17:00 WIB")
+   */
+  buildScheduleString() {
+    const h24 = String(this.getHour24()).padStart(2, '0');
+    const m = String(this.automationState.minute).padStart(2, '0');
+    const timeStr = `${h24}:${m} WIB`;
+
+    if (this.automationState.frequency === 'weekly') {
+      return `Setiap ${this.automationState.dayOfWeek} ${timeStr}`;
+    } else if (this.automationState.frequency === 'monthly') {
+      if (this.automationState.dayOfMonth === 'Akhir Bulan') {
+        return `Akhir Bulan ${timeStr}`;
+      } else {
+        return `Setiap ${this.automationState.dayOfMonth} ${timeStr}`;
+      }
+    } else {
+      return `Setiap Hari ${timeStr}`;
+    }
+  },
+
+  /**
+   * Sinkronkan teks jadwal ke hidden input #inputAutoSchedule
+   */
+  syncHiddenScheduleInput() {
+    const inputSched = document.getElementById('inputAutoSchedule');
+    if (inputSched) inputSched.value = this.buildScheduleString();
+  },
+
+  /**
+   * Tambah Email Penerima (Mendukung > 5 email)
+   */
+  addEmailRecipient(rawInput = null) {
+    const inputEl = document.getElementById('inputNewEmailRecipient');
+    const text = (rawInput !== null ? rawInput : (inputEl ? inputEl.value : '')).trim();
+    if (!text) return;
+
+    // Pisahkan jika pengguna memasukkan koma, spasi, atau titik koma
+    const parts = text.split(/[,;\n\s]+/).map(e => e.trim().toLowerCase()).filter(e => e);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let addedCount = 0;
+
+    parts.forEach(em => {
+      if (emailRegex.test(em)) {
+        if (!this.automationState.emails.includes(em)) {
+          this.automationState.emails.push(em);
+          addedCount++;
+        }
+      }
+    });
+
+    if (addedCount === 0 && parts.length > 0) {
+      this.showToast('Format email tidak valid! Gunakan format nama@domain.com');
+    } else if (inputEl) {
+      inputEl.value = '';
+    }
+
+    this.renderEmailChips();
+    this.syncHiddenEmailInput();
+  },
+
+  /**
+   * Hapus Email Penerima dari chips
+   */
+  removeEmailRecipient(idx) {
+    if (this.automationState.emails.length <= 1) {
+      this.showToast('Minimal harus ada 1 target email penerima laporan!');
+      return;
+    }
+    this.automationState.emails.splice(idx, 1);
+    this.renderEmailChips();
+    this.syncHiddenEmailInput();
+  },
+
+  /**
+   * Handle keydown pada input email (Enter atau koma otomatis tambah)
+   */
+  handleEmailInputKeydown(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      this.addEmailRecipient();
+    }
+  },
+
+  /**
+   * Render Tag Chips untuk seluruh email target
+   */
+  renderEmailChips() {
+    const container = document.getElementById('emailChipsList');
+    const badge = document.getElementById('emailChipsCountBadge');
+    if (!container) return;
+
+    const emails = this.automationState.emails || [];
+
+    if (badge) {
+      badge.innerText = `${emails.length} Email Terdaftar${emails.length > 5 ? ' (Bisa > 5 email)' : ''}`;
+    }
+
+    if (emails.length === 0) {
+      container.innerHTML = `
+        <div class="w-full text-center py-2 text-slate-400 text-xs italic">
+          Belum ada target email. Silakan tambahkan email penerima di bawah.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = emails.map((em, idx) => `
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-2xs text-[11px] font-bold text-slate-800 transition hover:border-slate-300">
+        <svg class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+        <span class="truncate max-w-[190px] sm:max-w-[260px]">${em}</span>
+        <button type="button" onclick="UI.removeEmailRecipient(${idx})" class="w-4 h-4 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center text-xs font-black transition cursor-pointer" title="Hapus email">&times;</button>
+      </span>
+    `).join('');
+  },
+
+  /**
+   * Sinkronkan daftar email ke hidden input #inputAutoEmail
+   */
+  syncHiddenEmailInput() {
+    const inputEmail = document.getElementById('inputAutoEmail');
+    if (inputEmail) inputEmail.value = (this.automationState.emails || []).join(', ');
+  },
+
+  /**
    * Simpan pembaruan otomatisasi laporan (Jadwal & Email) ke database Google Sheets
    */
   async saveAutomationData() {
-    const sched = document.getElementById('inputAutoSchedule')?.value;
-    const email = (document.getElementById('inputAutoEmail')?.value || '').trim();
-    const type = (document.getElementById('inputAutoType')?.value || '').trim();
+    const sched = this.buildScheduleString();
+    const emailList = (this.automationState.emails && this.automationState.emails.length > 0)
+      ? this.automationState.emails
+      : (document.getElementById('inputAutoEmail')?.value || '').split(/[,;\n\s]+/).filter(e => e.includes('@'));
+    const emailStr = emailList.join(', ');
+    const type = (document.getElementById('inputAutoType')?.value || '').trim() || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
 
-    if (!email) {
-      this.showToast('Email penerima laporan wajib diisi!');
+    if (emailList.length === 0) {
+      this.showToast('Minimal harus ada 1 email penerima laporan!');
       return;
     }
 
@@ -3151,11 +3594,13 @@ const UI = {
       `;
     }
 
-    // Terapkan ke state lokal terlebih dahulu & simpan ke cache HP
+    // Terapkan ke state lokal & simpan ke cache HP segera
     AppState.automationConfig = {
-      schedule: sched || AppState.automationConfig?.schedule || 'Setiap Hari 08:00 WIB',
-      email: email,
-      type: type || AppState.automationConfig?.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
+      schedule: sched,
+      email: emailStr,
+      emails: emailList,
+      type: type,
+      enabled: AppState.automationConfig?.enabled !== false
     };
 
     AppState.saveToCache();
@@ -3164,7 +3609,8 @@ const UI = {
     try {
       this.showToast('⏳ Menyimpan konfigurasi ke database cloud...');
       const payload = {
-        email: email,
+        email: emailStr,
+        emails: emailList,
         schedule: sched,
         type: type
       };
@@ -3178,7 +3624,7 @@ const UI = {
       if (!res || !res.success) {
         console.warn('[UI] updateConfig belum aktif di deployment live Apps Script, mencoba fallback updateProfile...', res);
         const profileRes = await ApiService.updateProfile({
-          email: email,
+          email: emailStr,
           schedule: sched,
           type: type
         });
@@ -3186,14 +3632,17 @@ const UI = {
           usedFallback = true;
           res = {
             success: true,
-            message: 'Email berhasil diperbarui di database Google Sheets (UserPIC).'
+            message: 'Email & Jadwal berhasil diperbarui di database Google Sheets.'
           };
         }
       }
 
       if (res && res.success) {
         if (res.config) {
-          if (res.config.TARGET_EMAIL) AppState.automationConfig.email = res.config.TARGET_EMAIL;
+          if (res.config.TARGET_EMAIL) {
+            AppState.automationConfig.email = res.config.TARGET_EMAIL;
+            AppState.automationConfig.emails = String(res.config.TARGET_EMAIL).split(/[,;\n\s]+/).filter(e => e.includes('@'));
+          }
           if (res.config.AUTO_SCHEDULE_TEXT) AppState.automationConfig.schedule = res.config.AUTO_SCHEDULE_TEXT;
           if (res.config.REPORT_DOCUMENT_TYPE) AppState.automationConfig.type = res.config.REPORT_DOCUMENT_TYPE;
           if (res.config.AUTO_EMAIL_ENABLED !== undefined) AppState.automationConfig.enabled = String(res.config.AUTO_EMAIL_ENABLED).toUpperCase() === 'TRUE';
@@ -3203,13 +3652,13 @@ const UI = {
         this.closeEditAutomationModal();
 
         if (usedFallback) {
-          this.showToast('✅ Berhasil disimpan! Email tersinkron ke database Cloud.');
+          this.showToast('✅ Berhasil disimpan! Email & jadwal tersinkron ke database Cloud.');
         } else {
-          this.showToast('✅ Berhasil! Jadwal & email laporan tersimpan di database Google Sheets!');
+          this.showToast('✅ Berhasil! Jadwal & target email laporan tersimpan di database Google Sheets!');
         }
       } else {
         this.closeEditAutomationModal();
-        this.showToast('⚠️ Tersimpan di HP. Untuk simpan di cloud: Buka Apps Script & Terapkan Versi Baru.');
+        this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
       }
     } catch (err) {
       console.error('[UI] Gagal simpan otomatisasi ke backend:', err);
@@ -4246,6 +4695,15 @@ window.saveProfileData = () => UI.saveProfileData();
 window.openEditAutomationModal = () => UI.openEditAutomationModal();
 window.closeEditAutomationModal = () => UI.closeEditAutomationModal();
 window.saveAutomationData = () => UI.saveAutomationData();
+window.setFrequency = (f) => UI.setFrequency(f);
+window.setDayOfWeek = (d) => UI.setDayOfWeek(d);
+window.setDayOfMonth = (m) => UI.setDayOfMonth(m);
+window.setTimePeriod = (p) => UI.setTimePeriod(p);
+window.setHourFromClock = (h) => UI.setHourFromClock(h);
+window.setMinute = (m) => UI.setMinute(m);
+window.addEmailRecipient = (e) => UI.addEmailRecipient(e);
+window.removeEmailRecipient = (i) => UI.removeEmailRecipient(i);
+window.handleEmailInputKeydown = (e) => UI.handleEmailInputKeydown(e);
 window.openLogoutModal = () => UI.openLogoutModal();
 window.closeLogoutModal = () => UI.closeLogoutModal();
 window.confirmLogout = () => UI.confirmLogout();

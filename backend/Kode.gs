@@ -86,6 +86,31 @@ function getDriveFolderId(ss) {
 }
 
 /**
+ * Helper normalisasi daftar email penerima laporan (mendukung single, koma, spasi, array)
+ * GmailApp.sendEmail secara native mendukung multi-recipient melalui string dipisah koma
+ */
+function normalizeRecipientEmails(rawEmails) {
+  if (!rawEmails) return "";
+  let list = [];
+  if (Array.isArray(rawEmails)) {
+    list = rawEmails;
+  } else if (typeof rawEmails === "string") {
+    list = rawEmails.split(/[,;\n\s]+/);
+  }
+  const cleanList = list
+    .map(function(e) { return String(e).trim().toLowerCase(); })
+    .filter(function(e) { return e.indexOf("@") !== -1 && e.indexOf(".") !== -1; });
+
+  const unique = [];
+  for (let i = 0; i < cleanList.length; i++) {
+    if (unique.indexOf(cleanList[i]) === -1) {
+      unique.push(cleanList[i]);
+    }
+  }
+  return unique.join(", ");
+}
+
+/**
  * Helper membaca Email Tujuan Laporan dari konfigurasi database
  */
 function getTargetEmail(ss) {
@@ -97,7 +122,7 @@ function getTargetEmail(ss) {
         const rows = sheetConfig.getDataRange().getValues();
         for (let i = 1; i < rows.length; i++) {
           if (rows[i][0] === "TARGET_EMAIL" && rows[i][1]) {
-            const val = String(rows[i][1]).trim();
+            const val = normalizeRecipientEmails(rows[i][1]);
             if (val !== "") return val;
           }
         }
@@ -107,8 +132,8 @@ function getTargetEmail(ss) {
       if (sheetUsers) {
         const uRows = sheetUsers.getDataRange().getValues();
         for (let i = 1; i < uRows.length; i++) {
-          const emailVal = String(uRows[i][7] || "").trim();
-          if (emailVal && emailVal.includes("@")) return emailVal;
+          const emailVal = normalizeRecipientEmails(uRows[i][7]);
+          if (emailVal) return emailVal;
         }
       }
     } catch (err) {
@@ -159,8 +184,9 @@ function updateSystemConfig(ss, data) {
     if (k) configMap[k] = i + 1; // row number (1-indexed)
   }
 
+  const targetEmailNormalized = normalizeRecipientEmails(data.email || data.TARGET_EMAIL || (Array.isArray(data.emails) ? data.emails.join(", ") : ""));
   const mappings = {
-    "TARGET_EMAIL": data.email || data.TARGET_EMAIL,
+    "TARGET_EMAIL": targetEmailNormalized,
     "AUTO_EMAIL_ENABLED": (data.AUTO_EMAIL_ENABLED !== undefined) 
       ? String(data.AUTO_EMAIL_ENABLED).toUpperCase() 
       : (data.enabled !== undefined ? (data.enabled ? "TRUE" : "FALSE") : undefined),
@@ -171,7 +197,7 @@ function updateSystemConfig(ss, data) {
   };
 
   const descriptions = {
-    "TARGET_EMAIL": "Email penerima rekapitulasi PDF harian",
+    "TARGET_EMAIL": "Email penerima rekapitulasi PDF harian (bisa multi-email)",
     "AUTO_EMAIL_ENABLED": "Status aktifasi otomatisasi email harian (TRUE / FALSE)",
     "AUTO_SCHEDULE_TEXT": "Deskripsi teks jadwal pengiriman laporan",
     "REPORT_DOCUMENT_TYPE": "Format template dokumen laporan",
@@ -249,17 +275,44 @@ function syncAppsScriptScheduleTrigger(isEnabled, hour, scheduleText) {
 
   if (isEnabled) {
     const validHour = (hour >= 0 && hour <= 23) ? hour : 8;
-    const isWeekly = String(scheduleText || "").toLowerCase().includes("senin");
+    const lower = String(scheduleText || "").toLowerCase();
 
-    if (isWeekly) {
+    // 1. MINGGUAN (Weekly)
+    if (lower.includes("minggu") || lower.includes("senin") || lower.includes("selasa") || lower.includes("rabu") || lower.includes("kamis") || lower.includes("jumat") || lower.includes("sabtu")) {
+      let weekday = ScriptApp.WeekDay.MONDAY;
+      let dayName = "Senin";
+      if (lower.includes("selasa")) { weekday = ScriptApp.WeekDay.TUESDAY; dayName = "Selasa"; }
+      else if (lower.includes("rabu")) { weekday = ScriptApp.WeekDay.WEDNESDAY; dayName = "Rabu"; }
+      else if (lower.includes("kamis")) { weekday = ScriptApp.WeekDay.THURSDAY; dayName = "Kamis"; }
+      else if (lower.includes("jumat")) { weekday = ScriptApp.WeekDay.FRIDAY; dayName = "Jumat"; }
+      else if (lower.includes("sabtu")) { weekday = ScriptApp.WeekDay.SATURDAY; dayName = "Sabtu"; }
+      else if (lower.includes("minggu")) { weekday = ScriptApp.WeekDay.SUNDAY; dayName = "Minggu"; }
+
       ScriptApp.newTrigger("sendDailyScheduledReport")
         .timeBased()
-        .onWeekDay(ScriptApp.WeekDay.MONDAY)
+        .onWeekDay(weekday)
         .atHour(validHour)
         .inTimezone(TIMEZONE)
         .create();
-      Logger.log("✅ Trigger mingguan (Setiap Senin) aktif jam " + validHour + ":00 WIB.");
-    } else {
+      Logger.log("✅ Trigger mingguan (Setiap " + dayName + ") aktif jam " + validHour + ":00 WIB.");
+    } 
+    // 2. BULANAN (Monthly)
+    else if (lower.includes("bulan") || lower.includes("tgl") || lower.includes("tanggal")) {
+      let monthDay = 28; // Default aman akhir bulan
+      const matchDay = lower.match(/(?:tanggal|tgl)\s*(\d+)/i);
+      if (matchDay && matchDay[1]) {
+        monthDay = Math.min(28, Math.max(1, parseInt(matchDay[1], 10)));
+      }
+      ScriptApp.newTrigger("sendDailyScheduledReport")
+        .timeBased()
+        .onMonthDay(monthDay)
+        .atHour(validHour)
+        .inTimezone(TIMEZONE)
+        .create();
+      Logger.log("✅ Trigger bulanan (Tanggal " + monthDay + ") aktif jam " + validHour + ":00 WIB.");
+    } 
+    // 3. HARIAN (Daily)
+    else {
       ScriptApp.newTrigger("sendDailyScheduledReport")
         .timeBased()
         .atHour(validHour)
@@ -1446,7 +1499,8 @@ function buildEmailHtmlTemplate(dateStr, totalCount, masukCount, keluarCount) {
  */
 function triggerReportEmail(ss, data) {
   if (!ss) ss = getSpreadsheet();
-  const targetEmail = (data && data.email) ? data.email : getTargetEmail(ss);
+  const rawTarget = (data && (data.email || data.emails)) ? (data.email || data.emails) : getTargetEmail(ss);
+  const targetEmail = normalizeRecipientEmails(rawTarget) || DEFAULT_TARGET_EMAIL;
 
   let allHistory = [];
   try {
