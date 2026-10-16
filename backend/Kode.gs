@@ -1306,16 +1306,73 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
 
 function buildEmailHtmlTemplate(dateStr, totalCount, masukCount, keluarCount) {
   return `
-    <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13.5px; color: #111827; line-height: 1.6; max-width: 600px;">
-      <p>Yth. Tim Operasional & Manajemen Logistik Daihatsu,</p>
-      <p>Berikut terlampir berkas PDF rekapitulasi operasional fisik kendaraan (Salvage Logistics) pada tanggal <strong>${dateStr}</strong>.</p>
-      <p><strong>Ringkasan Operasional Lapangan:</strong><br>
-      - Total Unit Diperiksa : <strong>${totalCount} Unit</strong><br>
-      - Unit Masuk (Inbound) : <strong>${masukCount} Unit</strong><br>
-      - Unit Keluar (Outbound): <strong>${keluarCount} Unit</strong></p>
-      <p style="margin-top: 25px;">Salam hormat,<br>
-      <strong>Sistem Management Salvage Daihatsu</strong><br>
-      Astra Daihatsu - DSO Lampung</p>
+    <div style="background-color: #f1f5f9; padding: 25px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+        
+        <!-- HEADER KARTU RESMI (BIRU TUA ASTRA + AKSEN MERAH DAIHATSU) -->
+        <div style="background: #00205B; padding: 20px 24px; border-bottom: 3.5px solid #E60012;">
+          <h2 style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;">
+            ASTRA DAIHATSU - DSO LAMPUNG
+          </h2>
+          <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 11.5px; font-weight: 500;">
+            Laporan Resmi Audit Serah Terima Fisik & Mutasi Kendaraan Yard
+          </p>
+        </div>
+
+        <!-- ISI EMAIL -->
+        <div style="padding: 24px; color: #1e293b; line-height: 1.6; font-size: 13px;">
+          <p style="margin-top: 0;">Yth. Tim Operasional & Manajemen Logistik Daihatsu,</p>
+          
+          <p>
+            Berikut terlampir berkas <strong>PDF</strong> rekapitulasi operasional fisik kendaraan (<em>Salvage Logistics</em>) pada tanggal <strong>${dateStr}</strong>.
+          </p>
+
+          <!-- RINGKASAN OPERASIONAL LAPANGAN -->
+          <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+            <div style="font-weight: 800; font-size: 12.5px; color: #00205B; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+              Ringkasan Operasional Lapangan:
+            </div>
+            <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 5px 0; color: #64748b; font-weight: 600;">Total Unit Diperiksa:</td>
+                <td style="padding: 5px 0; font-weight: 800; color: #0f172a; text-align: right; font-size: 13px;">${totalCount} Unit</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 0; color: #15803d; font-weight: 600;">Unit Masuk (Inbound):</td>
+                <td style="padding: 5px 0; font-weight: 800; color: #15803d; text-align: right; font-size: 13px;">${masukCount} Unit</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 0; color: #1d4ed8; font-weight: 600;">Unit Keluar (Outbound):</td>
+                <td style="padding: 5px 0; font-weight: 800; color: #1d4ed8; text-align: right; font-size: 13px;">${keluarCount} Unit</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- INSTRUKSI PENGUNDUHAN PDF -->
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+            <div style="color: #1e40af; font-size: 12px; font-weight: bold; margin-bottom: 3px;">
+              Dokumen PDF Terlampir
+            </div>
+            <div style="color: #475569; font-size: 11.5px; line-height: 1.5;">
+              Silakan unduh lampiran berkas PDF pada email ini untuk melihat rincian nomor rangka (VIN), nomor mesin, dokumentasi foto fisik unit & stiker, serta tanda tangan serah terima.
+            </div>
+          </div>
+
+          <!-- SALAM HORMAT -->
+          <p style="margin-bottom: 0; color: #475569; font-size: 12px;">
+            Salam hormat,<br>
+            <strong style="color: #00205B; font-size: 12.5px;">Sistem Management Salvage Daihatsu</strong><br>
+            <span style="color: #64748b; font-size: 11.5px;">Astra Daihatsu - DSO Lampung</span>
+          </p>
+        </div>
+
+        <!-- FOOTER RESMI -->
+        <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; text-align: center; font-size: 10.5px; color: #94a3b8;">
+          Sentra Yard & Logistics Hub • Jl. Raya Soekarno Hatta No. 88, Bandar Lampung<br>
+          Dokumen ini diterbitkan otomatis oleh Sistem Management Salvage Astra Daihatsu - DSO Lampung.
+        </div>
+
+      </div>
     </div>
   `;
 }
