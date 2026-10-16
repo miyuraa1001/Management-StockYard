@@ -1177,8 +1177,8 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
   if (safeRecords.length === 0) {
     rowsHtml = `
       <tr>
-        <td colspan="9" style="padding: 24px; text-align: center; color: #64748b; font-style: italic; border: 1px solid #cbd5e1;">
-          Belum ada riwayat mutasi fisik kendaraan pada database.
+        <td colspan="9" style="padding: 24px; text-align: center; color: #000000; font-size: 11px; font-weight: bold; border: 1.5px solid #000000;">
+          Tidak ada data mutasi fisik kendaraan pada periode ini.
         </td>
       </tr>
     `;
@@ -1186,36 +1186,37 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
     safeRecords.forEach((item, idx) => {
       const isMasuk = item.type === "Unit Masuk";
       const badgeBg = isMasuk ? "#dcfce7" : "#fee2e2";
-      const badgeColor = isMasuk ? "#166534" : "#991b1b";
+      const badgeColor = isMasuk ? "#14532d" : "#7f1d1d";
+      const badgeBorder = isMasuk ? "#16a34a" : "#dc2626";
 
       const unitImgHtml = item.unitPhotoBase64 
-        ? `<img src="${item.unitPhotoBase64}" style="width: 55px; height: 42px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; display: block; margin: 0 auto;">` 
-        : `<span style="color: #94a3b8; font-size: 9px; font-style: italic;">No Photo</span>`;
+        ? `<img src="${item.unitPhotoBase64}" style="width: 58px; height: 44px; object-fit: cover; border-radius: 4px; border: 1.5px solid #000000; display: block; margin: 0 auto;">` 
+        : `<span style="color: #000000; font-size: 9px; font-weight: bold;">No Photo</span>`;
 
       const docImgHtml = item.docPhotoBase64 
-        ? `<img src="${item.docPhotoBase64}" style="width: 55px; height: 42px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; display: block; margin: 0 auto;">` 
-        : `<span style="color: #94a3b8; font-size: 9px; font-style: italic;">No Doc</span>`;
+        ? `<img src="${item.docPhotoBase64}" style="width: 58px; height: 44px; object-fit: cover; border-radius: 4px; border: 1.5px solid #000000; display: block; margin: 0 auto;">` 
+        : `<span style="color: #000000; font-size: 9px; font-weight: bold;">No Doc</span>`;
 
       rowsHtml += `
         <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid;">
-          <td style="padding: 8px 6px; text-align: center; border: 1px solid #cbd5e1; font-size: 10px; font-weight: bold;">${idx + 1}</td>
-          <td style="padding: 8px 6px; border: 1px solid #cbd5e1; font-size: 10px; font-family: monospace;">${item.id}</td>
-          <td style="padding: 8px 6px; border: 1px solid #cbd5e1; font-size: 9.5px;">${item.timeDisplay}</td>
-          <td style="padding: 8px 6px; border: 1px solid #cbd5e1; font-size: 10.5px; font-weight: bold; color: #0f172a;">${item.model}</td>
-          <td style="padding: 8px 6px; border: 1px solid #cbd5e1; font-size: 10px; font-family: monospace; font-weight: bold; color: #1e3a8a;">
+          <td style="padding: 8px 5px; text-align: center; border: 1.5px solid #000000; font-size: 10.5px; font-weight: 900; color: #000000;">${idx + 1}</td>
+          <td style="padding: 8px 6px; border: 1.5px solid #000000; font-size: 10px; font-family: monospace; font-weight: bold; color: #000000;">${item.id}</td>
+          <td style="padding: 8px 6px; border: 1.5px solid #000000; font-size: 10px; font-weight: bold; color: #000000;">${item.timeDisplay}</td>
+          <td style="padding: 8px 6px; border: 1.5px solid #000000; font-size: 11px; font-weight: 900; color: #000000;">${item.model}</td>
+          <td style="padding: 8px 6px; border: 1.5px solid #000000; font-size: 10.5px; font-family: monospace; font-weight: 900; color: #000000;">
             VIN: ${item.vin}<br>
-            <span style="font-size: 9px; color: #64748b;">ENG: ${item.engine}</span>
+            <span style="font-size: 9.5px; color: #000000; font-weight: 700;">ENG: ${item.engine}</span>
           </td>
-          <td style="padding: 8px 6px; text-align: center; border: 1px solid #cbd5e1;">
-            <span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; white-space: nowrap;">
+          <td style="padding: 8px 5px; text-align: center; border: 1.5px solid #000000;">
+            <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1.5px solid ${badgeBorder}; padding: 3px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 900; white-space: nowrap;">
               ${item.type}
             </span>
           </td>
-          <td style="padding: 8px 6px; text-align: center; border: 1px solid #cbd5e1;">${unitImgHtml}</td>
-          <td style="padding: 8px 6px; text-align: center; border: 1px solid #cbd5e1;">${docImgHtml}</td>
-          <td style="padding: 8px 6px; border: 1px solid #cbd5e1; font-size: 9.5px; color: #334155;">
-            <strong>${item.pic}</strong><br>
-            <span style="font-size: 8.5px; color: #64748b;">${item.notes}</span>
+          <td style="padding: 6px 4px; text-align: center; border: 1.5px solid #000000;">${unitImgHtml}</td>
+          <td style="padding: 6px 4px; text-align: center; border: 1.5px solid #000000;">${docImgHtml}</td>
+          <td style="padding: 8px 6px; border: 1.5px solid #000000; font-size: 10px; color: #000000;">
+            <strong style="color: #000000; font-size: 10.5px;">${item.pic}</strong><br>
+            <span style="font-size: 9px; color: #1e293b; font-weight: 600;">${item.notes}</span>
           </td>
         </tr>
       `;
@@ -1229,21 +1230,18 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
       <meta charset="utf-8">
       <title>Laporan Rekapitulasi Salvage - Astra Daihatsu</title>
       <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; background: #ffffff; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #000000; background: #ffffff; }
         .header-box { border-bottom: 3px solid #dc2626; padding-bottom: 12px; margin-bottom: 16px; }
         .company-title { font-size: 16px; font-weight: 900; color: #dc2626; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
-        .company-sub { font-size: 12px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0; }
-        .company-desc { font-size: 9.5px; color: #64748b; margin-top: 3px; }
-        .meta-grid { display: flex; justify-content: space-between; margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
-        .meta-col { font-size: 10px; }
-        .meta-col strong { color: #0f172a; }
-        .summary-cards { display: flex; gap: 12px; margin-bottom: 16px; }
-        .kpi-card { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; background: #ffffff; }
-        .kpi-label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
-        .kpi-value { font-size: 18px; font-weight: 900; color: #0f172a; }
-        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        th { background: #0f172a; color: #ffffff; padding: 9px 6px; font-size: 9.5px; font-weight: 800; text-transform: uppercase; border: 1px solid #0f172a; }
-        .footer-note { margin-top: 24px; font-size: 9px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        .company-sub { font-size: 12.5px; font-weight: 800; color: #000000; margin: 2px 0 0 0; }
+        .company-desc { font-size: 9.5px; color: #1e293b; font-weight: 600; margin-top: 3px; }
+        .meta-grid { display: flex; justify-content: space-between; margin-bottom: 16px; background: #f8fafc; border: 1.5px solid #000000; border-radius: 6px; padding: 10px 14px; }
+        .meta-col { font-size: 10.5px; color: #000000; }
+        .meta-col strong { color: #000000; font-weight: 900; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 2px solid #000000; }
+        th { background: #0f172a; color: #ffffff; padding: 10px 5px; font-size: 10px; font-weight: 900; text-transform: uppercase; border: 1.5px solid #000000; letter-spacing: 0.3px; }
+        td { border: 1.5px solid #000000 !important; color: #000000 !important; }
+        .footer-note { margin-top: 24px; font-size: 9.5px; color: #000000; font-weight: 600; text-align: center; border-top: 1.5px solid #000000; padding-top: 10px; }
       </style>
     </head>
     <body>
@@ -1260,22 +1258,7 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
         </div>
         <div class="meta-col" style="text-align: right;">
           <strong>Status Sistem:</strong> Terverifikasi Database Cloud<br>
-          <strong>Total Transaksi:</strong> ${safeRecords.length} Unit
-        </div>
-      </div>
-
-      <div class="summary-cards">
-        <div class="kpi-card" style="border-left: 4px solid #2563eb;">
-          <div class="kpi-label">Total Unit Diperiksa</div>
-          <div class="kpi-value" style="color: #2563eb;">${safeRecords.length}</div>
-        </div>
-        <div class="kpi-card" style="border-left: 4px solid #16a34a;">
-          <div class="kpi-label">Unit Masuk (Inbound)</div>
-          <div class="kpi-value" style="color: #16a34a;">${masukCount}</div>
-        </div>
-        <div class="kpi-card" style="border-left: 4px solid #dc2626;">
-          <div class="kpi-label">Unit Keluar (Outbound)</div>
-          <div class="kpi-value" style="color: #dc2626;">${keluarCount}</div>
+          <strong>Total Unit:</strong> <strong>${safeRecords.length} Kendaraan</strong>
         </div>
       </div>
 
@@ -1296,10 +1279,24 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
         <tbody>
           ${rowsHtml}
         </tbody>
+        <tfoot>
+          <tr style="background: #e2e8f0; border-top: 2.5px solid #000000;">
+            <td colspan="5" style="padding: 10px 8px; text-align: right; border: 1.5px solid #000000; font-size: 11px; text-transform: uppercase; font-weight: 900; color: #000000;">
+              TOTAL REKAPITULASI UNIT:
+            </td>
+            <td style="padding: 10px 5px; text-align: center; border: 1.5px solid #000000; font-size: 12px; font-weight: 900; color: #000000; background: #cbd5e1;">
+              ${safeRecords.length} Unit
+            </td>
+            <td colspan="3" style="padding: 10px 8px; text-align: center; border: 1.5px solid #000000; font-size: 10px; font-weight: 900; color: #000000;">
+              <span style="color: #14532d; font-weight: 900;">MASUK: ${masukCount} UNIT</span> &nbsp;|&nbsp; 
+              <span style="color: #7f1d1d; font-weight: 900;">KELUAR: ${keluarCount} UNIT</span>
+            </td>
+          </tr>
+        </tfoot>
       </table>
 
       <div class="footer-note">
-        Dokumen ini dibuat secara otomatis oleh Sistem Management Salvage Astra Daihatsu DSO Lampung.<br>
+        Dokumen ini diterbitkan resmi oleh Sistem Management Salvage Astra Daihatsu DSO Lampung.<br>
         Seluruh foto fisik unit dan berkas serah terima tersimpan aman di Google Drive Perusahaan.
       </div>
     </body>
@@ -1309,43 +1306,16 @@ function buildHtmlReport(records, reportDateStr, printDateStr) {
 
 function buildEmailHtmlTemplate(dateStr, totalCount, masukCount, keluarCount) {
   return `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-      <div style="background: linear-gradient(135deg, #0f172a, #1e293b); padding: 24px; color: #ffffff;">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700;">Astra Daihatsu DSO Lampung</div>
-        <h2 style="margin: 6px 0 0 0; font-size: 18px; font-weight: 800; color: #ffffff;">Rekap Mutasi Fisik Kendaraan Salvage</h2>
-        <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">Laporan Operasional Yard • Tanggal ${dateStr}</p>
-      </div>
-
-      <div style="padding: 24px;">
-        <p style="font-size: 13px; color: #334155; line-height: 1.6; margin-top: 0;">
-          Yth. Tim Operasional & Manajemen Logistik Daihatsu,<br><br>
-          Berikut terlampir dokumen PDF rekapitulasi pemeriksaan dan mutasi fisik kendaraan yang tercatat di pool yard. Berkas PDF lengkap dengan dokumentasi foto fisik unit dan bukti serah terima dapat Anda unduh pada lampiran email ini.
-        </p>
-
-        <div style="display: flex; gap: 12px; margin: 20px 0; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-          <div style="flex: 1; text-align: center;">
-            <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Unit</div>
-            <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-top: 2px;">${totalCount}</div>
-          </div>
-          <div style="flex: 1; text-align: center; border-left: 1px solid #cbd5e1;">
-            <div style="font-size: 10px; font-weight: 700; color: #16a34a; text-transform: uppercase;">Unit Masuk</div>
-            <div style="font-size: 20px; font-weight: 900; color: #16a34a; margin-top: 2px;">${masukCount}</div>
-          </div>
-          <div style="flex: 1; text-align: center; border-left: 1px solid #cbd5e1;">
-            <div style="font-size: 10px; font-weight: 700; color: #dc2626; text-transform: uppercase;">Unit Keluar</div>
-            <div style="font-size: 20px; font-weight: 900; color: #dc2626; margin-top: 2px;">${keluarCount}</div>
-          </div>
-        </div>
-
-        <p style="font-size: 12px; color: #64748b; line-height: 1.5;">
-          Data di atas diambil langsung secara realtime dari database Google Spreadsheet pool yard Sentra Lampung.
-        </p>
-      </div>
-
-      <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; text-align: center; font-size: 10.5px; color: #94a3b8;">
-        Sentra Yard & Logistics Hub • Jl. Raya Soekarno Hatta No. 88, Bandar Lampung<br>
-        Dokumen ini diterbitkan otomatis oleh Sistem Management Salvage Astra Daihatsu - DSO Lampung.
-      </div>
+    <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13.5px; color: #111827; line-height: 1.6; max-width: 600px;">
+      <p>Yth. Tim Operasional & Manajemen Logistik Daihatsu,</p>
+      <p>Berikut terlampir berkas PDF rekapitulasi operasional fisik kendaraan (Salvage Logistics) pada tanggal <strong>${dateStr}</strong>.</p>
+      <p><strong>Ringkasan Operasional Lapangan:</strong><br>
+      - Total Unit Diperiksa : <strong>${totalCount} Unit</strong><br>
+      - Unit Masuk (Inbound) : <strong>${masukCount} Unit</strong><br>
+      - Unit Keluar (Outbound): <strong>${keluarCount} Unit</strong></p>
+      <p style="margin-top: 25px;">Salam hormat,<br>
+      <strong>Sistem Management Salvage Daihatsu</strong><br>
+      Astra Daihatsu - DSO Lampung</p>
     </div>
   `;
 }
