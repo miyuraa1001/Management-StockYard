@@ -2967,15 +2967,15 @@ const UI = {
 
     const schedEl = document.getElementById('autoScheduleDisplay');
     const emailEl = document.getElementById('autoEmailDisplay');
-    if (schedEl) schedEl.innerText = auto.schedule;
-    if (emailEl) emailEl.innerText = auto.email;
+    if (schedEl) schedEl.innerText = auto.schedule || 'Setiap Hari 08:00 WIB';
+    if (emailEl) emailEl.innerText = auto.email || 'syafirafira08162@gmail.com';
 
     const inputSched = document.getElementById('inputAutoSchedule');
     const inputEmail = document.getElementById('inputAutoEmail');
     const inputType = document.getElementById('inputAutoType');
-    if (inputSched) inputSched.value = auto.schedule;
-    if (inputEmail) inputEmail.value = auto.email;
-    if (inputType) inputType.value = auto.type;
+    if (inputSched) inputSched.value = auto.schedule || 'Setiap Hari 08:00 WIB';
+    if (inputEmail) inputEmail.value = auto.email || 'syafirafira08162@gmail.com';
+    if (inputType) inputType.value = auto.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
   },
 
   /**
@@ -3151,25 +3151,46 @@ const UI = {
       `;
     }
 
-    // Terapkan ke state lokal terlebih dahulu
+    // Terapkan ke state lokal terlebih dahulu & simpan ke cache HP
     AppState.automationConfig = {
-      schedule: sched || AppState.automationConfig.schedule,
+      schedule: sched || AppState.automationConfig?.schedule || 'Setiap Hari 08:00 WIB',
       email: email,
-      type: type || AppState.automationConfig.type
+      type: type || AppState.automationConfig?.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
     };
 
     AppState.saveToCache();
     this.applyAutomationConfig();
 
     try {
-      this.showToast('⏳ Menyimpan konfigurasi ke database SystemConfig...');
+      this.showToast('⏳ Menyimpan konfigurasi ke database cloud...');
       const payload = {
         email: email,
         schedule: sched,
         type: type
       };
 
-      const res = await ApiService.updateConfig(payload);
+      // 1. Coba update via action updateConfig
+      let res = await ApiService.updateConfig(payload);
+      let usedFallback = false;
+
+      // 2. Fallback Dual-Save: Jika deployment Google Apps Script belum mengaktifkan updateConfig,
+      // simpan email via updateProfile (yang sudah aktif di database live UserPIC)
+      if (!res || !res.success) {
+        console.warn('[UI] updateConfig belum aktif di deployment live Apps Script, mencoba fallback updateProfile...', res);
+        const profileRes = await ApiService.updateProfile({
+          email: email,
+          schedule: sched,
+          type: type
+        });
+        if (profileRes && profileRes.success) {
+          usedFallback = true;
+          res = {
+            success: true,
+            message: 'Email berhasil diperbarui di database Google Sheets (UserPIC).'
+          };
+        }
+      }
+
       if (res && res.success) {
         if (res.config) {
           if (res.config.TARGET_EMAIL) AppState.automationConfig.email = res.config.TARGET_EMAIL;
@@ -3180,10 +3201,15 @@ const UI = {
         AppState.saveToCache();
         this.applyAutomationConfig();
         this.closeEditAutomationModal();
-        this.showToast('✅ Berhasil! Jadwal & email laporan tersimpan di database Google Sheets!');
+
+        if (usedFallback) {
+          this.showToast('✅ Berhasil disimpan! Email tersinkron ke database Cloud.');
+        } else {
+          this.showToast('✅ Berhasil! Jadwal & email laporan tersimpan di database Google Sheets!');
+        }
       } else {
         this.closeEditAutomationModal();
-        this.showToast('⚠️ Tersimpan di browser. Database: ' + (res?.message || 'Gagal tersambung'));
+        this.showToast('⚠️ Tersimpan di HP. Untuk simpan di cloud: Buka Apps Script & Terapkan Versi Baru.');
       }
     } catch (err) {
       console.error('[UI] Gagal simpan otomatisasi ke backend:', err);

@@ -1410,9 +1410,23 @@
                   </div>
                   <div class="min-w-0">
                     <span class="text-xs font-bold text-slate-800 block leading-tight">Jadwal Pengiriman</span>
-                    <span class="text-[11px] text-slate-400 font-medium block mt-0.5 leading-tight">
-                      Setiap hari pukul <span id="autoScheduleDisplay" class="text-[#2F65F6] font-bold">08:00</span>
-                    </span>
+                    <span id="autoScheduleDisplay" class="text-[11px] text-[#2F65F6] font-bold block mt-0.5 leading-tight">Setiap Hari 08:00 WIB</span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 text-slate-300">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </div>
+              </div>
+
+              <!-- Item: Target Email Penerima -->
+              <div class="flex items-center justify-between gap-3 pt-1 border-t border-slate-50 cursor-pointer" onclick="UI.openEditAutomationModal()">
+                <div class="flex items-center space-x-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <span class="text-xs font-bold text-slate-800 block leading-tight">Target Email Penerima</span>
+                    <span id="autoEmailDisplay" class="text-[11px] text-slate-500 font-semibold block mt-0.5 leading-tight truncate max-w-[200px]">syafirafira08162@gmail.com</span>
                   </div>
                 </div>
                 <div class="flex items-center space-x-1.5 flex-shrink-0 text-slate-300">

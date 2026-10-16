@@ -102,6 +102,15 @@ function getTargetEmail(ss) {
           }
         }
       }
+      // Fallback: baca dari sheet UserPIC kolom Email (kolom ke-8)
+      const sheetUsers = ss.getSheetByName(TAB_USERS);
+      if (sheetUsers) {
+        const uRows = sheetUsers.getDataRange().getValues();
+        for (let i = 1; i < uRows.length; i++) {
+          const emailVal = String(uRows[i][7] || "").trim();
+          if (emailVal && emailVal.includes("@")) return emailVal;
+        }
+      }
     } catch (err) {
       Logger.log("Peringatan saat membaca config target email: " + err.toString());
     }
@@ -189,6 +198,18 @@ function updateSystemConfig(ss, data) {
     syncAppsScriptScheduleTrigger(autoEnabled, reportHour, schedText);
   } catch (trigErr) {
     Logger.log("Peringatan saat sinkronisasi trigger: " + trigErr.toString());
+  }
+
+  // Sinkronkan juga email ke tab UserPIC agar data konsisten di seluruh tabel
+  if (mappings["TARGET_EMAIL"]) {
+    try {
+      const sheetUsers = ss.getSheetByName(TAB_USERS);
+      if (sheetUsers && sheetUsers.getLastRow() > 1) {
+        sheetUsers.getRange(2, 8).setValue(mappings["TARGET_EMAIL"]);
+      }
+    } catch (eUser) {
+      Logger.log("Peringatan sinkron email ke UserPIC: " + eUser.toString());
+    }
   }
 
   return {
@@ -444,7 +465,8 @@ function doPost(e) {
       return createJsonResponse({ success: false, error: "401 Unauthorized: Secret Token tidak valid." });
     }
 
-    const action = body.action || "saveMutation";
+    const rawAction = String(body.action || "").trim();
+    const action = rawAction.toLowerCase();
     const data = body.data || body;
 
     // A. ACTION: LOGIN PETUGAS PIC
@@ -461,17 +483,17 @@ function doPost(e) {
     }
 
     // B. ACTION: UPDATE PROFIL PIC
-    if (action === "updateProfile") {
+    if (action === "updateprofile" || action === "updateuser") {
       return createJsonResponse(updateUserProfile(ss, data));
     }
 
     // C. ACTION: UPDATE KONFIGURASI OTOMATISASI LAPORAN
-    if (action === "updateConfig") {
+    if (action === "updateconfig" || action === "saveconfig") {
       return createJsonResponse(updateSystemConfig(ss, data));
     }
 
     // D. ACTION: MENYIMPAN MUTASI BARU & UPLOAD FOTO KE GOOGLE DRIVE
-    if (action === "saveMutation") {
+    if (action === "savemutation" || !rawAction) {
       const sheetHistory = (ss && ss.getSheetByName(TAB_HISTORY)) || createHistorySheet(ss);
       const driveFolderId = (data.folderId || body.folderId || getDriveFolderId(ss) || "").trim();
 
@@ -540,12 +562,12 @@ function doPost(e) {
     }
 
     // E. ACTION: TRIGGER LAPORAN EMAIL REALTIME
-    if (action === "triggerManualReport") {
+    if (action === "triggermanualreport" || action === "sendreport" || action === "triggeremail") {
       const reportRes = triggerReportEmail(ss, data);
       return createJsonResponse(reportRes);
     }
 
-    return createJsonResponse({ success: false, message: "Action POST '" + action + "' tidak valid." });
+    return createJsonResponse({ success: false, message: "Action POST '" + rawAction + "' tidak valid." });
   } catch (err) {
     return createJsonResponse({ success: false, error: err.toString() });
   }
@@ -795,6 +817,15 @@ function updateUserProfile(ss, data) {
     if (photoUrl) sheet.getRange(foundRowIndex, 9).setValue(photoUrl);
     if (data.password) sheet.getRange(foundRowIndex, 3).setValue(data.password);
     sheet.getRange(foundRowIndex, 11).setValue(nowFormatted);
+
+    // Sinkronkan juga ke SystemConfig dan trigger jika email atau jadwal diberikan
+    if (data.email || data.schedule) {
+      try {
+        updateSystemConfig(ss, data);
+      } catch (errCfg) {
+        Logger.log("Peringatan sinkron config dari updateUserProfile: " + errCfg.toString());
+      }
+    }
 
     const updatedUser = {
       name: data.name || sheet.getRange(foundRowIndex, 4).getValue(),
