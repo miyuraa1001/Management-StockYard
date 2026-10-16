@@ -2887,7 +2887,7 @@ const UI = {
     if (avatarEl && profile.photo) avatarEl.src = profile.photo;
     if (nameEl) nameEl.innerText = profile.name;
     if (roleEl) roleEl.innerText = profile.role;
-    if (npkEl) npkEl.innerText = `NPK: ${profile.npk}`;
+    if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
       branchEl.title = profile.branch;
@@ -3281,11 +3281,15 @@ const UI = {
   },
 
   /**
-   * Memperbarui badge dot merah pada lonceng notifikasi email
+   * Memperbarui badge dot merah pada lonceng notifikasi email (Header & Settings)
    */
   updateNotificationBadge() {
-    const badge = document.getElementById('notifBadgeDot');
-    if (!badge) return;
+    const badges = [
+      document.getElementById('notifBadgeDot'),
+      document.getElementById('headerNotifBadgeDot')
+    ].filter(Boolean);
+
+    if (badges.length === 0) return;
 
     let logs = [];
     try {
@@ -3294,11 +3298,13 @@ const UI = {
     } catch (e) {}
 
     const hasUnread = logs.some(l => l.read === false);
-    if (hasUnread) {
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
-    }
+    badges.forEach(badge => {
+      if (hasUnread) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    });
   },
 
   /**
