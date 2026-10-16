@@ -715,189 +715,120 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- MIDDLE ROW: SYMMETRICAL ANALYTICS & YARD STATUS (Desktop 12-Col Equal Height) -->
         <!-- ======================================================== -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 md:gap-6 items-stretch">
+        <!-- MIDDLE ROW: DISTRIBUSI MODEL KENDARAAN (SAMA SEPERTI TAMPILAN MOBILE) -->
+        <!-- ======================================================== -->
+        <div class="w-full flex flex-col">
           
-          <!-- LEFT COLUMN (7 cols on lg): Distribusi Model Kendaraan -->
-          <div class="lg:col-span-7 flex flex-col">
-            
-            <!-- Distribusi Model Kendaraan (Precision Side-by-Side 13-Color Donut + Dynamic Car Photo Preview Card) -->
-            <div class="h-full flex flex-col justify-between bg-white/95 rounded-[26px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-white shadow-saas-card scroll-reveal" onclick="closeDonutPopupOnOutside(event)">
-              <!-- Card Header -->
-              <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
-                <div class="flex items-center space-x-2.5 min-w-0">
-                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80 shadow-2xs">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                  </div>
-                  <div class="min-w-0">
-                    <h3 class="text-[13px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Distribusi Model Kendaraan</h3>
-                    <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight">Komposisi 13 model unit di pool yard</p>
-                  </div>
-                </div>
-                <div class="bg-slate-50/90 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0 text-right leading-tight shadow-2xs">
-                  <span id="donutHeaderTotalUnits" class="text-[10.5px] sm:text-xs font-extrabold text-slate-800 block whitespace-nowrap">0 Unit</span>
-                  <span id="donutHeaderModelCount" class="text-[8.5px] sm:text-[10px] text-slate-400 font-semibold block mt-0.5 whitespace-nowrap">0 Model</span>
-                </div>
-              </div>
-
-              <!-- Precision Side-by-Side Body (Mobile & Desktop): Left = Donut, Right = Dynamic Car Preview Card -->
-              <div id="donutChartWrapper" class="relative flex-1 flex flex-row items-stretch justify-between gap-2.5 sm:gap-4 md:gap-5 select-none">
-                
-                <!-- LEFT: Interactive 13-Color Donut + Micro Badge (Matched Height Box) -->
-                <div class="w-[104px] sm:w-[154px] md:w-[188px] lg:w-[198px] flex-shrink-0 flex flex-col items-center justify-center bg-slate-50/70 rounded-2xl p-2 sm:p-3 md:p-4 border border-slate-200/70">
-                  <div class="relative w-[88px] h-[88px] sm:w-[134px] sm:h-[134px] md:w-[152px] md:h-[152px] flex items-center justify-center" style="touch-action: none;">
-                    <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" style="touch-action: none;" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)" ontouchstart="handleDonutTouch(event)" ontouchmove="handleDonutTouch(event)">
-                      <!-- Track Background -->
-                      <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      
-                      <!-- Dynamic Interactive Model Segments injected by UI.renderDashboardDonut() -->
-                    </svg>
-
-                    <!-- Center Donut Label -->
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                      <span id="donutCenterLabel" class="text-[7px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
-                      <span id="donutCenterValue" class="text-base sm:text-2xl font-black text-slate-900 leading-tight my-0.5">0</span>
-                      <span id="donutCenterSub" class="text-[8px] sm:text-[10.5px] font-bold text-slate-500 leading-none">Unit</span>
-                    </div>
-                  </div>
-
-                  <!-- Clean Micro-Badge under Donut -->
-                  <div class="mt-2.5 inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200/80 text-[8px] sm:text-[9.5px] font-extrabold text-slate-600 whitespace-nowrap shadow-2xs">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span>Geser Warna</span>
-                  </div>
-                </div>
-
-                <!-- Small Glassmorphism Capsule Pop-up Outside Donut Ring -->
-                <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-2.5 py-1 bg-white/85 backdrop-blur-md border border-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.14)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
-                  <span id="donutPopupDot" class="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style="background-color: #3b82f6;"></span>
-                  <span id="donutPopupModel" class="text-[10.5px] sm:text-xs font-extrabold text-slate-800">-</span>
-                  <span class="text-slate-300 text-[9.5px] font-bold">•</span>
-                  <span id="donutPopupUnits" class="text-[10px] sm:text-[11px] font-bold text-slate-600">0 Unit</span>
-                  <span id="donutPopupPercent" class="px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white text-[9px] sm:text-[10px] font-extrabold leading-none">0%</span>
-                </div>
-
-                <!-- RIGHT: Precision Dynamic Vehicle Photo & Stock Preview Card (Zero Overflow Guaranteed) -->
-                <div class="flex-1 min-w-0">
-                  <div id="donutPreviewCard" class="h-full bg-gradient-to-br from-white via-slate-50/90 to-slate-100/60 rounded-2xl p-2.5 sm:p-4 md:p-5 border border-slate-200/80 shadow-[0_8px_22px_-6px_rgba(15,23,42,0.06)] transition-all duration-200 overflow-hidden flex flex-col justify-between">
-                    <!-- Row 1 (Header): Dot + Model Name & Category + Percentage Pill -->
-                    <div class="flex items-start justify-between gap-1.5 pb-2 mb-2 border-b border-slate-200/60">
-                      <div class="min-w-0 flex-1">
-                        <div class="flex items-center space-x-1.5 min-w-0">
-                          <span id="donutPreviewDot" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0" style="background-color: #94a3b8;"></span>
-                          <h4 id="donutPreviewModel" class="text-[11.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight truncate">Memuat Data...</h4>
-                        </div>
-                        <p id="donutPreviewCategory" class="text-[9px] sm:text-[10.5px] font-semibold text-slate-400 leading-tight mt-0.5 pl-3.5 sm:pl-4 truncate">Sinkronisasi Database</p>
-                      </div>
-                      <span id="donutPreviewPercentBadge" class="px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-extrabold text-white shadow-xs flex-shrink-0 leading-tight" style="background-color: #94a3b8;">0%</span>
-                    </div>
-
-                    <!-- Row 2 (Body): Car Studio Photo (Left) + Stock Count & Progress Bar (Right) -->
-                    <div class="flex items-center gap-2 sm:gap-3.5 md:gap-4 my-auto py-1">
-                      <div class="w-[64px] h-[44px] sm:w-24 sm:h-16 md:w-32 md:h-20 rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
-                        <img id="donutPreviewImg" src="assets/images/Inventory_Gran Max Pick Up.jpeg" alt="Kendaraan Daihatsu" class="w-full h-full object-contain transition-transform duration-300">
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-baseline justify-between gap-1">
-                          <span class="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold uppercase tracking-wider text-slate-400 leading-none">Total Stok</span>
-                          <span id="donutPreviewUnits" class="text-xs sm:text-base md:text-lg font-black text-slate-900 leading-none">0 Unit</span>
-                        </div>
-                        <!-- Share Progress Bar -->
-                        <div class="w-full h-1.5 md:h-2 bg-slate-200/80 rounded-full overflow-hidden mt-2">
-                          <div id="donutPreviewBar" class="h-full rounded-full transition-all duration-300" style="width: 0%; background-color: #94a3b8;"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Row 3: 2-Column Highlighted Masuk & Keluar Interactive Buttons -->
-                    <div class="grid grid-cols-2 gap-1.5 md:gap-2 mt-2.5 pt-2 border-t border-slate-200/60">
-                      <button id="donutPreviewMasukBtn" type="button" onclick="switchTab('history')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border border-emerald-200/90 shadow-2xs text-[9px] sm:text-[10.5px] md:text-xs font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                        <span id="donutPreviewMasuk">Masuk 0</span>
-                      </button>
-                      <button id="donutPreviewKeluarBtn" type="button" onclick="switchTab('history')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-blue-50 hover:bg-blue-100/90 text-blue-700 border border-blue-200/90 shadow-2xs text-[9px] sm:text-[10.5px] md:text-xs font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                        <span id="donutPreviewKeluar">Keluar 0</span>
-                      </button>
-                    </div>
-
-                    <!-- Row 4: Full-Width Lihat Stok Action Button -->
-                    <button id="donutPreviewBtn" type="button" onclick="switchTab('inventory')" class="w-full mt-1.5 py-1.5 md:py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[9.5px] sm:text-[11px] md:text-xs font-bold inline-flex items-center justify-center space-x-1 shadow-xs active:scale-95 transition cursor-pointer">
-                      <span>Lihat Stok Unit</span>
-                      <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          <!-- RIGHT COLUMN (5 cols on lg - Desktop Only): Yard Operational Status + Attention Alert (Matched Height) -->
-          <div class="hidden lg:flex lg:col-span-5 flex-col justify-between gap-4">
-            
-            <!-- Yard Operational Health Card -->
-            <div class="flex-1 flex flex-col justify-between bg-white/95 rounded-3xl p-5 md:p-6 border border-white shadow-saas-card scroll-reveal">
-              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div class="flex items-center space-x-2.5">
-                  <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 border border-indigo-100/80 shadow-2xs">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                  </div>
-                  <div>
-                    <h3 class="text-sm md:text-base font-extrabold text-slate-900 leading-tight">Status Operasional Yard</h3>
-                    <p class="text-xs text-slate-400 font-medium mt-0.5 leading-tight">Monitoring kapasitas &amp; kepatuhan fisik</p>
-                  </div>
-                </div>
-                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/80 text-[10px] font-extrabold">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>Optimal</span>
-                </span>
-              </div>
-
-              <!-- Capacity Bar -->
-              <div class="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/70 my-3">
-                <div class="flex items-center justify-between text-xs mb-2">
-                  <span class="font-bold text-slate-600">Okupansi Slot Pool Yard</span>
-                  <span id="yardOccupancyText" class="font-extrabold text-indigo-600">0 / 120 Unit (0%)</span>
-                </div>
-                <div class="w-full bg-slate-200/90 rounded-full h-2 overflow-hidden">
-                  <div id="yardOccupancyBar" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-                <div class="flex items-center justify-between text-[10.5px] text-slate-400 mt-1.5 font-semibold">
-                  <span id="yardAvailableSlots">Tersedia: 120 Slot</span>
-                  <span>Ambang Batas: 100 Slot</span>
-                </div>
-              </div>
-
-              <!-- Quick Verification Status -->
-              <div class="grid grid-cols-2 gap-2.5 text-xs">
-                <div onclick="switchTab('inventory')" class="p-3 bg-blue-50/60 hover:bg-blue-50 rounded-2xl border border-blue-200/70 text-left cursor-pointer transition">
-                  <span class="text-[10.5px] text-blue-600 font-bold block leading-tight">DO Siap Verifikasi</span>
-                  <span id="yardDoReadyCount" class="text-base font-black text-blue-950 mt-1 block">0 Unit</span>
-                </div>
-                <div onclick="switchTab('history')" class="p-3 bg-emerald-50/60 hover:bg-emerald-50 rounded-2xl border border-emerald-200/70 text-left cursor-pointer transition">
-                  <span class="text-[10.5px] text-emerald-600 font-bold block leading-tight">BASTK Valid</span>
-                  <span id="yardBastkValidCount" class="text-base font-black text-emerald-950 mt-1 block">0 Unit</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Urgent Attention Alert Card (Matched Bottom Right) -->
-            <div id="yardAttentionCard" class="bg-gradient-to-r from-slate-50 to-slate-100/90 border border-slate-200/90 rounded-3xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 transition scroll-reveal flex-shrink-0" onclick="switchTab('inventory'); filterInventoryByStatus('all')">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div id="yardAttentionIconBox" class="w-10 h-10 rounded-2xl bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0 border border-slate-300">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <!-- Distribusi Model Kendaraan (Precision Side-by-Side 13-Color Donut + Dynamic Car Photo Preview Card) -->
+          <div class="w-full bg-white/95 rounded-[26px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-white shadow-saas-card scroll-reveal" onclick="closeDonutPopupOnOutside(event)">
+            <!-- Card Header -->
+            <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80 shadow-2xs">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
                 </div>
                 <div class="min-w-0">
-                  <p id="yardAttentionTitle" class="text-xs md:text-[13px] font-extrabold text-slate-800 truncate">Monitoring Pool Yard Aktif</p>
-                  <p id="yardAttentionDesc" class="text-[10.5px] text-slate-500 font-medium mt-0.5 leading-snug">Menunggu sinkronisasi data mutasi unit.</p>
+                  <h3 class="text-[13px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Distribusi Model Kendaraan</h3>
+                  <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight">Komposisi 13 model unit di pool yard</p>
                 </div>
               </div>
-              <svg class="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              <div class="bg-slate-50/90 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200/80 flex-shrink-0 text-right leading-tight shadow-2xs">
+                <span id="donutHeaderTotalUnits" class="text-[10.5px] sm:text-xs font-extrabold text-slate-800 block whitespace-nowrap">0 Unit</span>
+                <span id="donutHeaderModelCount" class="text-[8.5px] sm:text-[10px] text-slate-400 font-semibold block mt-0.5 whitespace-nowrap">0 Model</span>
+              </div>
             </div>
 
+            <!-- Precision Side-by-Side Body (Mobile & Desktop): Left = Donut, Right = Dynamic Car Preview Card -->
+            <div id="donutChartWrapper" class="relative flex-1 flex flex-row items-stretch justify-between gap-2.5 sm:gap-4 md:gap-6 select-none">
+              
+              <!-- LEFT: Interactive 13-Color Donut + Micro Badge (Matched Height Box) -->
+              <div class="w-[104px] sm:w-[154px] md:w-[188px] lg:w-[210px] flex-shrink-0 flex flex-col items-center justify-center bg-slate-50/70 rounded-2xl p-2 sm:p-3 md:p-4 border border-slate-200/70">
+                <div class="relative w-[88px] h-[88px] sm:w-[134px] sm:h-[134px] md:w-[152px] md:h-[152px] lg:w-[160px] lg:h-[160px] flex items-center justify-center" style="touch-action: none;">
+                  <svg id="vehicleDonutSvg" class="w-full h-full transform -rotate-90 overflow-visible" style="touch-action: none;" viewBox="-2 -2 40 40" onmouseleave="hideDonutCapsule(event)" ontouchstart="handleDonutTouch(event)" ontouchmove="handleDonutTouch(event)">
+                    <!-- Track Background -->
+                    <path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    
+                    <!-- Dynamic Interactive Model Segments injected by UI.renderDashboardDonut() -->
+                  </svg>
+
+                  <!-- Center Donut Label -->
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                    <span id="donutCenterLabel" class="text-[7px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">TOTAL</span>
+                    <span id="donutCenterValue" class="text-base sm:text-2xl font-black text-slate-900 leading-tight my-0.5">0</span>
+                    <span id="donutCenterSub" class="text-[8px] sm:text-[10.5px] font-bold text-slate-500 leading-none">Unit</span>
+                  </div>
+                </div>
+
+                <!-- Clean Micro-Badge under Donut -->
+                <div class="mt-2.5 inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200/80 text-[8px] sm:text-[9.5px] font-extrabold text-slate-600 whitespace-nowrap shadow-2xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                  <span>Geser Warna</span>
+                </div>
+              </div>
+
+              <!-- Small Glassmorphism Capsule Pop-up Outside Donut Ring -->
+              <div id="donutSegmentPopup" class="hidden absolute z-30 pointer-events-none rounded-full px-2.5 py-1 bg-white/85 backdrop-blur-md border border-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.14)] ring-1 ring-slate-900/5 inline-flex items-center space-x-1.5 whitespace-nowrap transition-opacity duration-150">
+                <span id="donutPopupDot" class="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style="background-color: #3b82f6;"></span>
+                <span id="donutPopupModel" class="text-[10.5px] sm:text-xs font-extrabold text-slate-800">-</span>
+                <span class="text-slate-300 text-[9.5px] font-bold">•</span>
+                <span id="donutPopupUnits" class="text-[10px] sm:text-[11px] font-bold text-slate-600">0 Unit</span>
+                <span id="donutPopupPercent" class="px-1.5 py-0.5 rounded-full bg-slate-900/85 text-white text-[9px] sm:text-[10px] font-extrabold leading-none">0%</span>
+              </div>
+
+              <!-- RIGHT: Precision Dynamic Vehicle Photo & Stock Preview Card (Zero Overflow Guaranteed) -->
+              <div class="flex-1 min-w-0">
+                <div id="donutPreviewCard" class="h-full bg-gradient-to-br from-white via-slate-50/90 to-slate-100/60 rounded-2xl p-2.5 sm:p-4 md:p-5 border border-slate-200/80 shadow-[0_8px_22px_-6px_rgba(15,23,42,0.06)] transition-all duration-200 overflow-hidden flex flex-col justify-between">
+                  <!-- Row 1 (Header): Dot + Model Name & Category + Percentage Pill -->
+                  <div class="flex items-start justify-between gap-1.5 pb-2 mb-2 border-b border-slate-200/60">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center space-x-1.5 min-w-0">
+                        <span id="donutPreviewDot" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0" style="background-color: #94a3b8;"></span>
+                        <h4 id="donutPreviewModel" class="text-[11.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight truncate">Memuat Data...</h4>
+                      </div>
+                      <p id="donutPreviewCategory" class="text-[9px] sm:text-[10.5px] font-semibold text-slate-400 leading-tight mt-0.5 pl-3.5 sm:pl-4 truncate">Sinkronisasi Database</p>
+                    </div>
+                    <span id="donutPreviewPercentBadge" class="px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-extrabold text-white shadow-xs flex-shrink-0 leading-tight" style="background-color: #94a3b8;">0%</span>
+                  </div>
+
+                  <!-- Row 2 (Body): Car Studio Photo (Left) + Stock Count & Progress Bar (Right) -->
+                  <div class="flex items-center gap-2 sm:gap-3.5 md:gap-4 my-auto py-1">
+                    <div class="w-[64px] h-[44px] sm:w-24 sm:h-16 md:w-32 md:h-20 lg:w-36 lg:h-22 rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
+                      <img id="donutPreviewImg" src="assets/images/Inventory_Gran Max Pick Up.jpeg" alt="Kendaraan Daihatsu" class="w-full h-full object-contain transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-baseline justify-between gap-1">
+                        <span class="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold uppercase tracking-wider text-slate-400 leading-none">Total Stok</span>
+                        <span id="donutPreviewUnits" class="text-xs sm:text-base md:text-lg font-black text-slate-900 leading-none">0 Unit</span>
+                      </div>
+                      <!-- Share Progress Bar -->
+                      <div class="w-full h-1.5 md:h-2 bg-slate-200/80 rounded-full overflow-hidden mt-2">
+                        <div id="donutPreviewBar" class="h-full rounded-full transition-all duration-300" style="width: 0%; background-color: #94a3b8;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Row 3: 2-Column Highlighted Masuk & Keluar Interactive Buttons -->
+                  <div class="grid grid-cols-2 gap-1.5 md:gap-2 mt-2.5 pt-2 border-t border-slate-200/60">
+                    <button id="donutPreviewMasukBtn" type="button" onclick="switchTab('history')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border border-emerald-200/90 shadow-2xs text-[9px] sm:text-[10.5px] md:text-xs font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                      <span id="donutPreviewMasuk">Masuk 0</span>
+                    </button>
+                    <button id="donutPreviewKeluarBtn" type="button" onclick="switchTab('history')" class="w-full py-1 px-1.5 sm:py-1.5 sm:px-2.5 rounded-lg bg-blue-50 hover:bg-blue-100/90 text-blue-700 border border-blue-200/90 shadow-2xs text-[9px] sm:text-[10.5px] md:text-xs font-extrabold inline-flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer whitespace-nowrap">
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                      <span id="donutPreviewKeluar">Keluar 0</span>
+                    </button>
+                  </div>
+
+                  <!-- Row 4: Full-Width Lihat Stok Action Button -->
+                  <button id="donutPreviewBtn" type="button" onclick="switchTab('inventory')" class="w-full mt-1.5 py-1.5 md:py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[9.5px] sm:text-[11px] md:text-xs font-bold inline-flex items-center justify-center space-x-1 shadow-xs active:scale-95 transition cursor-pointer">
+                    <span>Lihat Stok Unit</span>
+                    <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
           </div>
 
         </div>
@@ -1333,15 +1264,19 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">Tabel Rekaman Mutasi Kendaraan</h3>
             </div>
             <div class="flex items-center space-x-2 flex-shrink-0">
-              <span class="md:hidden text-[10px] font-semibold text-slate-400">Geser &leftrightarrow;</span>
               <span id="historyShowingBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">
                 8 Data
               </span>
             </div>
           </div>
 
-          <!-- Responsive Table Scroll Container -->
-          <div class="w-full overflow-x-auto custom-scrollbar">
+          <!-- Mobile Cards Container (Tampilan Khusus Mobile: Bersih, Rapi & Responsif) -->
+          <div id="historyMobileListContainer" class="block md:hidden p-3 sm:p-4 space-y-3 bg-slate-50/50">
+            <!-- Rendered by UI.js for mobile screens -->
+          </div>
+
+          <!-- Responsive Table Scroll Container (Tampilan Khusus Desktop & Tablet Lebar) -->
+          <div class="hidden md:block w-full overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[980px]">
               <thead>
                 <tr class="bg-slate-100/90 border-b-2 border-slate-300 text-[10px] font-black uppercase tracking-wider text-slate-700 select-none">
@@ -1364,7 +1299,7 @@
           <!-- Table Footer Bar -->
           <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
             <span id="historyFooterSummary">Menampilkan seluruh rekaman audit yang sesuai dengan filter aktif.</span>
-            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">DO</strong> untuk melihat foto bukti fisik.</span>
+            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">Stiker / DO</strong> untuk melihat foto bukti fisik.</span>
           </div>
         </div>
       </section>

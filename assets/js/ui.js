@@ -554,7 +554,8 @@ const UI = {
    */
   renderHistoryList() {
     const container = document.getElementById('historyListContainer');
-    if (!container) return;
+    const mobileContainer = document.getElementById('historyMobileListContainer');
+    if (!container && !mobileContainer) return;
 
     const { filtered, baseFiltered, searchVal } = this.getFilteredHistoryData();
     const clearBtn = document.getElementById('historySearchClearBtn');
@@ -590,24 +591,40 @@ const UI = {
     }
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <tr>
-          <td colspan="8" class="py-10 px-6 text-center">
-            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada transaksi mutasi yang ditemukan</p>
-            <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan filter periode waktu, kata kunci pencarian, atau pilih tab "Semua".</p>
-            <button type="button" onclick="clearHistorySearch(); resetHistoryDateFilter(); filterHistoryTab('all')" class="mt-3 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
-              Reset Semua Filter
-            </button>
-          </td>
-        </tr>
+      const emptyStateContent = `
+        <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada transaksi mutasi yang ditemukan</p>
+        <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan filter periode waktu, kata kunci pencarian, atau pilih tab "Semua".</p>
+        <button type="button" onclick="clearHistorySearch(); resetHistoryDateFilter(); filterHistoryTab('all')" class="mt-3 inline-flex items-center px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer">
+          Reset Semua Filter
+        </button>
       `;
+
+      if (container) {
+        container.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-10 px-6 text-center">
+              ${emptyStateContent}
+            </td>
+          </tr>
+        `;
+      }
+      if (mobileContainer) {
+        mobileContainer.innerHTML = `
+          <div class="py-8 px-4 text-center bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+            ${emptyStateContent}
+          </div>
+        `;
+      }
       return;
     }
 
-    container.innerHTML = filtered.map((item, idx) => {
+    const tableRows = [];
+    const mobileCards = [];
+
+    filtered.forEach((item, idx) => {
       const isMasuk = item.type === 'Unit Masuk';
       const typeBadge = isMasuk
         ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
@@ -693,9 +710,10 @@ const UI = {
            </div>`
         : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`;
 
-      return `
+      // 1. Table Row (Desktop / Tablet)
+      tableRows.push(`
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
-          <!-- Kolom 1: ID Mutasi (TERPISAH) -->
+          <!-- Kolom 1: ID Mutasi -->
           <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
               <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">#${rowNum}</span>
@@ -703,7 +721,7 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 2: Waktu Mutasi (TERPISAH - Format: jam,DD/MM/YYYY) -->
+          <!-- Kolom 2: Waktu Mutasi (Format: jam,DD/MM/YYYY) -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="inline-flex items-center space-x-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80 font-mono text-[11px] font-extrabold text-slate-800">
               <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -773,8 +791,81 @@ const UI = {
             </span>
           </td>
         </tr>
-      `;
-    }).join('');
+      `);
+
+      // 2. Mobile Responsive Card (Layar HP: Bersih, Rapi & Elegan Tanpa Perlu Geser)
+      mobileCards.push(`
+        <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-saas-card space-y-3 hover:border-slate-300 transition">
+          <!-- Top Row: #No & ID Mutasi + Mutasi Badge (In/Out) + Status Valid -->
+          <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+            <div class="flex items-center space-x-1.5 min-w-0">
+              <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300 flex-shrink-0">#${rowNum}</span>
+              <span class="text-xs font-mono font-bold text-slate-800 tracking-tight truncate">${item.id || '-'}</span>
+            </div>
+            <div class="flex items-center space-x-1.5 flex-shrink-0">
+              <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shadow-2xs ${typeBadge}">
+                <span class="font-black leading-none">${typeArrow}</span>
+                <span>${item.type}</span>
+              </span>
+              <span class="inline-flex items-center space-x-0.5 text-[9.5px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
+                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Valid</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Vehicle Info Row: Studio Car Photo (Clickable) + Model & Category + Timestamp -->
+          <div class="flex items-center gap-3 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+            <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-13 h-10 rounded-lg bg-white border border-slate-200/90 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs active:scale-95 transition" title="Perbesar Foto Katalog ${item.model}">
+              <img src="${catalogPhotoSrc}" alt="${item.model}" loading="lazy" decoding="async" class="w-full h-full object-contain">
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs sm:text-sm font-black text-slate-900 leading-tight truncate">${item.model}</div>
+              <div class="text-[10px] font-semibold text-slate-400 leading-tight mt-0.5 truncate">${catalogItem ? catalogItem.category : 'Unit Daihatsu'}</div>
+              <div class="inline-flex items-center space-x-1 text-[10px] font-mono font-bold text-slate-600 mt-1">
+                <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>${fullTimeDisplay}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Specs: VIN & Engine -->
+          <div class="grid grid-cols-2 gap-2 text-[10px]">
+            <div class="bg-slate-100/70 p-2 rounded-xl border border-slate-200/60 min-w-0">
+              <span class="text-[8.5px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">No. Rangka (VIN)</span>
+              <span class="font-mono font-black text-slate-900 truncate block text-[10.5px]">${item.vin || '-'}</span>
+            </div>
+            <div class="bg-slate-100/70 p-2 rounded-xl border border-slate-200/60 min-w-0">
+              <span class="text-[8.5px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">No. Mesin</span>
+              <span class="font-mono font-black text-slate-800 truncate block text-[10.5px]">${item.engine || '-'}</span>
+            </div>
+          </div>
+
+          <!-- Bottom Row: PIC & Catatan + Bukti Fisik Thumbnails (Unit & DO/Stiker) -->
+          <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                  ${(item.pic || 'A').charAt(0).toUpperCase()}
+                </span>
+                <span class="text-[10.5px] font-extrabold text-slate-800 truncate">PIC: ${item.pic || '-'}</span>
+              </div>
+              <p class="text-[9.5px] text-slate-500 font-medium truncate mt-0.5 pl-5.5 leading-tight" title="${item.notes || ''}">
+                ${item.notes || 'Pemeriksaan standar unit.'}
+              </p>
+            </div>
+            <!-- Clickable Proofs -->
+            <div class="flex items-center space-x-1.5 flex-shrink-0">
+              ${unitThumbnailHtml}
+              ${docThumbnailHtml}
+            </div>
+          </div>
+        </div>
+      `);
+    });
+
+    if (container) container.innerHTML = tableRows.join('');
+    if (mobileContainer) mobileContainer.innerHTML = mobileCards.join('');
 
     if (typeof this.refreshScrollReveal === 'function') {
       this.refreshScrollReveal();
