@@ -3045,14 +3045,18 @@ const UI = {
 
       const res = await ApiService.updateProfile(payload);
       if (res && res.success) {
-        if (res.user && res.user.photo) {
-          AppState.userProfile.photo = res.user.photo;
+        if (res.user) {
+          if (res.user.photo) AppState.userProfile.photo = res.user.photo;
+          if (res.user.name) AppState.userProfile.name = res.user.name;
+          if (res.user.npk) AppState.userProfile.npk = res.user.npk;
+          if (res.user.branch) AppState.userProfile.branch = res.user.branch;
+          if (res.user.role) AppState.userProfile.role = res.user.role;
         }
         AppState._tempProfilePhoto = null;
         AppState.saveToCache();
         this.applyUserProfile();
         this.closeEditProfilePage();
-        this.showToast('✅ Berhasil! Perubahan profil & NPK tersimpan di database Google Sheets!');
+        this.showToast('✅ Berhasil! Perubahan profil tersimpan di database Google Sheets!');
       } else {
         this.closeEditProfilePage();
         this.showToast('⚠️ Tersimpan di browser. Database: ' + (res?.message || 'Gagal tersambung'));
@@ -3132,6 +3136,14 @@ const UI = {
 
       const res = await ApiService.updateConfig(payload);
       if (res && res.success) {
+        if (res.config) {
+          if (res.config.TARGET_EMAIL) AppState.automationConfig.email = res.config.TARGET_EMAIL;
+          if (res.config.AUTO_SCHEDULE_TEXT) AppState.automationConfig.schedule = res.config.AUTO_SCHEDULE_TEXT;
+          if (res.config.REPORT_DOCUMENT_TYPE) AppState.automationConfig.type = res.config.REPORT_DOCUMENT_TYPE;
+          if (res.config.AUTO_EMAIL_ENABLED !== undefined) AppState.automationConfig.enabled = String(res.config.AUTO_EMAIL_ENABLED).toUpperCase() === 'TRUE';
+        }
+        AppState.saveToCache();
+        this.applyAutomationConfig();
         this.closeEditAutomationModal();
         this.showToast('✅ Berhasil! Jadwal & email laporan tersimpan di database Google Sheets!');
       } else {
@@ -3151,7 +3163,7 @@ const UI = {
   },
 
   /**
-   * Periksa status kesehatan koneksi cloud (Vercel Proxy & Google Apps Script)
+   * Periksa status kesehatan koneksi cloud & sinkronisasi data offline dari Google Spreadsheet
    */
   async checkCloudHealth() {
     const dotEl = document.getElementById('cloudGasStatusDot');
@@ -3164,26 +3176,48 @@ const UI = {
     } catch (e) {}
 
     if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
-    if (textEl) textEl.textContent = 'Memeriksa...';
-    if (tipEl) tipEl.textContent = 'Menghubungi endpoint /api/proxy...';
+    if (textEl) textEl.textContent = 'Memeriksa & Sinkronisasi...';
+    if (tipEl) tipEl.textContent = 'Menghubungi database Google Sheets...';
+
+    this.showToast('🔄 Memeriksa koneksi & menyinkronkan data database...', 2000);
 
     try {
+      // 1. Coba ping langsung via ApiService
+      const pingRes = await ApiService.request('ping', 'GET');
+      if (pingRes && pingRes.success) {
+        if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        if (textEl) textEl.textContent = 'Database Cloud Terhubung';
+        if (tipEl) tipEl.textContent = 'Google Apps Script Aktif & Sinkron';
+
+        const syncOk = await ApiService.fetchInitialData();
+        const invCount = AppState.inventoryData?.length || 0;
+        const histCount = AppState.historyData?.length || 0;
+        this.showToast(`✅ Database Terhubung! ${invCount} Model, ${histCount} Mutasi tersinkronisasi.`);
+        return;
+      }
+
+      // 2. Fallback periksa endpoint proxy Vercel
       const res = await fetch('/api/proxy?action=health');
       const data = await res.json();
 
       if (data && data.hasAppScriptUrl) {
         if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        if (textEl) textEl.textContent = 'Terhubung ke Google';
+        if (textEl) textEl.textContent = 'Database Cloud Terhubung';
         if (tipEl) tipEl.textContent = `Host: ${data.appScriptHost || 'Google Apps Script'}`;
+
+        await ApiService.fetchInitialData();
+        this.showToast('✅ Database Terhubung! Data terbaru berhasil disinkronkan.');
       } else {
         if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-500';
-        if (textEl) textEl.textContent = 'APPSCRIPT_URL Belum Aktif';
+        if (textEl) textEl.textContent = 'Menunggu Konfigurasi URL';
         if (tipEl) tipEl.textContent = 'Pastikan centang Production di Vercel Settings lalu Redeploy.';
+        this.showToast('⚠️ APPSCRIPT_URL belum aktif di Vercel Environment.');
       }
     } catch (err) {
       if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-rose-500';
-      if (textEl) textEl.textContent = 'Gagal Cek Proxy';
-      if (tipEl) tipEl.textContent = 'Aplikasi berjalan di luar serverless Vercel.';
+      if (textEl) textEl.textContent = 'Mode Offline (Lokal)';
+      if (tipEl) tipEl.textContent = 'Aplikasi berjalan secara lokal tanpa koneksi cloud.';
+      this.showToast('⚠️ Perangkat dalam mode offline atau proxy tidak terjangkau.');
     }
   },
 
@@ -3204,8 +3238,27 @@ const UI = {
   },
 
   /**
-   * Eksekusi konfirmasi keluar sistem
+   * Eksekusi konfirmasi keluar sistem (Logout Sesi Petugas)
    */
+  confirmLogout() {
+    this.closeLogoutModal();
+    try {
+      localStorage.removeItem('daihatsu_auth_user');
+      localStorage.removeItem('daihatsu_cached_user_profile');
+    } catch (e) {}
+
+    this.showToast('ℹ️ Sesi petugas berhasil diakhiri.');
+
+    // Kembali ke tab beranda (dashboard)
+    this.switchTab('dashboard');
+
+    // Re-sync profil dari database secara fresh
+    if (typeof ApiService !== 'undefined' && ApiService.fetchInitialData) {
+      ApiService.fetchInitialData().then(() => {
+        this.renderDashboard();
+      });
+    }
+  },
   /**
    * Toggle Default Camera Setting (Rear / Front Camera)
    */

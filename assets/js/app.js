@@ -88,6 +88,8 @@ const App = {
         UI.updateDashboardKpis();
         UI.renderInventoryList();
         UI.renderHistoryList();
+        if (UI.applyUserProfile) UI.applyUserProfile();
+        if (UI.applyAutomationConfig) UI.applyAutomationConfig();
         if (AppState.selectedModelCatalogId && typeof UI.renderModelDetailTable === 'function') {
           UI.renderModelDetailTable();
         }

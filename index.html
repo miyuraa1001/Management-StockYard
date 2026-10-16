@@ -1433,58 +1433,7 @@
             </div>
           </div>
 
-          <!-- Card 1: Scanner & Hardware -->
-          <div class="bg-white rounded-[26px] p-4 sm:p-5 shadow-sm border border-slate-100 space-y-3.5">
-            <!-- Header Row -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                </div>
-                <div class="min-w-0">
-                  <h4 class="text-sm font-bold text-slate-900 leading-tight">Scanner & Hardware</h4>
-                  <p class="text-xs text-slate-400 font-medium mt-0.5 leading-tight">Atur kamera dan perangkat pemindai</p>
-                </div>
-              </div>
-              <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </div>
 
-            <div class="border-t border-slate-100 pt-3 space-y-3.5">
-              <!-- Item: Default Camera -->
-              <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center space-x-3 min-w-0">
-                  <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  </div>
-                  <div class="min-w-0">
-                    <span class="text-xs font-bold text-slate-800 block leading-tight">Default Camera</span>
-                    <span class="text-[11px] text-slate-400 font-medium block mt-0.5 leading-tight">Pilih kamera utama untuk pemindaian</span>
-                  </div>
-                </div>
-                <button type="button" onclick="UI.toggleDefaultCameraSetting()" id="settingDefaultCameraBtn" class="py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0">
-                  <span id="settingDefaultCameraLabel">Rear Camera</span>
-                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-
-              <!-- Item: Auto Flashlight -->
-              <div class="flex items-center justify-between gap-3 pt-1 border-t border-slate-50">
-                <div class="flex items-center space-x-3 min-w-0">
-                  <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                  </div>
-                  <div class="min-w-0">
-                    <span class="text-xs font-bold text-slate-800 block leading-tight">Auto Flashlight</span>
-                    <span class="text-[11px] text-slate-400 font-medium block mt-0.5 leading-tight">Nyalakan lampu otomatis saat scan</span>
-                  </div>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                  <input type="checkbox" id="settingAutoTorchToggle" onchange="UI.toggleAutoTorchSetting(this.checked)" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2F65F6]"></div>
-                </label>
-              </div>
-            </div>
-          </div>
 
           <!-- Card 2: Otomatisasi Laporan -->
           <div class="bg-white rounded-[26px] p-4 sm:p-5 shadow-sm border border-slate-100 space-y-3.5">

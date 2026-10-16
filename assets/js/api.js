@@ -246,8 +246,15 @@ const ApiService = {
             const h = String(c.DAILY_REPORT_HOUR).padStart(2, '0');
             AppState.automationConfig.schedule = 'Setiap Hari ' + h + ':00 WIB';
           }
-          if (typeof UI !== 'undefined' && UI.applyAutomationConfig) {
-            UI.applyAutomationConfig();
+          if (c.AUTO_EMAIL_ENABLED !== undefined) {
+            AppState.automationConfig.enabled = String(c.AUTO_EMAIL_ENABLED).toUpperCase() === 'TRUE';
+          }
+          if (c.REPORT_DOCUMENT_TYPE) {
+            AppState.automationConfig.type = c.REPORT_DOCUMENT_TYPE;
+          }
+          if (typeof UI !== 'undefined') {
+            if (UI.applyAutomationConfig) UI.applyAutomationConfig();
+            if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
           }
         }
 
@@ -317,9 +324,10 @@ const ApiService = {
   /**
    * Memicu pengiriman laporan email nyata dari Google Apps Script ke target email penerima
    */
-  async triggerEmailReport() {
+  async triggerEmailReport(targetEmail = null) {
     try {
-      return await this.request('triggerManualReport', 'POST', {});
+      const email = targetEmail || AppState.automationConfig?.email || '';
+      return await this.request('triggerManualReport', 'POST', { email: email });
     } catch (e) {
       console.error('[ApiService] Gagal memicu pengiriman laporan email:', e);
       return { success: false, error: e.message };
