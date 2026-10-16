@@ -18,7 +18,6 @@ const ScannerService = {
   lastExtractedData: null,
   detectedVin: '',
   detectedEngine: '',
-  detectedDo: '',
   detectedModel: '',
 
   /**
@@ -239,7 +238,6 @@ const ScannerService = {
     this.lastExtractedData = null;
     this.detectedVin = '';
     this.detectedEngine = '';
-    this.detectedDo = '';
     this.detectedModel = '';
     this.setScanMode('barcode');
 
@@ -334,7 +332,7 @@ const ScannerService = {
           if (result && AppState.isScanningActive && this.scanMode !== 'ocr' && !this.isOcrRunning && !this.scanCooldown) {
             const code = result.getText();
             const smart = this.smartFilterBarcodes([code]);
-            if (smart.vin || smart.engine || smart.doNumber) {
+            if (smart.vin || smart.engine) {
               this.applyExtractedStickerData(smart, 'BARCODE AUTO');
               if (this.detectedVin && this.detectedEngine) {
                 this.scanCooldown = true;
@@ -389,7 +387,7 @@ const ScannerService = {
             const rawValues = barcodes.map(b => b.rawValue).filter(Boolean);
             const smart = this.smartFilterBarcodes(rawValues);
 
-            if (smart.vin || smart.engine || smart.doNumber) {
+            if (smart.vin || smart.engine) {
               this.applyExtractedStickerData(smart, 'BARCODE AUTO');
               if (this.detectedVin && this.detectedEngine) {
                 this.scanCooldown = true;
@@ -453,149 +451,76 @@ const ScannerService = {
    * Filter cerdas saat stiker kaca memiliki banyak barcode (Delivery Note, PO, VIN, Engine, Material)
    * Mengutamakan barcode VIN 17-digit Astra Daihatsu (MHK...) dan memisahkan nomor mesin serta DO
    */
-    /**
-   * Filter cerdas saat stiker kaca memiliki banyak barcode (Delivery Note, PO, VIN, Engine, Material)
-   * Membedakan dengan tepat mana barcode VIN, mana barcode Engine, dan mana DO
+  /**
+   * Filter cerdas saat stiker kaca memiliki banyak barcode (SAP, DO, PO, VIN, Engine, RRN, Destinasi)
+   * Berdasarkan struktur stiker resmi Daihatsu:
+   * - VIN: Tepat 17 karakter alfanumerik (bukan SAP Material 11000...)
+   * - No. Mesin: 6-14 karakter alfanumerik (bukan DO 22..., bukan PO 63..., bukan RRN A22...)
    */
   smartFilterBarcodes(rawBarcodes) {
-    if (!rawBarcodes) return { vin: null, engine: null, doNumber: null, poNumber: null, sapMaterial: null, model: null };
+    if (!rawBarcodes) return { vin: null, engine: null, model: null };
     const list = Array.isArray(rawBarcodes) ? rawBarcodes : [rawBarcodes];
 
     let vin = null;
     let engine = null;
-    let doNumber = null;
-    let poNumber = null;
-    let sapMaterial = null;
 
     for (const raw of list) {
       let s = String(raw || '').trim().toUpperCase();
       if (s.startsWith('*') && s.endsWith('*') && s.length > 2) s = s.slice(1, -1);
       s = s.replace(/^(VIN|NO.?|CHASSIS|ENGINE|MESIN)[:\s-]*/i, '').trim();
 
-      // 1. Abaikan / pisahkan SAP Material Number (17 karakter diawali 11000...)
-      if (/^11000\w+/.test(s)) {
-        sapMaterial = s;
+      // 1. Abaikan SAP Material Number (17 karakter diawali 11000...)
+      if (/^11000\w+/.test(s)) continue;
+
+      // 2. Abaikan Delivery Note / DO (10 digit berawalan 22...) - sesuai permintaan pengguna nomor DO tidak dipakai
+      if (/^22\d{8}$/.test(s)) continue;
+
+      // 3. Abaikan Purchase Order (10 digit berawalan 63...)
+      if (/^63\d{8}$/.test(s)) continue;
+
+      // 4. Abaikan RRN Number (berawalan A22...)
+      if (/^A22\w+/.test(s)) continue;
+
+      // 5. Abaikan Destination (misal D000)
+      if (/^[A-Z]\d{3}$/.test(s) || s === 'D000') continue;
+
+      // 6. BARCODE VIN (Tepat 17 Karakter alfanumerik, tidak berpatokan pada prefix tertentu)
+      if (/^[A-Z0-9]{17}$/.test(s) && !s.startsWith('11000')) {
+        const cleanVin = s.replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1');
+        if (!vin) vin = cleanVin;
         continue;
       }
 
-      // 2. Delivery Note / DO (10 digit berawalan 22...)
-      if (/^22\d{8}$/.test(s)) {
-        doNumber = s;
-        continue;
-      }
-
-      // 3. Purchase Order (10 digit berawalan 63...)
-      if (/^63\d{8}$/.test(s)) {
-        poNumber = s;
-        continue;
-      }
-
-      // 4. RRN Number (berawalan A22...)
-      if (/^A22\w+/.test(s)) {
-        continue;
-      }
-
-      // 5. Destination (pendek, misal D000)
-      if (/^[A-Z]\d{3}$/.test(s) || s === 'D000') {
-        continue;
-      }
-
-      // 6. BARCODE VIN (17 Karakter Astra Daihatsu MHK... atau ISO 3779)
-      if (/^(?:MHK|MFK|MR[A-Z])[A-Z0-9]{14}$/.test(s)) {
-        vin = s;
-        continue;
-      } else if (/^[A-Z][A-HJ-NPR-Z0-9]{16}$/.test(s) && !s.startsWith('11') && !s.startsWith('A22')) {
-        if (!vin) vin = s;
-        continue;
-      }
-
-      // 7. BARCODE NOMOR MESIN DAIHATSU (2NR, 1NR, 1KR, 3NR, 3SZ, WA, KF, EJ, K3 atau 6-12 char alfanumerik)
-      if (/^(?:2NR|1NR|1KR|3NR|3SZ|WA|KF|EJ|K3)[A-Z0-9-]{4,10}$/.test(s)) {
-        if (!engine) engine = s;
-        continue;
-      } else if (/^[A-Z0-9-]{6,12}$/.test(s) && !s.startsWith('11') && !s.startsWith('22') && !s.startsWith('63')) {
+      // 7. BARCODE NOMOR MESIN (6-14 karakter alfanumerik, tidak berpatokan pada kode 2NR/1KR tertentu)
+      if (/^[A-Z0-9-]{6,14}$/.test(s) && !s.startsWith('11000') && !s.startsWith('22') && !s.startsWith('63') && !s.startsWith('A22') && s !== 'D000') {
         if (!engine && !vin) engine = s;
+        else if (!engine) engine = s;
       }
     }
 
     const model = vin ? this.inferDaihatsuModelFromVin(vin) : null;
-    return { vin, engine, doNumber, poNumber, sapMaterial, model };
+    return { vin, engine, model };
   },
 
   /**
-   * Parsing teks OCR cerdas yang mengenali petunjuk label fisik pada stiker Daihatsu:
-   * - "VEHICLE IDENTIFICATION NUMBER" -> mengekstrak nomor VIN di bawah / sampingnya
-   * - "ENGINE NUMBER" -> mengekstrak nomor mesin asli (misal 2NR4F82393) di bawah / sampingnya
-   * - "DELIVERY NOTE NUMBER" -> mengekstrak nomor DO
-   * - Kode Model & Warna (misal S403RP-PMRFJJ, SILVER M.M.)
+   * Parsing teks OCR cerdas yang mengenali struktur stiker kaca Daihatsu:
+   * 1. VEHICLE IDENTIFICATION NUMBER:
+   *    Judul 'VEHICLE IDENTIFICATION NUMBER' -> di bawahnya barcode -> di bawah barcode tercetak teks kodenya (17 digit).
+   * 2. ENGINE NUMBER:
+   *    Judul 'ENGINE NUMBER' di samping kiri barcode -> di bawah barcode tercetak teks kode nomor mesinnya.
+   * 3. Model mobil otomatis terdeteksi dari kode bodi stiker (misal S403RP -> Gran Max Pick Up).
    */
   smartParseStickerText(rawText) {
-    if (!rawText) return { vin: null, engine: null, doNumber: null, model: null, rawText: '' };
+    if (!rawText) return { vin: null, engine: null, model: null, rawText: '' };
     const cleanText = String(rawText).toUpperCase();
     const rawLines = cleanText.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
 
     let vin = null;
     let engine = null;
-    let doNumber = null;
     let model = null;
 
-    // A. PEMBACAAN BERDASARKAN LABEL PETUNJUK RESMI STIKER DAIHATSU
-    for (let i = 0; i < rawLines.length; i++) {
-      const line = rawLines[i];
-
-      // 1. Deteksi Label VIN: "VEHICLE IDENTIFICATION NUMBER" / "CHASSIS NO" / "VIN"
-      if (line.includes('VEHICLE IDENTIFICATION') || line.includes('IDENTIFICATION NUMBER') || line.includes('CHASSIS NO') || line.includes('NO. RANGKA') || (line === 'VIN')) {
-        // Cek baris yang sama setelah label
-        const afterLabel = line.replace(/.*(IDENTIFICATION NUMBER|IDENTIFICATION|CHASSIS NO|NO\.?\s*RANGKA|VIN)[:\s-]*/i, '').trim();
-        const matchSame = afterLabel.match(/(?:MHK|MFK|MR[A-Z])[A-Z0-9]{14}/) || afterLabel.match(/[A-Z0-9]{17}/);
-        if (matchSame && !matchSame[0].startsWith('11')) {
-          vin = matchSame[0];
-        } else {
-          // Cek 1-2 baris tepat di bawah label
-          for (let j = 1; j <= 2 && (i + j) < rawLines.length; j++) {
-            const nextClean = rawLines[i + j].replace(/[^A-Z0-9]/g, '');
-            const mhk = nextClean.match(/(?:MHK|MFK|MR[A-Z])[A-Z0-9]{14}/) || (nextClean.length === 17 && !nextClean.startsWith('11') ? [nextClean] : null);
-            if (mhk) {
-              vin = mhk[0];
-              break;
-            }
-          }
-        }
-      }
-
-      // 2. Deteksi Label Nomor Mesin: "ENGINE NUMBER" / "ENGINE NO" / "NO. MESIN"
-      if (line.includes('ENGINE NUMBER') || line.includes('ENGINE NO') || line.includes('NO. MESIN') || line.includes('NO MESIN')) {
-        // Cek baris yang sama setelah label
-        const afterLabel = line.replace(/.*(ENGINE NUMBER|ENGINE NO|NO\.?\s*MESIN|MESIN)[:\s-]*/i, '').trim();
-        const matchSame = afterLabel.match(/(?:2NR|1NR|1KR|3NR|3SZ|WA|KF|EJ|K3)[A-Z0-9-]{4,10}/) || afterLabel.match(/[A-Z0-9-]{6,12}/);
-        if (matchSame && !matchSame[0].startsWith('22') && !matchSame[0].startsWith('63')) {
-          engine = matchSame[0];
-        } else {
-          // Cek 1-2 baris tepat di bawah label
-          for (let j = 1; j <= 2 && (i + j) < rawLines.length; j++) {
-            const nextRaw = rawLines[i + j];
-            if (nextRaw.includes('RRN') || nextRaw.includes('DESTINATION') || nextRaw.includes('SAP') || nextRaw.includes('DELIVERY')) break;
-            const nextClean = nextRaw.replace(/[^A-Z0-9-]/g, '');
-            if (nextClean.length >= 6 && nextClean.length <= 14 && !nextClean.startsWith('22') && !nextClean.startsWith('63') && !nextClean.startsWith('A22') && !nextClean.startsWith('11000')) {
-              engine = nextClean;
-              break;
-            }
-          }
-        }
-      }
-
-      // 3. Deteksi Label DO: "DELIVERY NOTE NUMBER"
-      if (line.includes('DELIVERY NOTE') || line.includes('SURAT JALAN') || line.includes('NO. DO')) {
-        for (let j = 0; j <= 2 && (i + j) < rawLines.length; j++) {
-          const check = rawLines[i + j].replace(/[^0-9]/g, '');
-          if (/^22\d{8}$/.test(check)) {
-            doNumber = check;
-            break;
-          }
-        }
-      }
-
-      // 4. Deteksi Tipe Model dari stiker (misal S403RP -> Gran Max Pick Up)
+    // 1. Deteksi Model dari stiker (misal S403RP -> Gran Max Pick Up)
+    for (const line of rawLines) {
       if (line.includes('S403RP') || line.includes('S403') || line.includes('S400')) model = 'Gran Max Pick Up';
       else if (line.includes('A250') || line.includes('A251')) model = 'New Rocky';
       else if (line.includes('F800') || line.includes('F850')) model = 'New Terios';
@@ -605,35 +530,93 @@ const ScannerService = {
       else if (line.includes('R1EA')) model = 'Rocky e-Smart Hybrid';
     }
 
-    // B. FALLBACK GLOBAL SCAN JIKA LABEL TERPOTONG / TIDAK TERBACA
+    // 2. PARSING STRUKTUR: VEHICLE IDENTIFICATION NUMBER
+    // Struktur: Judul 'VEHICLE IDENTIFICATION NUMBER' -> (Barcode) -> Teks Kode 17 Digit di bawahnya
+    for (let i = 0; i < rawLines.length; i++) {
+      const line = rawLines[i];
+      if (line.includes('VEHICLE IDENTIFICATION') || line.includes('IDENTIFICATION NUMBER') || line.includes('CHASSIS NO') || line.includes('NO. RANGKA') || line === 'VIN') {
+        // A. Cek jika kode 17 digit ada pada baris yang sama setelah judul
+        const afterTitle = line.replace(/.*(IDENTIFICATION NUMBER|IDENTIFICATION|CHASSIS NO|NO\.?\s*RANGKA|VIN)[:\s-]*/i, '').trim();
+        const sameLineClean = afterTitle.replace(/[^A-Z0-9]/g, '');
+        if (sameLineClean.length === 17 && !sameLineClean.startsWith('11000')) {
+          vin = sameLineClean;
+        } else {
+          // B. Cek 1-3 baris di bawah judul (melewati noise garis barcode) untuk menemukan teks kode 17 digit
+          for (let j = 1; j <= 3 && (i + j) < rawLines.length; j++) {
+            const nextLine = rawLines[i + j];
+            if (nextLine.includes('ENGINE NUMBER') || nextLine.includes('ENGINE NO') || nextLine.includes('RRN')) break;
+
+            const cleaned = nextLine.replace(/[^A-Z0-9]/g, '');
+            if (cleaned.length === 17 && !cleaned.startsWith('11000')) {
+              vin = cleaned;
+              break;
+            }
+            const match17 = cleaned.match(/[A-Z0-9]{17}/);
+            if (match17 && !match17[0].startsWith('11000')) {
+              vin = match17[0];
+              break;
+            }
+          }
+        }
+      }
+
+      // 3. PARSING STRUKTUR: ENGINE NUMBER
+      // Struktur: Judul 'ENGINE NUMBER' di samping kiri barcode -> Teks Kode Nomor Mesin di bawah barcode
+      if (line.includes('ENGINE NUMBER') || line.includes('ENGINE NO') || line.includes('NO. MESIN') || line.includes('NO MESIN') || line.startsWith('ENGINE')) {
+        // A. Cek jika kode mesin terdeteksi di baris yang sama di samping ENGINE NUMBER
+        const afterTitle = line.replace(/.*(ENGINE NUMBER|ENGINE NO|NO\.?\s*MESIN|MESIN|ENGINE)[:\s-]*/i, '').trim();
+        const sameLineClean = afterTitle.replace(/[^A-Z0-9-]/g, '');
+        if (sameLineClean.length >= 6 && sameLineClean.length <= 14 && !sameLineClean.startsWith('22') && !sameLineClean.startsWith('63') && !sameLineClean.startsWith('A22') && !sameLineClean.startsWith('11000') && sameLineClean !== 'D000') {
+          engine = sameLineClean;
+        } else {
+          // B. Cek 1-3 baris di bawah judul ENGINE NUMBER (di bawah barcode mesin)
+          for (let j = 1; j <= 3 && (i + j) < rawLines.length; j++) {
+            const nextLine = rawLines[i + j];
+            if (nextLine.includes('RRN') || nextLine.includes('DESTINATION') || nextLine.includes('DELIVERY')) break;
+
+            const cleaned = nextLine.replace(/[^A-Z0-9-]/g, '');
+            if (cleaned.length >= 6 && cleaned.length <= 14 && !cleaned.startsWith('22') && !cleaned.startsWith('63') && !cleaned.startsWith('A22') && !cleaned.startsWith('11000') && cleaned !== 'D000') {
+              engine = cleaned;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // 4. FALLBACK GLOBAL JIKA LABEL FISIK TERPOTONG ATAU BLUR
     if (!vin) {
       for (const l of rawLines) {
         const c = l.replace(/[^A-Z0-9]/g, '');
-        const m = c.match(/(?:MHK|MFK|MR[A-Z])[A-Z0-9]{14}/);
-        if (m) { vin = m[0]; break; }
+        if (c.length === 17 && !c.startsWith('11000')) {
+          vin = c;
+          break;
+        }
       }
     }
 
     if (!engine) {
       for (const l of rawLines) {
+        if (vin && l.includes(vin)) continue;
+        if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('RRN') || l.includes('DESTINATION') || l.includes('IDENTIFICATION')) continue;
         const c = l.replace(/[^A-Z0-9-]/g, '');
-        const m = c.match(/(?:2NR|1NR|1KR|3NR|3SZ|WA|KF|EJ|K3)[A-Z0-9-]{4,10}/);
-        if (m && !m[0].startsWith('22') && !m[0].startsWith('63')) { engine = m[0]; break; }
+        if (c.length >= 6 && c.length <= 14 && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !c.startsWith('11000') && c !== 'D000') {
+          engine = c;
+          break;
+        }
       }
     }
 
-    // Koreksi karakter OCR tipikal pada nomor seri VIN
+    // Normalisasi karakter VIN standar ISO 3779 (O/Q -> 0, I -> 1)
     if (vin && vin.length === 17) {
-      const prefix = vin.slice(0, 11);
-      let serial = vin.slice(11).replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/Z/g, '2');
-      vin = prefix + serial;
+      vin = vin.replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1');
     }
 
     if (!model && vin) {
       model = this.inferDaihatsuModelFromVin(vin);
     }
 
-    return { vin, engine, doNumber, model, rawText: cleanText };
+    return { vin, engine, model, rawText: cleanText };
   },
 
   /**
@@ -697,7 +680,7 @@ const ScannerService = {
       if (statusEl) statusEl.textContent = 'Meningkatkan kontras teks stiker...';
       this.preprocessCanvasForOCR(ctx, canvas.width, canvas.height);
 
-      if (statusEl) statusEl.textContent = 'Membaca baris kode stiker (VIN, Mesin, DO)...';
+      if (statusEl) statusEl.textContent = 'Membaca baris kode stiker (VIN & No. Mesin)...';
 
       const result = await Tesseract.recognize(canvas, 'eng', {
         logger: m => {
@@ -714,7 +697,7 @@ const ScannerService = {
       if (overlay) overlay.classList.add('hidden');
       this.isOcrRunning = false;
 
-      if (!extracted.vin && !extracted.engine && !extracted.doNumber) {
+      if (!extracted.vin && !extracted.engine) {
         UI.showToast('⚠️ Teks stiker belum terbaca jelas. Posisikan kamera lebih dekat & tegak lurus.');
       } else {
         this.applyExtractedStickerData(extracted, 'OCR KAMERA');
@@ -779,7 +762,7 @@ const ScannerService = {
             if (overlay) overlay.classList.add('hidden');
             this.isOcrRunning = false;
 
-            if (!extracted.vin && !extracted.engine && !extracted.doNumber) {
+            if (!extracted.vin && !extracted.engine) {
               UI.showToast('⚠️ Data stiker tidak terbaca dari foto. Pastikan stiker tajam & tidak blur.');
             } else {
               this.applyExtractedStickerData(extracted, 'FOTO GALERI');
@@ -807,19 +790,18 @@ const ScannerService = {
    * Menerapkan data identitas stiker (VIN, Mesin, DO, Model)
    * Melakukan validasi duplikat, audio feedback, dan visual feedback
    */
-    /**
-   * Menerapkan data identitas stiker (VIN, Mesin, DO, Model)
+  /**
+   * Menerapkan data identitas stiker (VIN, No. Mesin, Model)
    * Menyimpan progres secara inkremental dan memberikan panduan scan cerdas
    */
   applyExtractedStickerData(data, sourceLabel = 'SCAN') {
-    if (!data || (!data.vin && !data.engine && !data.doNumber)) {
+    if (!data || (!data.vin && !data.engine)) {
       UI.showToast('⚠️ Data stiker tidak terdeteksi. Posisikan stiker lebih dekat.');
       return;
     }
 
     const vin = data.vin ? data.vin.trim().toUpperCase() : '';
     const engine = data.engine ? data.engine.trim().toUpperCase() : '';
-    const doNum = data.doNumber ? data.doNumber.trim() : '';
     const model = data.model || (vin ? this.inferDaihatsuModelFromVin(vin) : null);
 
     // 1. Jika terdeteksi VIN:
@@ -844,7 +826,7 @@ const ScannerService = {
       if (pillVin) pillVin.textContent = vin;
     }
 
-    // 2. Jika terdeteksi No. Mesin asli:
+    // 2. Jika terdeteksi No. Mesin:
     if (engine) {
       this.detectedEngine = engine;
       const scanEngineEl = document.getElementById('scanEngineInput');
@@ -856,14 +838,7 @@ const ScannerService = {
       if (pillEngine) pillEngine.textContent = engine;
     }
 
-    // 3. Jika terdeteksi Delivery Note (DO):
-    if (doNum) {
-      this.detectedDo = doNum;
-      const pillDo = document.getElementById('pillExtractedDo');
-      if (pillDo) pillDo.textContent = doNum;
-    }
-
-    // 4. Update dropdown Model
+    // 3. Update dropdown Model
     if (model) {
       this.detectedModel = model;
       const modelDropdown = document.getElementById('inputCarModel');
@@ -884,7 +859,7 @@ const ScannerService = {
     const hasVin = !!this.detectedVin;
     const hasEngine = !!this.detectedEngine;
 
-    // KASUS 1: LENGKAP (VIN & No. Mesin Terverifikasi Asli dari Stiker)
+    // KASUS 1: LENGKAP (VIN & No. Mesin Terbaca dari Stiker)
     if (hasVin && hasEngine) {
       this.playBeep();
       this.triggerHaptic();
@@ -903,14 +878,14 @@ const ScannerService = {
         badge.className = 'w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black flex-shrink-0';
       }
       if (pill) {
-        pill.textContent = 'TERVERIFIKASI';
+        pill.textContent = 'LENGKAP';
         pill.className = 'text-[9px] font-extrabold text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded-lg border border-emerald-500/50 uppercase tracking-wide';
       }
       if (chip) {
         chip.className = 'p-2.5 bg-emerald-950/70 border border-emerald-500/60 rounded-2xl flex items-center justify-between transition-colors shadow-sm';
       }
 
-      UI.showToast(`🎉 Sukses! VIN [${this.detectedVin}] & Mesin [${this.detectedEngine}] terverifikasi asli.`);
+      UI.showToast(`🎉 Sukses! VIN [${this.detectedVin}] & Mesin [${this.detectedEngine}] terbaca dari stiker.`);
       return;
     }
 
@@ -923,14 +898,14 @@ const ScannerService = {
       const sub = document.getElementById('scanFeedbackSubtitle');
       const pill = document.getElementById('scanFeedbackPill');
 
-      if (title) title.textContent = '✅ Barcode VIN Terbaca!';
+      if (title) title.textContent = '✅ No. Rangka (VIN) Terbaca!';
       if (sub) sub.textContent = 'Arahkan kamera ke barcode/tulisan ENGINE NUMBER di bawahnya...';
       if (pill) {
         pill.textContent = 'VIN OK';
         pill.className = 'text-[9px] font-extrabold text-blue-300 bg-blue-950 px-2 py-0.5 rounded-lg border border-blue-500/50 uppercase tracking-wide';
       }
 
-      UI.showToast(`✅ VIN [${this.detectedVin}] terbaca! Arahkan kamera ke barcode No. Mesin...`);
+      UI.showToast(`✅ VIN [${this.detectedVin}] terbaca! Arahkan kamera ke barcode/teks ENGINE NUMBER...`);
       return;
     }
 
@@ -949,7 +924,7 @@ const ScannerService = {
         pill.className = 'text-[9px] font-extrabold text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-lg border border-indigo-500/50 uppercase tracking-wide';
       }
 
-      UI.showToast(`✅ No. Mesin [${this.detectedEngine}] terbaca! Arahkan kamera ke barcode VIN...`);
+      UI.showToast(`✅ No. Mesin [${this.detectedEngine}] terbaca! Arahkan kamera ke barcode/teks VEHICLE IDENTIFICATION NUMBER...`);
     }
   },
 
@@ -969,39 +944,19 @@ const ScannerService = {
 
     if (!raw || raw.length < 5) return;
 
-    // Cek apakah raw adalah VIN atau identitas stiker menggunakan smartFilterBarcodes
+    // Cek apakah raw adalah VIN atau Engine menggunakan smartFilterBarcodes
     const smart = this.smartFilterBarcodes([raw]);
-    if (smart.vin) {
-      this.scanCooldown = true;
+    if (smart.vin || smart.engine) {
       this.applyExtractedStickerData(smart, 'BARCODE AUTO');
-      setTimeout(() => { this.scanCooldown = false; }, 3000);
+      if (this.detectedVin && this.detectedEngine) {
+        this.scanCooldown = true;
+        setTimeout(() => { this.scanCooldown = false; }, 2500);
+      }
       return;
     }
 
-    // Jika yang terdeteksi HANYA nomor DO (10 digit):
-    if (smart.doNumber) {
-      const pillDo = document.getElementById('pillExtractedDo');
-      const summaryCard = document.getElementById('scanExtractedSummary');
-      if (pillDo) pillDo.textContent = smart.doNumber;
-      if (summaryCard) summaryCard.classList.remove('hidden');
-      UI.showToast(`ℹ️ No. DO terdeteksi (${smart.doNumber}). Arahkan ke barcode VIN (MHK...)`);
-      return;
-    }
-
-    // Jika yang terdeteksi HANYA nomor mesin:
-    if (smart.engine) {
-      const scanEngineEl = document.getElementById('scanEngineInput');
-      const pillEngine = document.getElementById('pillExtractedEngine');
-      const summaryCard = document.getElementById('scanExtractedSummary');
-      if (scanEngineEl) scanEngineEl.value = smart.engine;
-      if (pillEngine) pillEngine.textContent = smart.engine;
-      if (summaryCard) summaryCard.classList.remove('hidden');
-      UI.showToast(`ℹ️ No. Mesin terdeteksi (${smart.engine}). Arahkan ke barcode VIN (MHK...)`);
-      return;
-    }
-
-    // Abaikan nomor PO atau kode acak bukan VIN
-    if (raw.length < 12 || /^\d{10}$/.test(raw) || raw.startsWith('632') || raw.startsWith('11000')) {
+    // Abaikan barcode selain VIN atau nomor mesin (PO, DO, SAP, RRN, Destinasi)
+    if (raw.length < 6 || /^\d{10}$/.test(raw) || raw.startsWith('63') || raw.startsWith('22') || raw.startsWith('11000') || raw.startsWith('A22') || raw === 'D000') {
       return;
     }
 
@@ -1022,9 +977,8 @@ const ScannerService = {
       detectedModel = this.inferDaihatsuModelFromVin(parsedVin);
     }
 
-    // Berikan nomor mesin realistis jika belum terisi
-    if (!parsedEngine) {
-      parsedEngine = this.inferEngineNumber(detectedModel, parsedVin);
+    if (!parsedEngine && this.detectedEngine) {
+      parsedEngine = this.detectedEngine;
     }
 
     // ------------------------------------------------------------------------
