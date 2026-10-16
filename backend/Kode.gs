@@ -185,7 +185,8 @@ function updateSystemConfig(ss, data) {
   try {
     const autoEnabled = String(mappings["AUTO_EMAIL_ENABLED"] || getSystemConfigValue(sheet, "AUTO_EMAIL_ENABLED") || "TRUE").toUpperCase() === "TRUE";
     const reportHour = parseInt(mappings["DAILY_REPORT_HOUR"] || getSystemConfigValue(sheet, "DAILY_REPORT_HOUR") || "8", 10);
-    syncAppsScriptScheduleTrigger(autoEnabled, reportHour);
+    const schedText = String(mappings["AUTO_SCHEDULE_TEXT"] || getSystemConfigValue(sheet, "AUTO_SCHEDULE_TEXT") || "");
+    syncAppsScriptScheduleTrigger(autoEnabled, reportHour, schedText);
   } catch (trigErr) {
     Logger.log("Peringatan saat sinkronisasi trigger: " + trigErr.toString());
   }
@@ -217,7 +218,7 @@ function extractHourFromSchedule(scheduleStr) {
   return "8";
 }
 
-function syncAppsScriptScheduleTrigger(isEnabled, hour) {
+function syncAppsScriptScheduleTrigger(isEnabled, hour, scheduleText) {
   const triggers = ScriptApp.getProjectTriggers();
   for (let i = 0; i < triggers.length; i++) {
     if (triggers[i].getHandlerFunction() === "sendDailyScheduledReport") {
@@ -227,15 +228,27 @@ function syncAppsScriptScheduleTrigger(isEnabled, hour) {
 
   if (isEnabled) {
     const validHour = (hour >= 0 && hour <= 23) ? hour : 8;
-    ScriptApp.newTrigger("sendDailyScheduledReport")
-      .timeBased()
-      .atHour(validHour)
-      .everyDays(1)
-      .inTimezone(TIMEZONE)
-      .create();
-    Logger.log("✅ Trigger harian aktif jam " + validHour + ":00 WIB.");
+    const isWeekly = String(scheduleText || "").toLowerCase().includes("senin");
+
+    if (isWeekly) {
+      ScriptApp.newTrigger("sendDailyScheduledReport")
+        .timeBased()
+        .onWeekDay(ScriptApp.WeekDay.MONDAY)
+        .atHour(validHour)
+        .inTimezone(TIMEZONE)
+        .create();
+      Logger.log("✅ Trigger mingguan (Setiap Senin) aktif jam " + validHour + ":00 WIB.");
+    } else {
+      ScriptApp.newTrigger("sendDailyScheduledReport")
+        .timeBased()
+        .atHour(validHour)
+        .everyDays(1)
+        .inTimezone(TIMEZONE)
+        .create();
+      Logger.log("✅ Trigger harian aktif jam " + validHour + ":00 WIB.");
+    }
   } else {
-    Logger.log("ℹ️ Trigger harian dinonaktifkan.");
+    Logger.log("ℹ️ Trigger laporan otomatis dinonaktifkan.");
   }
 }
 
