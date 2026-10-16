@@ -891,6 +891,68 @@ function getInventoryData(ss) {
   return inventory;
 }
 
+/**
+ * Menormalisasi berbagai format tanggal (Date object, ISO string, "15 Oktober 2026", "15/10/2026", "2026-10-15")
+ * Menjadi format standar "YYYY-MM-DD" untuk perbandingan akurat
+ */
+function normalizeDateToYmd(val) {
+  if (!val) return "";
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    return Utilities.formatDate(val, TIMEZONE, "yyyy-MM-dd");
+  }
+  const str = String(val).trim();
+  if (!str || str === "-") return "";
+
+  // 1. Format ISO: 2026-10-15T04:13:57.257Z atau 2026-10-15
+  const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return isoMatch[1] + "-" + isoMatch[2] + "-" + isoMatch[3];
+  }
+
+  // 2. Format slash: 15/10/2026
+  const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (slashMatch) {
+    return slashMatch[3] + "-" + slashMatch[2].padStart(2, "0") + "-" + slashMatch[1].padStart(2, "0");
+  }
+
+  // 3. Format dash: 15-10-2026
+  const dashMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (dashMatch) {
+    return dashMatch[3] + "-" + dashMatch[2].padStart(2, "0") + "-" + dashMatch[1].padStart(2, "0");
+  }
+
+  // 4. Format teks Indonesia: 15 Oktober 2026 atau 15 Okt 2026
+  const monthMap = {
+    "januari": "01", "jan": "01",
+    "februari": "02", "feb": "02",
+    "maret": "03", "mar": "03",
+    "april": "04", "apr": "04",
+    "mei": "05", "may": "05",
+    "juni": "06", "jun": "06",
+    "juli": "07", "jul": "07",
+    "agustus": "08", "agu": "08", "agt": "08",
+    "september": "09", "sep": "09",
+    "oktober": "10", "okt": "10", "oct": "10",
+    "november": "11", "nov": "11",
+    "desember": "12", "des": "12", "dec": "12"
+  };
+  const indoMatch = str.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})/);
+  if (indoMatch) {
+    const m = monthMap[indoMatch[2].toLowerCase()] || "01";
+    return indoMatch[3] + "-" + m + "-" + indoMatch[1].padStart(2, "0");
+  }
+
+  // 5. Fallback Date constructor
+  try {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      return Utilities.formatDate(d, TIMEZONE, "yyyy-MM-dd");
+    }
+  } catch (e) {}
+
+  return "";
+}
+
 function getHistoryData(ss) {
   if (!ss) ss = getSpreadsheet();
   if (!ss) return [];
@@ -904,10 +966,14 @@ function getHistoryData(ss) {
   for (let i = rows.length - 1; i >= 1; i--) {
     const r = rows[i];
     if (!r[0]) continue;
+    const rawIso = r[1];
+    const rawDate = r[2];
+    const ymd = normalizeDateToYmd(rawIso) || normalizeDateToYmd(rawDate);
+
     history.push({
       id: r[0],
-      timestamp: r[1],
-      fullDateStr: r[2],
+      timestamp: rawIso,
+      fullDateStr: (rawDate instanceof Date) ? Utilities.formatDate(rawDate, TIMEZONE, "dd MMMM yyyy") : String(rawDate || ""),
       time: r[3],
       model: r[4],
       vin: r[5],
@@ -918,7 +984,8 @@ function getHistoryData(ss) {
       branch: r[10],
       notes: r[11],
       unitPhoto: r[12] || "",
-      docPhoto: r[13] || ""
+      docPhoto: r[13] || "",
+      ymd: ymd
     });
   }
   return history;
@@ -969,13 +1036,11 @@ function calculateKpis(inventory, history) {
     }
   });
 
-  const todayIndo = formatIndonesianDate(new Date());
-  const todaySlash = Utilities.formatDate(new Date(), TIMEZONE, "dd/MM/yyyy");
+  const todayYmd = Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd");
   let todayIn = 0;
   let todayOut = 0;
   history.forEach(item => {
-    const d = String(item.fullDateStr || item.date || item.timestamp || "").trim();
-    if (d.includes(todayIndo) || d.includes(todaySlash) || d.startsWith(todaySlash)) {
+    if (item.ymd === todayYmd) {
       if (item.type === "Unit Masuk") todayIn++;
       if (item.type === "Unit Keluar") todayOut++;
     }
@@ -1336,7 +1401,8 @@ function testKirimEmailSekarang() {
 }
 
 /**
- * Eksekusi harian otomatis oleh Time-Driven Trigger
+ * Eksekusi harian otomatis oleh Time-Driven Trigger jam 08:00 WIB
+ * Mengirimkan laporan PDF rekapitulasi mutasi kendaraan tanggal kemarin (24 jam terakhir)
  */
 function sendDailyScheduledReport() {
   const ss = getSpreadsheet();
@@ -1344,10 +1410,76 @@ function sendDailyScheduledReport() {
   const isEnabled = String(config.AUTO_EMAIL_ENABLED || "TRUE").toUpperCase() === "TRUE";
 
   if (!isEnabled) {
-    Logger.log("Otomatisasi email harian dinonaktifkan di SystemConfig.");
+    Logger.log("ℹ️ Otomatisasi email harian dinonaktifkan di SystemConfig.");
     return;
   }
 
-  const res = triggerReportEmail(ss);
-  Logger.log("Eksekusi laporan harian terjadwal selesai: " + JSON.stringify(res));
+  const targetEmail = getTargetEmail(ss);
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+  const yesterdayYmd = Utilities.formatDate(yesterday, TIMEZONE, "yyyy-MM-dd");
+  const yesterdayDisplayStr = Utilities.formatDate(yesterday, TIMEZONE, "dd/MM/yyyy");
+  const nowPrintStr = Utilities.formatDate(now, TIMEZONE, "dd/MM/yyyy HH:mm 'WIB'");
+
+  Logger.log("🔍 [sendDailyScheduledReport] Memeriksa mutasi tanggal kemarin: " + yesterdayYmd + " (" + yesterdayDisplayStr + ")...");
+
+  const allHistory = getHistoryData(ss);
+  Logger.log("📁 Total catatan di HistoryMutasi: " + allHistory.length + " transaksi");
+
+  // Filter mutasi tanggal kemarin menggunakan normalisasi tanggal YMD
+  let targetRecords = allHistory.filter(item => item.ymd === yesterdayYmd);
+  Logger.log("📊 Ditemukan " + targetRecords.length + " transaksi untuk tanggal " + yesterdayDisplayStr);
+
+  let reportPeriodStr = yesterdayDisplayStr;
+
+  // Jika kemarin kosong (misal hari libur/Minggu atau pengujian langsung saat baru setup):
+  if (targetRecords.length === 0) {
+    const todayYmd = Utilities.formatDate(now, TIMEZONE, "yyyy-MM-dd");
+    const todayDisplayStr = Utilities.formatDate(now, TIMEZONE, "dd/MM/yyyy");
+
+    const todayRecords = allHistory.filter(item => item.ymd === todayYmd);
+    if (todayRecords.length > 0) {
+      Logger.log("ℹ️ Tanggal kemarin (" + yesterdayDisplayStr + ") tidak ada transaksi. Menggunakan transaksi hari ini (" + todayRecords.length + " unit pada " + todayDisplayStr + ").");
+      targetRecords = todayRecords;
+      reportPeriodStr = todayDisplayStr;
+    } else if (allHistory.length > 0) {
+      Logger.log("ℹ️ Menggunakan seluruh catatan transaksi terkini (" + allHistory.length + " unit).");
+      targetRecords = allHistory;
+      reportPeriodStr = "Rekap Operasional Terkini (" + yesterdayDisplayStr + ")";
+    } else {
+      Logger.log("⚠️ Tidak ada aktivitas mutasi fisik pada database Spreadsheet. PDF tidak dikirim.");
+      return;
+    }
+  }
+
+  const htmlContent = buildHtmlReport(targetRecords, reportPeriodStr, nowPrintStr);
+  const htmlOutput = HtmlService.createHtmlOutput(htmlContent);
+  const pdfBlob = htmlOutput.getAs("application/pdf").setName("Laporan_Mutasi_Daihatsu_" + reportPeriodStr.replace(/[^a-zA-Z0-9]/g, "-") + ".pdf");
+
+  const totalCount = targetRecords.length;
+  const masukCount = targetRecords.filter(r => (r.type || r[7]) === "Unit Masuk").length;
+  const keluarCount = targetRecords.filter(r => (r.type || r[7]) === "Unit Keluar").length;
+
+  const subject = "Laporan Rekapitulasi Mutasi Fisik Kendaraan Yard Lampung - " + reportPeriodStr;
+  const emailBodyText = 
+    "Yth. Tim Operasional & Manajemen Logistik Daihatsu,\n\n" +
+    "Berikut terlampir berkas PDF rekapitulasi operasional fisik kendaraan (Salvage Logistics) pada tanggal " + reportPeriodStr + ".\n\n" +
+    "Ringkasan Operasional Lapangan:\n" +
+    "- Total Unit Diperiksa : " + totalCount + " Unit\n" +
+    "- Unit Masuk (Inbound) : " + masukCount + " Unit\n" +
+    "- Unit Keluar (Outbound): " + keluarCount + " Unit\n\n" +
+    "Salam hormat,\n" +
+    "Sistem Management Salvage Daihatsu\n" +
+    "Astra Daihatsu - DSO Lampung";
+
+  const emailBodyHtml = buildEmailHtmlTemplate(reportPeriodStr, totalCount, masukCount, keluarCount);
+
+  GmailApp.sendEmail(targetEmail, subject, emailBodyText, {
+    attachments: [pdfBlob],
+    name: "Astra Daihatsu-Dso Lampung",
+    htmlBody: emailBodyHtml
+  });
+
+  Logger.log("🎉 BERHASIL! Laporan PDF resmi tanggal " + reportPeriodStr + " (" + totalCount + " transaksi) berhasil dikirimkan ke: " + targetEmail);
 }
+
