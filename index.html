@@ -836,24 +836,24 @@
         <!-- ======================================================== -->
         <!-- BOTTOM ROW: FULL-WIDTH AKTIVITAS TERBARU (Easy Vertical Scroll) -->
         <!-- ======================================================== -->
-        <div class="bg-white/95 rounded-[26px] md:rounded-3xl p-4 sm:p-5 md:p-6 border border-white shadow-saas-card scroll-reveal heavy-section-deferred">
-          <div class="flex items-center justify-between pb-3 mb-3.5 border-b border-slate-100">
+        <div class="bg-white/95 rounded-[26px] md:rounded-3xl p-3.5 sm:p-5 md:p-6 border border-white shadow-saas-card scroll-reveal heavy-section-deferred">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
             <div class="flex items-center space-x-2.5">
               <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100/80 shadow-2xs">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
               <div>
-                <h3 class="text-[13.5px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Aktivitas Terbaru</h3>
+                <h3 class="text-[13px] sm:text-sm md:text-base font-extrabold text-slate-900 leading-tight">Aktivitas Terbaru</h3>
                 <p class="hidden sm:block text-xs text-slate-400 font-medium mt-0.5 leading-tight">Log mutasi unit masuk &amp; keluar terbaru di pool yard</p>
               </div>
             </div>
-            <button onclick="switchTab('history')" class="px-3 py-1.5 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 text-xs font-extrabold text-blue-600 border border-blue-200/60 transition flex items-center cursor-pointer active:scale-95">
+            <button onclick="switchTab('history')" class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 text-xs font-extrabold text-blue-600 border border-blue-200/60 transition flex items-center cursor-pointer active:scale-95">
               <span>Lihat Semua</span>
               <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
           <!-- 1 Column on Mobile, 2 Symmetrical Columns on Desktop for Smooth Scrolling -->
-          <div id="dashboardRecentList" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3.5">
+          <div id="dashboardRecentList" class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-3.5">
             <!-- Rendered by UI.js -->
           </div>
         </div>
@@ -1264,19 +1264,15 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">Tabel Rekaman Mutasi Kendaraan</h3>
             </div>
             <div class="flex items-center space-x-2 flex-shrink-0">
+              <span class="md:hidden text-[10px] font-semibold text-slate-400">Geser &leftrightarrow;</span>
               <span id="historyShowingBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 whitespace-nowrap">
                 8 Data
               </span>
             </div>
           </div>
 
-          <!-- Mobile Cards Container (Tampilan Khusus Mobile: Bersih, Rapi & Responsif) -->
-          <div id="historyMobileListContainer" class="block md:hidden p-3 sm:p-4 space-y-3 bg-slate-50/50">
-            <!-- Rendered by UI.js for mobile screens -->
-          </div>
-
-          <!-- Responsive Table Scroll Container (Tampilan Khusus Desktop & Tablet Lebar) -->
-          <div class="hidden md:block w-full overflow-x-auto custom-scrollbar">
+          <!-- Responsive Table Scroll Container -->
+          <div class="w-full overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[980px]">
               <thead>
                 <tr class="bg-slate-100/90 border-b-2 border-slate-300 text-[10px] font-black uppercase tracking-wider text-slate-700 select-none">
@@ -1299,7 +1295,7 @@
           <!-- Table Footer Bar -->
           <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
             <span id="historyFooterSummary">Menampilkan seluruh rekaman audit yang sesuai dengan filter aktif.</span>
-            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">Stiker / DO</strong> untuk melihat foto bukti fisik.</span>
+            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">DO</strong> untuk melihat foto bukti fisik.</span>
           </div>
         </div>
       </section>
