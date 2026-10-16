@@ -1469,7 +1469,7 @@
                   </div>
 
                   <!-- Item: Jadwal Pengiriman -->
-                  <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 cursor-pointer hover:border-slate-200 transition" onclick="UI.openEditAutomationModal()">
+                  <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 cursor-pointer hover:border-slate-200 transition" onclick="UI.openEditScheduleModal()">
                     <div class="flex items-center space-x-3 min-w-0">
                       <div class="w-9 h-9 rounded-xl bg-white text-slate-600 flex items-center justify-center flex-shrink-0 shadow-2xs border border-slate-100">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -1486,7 +1486,7 @@
                   </div>
 
                   <!-- Item: Target Email Penerima -->
-                  <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 cursor-pointer hover:border-slate-200 transition" onclick="UI.openEditAutomationModal()">
+                  <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 cursor-pointer hover:border-slate-200 transition" onclick="UI.openEditTargetEmailModal()">
                     <div class="flex items-center space-x-3 min-w-0">
                       <div class="w-9 h-9 rounded-xl bg-white text-slate-600 flex items-center justify-center flex-shrink-0 shadow-2xs border border-slate-100">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
@@ -2084,9 +2084,9 @@
       <p class="text-center text-white/60 text-xs pb-4">Ketuk di mana saja untuk menutup</p>
     </div>
 
-    <!-- Edit Automation Modal -->
-    <div id="editAutomationModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
-      <div class="bg-white rounded-[28px] max-w-lg w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[92vh]">
+    <!-- 1. Dedicated Modal: Jadwal Pengiriman (Analog Clock Face "Jam Bulet" & Frekuensi) -->
+    <div id="editScheduleModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[92vh]">
         <!-- Header -->
         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div class="flex items-center space-x-2.5">
@@ -2094,20 +2094,18 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Pengaturan Otomatisasi Laporan</h3>
-              <p class="text-[10.5px] text-slate-400 leading-tight">Jadwal pengiriman & daftar target email penerima</p>
+              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Jadwal Pengiriman Laporan</h3>
+              <p class="text-[10.5px] text-slate-400 leading-tight">Atur frekuensi & jam otomatisasi pengiriman</p>
             </div>
           </div>
-          <button type="button" onclick="UI.closeEditAutomationModal()" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-black transition cursor-pointer" aria-label="Tutup Modal">&times;</button>
+          <button type="button" onclick="UI.closeEditScheduleModal()" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-black transition cursor-pointer" aria-label="Tutup Modal">&times;</button>
         </div>
 
         <!-- Body Form -->
         <div class="p-4 sm:p-5 space-y-4 overflow-y-auto">
-          
-          <!-- Hidden Inputs for Full Backward Compatibility -->
+          <!-- Hidden Input for Backward Compatibility -->
           <input type="hidden" id="inputAutoSchedule" value="Setiap Hari 08:00 WIB">
-          <input type="hidden" id="inputAutoEmail" value="syafirafira08162@gmail.com">
-          
+
           <!-- 1. FREKUENSI PENGIRIMAN (HARIAN, MINGGUAN, BULANAN) -->
           <div class="space-y-2">
             <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">1. Frekuensi Pengiriman</label>
@@ -2218,46 +2216,90 @@
             </div>
           </div>
 
-          <!-- 3. TARGET EMAIL PENERIMA (MULTI-EMAIL CHIPS, BISA > 5 EMAIL) -->
-          <div class="space-y-2 pt-2 border-t border-slate-100">
-            <div class="flex items-center justify-between">
-              <label for="inputNewEmailRecipient" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">3. Target Email Penerima</label>
-              <span id="emailChipsCountBadge" class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">1 Email Terdaftar</span>
+          <!-- Preview Ringkasan Jadwal -->
+          <div class="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Jadwal Terpilih:</span>
             </div>
-
-            <!-- Multi-Email Chips Container -->
-            <div id="emailChipsList" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-2xl min-h-[52px] max-h-[130px] overflow-y-auto">
-              <!-- Rendered via UI.renderEmailChips() -->
-            </div>
-
-            <!-- Input Bar to Add New Email (Supports > 5 emails) -->
-            <div class="flex items-center space-x-1.5">
-              <div class="relative flex-1">
-                <input type="email" id="inputNewEmailRecipient" onkeydown="UI.handleEmailInputKeydown(event)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Ketik email penerima (bisa tambah > 5 email)...">
-              </div>
-              <button type="button" onclick="UI.addEmailRecipient()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl active:scale-95 transition cursor-pointer flex items-center space-x-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                <span>Tambah</span>
-              </button>
-            </div>
-            <p class="text-[10px] text-slate-400 leading-tight">Tekan <b>Enter</b> atau tombol <b>+ Tambah</b>. Anda juga dapat menempelkan (paste) beberapa email dipisah koma.</p>
+            <span id="schedulePreviewSummary" class="text-xs font-black text-indigo-700">Setiap Hari 08:00 WIB</span>
           </div>
-
-          <!-- 4. TIPE LAPORAN -->
-          <div class="space-y-1.5 pt-2 border-t border-slate-100">
-            <label for="inputAutoType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">4. Jenis Rekap Laporan</label>
-            <input type="text" id="inputAutoType" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar">
-          </div>
-
         </div>
 
         <!-- Footer -->
         <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center space-x-2.5">
-          <button type="button" onclick="UI.saveAutomationData()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-500/25 active:scale-98 transition flex items-center justify-center space-x-2 cursor-pointer">
+          <button type="button" onclick="UI.saveScheduleData()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-500/25 active:scale-98 transition flex items-center justify-center space-x-2 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            <span>Simpan Pembaruan</span>
+            <span>Simpan Jadwal</span>
           </button>
-          <button type="button" onclick="UI.closeEditAutomationModal()" class="py-3 px-4 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
+          <button type="button" onclick="UI.closeEditScheduleModal()" class="py-3 px-4 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Dedicated Modal: Target Email Penerima (Multi-Email Chips > 5 Email) -->
+    <div id="editTargetEmailModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[92vh]">
+        <!-- Header -->
+        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Target Email Penerima</h3>
+              <p class="text-[10.5px] text-slate-400 leading-tight">Kelola daftar penerima laporan rekapitulasi</p>
+            </div>
+          </div>
+          <button type="button" onclick="UI.closeEditTargetEmailModal()" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-black transition cursor-pointer" aria-label="Tutup Modal">&times;</button>
+        </div>
+
+        <!-- Body Form -->
+        <div class="p-4 sm:p-5 space-y-4 overflow-y-auto">
+          <!-- Hidden Input for Backward Compatibility -->
+          <input type="hidden" id="inputAutoEmail" value="syafirafira08162@gmail.com">
+
+          <!-- TARGET EMAIL PENERIMA (MULTI-EMAIL CHIPS, BISA > 5 EMAIL) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="inputNewEmailRecipient" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Daftar Email Penerima</label>
+              <span id="emailChipsCountBadge" class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">1 Email Terdaftar</span>
+            </div>
+
+            <!-- Multi-Email Chips Container -->
+            <div id="emailChipsList" class="flex flex-wrap gap-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-2xl min-h-[64px] max-h-[160px] overflow-y-auto">
+              <!-- Rendered via UI.renderEmailChips() -->
+            </div>
+
+            <!-- Input Bar to Add New Email (Supports > 5 emails) -->
+            <div class="flex items-center space-x-1.5 pt-1">
+              <div class="relative flex-1">
+                <input type="email" id="inputNewEmailRecipient" onkeydown="UI.handleEmailInputKeydown(event)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Ketik email penerima (bisa tambah > 5 email)...">
+              </div>
+              <button type="button" onclick="UI.addEmailRecipient()" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl active:scale-95 transition cursor-pointer flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                <span>Tambah</span>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-tight">Tekan <b>Enter</b> atau tombol <b>+ Tambah</b>. Anda juga dapat menempelkan (paste) beberapa email sekaligus dipisah koma.</p>
+          </div>
+
+          <!-- TIPE LAPORAN -->
+          <div class="space-y-1.5 pt-2 border-t border-slate-100">
+            <label for="inputAutoType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Jenis Rekap Laporan</label>
+            <input type="text" id="inputAutoType" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar">
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center space-x-2.5">
+          <button type="button" onclick="UI.saveTargetEmailData()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-500/25 active:scale-98 transition flex items-center justify-center space-x-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>Simpan Target Email</span>
+          </button>
+          <button type="button" onclick="UI.closeEditTargetEmailModal()" class="py-3 px-4 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
             Batal
           </button>
         </div>

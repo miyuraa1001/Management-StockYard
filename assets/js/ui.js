@@ -3214,20 +3214,52 @@ const UI = {
   },
 
   /**
-   * Buka modal pembaruan informasi otomatisasi laporan
+   * Buka modal pengaturan Jadwal Pengiriman (Analog Clock Face "Jam Bulet" & Frekuensi)
    */
-  openEditAutomationModal() {
+  openEditScheduleModal() {
     this.initAutomationModal();
-    const modal = document.getElementById('editAutomationModal');
+    const modal = document.getElementById('editScheduleModal');
     if (modal) modal.classList.remove('hidden');
   },
 
   /**
-   * Tutup modal pembaruan otomatisasi
+   * Tutup modal pengaturan Jadwal Pengiriman
+   */
+  closeEditScheduleModal() {
+    const modal = document.getElementById('editScheduleModal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Buka modal pengaturan Target Email Penerima (Multi-Email Tags/Chips)
+   */
+  openEditTargetEmailModal() {
+    this.initAutomationModal();
+    const modal = document.getElementById('editTargetEmailModal');
+    if (modal) modal.classList.remove('hidden');
+  },
+
+  /**
+   * Tutup modal pengaturan Target Email Penerima
+   */
+  closeEditTargetEmailModal() {
+    const modal = document.getElementById('editTargetEmailModal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Buka modal pembaruan informasi otomatisasi laporan (Backward compatibility alias)
+   */
+  openEditAutomationModal() {
+    this.openEditScheduleModal();
+  },
+
+  /**
+   * Tutup modal pembaruan otomatisasi (Backward compatibility alias)
    */
   closeEditAutomationModal() {
-    const modal = document.getElementById('editAutomationModal');
-    if (modal) modal.classList.add('hidden');
+    this.closeEditScheduleModal();
+    this.closeEditTargetEmailModal();
   },
 
   /**
@@ -3466,11 +3498,14 @@ const UI = {
   },
 
   /**
-   * Sinkronkan teks jadwal ke hidden input #inputAutoSchedule
+   * Sinkronkan teks jadwal ke hidden input #inputAutoSchedule dan ringkasan jadwal
    */
   syncHiddenScheduleInput() {
+    const schedStr = this.buildScheduleString();
     const inputSched = document.getElementById('inputAutoSchedule');
-    if (inputSched) inputSched.value = this.buildScheduleString();
+    if (inputSched) inputSched.value = schedStr;
+    const previewSummary = document.getElementById('schedulePreviewSummary');
+    if (previewSummary) previewSummary.innerText = schedStr;
   },
 
   /**
@@ -3569,10 +3604,72 @@ const UI = {
   },
 
   /**
-   * Simpan pembaruan otomatisasi laporan (Jadwal & Email) ke database Google Sheets
+   * Simpan khusus Jadwal Pengiriman Laporan ke Google Sheets & State
    */
-  async saveAutomationData() {
+  async saveScheduleData() {
     const sched = this.buildScheduleString();
+    const saveBtn = document.querySelector('button[onclick*="saveScheduleData"]');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin text-white inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        <span>Menyimpan Jadwal...</span>
+      `;
+    }
+
+    if (!AppState.automationConfig) AppState.automationConfig = {};
+    AppState.automationConfig.schedule = sched;
+    AppState.saveToCache();
+    this.applyAutomationConfig();
+
+    try {
+      this.showToast('⏳ Menyimpan jadwal ke database cloud...');
+      const payload = {
+        schedule: sched,
+        DAILY_REPORT_HOUR: this.getHour24()
+      };
+
+      let res = await ApiService.updateConfig(payload);
+      let usedFallback = false;
+
+      if (!res || !res.success) {
+        console.warn('[UI] updateConfig belum aktif di live Apps Script, mencoba fallback updateProfile...', res);
+        const profileRes = await ApiService.updateProfile({ schedule: sched });
+        if (profileRes && profileRes.success) {
+          usedFallback = true;
+          res = { success: true, message: 'Jadwal berhasil diperbarui di database.' };
+        }
+      }
+
+      if (res && res.success) {
+        if (res.config && res.config.AUTO_SCHEDULE_TEXT) {
+          AppState.automationConfig.schedule = res.config.AUTO_SCHEDULE_TEXT;
+        }
+        AppState.saveToCache();
+        this.applyAutomationConfig();
+        this.closeEditScheduleModal();
+        this.showToast('✅ Berhasil! Jadwal pengiriman laporan tersimpan di database Google Sheets!');
+      } else {
+        this.closeEditScheduleModal();
+        this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+      }
+    } catch (err) {
+      console.error('[UI] Gagal simpan jadwal ke backend:', err);
+      this.closeEditScheduleModal();
+      this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHtml;
+      }
+    }
+  },
+
+  /**
+   * Simpan khusus Target Email Penerima Laporan ke Google Sheets & State
+   */
+  async saveTargetEmailData() {
     const emailList = (this.automationState.emails && this.automationState.emails.length > 0)
       ? this.automationState.emails
       : (document.getElementById('inputAutoEmail')?.value || '').split(/[,;\n\s]+/).filter(e => e.includes('@'));
@@ -3584,85 +3681,62 @@ const UI = {
       return;
     }
 
-    const saveBtn = document.querySelector('button[onclick*="saveAutomationData"]');
+    const saveBtn = document.querySelector('button[onclick*="saveTargetEmailData"]');
     const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
     if (saveBtn) {
       saveBtn.disabled = true;
       saveBtn.innerHTML = `
         <svg class="w-4 h-4 animate-spin text-white inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-        <span>Menyimpan ke Database...</span>
+        <span>Menyimpan Target Email...</span>
       `;
     }
 
-    // Terapkan ke state lokal & simpan ke cache HP segera
-    AppState.automationConfig = {
-      schedule: sched,
-      email: emailStr,
-      emails: emailList,
-      type: type,
-      enabled: AppState.automationConfig?.enabled !== false
-    };
-
+    if (!AppState.automationConfig) AppState.automationConfig = {};
+    AppState.automationConfig.email = emailStr;
+    AppState.automationConfig.emails = emailList;
+    AppState.automationConfig.type = type;
     AppState.saveToCache();
     this.applyAutomationConfig();
 
     try {
-      this.showToast('⏳ Menyimpan konfigurasi ke database cloud...');
+      this.showToast('⏳ Menyimpan target email ke database cloud...');
       const payload = {
         email: emailStr,
         emails: emailList,
-        schedule: sched,
         type: type
       };
 
-      // 1. Coba update via action updateConfig
       let res = await ApiService.updateConfig(payload);
       let usedFallback = false;
 
-      // 2. Fallback Dual-Save: Jika deployment Google Apps Script belum mengaktifkan updateConfig,
-      // simpan email via updateProfile (yang sudah aktif di database live UserPIC)
       if (!res || !res.success) {
-        console.warn('[UI] updateConfig belum aktif di deployment live Apps Script, mencoba fallback updateProfile...', res);
-        const profileRes = await ApiService.updateProfile({
-          email: emailStr,
-          schedule: sched,
-          type: type
-        });
+        console.warn('[UI] updateConfig belum aktif di live Apps Script, mencoba fallback updateProfile...', res);
+        const profileRes = await ApiService.updateProfile({ email: emailStr, type: type });
         if (profileRes && profileRes.success) {
           usedFallback = true;
-          res = {
-            success: true,
-            message: 'Email & Jadwal berhasil diperbarui di database Google Sheets.'
-          };
+          res = { success: true, message: 'Target email berhasil diperbarui di database.' };
         }
       }
 
       if (res && res.success) {
-        if (res.config) {
-          if (res.config.TARGET_EMAIL) {
-            AppState.automationConfig.email = res.config.TARGET_EMAIL;
-            AppState.automationConfig.emails = String(res.config.TARGET_EMAIL).split(/[,;\n\s]+/).filter(e => e.includes('@'));
-          }
-          if (res.config.AUTO_SCHEDULE_TEXT) AppState.automationConfig.schedule = res.config.AUTO_SCHEDULE_TEXT;
-          if (res.config.REPORT_DOCUMENT_TYPE) AppState.automationConfig.type = res.config.REPORT_DOCUMENT_TYPE;
-          if (res.config.AUTO_EMAIL_ENABLED !== undefined) AppState.automationConfig.enabled = String(res.config.AUTO_EMAIL_ENABLED).toUpperCase() === 'TRUE';
+        if (res.config && res.config.TARGET_EMAIL) {
+          AppState.automationConfig.email = res.config.TARGET_EMAIL;
+          AppState.automationConfig.emails = String(res.config.TARGET_EMAIL).split(/[,;\n\s]+/).filter(e => e.includes('@'));
+        }
+        if (res.config && res.config.REPORT_DOCUMENT_TYPE) {
+          AppState.automationConfig.type = res.config.REPORT_DOCUMENT_TYPE;
         }
         AppState.saveToCache();
         this.applyAutomationConfig();
-        this.closeEditAutomationModal();
-
-        if (usedFallback) {
-          this.showToast('✅ Berhasil disimpan! Email & jadwal tersinkron ke database Cloud.');
-        } else {
-          this.showToast('✅ Berhasil! Jadwal & target email laporan tersimpan di database Google Sheets!');
-        }
+        this.closeEditTargetEmailModal();
+        this.showToast('✅ Berhasil! Target email penerima laporan tersimpan di database Google Sheets!');
       } else {
-        this.closeEditAutomationModal();
+        this.closeEditTargetEmailModal();
         this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
       }
     } catch (err) {
-      console.error('[UI] Gagal simpan otomatisasi ke backend:', err);
-      this.closeEditAutomationModal();
+      console.error('[UI] Gagal simpan target email ke backend:', err);
+      this.closeEditTargetEmailModal();
       this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
     } finally {
       if (saveBtn) {
@@ -3670,6 +3744,14 @@ const UI = {
         saveBtn.innerHTML = originalBtnHtml;
       }
     }
+  },
+
+  /**
+   * Simpan pembaruan otomatisasi laporan (Jadwal & Email bersamaan - Backward compatibility)
+   */
+  async saveAutomationData() {
+    await this.saveScheduleData();
+    await this.saveTargetEmailData();
   },
 
   /**
@@ -4695,6 +4777,12 @@ window.saveProfileData = () => UI.saveProfileData();
 window.openEditAutomationModal = () => UI.openEditAutomationModal();
 window.closeEditAutomationModal = () => UI.closeEditAutomationModal();
 window.saveAutomationData = () => UI.saveAutomationData();
+window.openEditScheduleModal = () => UI.openEditScheduleModal();
+window.closeEditScheduleModal = () => UI.closeEditScheduleModal();
+window.saveScheduleData = () => UI.saveScheduleData();
+window.openEditTargetEmailModal = () => UI.openEditTargetEmailModal();
+window.closeEditTargetEmailModal = () => UI.closeEditTargetEmailModal();
+window.saveTargetEmailData = () => UI.saveTargetEmailData();
 window.setFrequency = (f) => UI.setFrequency(f);
 window.setDayOfWeek = (d) => UI.setDayOfWeek(d);
 window.setDayOfMonth = (m) => UI.setDayOfMonth(m);
