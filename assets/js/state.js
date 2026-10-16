@@ -37,8 +37,12 @@ const AppState = {
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
     email: 'syafirafira08162@gmail.com',
-    type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
+    type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar',
+    enabled: true
   },
+
+  // Riwayat Pengiriman Notifikasi Laporan Email (Tersinkronisasi Nyata)
+  emailNotificationLogs: [],
 
   // KPI Metrics (Mulai dari 0 - Dihitung Realtime dari Riwayat & Stok)
   kpi: {

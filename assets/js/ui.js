@@ -66,8 +66,16 @@ const UI = {
     }
     if (target === 'inventory') this.renderInventoryList();
     if (target === 'history') this.renderHistoryList();
-    if (target === 'settings' && typeof this.checkCloudHealth === 'function') {
-      this.checkCloudHealth();
+    if (target === 'settings') {
+      if (typeof this.checkCloudHealth === 'function') {
+        this.checkCloudHealth();
+      }
+      if (typeof this.applyUserProfile === 'function') {
+        this.applyUserProfile();
+      }
+      if (typeof this.syncSettingsPreferences === 'function') {
+        this.syncSettingsPreferences();
+      }
     }
 
     // Trigger realtime sync di background saat berganti menu
@@ -3198,12 +3206,278 @@ const UI = {
   /**
    * Eksekusi konfirmasi keluar sistem
    */
-  confirmLogout() {
-    this.closeLogoutModal();
-    this.showToast('🔒 Anda telah berhasil keluar dari sesi sistem.');
-    setTimeout(() => {
-      this.switchTab('dashboard');
-    }, 400);
+  /**
+   * Toggle Default Camera Setting (Rear / Front Camera)
+   */
+  toggleDefaultCameraSetting() {
+    const current = AppState.facingMode || 'environment';
+    const next = current === 'environment' ? 'user' : 'environment';
+    AppState.facingMode = next;
+
+    try {
+      localStorage.setItem('daihatsu_camera_facing', next);
+    } catch (e) {}
+
+    const label = document.getElementById('settingDefaultCameraLabel');
+    if (label) {
+      label.textContent = next === 'environment' ? 'Rear Camera' : 'Front Camera';
+    }
+
+    this.showToast('📷 Kamera default diatur ke: ' + (next === 'environment' ? 'Rear Camera (Belakang)' : 'Front Camera (Depan)'));
+  },
+
+  /**
+   * Toggle Auto Flashlight Setting
+   */
+  toggleAutoTorchSetting(isChecked) {
+    try {
+      localStorage.setItem('daihatsu_auto_torch', isChecked ? 'true' : 'false');
+    } catch (e) {}
+
+    this.showToast(isChecked ? '⚡ Auto Flashlight aktif saat scan' : 'Auto Flashlight dinonaktifkan');
+  },
+
+  /**
+   * Toggle Daily Digest Email Setting
+   */
+  async toggleDailyDigestSetting(isChecked) {
+    if (!AppState.automationConfig) AppState.automationConfig = {};
+    AppState.automationConfig.enabled = isChecked;
+
+    try {
+      await ApiService.updateConfig({
+        AUTO_EMAIL_ENABLED: isChecked ? 'TRUE' : 'FALSE'
+      });
+    } catch (e) {}
+
+    this.showToast(isChecked ? '✅ Email Daily Digest diaktifkan' : 'Email Daily Digest dinonaktifkan');
+  },
+
+  /**
+   * Inisialisasi status toggle preferensi pada Menu Settings
+   */
+  syncSettingsPreferences() {
+    // 1. Default Camera
+    const savedFacing = localStorage.getItem('daihatsu_camera_facing') || 'environment';
+    AppState.facingMode = savedFacing;
+    const label = document.getElementById('settingDefaultCameraLabel');
+    if (label) {
+      label.textContent = savedFacing === 'environment' ? 'Rear Camera' : 'Front Camera';
+    }
+
+    // 2. Auto Flashlight
+    const savedTorch = localStorage.getItem('daihatsu_auto_torch') === 'true';
+    const torchToggle = document.getElementById('settingAutoTorchToggle');
+    if (torchToggle) torchToggle.checked = savedTorch;
+
+    // 3. Daily Digest Toggle
+    const digestToggle = document.getElementById('settingDailyDigestToggle');
+    if (digestToggle && AppState.automationConfig) {
+      digestToggle.checked = AppState.automationConfig.enabled !== false;
+    }
+
+    // 4. Update notification badge dot
+    this.updateNotificationBadge();
+  },
+
+  /**
+   * Memperbarui badge dot merah pada lonceng notifikasi email
+   */
+  updateNotificationBadge() {
+    const badge = document.getElementById('notifBadgeDot');
+    if (!badge) return;
+
+    let logs = [];
+    try {
+      const stored = localStorage.getItem('daihatsu_email_notifications');
+      if (stored) logs = JSON.parse(stored);
+    } catch (e) {}
+
+    const hasUnread = logs.some(l => l.read === false);
+    if (hasUnread) {
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  },
+
+  /**
+   * Buka Modal Notifikasi Pengiriman Laporan Email Realtime
+   */
+  openNotificationModal() {
+    const modal = document.getElementById('emailNotificationModal');
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+
+    // Tampilkan email target penerima aktif
+    const targetEmailEl = document.getElementById('notifModalTargetEmail');
+    if (targetEmailEl) {
+      targetEmailEl.textContent = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+    }
+
+    // Render riwayat notifikasi email
+    this.renderEmailNotifications();
+
+    // Tandai semua notifikasi telah dibaca
+    try {
+      let logs = [];
+      const stored = localStorage.getItem('daihatsu_email_notifications');
+      if (stored) logs = JSON.parse(stored);
+      logs.forEach(l => { l.read = true; });
+      localStorage.setItem('daihatsu_email_notifications', JSON.stringify(logs));
+    } catch (e) {}
+
+    this.updateNotificationBadge();
+  },
+
+  /**
+   * Tutup Modal Notifikasi
+   */
+  closeNotificationModal() {
+    const modal = document.getElementById('emailNotificationModal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Render daftar notifikasi laporan email yang benar-benar terkirim
+   */
+  renderEmailNotifications() {
+    const container = document.getElementById('emailNotifListContainer');
+    if (!container) return;
+
+    let logs = [];
+    try {
+      const stored = localStorage.getItem('daihatsu_email_notifications');
+      if (stored) logs = JSON.parse(stored);
+    } catch (e) {}
+
+    if (!logs || logs.length === 0) {
+      const targetEmail = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+      container.innerHTML = `
+        <div class="p-6 text-center text-slate-400 space-y-3 bg-slate-50/80 rounded-2xl border border-slate-200/60">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h4 class="text-xs font-black text-slate-700">Belum Ada Riwayat Pengiriman Hari Ini</h4>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
+              Target email aktif saat ini adalah <strong class="text-slate-700 font-mono">${targetEmail}</strong>. Tekan tombol <strong class="text-blue-600">"Kirim Sekarang"</strong> di atas untuk menguji pengiriman laporan email nyata.
+            </p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = logs.map(item => {
+      const isSuccess = item.status === 'SUCCESS';
+      return `
+        <div class="p-3.5 sm:p-4 rounded-2xl ${isSuccess ? 'bg-emerald-50/70 border border-emerald-200/80' : 'bg-rose-50/70 border border-rose-200/80'} text-xs space-y-1.5 transition">
+          <div class="flex items-center justify-between gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${isSuccess ? 'text-emerald-700 bg-emerald-100/80' : 'text-rose-700 bg-rose-100/80'} px-2 py-0.5 rounded-md">
+              <span class="w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+              <span>${isSuccess ? 'Berhasil Terkirim' : 'Gagal Terkirim'}</span>
+            </span>
+            <span class="text-[10px] font-bold text-slate-400">${item.timestamp}</span>
+          </div>
+
+          <h5 class="font-extrabold text-slate-900 text-xs sm:text-[13px] leading-tight">
+            ${item.subject || 'Laporan Mutasi Salvage Astra Daihatsu Sentra Lampung'}
+          </h5>
+
+          <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
+            ${item.message || 'Laporan PDF rekapitulasi mutasi fisik unit telah terkirim ke target email.'}
+          </p>
+
+          <div class="pt-1 flex items-center justify-between text-[10.5px] border-t ${isSuccess ? 'border-emerald-200/50 text-emerald-800' : 'border-rose-200/50 text-rose-800'} font-semibold">
+            <span class="flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+              <span>Tujuan: <strong class="font-mono">${item.targetEmail}</strong></span>
+            </span>
+            <span>Gmail Service ✓</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  /**
+   * Picu Pengiriman Laporan Email Nyata Sekarang & Catat ke Log Notifikasi
+   */
+  async triggerRealEmailReportNow() {
+    const btn = document.getElementById('btnTestSendEmail');
+    const textEl = document.getElementById('btnTestSendEmailText');
+    const targetEmail = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+
+    if (btn) btn.disabled = true;
+    if (textEl) textEl.textContent = 'Mengirim...';
+
+    this.showToast(`⏳ Mengirimkan laporan email ke ${targetEmail}...`);
+
+    try {
+      const res = await ApiService.triggerEmailReport();
+      const isSuccess = res && (res.success === true || !res.error);
+
+      const timestampStr = new Date().toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) + ' WIB';
+
+      const newLog = {
+        id: 'email-' + Date.now(),
+        timestamp: timestampStr,
+        targetEmail: targetEmail,
+        status: isSuccess ? 'SUCCESS' : 'FAILED',
+        subject: 'Rekap Laporan Mutasi Salvage • Astra Daihatsu - DSO Lampung',
+        message: isSuccess
+          ? `Laporan PDF rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
+          : `Gagal mengirimkan laporan email ke ${targetEmail}: ${res?.error || res?.message || 'Koneksi terputus'}`,
+        read: true
+      };
+
+      // Simpan log ke localStorage
+      let logs = [];
+      try {
+        const stored = localStorage.getItem('daihatsu_email_notifications');
+        if (stored) logs = JSON.parse(stored);
+      } catch (e) {}
+
+      logs.unshift(newLog); // masukkan ke paling atas
+      if (logs.length > 20) logs = logs.slice(0, 20); // batasi 20 log terakhir
+      localStorage.setItem('daihatsu_email_notifications', JSON.stringify(logs));
+
+      this.renderEmailNotifications();
+
+      if (isSuccess) {
+        this.showToast(`🎉 Sukses! Laporan telah terkirim ke ${targetEmail}!`, 4500);
+      } else {
+        this.showToast(`⛔ Pengiriman email gagal: ${res?.error || res?.message || 'Server sibuk'}`, 5000);
+      }
+    } catch (err) {
+      console.error('[UI] Gagal memicu pengiriman email:', err);
+      this.showToast(`⛔ Kesalahan jaringan saat mengirim email: ${err.message}`, 4500);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (textEl) textEl.textContent = 'Kirim Sekarang';
+    }
+  },
+
+  /**
+   * Bersihkan riwayat log notifikasi email
+   */
+  clearEmailNotificationLogs() {
+    try {
+      localStorage.removeItem('daihatsu_email_notifications');
+    } catch (e) {}
+
+    this.renderEmailNotifications();
+    this.updateNotificationBadge();
+    this.showToast('🧹 Riwayat notifikasi email telah dibersihkan.');
   },
 
   /**
@@ -3887,6 +4161,13 @@ window.filterModelMutasiType = (t) => UI.filterModelMutasiType(t);
 window.applyModelDateFilter = () => UI.applyModelDateFilter();
 window.resetModelDateFilter = () => UI.resetModelDateFilter();
 window.clearModelDetailSearch = () => UI.clearModelDetailSearch();
+window.toggleDefaultCameraSetting = () => UI.toggleDefaultCameraSetting ? UI.toggleDefaultCameraSetting() : null;
+window.toggleAutoTorchSetting = (c) => UI.toggleAutoTorchSetting ? UI.toggleAutoTorchSetting(c) : null;
+window.toggleDailyDigestSetting = (c) => UI.toggleDailyDigestSetting ? UI.toggleDailyDigestSetting(c) : null;
+window.openNotificationModal = () => UI.openNotificationModal ? UI.openNotificationModal() : null;
+window.closeNotificationModal = () => UI.closeNotificationModal ? UI.closeNotificationModal() : null;
+window.triggerRealEmailReportNow = () => UI.triggerRealEmailReportNow ? UI.triggerRealEmailReportNow() : null;
+window.clearEmailNotificationLogs = () => UI.clearEmailNotificationLogs ? UI.clearEmailNotificationLogs() : null;
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {
@@ -3903,5 +4184,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (UI && typeof UI.initPullToRefresh === 'function') {
     UI.initPullToRefresh();
+  }
+  if (UI && typeof UI.syncSettingsPreferences === 'function') {
+    UI.syncSettingsPreferences();
   }
 });

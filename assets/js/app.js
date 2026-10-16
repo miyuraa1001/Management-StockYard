@@ -22,6 +22,7 @@ const App = {
     // Terapkan data profil operator & info otomatisasi
     if (UI.applyUserProfile) UI.applyUserProfile();
     if (UI.applyAutomationConfig) UI.applyAutomationConfig();
+    if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
 
     // 3. Render awal komponen UI dari state
     UI.renderDashboardActivities();

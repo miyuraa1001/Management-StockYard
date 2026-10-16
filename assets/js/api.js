@@ -312,6 +312,18 @@ const ApiService = {
    */
   async getHistory() {
     return await this.request('getHistory', 'GET');
+  },
+
+  /**
+   * Memicu pengiriman laporan email nyata dari Google Apps Script ke target email penerima
+   */
+  async triggerEmailReport() {
+    try {
+      return await this.request('triggerManualReport', 'POST', {});
+    } catch (e) {
+      console.error('[ApiService] Gagal memicu pengiriman laporan email:', e);
+      return { success: false, error: e.message };
+    }
   }
 };
 
