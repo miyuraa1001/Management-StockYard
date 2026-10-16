@@ -40,21 +40,15 @@ const CONFIG = {
     KPI: 'daihatsu_kpi_cache_v5',
     PROFILE: 'daihatsu_profile_cache_v5',
     AUTOMATION: 'daihatsu_automation_cache_v5',
-    DIRECT_URL: 'daihatsu_direct_appscript_url',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id'
   },
 
   /**
    * Endpoint aktif:
-   * 1. Jika pengguna memasukkan URL Web App langsung di Settings, gunakan direct connection
-   * 2. Default: menggunakan Vercel Serverless Reverse Proxy (/api/proxy) via Vercel Environment Variables
+   * Menggunakan Vercel Serverless Reverse Proxy (/api/proxy) via Vercel Environment Variables
    */
   getActiveEndpoint() {
-    const directUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem(this.CACHE_KEYS.DIRECT_URL) : '') || '';
-    if (directUrl && directUrl.trim().startsWith('http')) {
-      return { url: directUrl.trim(), isProxy: false, isConfigured: true };
-    }
     return { url: this.PROXY_ENDPOINT, isProxy: true, isConfigured: true };
   }
 };

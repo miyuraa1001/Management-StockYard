@@ -3149,20 +3149,11 @@ const UI = {
     const dotEl = document.getElementById('cloudGasStatusDot');
     const textEl = document.getElementById('cloudGasStatusText');
     const tipEl = document.getElementById('cloudGasStatusTip');
-    const directInput = document.getElementById('inputDirectAppScriptUrl');
 
-    const directUrl = localStorage.getItem(CONFIG.CACHE_KEYS.DIRECT_URL) || '';
-    if (directInput && directUrl) {
-      directInput.value = directUrl;
-    }
-
-    // Jika mode direct URL manual aktif
-    if (directUrl) {
-      if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500';
-      if (textEl) textEl.textContent = 'Sambungan Langsung Aktif';
-      if (tipEl) tipEl.textContent = 'Menggunakan URL Google Apps Script dari penyimpanan perangkat.';
-      return;
-    }
+    // Bersihkan direct url lama jika ada
+    try {
+      localStorage.removeItem('daihatsu_direct_appscript_url');
+    } catch (e) {}
 
     if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
     if (textEl) textEl.textContent = 'Memeriksa...';
@@ -3186,45 +3177,6 @@ const UI = {
       if (textEl) textEl.textContent = 'Gagal Cek Proxy';
       if (tipEl) tipEl.textContent = 'Aplikasi berjalan di luar serverless Vercel.';
     }
-  },
-
-  /**
-   * Simpan URL Google Apps Script secara langsung (Fallback jika Vercel env belum diredeploy)
-   */
-  async saveDirectConnection() {
-    const input = document.getElementById('inputDirectAppScriptUrl');
-    const url = (input?.value || '').trim();
-
-    if (!url || !url.startsWith('http')) {
-      this.showToast('Masukkan URL Web App Google Apps Script yang valid (berawalan https://)!');
-      return;
-    }
-
-    this.showToast('⏳ Menguji koneksi ke Google Apps Script...');
-    const testResult = await ApiService.testConnection(url);
-
-    if (testResult && testResult.success) {
-      localStorage.setItem(CONFIG.CACHE_KEYS.DIRECT_URL, url);
-      this.showToast('✅ Berhasil terhubung langsung ke Google Apps Script!');
-      this.checkCloudHealth();
-      if (typeof App !== 'undefined' && App.syncBackendData) {
-        App.syncBackendData();
-      }
-    } else {
-      const errMsg = testResult?.message || testResult?.error || 'Gagal tersambung ke URL';
-      this.showToast(`⛔ Koneksi gagal: ${errMsg}`, 5000);
-    }
-  },
-
-  /**
-   * Reset ke mode Vercel Serverless Proxy
-   */
-  resetToProxyConnection() {
-    localStorage.removeItem(CONFIG.CACHE_KEYS.DIRECT_URL);
-    const input = document.getElementById('inputDirectAppScriptUrl');
-    if (input) input.value = '';
-    this.showToast('🔄 Beralih kembali ke mode Vercel Proxy.');
-    this.checkCloudHealth();
   },
 
   /**
@@ -3929,8 +3881,6 @@ window.handleDonutTouch = (ev) => UI.handleDonutTouch ? UI.handleDonutTouch(ev) 
 window.selectDonutSegment = (el, ev) => UI.selectDonutSegment ? UI.selectDonutSegment(el, ev) : null;
 window.closeDonutPopupOnOutside = (ev) => UI.closeDonutPopupOnOutside ? UI.closeDonutPopupOnOutside(ev) : null;
 window.checkCloudHealth = () => UI.checkCloudHealth ? UI.checkCloudHealth() : null;
-window.saveDirectConnection = () => UI.saveDirectConnection ? UI.saveDirectConnection() : null;
-window.resetToProxyConnection = () => UI.resetToProxyConnection ? UI.resetToProxyConnection() : null;
 window.openModelDetail = (m) => UI.openModelDetail(m);
 window.closeModelDetail = () => UI.closeModelDetail();
 window.filterModelMutasiType = (t) => UI.filterModelMutasiType(t);
