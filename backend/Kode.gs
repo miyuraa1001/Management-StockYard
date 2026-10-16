@@ -633,10 +633,10 @@ function setupDatabaseSpreadsheet() {
     ["INV-007", "New Rocky", "Compact Turbo SUV", 0, 0, ""],
     ["INV-008", "Sirion", "Stylish City Car", 0, 0, ""],
     ["INV-009", "Luxio", "Spacious Elegant Van", 0, 0, ""],
-    ["INV-010", "Gran Max Blind Van", "Commercial Cargo Van", 0, 0, ""],
+    ["INV-010", "Rocky", "Compact SUV", 0, 0, ""],
     ["INV-011", "Gran Max Minibus", "Family & Commercial Transport", 0, 0, ""],
     ["INV-012", "Terios Special Edition", "Limited Edition Sport SUV", 0, 0, ""],
-    ["INV-013", "Old Model Salvage Part", "Komponen & Suku Cadang Salvage", 0, 0, ""]
+    ["INV-013", "New Sigra (Prod Old)", "LCGC 7-Seater MPV", 0, 0, ""]
   ];
   inventoryModels.forEach(m => sheetInventory.appendRow(m));
 
@@ -1026,18 +1026,18 @@ function updateInventoryStock(ss, modelName, mutationType) {
     const s = String(m || "").toLowerCase().trim();
     if (s.includes("special edition") || s === "terios se" || s.includes("da3se")) return "terios special edition";
     if (s === "new sirion" || s.includes("sirion")) return "sirion";
-    if (s.includes("blind van") || s.includes("blindvan")) return "gran max blind van";
-    if (s.includes("minibus") || s.includes("mini bus")) return "gran max minibus";
+    if (s.includes("minibus") || s.includes("mini bus") || s.includes("blind van") || s.includes("blindvan")) return "gran max minibus";
     if (s.includes("pick up") || s.includes("pickup") || s.includes("pu")) return "gran max pick up";
-    if (s.includes("salvage") || s.includes("prod old") || s.includes("old model")) return "old model salvage part";
+    if (s.includes("prod old") || s.includes("salvage") || s.includes("old model")) return "new sigra (prod old)";
     if (s.includes("hybrid")) return "rocky e-smart hybrid";
     if (s.includes("new rocky") || s.includes("turbo")) return "new rocky";
-    if (s === "rocky") return "new rocky";
+    if (s === "rocky" || s.includes("rocky ads") || s.includes("a250") || s.includes("a251")) return "rocky";
     if (s.includes("xenia")) return "all new xenia";
     if (s.includes("ayla")) return "all new ayla";
     if (s.includes("sigra")) return "new sigra";
     if (s.includes("terios")) return "new terios";
     if (s.includes("luxio")) return "luxio";
+    if (s.includes("gran max") || s.includes("granmax")) return "gran max pick up";
     return s;
   }
 

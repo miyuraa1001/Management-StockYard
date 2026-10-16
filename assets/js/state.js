@@ -52,7 +52,7 @@ const AppState = {
     stokKosong: 0
   },
 
-  // Master Katalog 13 Model Kendaraan Daihatsu (Sesuai 100% dengan Database Inventory & Scan Lapangan)
+  // Master Katalog 13 Model Kendaraan Daihatsu (Sesuai 100% dengan Database Spreadsheet Inventory)
   vehicleCatalog: [
     {
       catalogId: 'CAT-01',
@@ -93,7 +93,7 @@ const AppState = {
     {
       catalogId: 'CAT-05',
       model: 'All New Xenia',
-      category: 'Executive Family MPV',
+      category: 'The Next Level MPV',
       spec: '1.5L 2NR-VE D-CVT FWD',
       defaultLocation: 'Yard B - Blok 1 (MPV)',
       photo: 'assets/images/Inventory_All New Xenia.jpeg',
@@ -102,7 +102,7 @@ const AppState = {
     {
       catalogId: 'CAT-06',
       model: 'All New Ayla',
-      category: 'Dynamic City Hatchback',
+      category: 'Compact Hatchback Urban',
       spec: '1.2L WA-VE D-CVT',
       defaultLocation: 'Yard C - Blok 1 (Hatchback)',
       photo: 'assets/images/Inventory_All New Ayla.jpeg',
@@ -120,7 +120,7 @@ const AppState = {
     {
       catalogId: 'CAT-08',
       model: 'Sirion',
-      category: 'Dynamic Hatchback City Car',
+      category: 'Stylish City Car',
       spec: '1.3L 1NR-VE Dual VVT-i D-CVT',
       defaultLocation: 'Yard C - Blok 2 (City Car)',
       photo: 'assets/images/Inventory_New Sirion.jpeg',
@@ -129,7 +129,7 @@ const AppState = {
     {
       catalogId: 'CAT-09',
       model: 'Luxio',
-      category: 'Prestigious Business Van',
+      category: 'Spacious Elegant Van',
       spec: '1.5L 3SZ-VE DOHC VVT-i',
       defaultLocation: 'Yard D - Blok 1 (Commercial)',
       photo: 'assets/images/Inventory_Luxio.jpeg',
@@ -137,17 +137,17 @@ const AppState = {
     },
     {
       catalogId: 'CAT-10',
-      model: 'Gran Max Blind Van',
-      category: 'Commercial Cargo Delivery Van',
-      spec: '1.3L / 1.5L K3-DE / 2NR-VE',
-      defaultLocation: 'Yard D - Blok 2 (Van)',
-      photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
-      heroPhoto: 'assets/images/hero-granmax-minibus.jpg'
+      model: 'Rocky',
+      category: 'Compact SUV',
+      spec: '1.2L WA-VE ADS Styling',
+      defaultLocation: 'Yard A - Blok 3 (SUV)',
+      photo: 'assets/images/Inventory_Rocky.jpeg',
+      heroPhoto: 'assets/images/hero-rocky.jpg'
     },
     {
       catalogId: 'CAT-11',
       model: 'Gran Max Minibus',
-      category: 'Spacious Passenger & Blind Van',
+      category: 'Family & Commercial Transport',
       spec: '1.5L 2NR-VE / 1.3L DOHC',
       defaultLocation: 'Yard D - Blok 2 (Commercial)',
       photo: 'assets/images/Inventory_Gran Max Minibus.jpeg',
@@ -156,7 +156,7 @@ const AppState = {
     {
       catalogId: 'CAT-12',
       model: 'Terios Special Edition',
-      category: 'Limited Sporty Edition SUV',
+      category: 'Limited Edition Sport SUV',
       spec: '1.5L 2NR-VE Special Edition',
       defaultLocation: 'Yard A - Blok 2 (SUV)',
       photo: 'assets/images/Inventory_Terios SE.jpeg',
@@ -164,10 +164,10 @@ const AppState = {
     },
     {
       catalogId: 'CAT-13',
-      model: 'Old Model Salvage Part',
-      category: 'Salvage Unit & Parts Rekondisi',
-      spec: 'Multi Variant Daihatsu Yard',
-      defaultLocation: 'Yard E - Blok Salvage',
+      model: 'New Sigra (Prod Old)',
+      category: 'LCGC 7-Seater MPV',
+      spec: '1.2L 3NR-VE MT/AT',
+      defaultLocation: 'Yard B - Blok 3 (MPV)',
       photo: 'assets/images/Inventory_New Sigra (Prod Old).jpeg',
       heroPhoto: 'assets/images/hero-sigra-old.jpg'
     }
@@ -182,17 +182,16 @@ const AppState = {
     if (found) return found;
     // 2. Disambiguations & Aliases
     if (clean.includes('hybrid')) return this.vehicleCatalog[0];
-    if (clean.includes('blind van') || clean.includes('blindvan')) return this.vehicleCatalog[9];
-    if (clean.includes('minibus')) return this.vehicleCatalog[10];
+    if (clean.includes('minibus') || clean.includes('blind van')) return this.vehicleCatalog[10];
     if (clean.includes('pick') || clean.includes('pu') || clean.includes('pickup')) return this.vehicleCatalog[1];
     if (clean.includes('special edition') || clean.includes('terios se') || clean.includes('da3se')) return this.vehicleCatalog[11];
     if (clean.includes('terios')) return this.vehicleCatalog[2];
     if (clean.includes('xenia')) return this.vehicleCatalog[4];
-    if (clean.includes('salvage') || clean.includes('part') || clean.includes('prod old') || clean.includes('old model')) return this.vehicleCatalog[12];
+    if (clean.includes('old') || clean.includes('prod old') || clean.includes('salvage')) return this.vehicleCatalog[12];
     if (clean.includes('sigra')) return this.vehicleCatalog[3];
     if (clean.includes('ayla')) return this.vehicleCatalog[5];
     if (clean.includes('new rocky') || clean.includes('turbo')) return this.vehicleCatalog[6];
-    if (clean.includes('rocky')) return this.vehicleCatalog[6];
+    if (clean.includes('rocky')) return this.vehicleCatalog[9];
     if (clean.includes('sirion')) return this.vehicleCatalog[7];
     if (clean.includes('luxio')) return this.vehicleCatalog[8];
     if (clean.includes('gran max') || clean.includes('granmax')) return this.vehicleCatalog[1];

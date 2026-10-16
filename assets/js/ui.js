@@ -1880,10 +1880,10 @@ const UI = {
       'New Rocky': '#ec4899',
       'Sirion': '#06b6d4',
       'Luxio': '#a855f7',
-      'Gran Max Blind Van': '#eab308',
+      'Rocky': '#8b5cf6',
       'Gran Max Minibus': '#f97316',
       'Terios Special Edition': '#ef4444',
-      'Old Model Salvage Part': '#64748b'
+      'New Sigra (Prod Old)': '#0ea5e9'
     };
 
     const catalog = AppState.vehicleCatalog || [];
