@@ -58,13 +58,14 @@ export default async function handler(req, res) {
     }
   }
 
+  const DEFAULT_SECRET_TOKEN = 'DSO-SALVAGE-SECRET-KEY-982143';
   const apiSecretToken = (
     process.env.API_SECRET_TOKEN || 
     process.env.API_TOKEN || 
     process.env.SECRET_TOKEN || 
     process.env.SECRET_KEY || 
     process.env.TOKEN || 
-    ''
+    DEFAULT_SECRET_TOKEN
   ).trim();
 
   // Endpoint Health Check / Diagnostik Vercel Proxy

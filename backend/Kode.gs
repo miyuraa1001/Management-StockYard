@@ -55,9 +55,13 @@ function getSpreadsheet() {
  */
 function isAuthorized(e, body) {
   if (!API_SECRET_TOKEN || API_SECRET_TOKEN.trim() === "") return true;
-  const queryToken = (e && e.parameter && e.parameter.token) ? e.parameter.token : null;
-  if (queryToken && queryToken === API_SECRET_TOKEN) return true;
-  if (body && body.token && body.token === API_SECRET_TOKEN) return true;
+  const expectedToken = API_SECRET_TOKEN.trim();
+  const queryToken = (e && e.parameter && e.parameter.token) ? String(e.parameter.token).trim() : null;
+  if (queryToken && queryToken === expectedToken) return true;
+  const bodyToken = (body && body.token) ? String(body.token).trim() : null;
+  if (bodyToken && bodyToken === expectedToken) return true;
+  const dataToken = (body && body.data && body.data.token) ? String(body.data.token).trim() : null;
+  if (dataToken && dataToken === expectedToken) return true;
   return false;
 }
 
@@ -185,14 +189,18 @@ function updateSystemConfig(ss, data) {
   }
 
   const targetEmailNormalized = normalizeRecipientEmails(data.email || data.TARGET_EMAIL || (Array.isArray(data.emails) ? data.emails.join(", ") : ""));
+  const reportHourVal = (data.DAILY_REPORT_HOUR !== undefined && data.DAILY_REPORT_HOUR !== null)
+    ? String(data.DAILY_REPORT_HOUR)
+    : (data.schedule ? extractHourFromSchedule(data.schedule) : undefined);
+
   const mappings = {
-    "TARGET_EMAIL": targetEmailNormalized,
+    "TARGET_EMAIL": targetEmailNormalized || undefined,
     "AUTO_EMAIL_ENABLED": (data.AUTO_EMAIL_ENABLED !== undefined) 
       ? String(data.AUTO_EMAIL_ENABLED).toUpperCase() 
       : (data.enabled !== undefined ? (data.enabled ? "TRUE" : "FALSE") : undefined),
     "AUTO_SCHEDULE_TEXT": data.schedule || data.AUTO_SCHEDULE_TEXT,
     "REPORT_DOCUMENT_TYPE": data.type || data.REPORT_DOCUMENT_TYPE,
-    "DAILY_REPORT_HOUR": data.DAILY_REPORT_HOUR || (data.schedule ? extractHourFromSchedule(data.schedule) : undefined),
+    "DAILY_REPORT_HOUR": reportHourVal,
     "DRIVE_FOLDER_ID": data.folderId || data.DRIVE_FOLDER_ID
   };
 
@@ -216,10 +224,14 @@ function updateSystemConfig(ss, data) {
     }
   }
 
+  // Wajib: Langsung simpan perubahan ke database Google Sheets (Anti-Lag)
+  SpreadsheetApp.flush();
+
   // Sinkronkan trigger jadwal Apps Script sesuai konfigurasi
   try {
     const autoEnabled = String(mappings["AUTO_EMAIL_ENABLED"] || getSystemConfigValue(sheet, "AUTO_EMAIL_ENABLED") || "TRUE").toUpperCase() === "TRUE";
-    const reportHour = parseInt(mappings["DAILY_REPORT_HOUR"] || getSystemConfigValue(sheet, "DAILY_REPORT_HOUR") || "8", 10);
+    const rawHour = mappings["DAILY_REPORT_HOUR"] !== undefined ? mappings["DAILY_REPORT_HOUR"] : getSystemConfigValue(sheet, "DAILY_REPORT_HOUR");
+    const reportHour = parseInt(rawHour !== undefined && rawHour !== null ? rawHour : "8", 10);
     const schedText = String(mappings["AUTO_SCHEDULE_TEXT"] || getSystemConfigValue(sheet, "AUTO_SCHEDULE_TEXT") || "");
     syncAppsScriptScheduleTrigger(autoEnabled, reportHour, schedText);
   } catch (trigErr) {
@@ -268,13 +280,18 @@ function extractHourFromSchedule(scheduleStr) {
 function syncAppsScriptScheduleTrigger(isEnabled, hour, scheduleText) {
   const triggers = ScriptApp.getProjectTriggers();
   for (let i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === "sendDailyScheduledReport") {
-      ScriptApp.deleteTrigger(triggers[i]);
+    const fn = triggers[i].getHandlerFunction();
+    if (fn === "sendDailyScheduledReport" || fn === "triggerReportEmail" || fn.toLowerCase().includes("report") || fn.toLowerCase().includes("daily")) {
+      try {
+        ScriptApp.deleteTrigger(triggers[i]);
+      } catch (delErr) {
+        Logger.log("Gagal hapus trigger lama: " + delErr.toString());
+      }
     }
   }
 
   if (isEnabled) {
-    const validHour = (hour >= 0 && hour <= 23) ? hour : 8;
+    const validHour = (hour !== undefined && hour !== null && !isNaN(hour) && hour >= 0 && hour <= 23) ? parseInt(hour, 10) : 8;
     const lower = String(scheduleText || "").toLowerCase();
 
     // 1. MINGGUAN (Weekly)
@@ -315,14 +332,42 @@ function syncAppsScriptScheduleTrigger(isEnabled, hour, scheduleText) {
     else {
       ScriptApp.newTrigger("sendDailyScheduledReport")
         .timeBased()
-        .atHour(validHour)
         .everyDays(1)
+        .atHour(validHour)
         .inTimezone(TIMEZONE)
         .create();
       Logger.log("✅ Trigger harian aktif jam " + validHour + ":00 WIB.");
     }
   } else {
     Logger.log("ℹ️ Trigger laporan otomatis dinonaktifkan.");
+  }
+}
+
+/**
+ * ----------------------------------------------------------------------------
+ * FUNGSI MANUAL SINKRONISASI TRIGGER DARI EDITOR GOOGLE APPS SCRIPT
+ * Pilih fungsi ini di menu dropdown editor Apps Script, lalu klik "Jalankan" / "Run"
+ * ----------------------------------------------------------------------------
+ */
+function manualSyncSystemConfigAndTrigger() {
+  const ss = getSpreadsheet();
+  if (!ss) {
+    Logger.log("❌ Spreadsheet tidak ditemukan!");
+    return;
+  }
+  const config = getSystemConfigData(ss);
+  Logger.log("📋 Konfigurasi saat ini di SystemConfig: " + JSON.stringify(config));
+  
+  const isEnabled = String(config.AUTO_EMAIL_ENABLED || "TRUE").toUpperCase() === "TRUE";
+  const hour = parseInt(config.DAILY_REPORT_HOUR || "8", 10);
+  const schedText = String(config.AUTO_SCHEDULE_TEXT || "");
+  
+  syncAppsScriptScheduleTrigger(isEnabled, hour, schedText);
+  
+  const triggers = ScriptApp.getProjectTriggers();
+  Logger.log("🎉 Sinkronisasi Berhasil! Jumlah pemicu aktif saat ini: " + triggers.length);
+  for (let i = 0; i < triggers.length; i++) {
+    Logger.log("👉 Trigger #" + (i + 1) + ": Handler=" + triggers[i].getHandlerFunction() + ", TriggerSource=" + triggers[i].getTriggerSource());
   }
 }
 

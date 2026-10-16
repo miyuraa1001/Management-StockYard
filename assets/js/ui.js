@@ -3627,15 +3627,24 @@ const UI = {
       this.showToast('⏳ Menyimpan jadwal ke database cloud...');
       const payload = {
         schedule: sched,
+        AUTO_SCHEDULE_TEXT: sched,
         DAILY_REPORT_HOUR: this.getHour24()
       };
 
+      console.log('[UI] Mengirim data jadwal ke backend:', payload);
       let res = await ApiService.updateConfig(payload);
+      console.log('[UI] Hasil respons update jadwal:', res);
+
       let usedFallback = false;
 
       if (!res || !res.success) {
         console.warn('[UI] updateConfig belum aktif di live Apps Script, mencoba fallback updateProfile...', res);
-        const profileRes = await ApiService.updateProfile({ schedule: sched });
+        const profileRes = await ApiService.updateProfile({ 
+          schedule: sched, 
+          AUTO_SCHEDULE_TEXT: sched,
+          DAILY_REPORT_HOUR: this.getHour24() 
+        });
+        console.log('[UI] Hasil respons fallback updateProfile:', profileRes);
         if (profileRes && profileRes.success) {
           usedFallback = true;
           res = { success: true, message: 'Jadwal berhasil diperbarui di database.' };
@@ -3646,13 +3655,21 @@ const UI = {
         if (res.config && res.config.AUTO_SCHEDULE_TEXT) {
           AppState.automationConfig.schedule = res.config.AUTO_SCHEDULE_TEXT;
         }
+        if (res.config && res.config.DAILY_REPORT_HOUR !== undefined) {
+          AppState.automationConfig.DAILY_REPORT_HOUR = res.config.DAILY_REPORT_HOUR;
+        }
         AppState.saveToCache();
         this.applyAutomationConfig();
         this.closeEditScheduleModal();
         this.showToast('✅ Berhasil! Jadwal pengiriman laporan tersimpan di database Google Sheets!');
       } else {
+        const errMsg = (res && (res.message || res.error)) ? res.message || res.error : '';
         this.closeEditScheduleModal();
-        this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+        if (errMsg && errMsg.includes('401')) {
+          this.showToast('⚠️ Token API tidak cocok. Pastikan Apps Script telah diperbarui.');
+        } else {
+          this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+        }
       }
     } catch (err) {
       console.error('[UI] Gagal simpan jadwal ke backend:', err);
@@ -3703,15 +3720,26 @@ const UI = {
       const payload = {
         email: emailStr,
         emails: emailList,
-        type: type
+        TARGET_EMAIL: emailStr,
+        type: type,
+        REPORT_DOCUMENT_TYPE: type
       };
 
+      console.log('[UI] Mengirim data target email ke backend:', payload);
       let res = await ApiService.updateConfig(payload);
+      console.log('[UI] Hasil respons update email:', res);
+
       let usedFallback = false;
 
       if (!res || !res.success) {
         console.warn('[UI] updateConfig belum aktif di live Apps Script, mencoba fallback updateProfile...', res);
-        const profileRes = await ApiService.updateProfile({ email: emailStr, type: type });
+        const profileRes = await ApiService.updateProfile({ 
+          email: emailStr, 
+          emails: emailList,
+          TARGET_EMAIL: emailStr,
+          type: type 
+        });
+        console.log('[UI] Hasil respons fallback updateProfile email:', profileRes);
         if (profileRes && profileRes.success) {
           usedFallback = true;
           res = { success: true, message: 'Target email berhasil diperbarui di database.' };
@@ -3731,8 +3759,13 @@ const UI = {
         this.closeEditTargetEmailModal();
         this.showToast('✅ Berhasil! Target email penerima laporan tersimpan di database Google Sheets!');
       } else {
+        const errMsg = (res && (res.message || res.error)) ? res.message || res.error : '';
         this.closeEditTargetEmailModal();
-        this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+        if (errMsg && errMsg.includes('401')) {
+          this.showToast('⚠️ Token API tidak cocok. Pastikan Apps Script telah diperbarui.');
+        } else {
+          this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+        }
       }
     } catch (err) {
       console.error('[UI] Gagal simpan target email ke backend:', err);
