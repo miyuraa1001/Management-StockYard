@@ -25,8 +25,12 @@ const App = {
     if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
 
     // 3. Render awal komponen UI dari state
-    UI.renderDashboardActivities();
-    UI.updateDashboardKpis();
+    if (typeof UI.initDashboardDateFilter === 'function') {
+      UI.initDashboardDateFilter();
+    } else {
+      UI.renderDashboardActivities();
+      UI.updateDashboardKpis();
+    }
     UI.renderInventoryList();
     UI.renderHistoryList();
     UI.initHeroCarousel();
@@ -84,8 +88,12 @@ const App = {
     try {
       const isUpdated = await ApiService.fetchInitialData();
       if (isUpdated) {
-        UI.renderDashboardActivities();
-        UI.updateDashboardKpis();
+        if (typeof UI.applyDashboardDateFilter === 'function') {
+          UI.applyDashboardDateFilter();
+        } else {
+          UI.renderDashboardActivities();
+          UI.updateDashboardKpis();
+        }
         UI.renderInventoryList();
         UI.renderHistoryList();
         if (UI.applyUserProfile) UI.applyUserProfile();
@@ -194,8 +202,12 @@ const App = {
     UI.showToast('⏳ Menyimpan mutasi ke Google Spreadsheet & Drive...', 2500);
 
     // Refresh UI & ganti tab ke Riwayat
-    UI.updateDashboardKpis();
-    UI.renderDashboardActivities();
+    if (typeof UI.applyDashboardDateFilter === 'function') {
+      UI.applyDashboardDateFilter();
+    } else {
+      UI.updateDashboardKpis();
+      UI.renderDashboardActivities();
+    }
     UI.renderInventoryList();
     UI.renderHistoryList();
 

@@ -54,8 +54,12 @@ const UI = {
     });
 
     if (target === 'dashboard') {
-      this.renderDashboardActivities();
-      this.updateDashboardKpis();
+      if (typeof this.applyDashboardDateFilter === 'function') {
+        this.applyDashboardDateFilter();
+      } else {
+        this.renderDashboardActivities();
+        this.updateDashboardKpis();
+      }
       if (typeof this.startHeroAutoScroll === 'function') {
         this.startHeroAutoScroll();
       }
@@ -119,16 +123,193 @@ const UI = {
   },
 
   /**
-   * Render 6 aktivitas mutasi terbaru di bagian paling bawah Dashboard
+   * Mengambil data riwayat mutasi yang sedang difilter khusus untuk Dashboard
+   */
+  getFilteredDashboardData() {
+    const fDate = document.getElementById('dashFilterDate')?.value || 'all';
+    const fMonth = document.getElementById('dashFilterMonth')?.value || 'all';
+    const fYear = document.getElementById('dashFilterYear')?.value || 'all';
+
+    const filtered = (AppState.historyData || []).filter(item => {
+      const parts = this.parseItemDate(item);
+      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
+      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
+      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+      return dateMatch && monthMatch && yearMatch;
+    });
+
+    return { filtered, fDate, fMonth, fYear };
+  },
+
+  /**
+   * Inisialisasi awal filter Dashboard agar otomatis menampilkan hari ini
+   */
+  initDashboardDateFilter() {
+    const now = new Date();
+    const todayDate = String(now.getDate());
+    const todayMonth = String(now.getMonth() + 1);
+    const todayYear = String(now.getFullYear());
+
+    const d = document.getElementById('dashFilterDate');
+    const m = document.getElementById('dashFilterMonth');
+    const y = document.getElementById('dashFilterYear');
+
+    if (d && (!d.value || d.value === 'all')) d.value = todayDate;
+    if (m && (!m.value || m.value === 'all')) m.value = todayMonth;
+    if (y && (!y.value || y.value === 'all')) y.value = todayYear;
+
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
+    this.applyDashboardDateFilter();
+  },
+
+  /**
+   * Terapkan filter tanggal dashboard & perbarui semua indikator & list aktivitas
+   */
+  applyDashboardDateFilter() {
+    const { filtered, fDate, fMonth, fYear } = this.getFilteredDashboardData();
+
+    // 1. Update status badge & deskripsi di card filter dashboard
+    const badgeEl = document.getElementById('dashPeriodStatusBadge');
+    const descEl = document.getElementById('dashPeriodDesc');
+    const kpiMasukEl = document.getElementById('dashKpiMasuk');
+    const kpiKeluarEl = document.getElementById('dashKpiKeluar');
+    const kpiTotalEl = document.getElementById('dashKpiTotal');
+
+    const totalMasuk = filtered.filter(i => i.type === 'Unit Masuk').length;
+    const totalKeluar = filtered.filter(i => i.type === 'Unit Keluar').length;
+    const totalMutasi = filtered.length;
+
+    if (kpiMasukEl) kpiMasukEl.textContent = totalMasuk;
+    if (kpiKeluarEl) kpiKeluarEl.textContent = totalKeluar;
+    if (kpiTotalEl) kpiTotalEl.textContent = totalMutasi;
+
+    const shortMonths = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const now = new Date();
+    const isToday = (fDate === String(now.getDate()) && fMonth === String(now.getMonth() + 1) && fYear === String(now.getFullYear()));
+
+    if (badgeEl) {
+      if (isToday) {
+        badgeEl.textContent = `Hari Ini (${now.getDate()} ${shortMonths[now.getMonth() + 1]} ${now.getFullYear()})`;
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200/80 leading-none';
+      } else if (fDate === 'all' && fMonth === 'all' && fYear === 'all') {
+        badgeEl.textContent = 'Semua Waktu';
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200 leading-none';
+      } else {
+        const dStr = fDate === 'all' ? 'Semua Tgl' : `Tgl ${fDate}`;
+        const mStr = fMonth === 'all' ? 'Semua Bln' : shortMonths[parseInt(fMonth, 10)] || fMonth;
+        const yStr = fYear === 'all' ? '' : fYear;
+        badgeEl.textContent = `${dStr} ${mStr} ${yStr}`.trim();
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200/80 leading-none';
+      }
+    }
+
+    if (descEl) {
+      if (isToday) {
+        descEl.textContent = `Menampilkan ${totalMutasi} transaksi mutasi unit yang tercatat hari ini.`;
+      } else if (fDate === 'all' && fMonth === 'all' && fYear === 'all') {
+        descEl.textContent = `Menampilkan seluruh riwayat audit (${totalMutasi} transaksi) di pool yard.`;
+      } else {
+        descEl.textContent = `Menampilkan ${totalMutasi} transaksi mutasi pada periode yang dipilih.`;
+      }
+    }
+
+    // 2. Re-render aktivitas mutasi terbaru
+    this.renderDashboardActivities();
+
+    // 3. Perbarui count Masuk & Keluar di Hero Slides
+    if (typeof this.updateHeroSlidesData === 'function') {
+      this.updateHeroSlidesData();
+    }
+
+    // 4. Perbarui Donut Chart & Kartu Preview
+    if (typeof this.renderDashboardDonut === 'function') {
+      this.renderDashboardDonut();
+    }
+  },
+
+  /**
+   * Setel filter dashboard kembali ke Hari Ini
+   */
+  setDashboardDateFilterToToday() {
+    const now = new Date();
+    const d = document.getElementById('dashFilterDate');
+    const m = document.getElementById('dashFilterMonth');
+    const y = document.getElementById('dashFilterYear');
+    if (d) d.value = String(now.getDate());
+    if (m) m.value = String(now.getMonth() + 1);
+    if (y) y.value = String(now.getFullYear());
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
+    this.applyDashboardDateFilter();
+    this.showToast('Filter dashboard disetel ke Hari Ini');
+  },
+
+  /**
+   * Reset filter dashboard ke Semua Waktu
+   */
+  resetDashboardDateFilter() {
+    const d = document.getElementById('dashFilterDate');
+    const m = document.getElementById('dashFilterMonth');
+    const y = document.getElementById('dashFilterYear');
+    if (d) d.value = 'all';
+    if (m) m.value = 'all';
+    if (y) y.value = 'all';
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
+    this.applyDashboardDateFilter();
+    this.showToast('Filter dashboard di-reset (Semua Waktu)');
+  },
+
+  setDashboardDateFilterToAll() {
+    this.resetDashboardDateFilter();
+  },
+
+  /**
+   * Render aktivitas mutasi terbaru di Dashboard sesuai filter tanggal
    * Didesain khusus agar sangat rapi, proporsional, dan tidak berantakan di layar mobile
    */
   renderDashboardActivities() {
     const container = document.getElementById('dashboardRecentList');
     if (!container) return;
 
-    const recentItems = AppState.historyData.slice(0, 6);
+    const { filtered, fDate, fMonth, fYear } = this.getFilteredDashboardData();
+    const recentItems = filtered.slice(0, 8);
     if (recentItems.length === 0) {
-      container.innerHTML = `<p class="col-span-full text-xs text-slate-400 py-4 text-center">Belum ada aktivitas mutasi.</p>`;
+      const now = new Date();
+      const shortMonths = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      let periodLabel = 'hari ini';
+      if (fDate === String(now.getDate()) && fMonth === String(now.getMonth() + 1) && fYear === String(now.getFullYear())) {
+        periodLabel = `hari ini (${now.getDate()} ${shortMonths[now.getMonth() + 1]} ${now.getFullYear()})`;
+      } else if (fDate === 'all' && fMonth === 'all' && fYear === 'all') {
+        periodLabel = 'semua riwayat';
+      } else {
+        const dStr = fDate === 'all' ? 'Semua Tgl' : `Tgl ${fDate}`;
+        const mStr = fMonth === 'all' ? 'Semua Bln' : shortMonths[parseInt(fMonth, 10)] || fMonth;
+        const yStr = fYear === 'all' ? '' : fYear;
+        periodLabel = `${dStr} ${mStr} ${yStr}`.trim();
+      }
+
+      container.innerHTML = `
+        <div class="col-span-full py-8 px-4 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 border border-blue-100 shadow-2xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <p class="text-xs sm:text-sm font-extrabold text-slate-800">Belum ada aktivitas mutasi untuk ${periodLabel}</p>
+          <p class="text-[11px] text-slate-400 mt-1">Belum ada unit masuk atau keluar yang tercatat pada periode ini.</p>
+          <div class="flex items-center justify-center gap-2 mt-3.5">
+            <button type="button" onclick="UI.resetDashboardDateFilter()" class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition cursor-pointer shadow-xs active:scale-95">
+              <span>Tampilkan Semua Data</span>
+            </button>
+            <button type="button" onclick="switchTab('scanner')" class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 text-[11px] font-bold transition cursor-pointer active:scale-95">
+              <span>+ Catat Mutasi Baru</span>
+            </button>
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -1619,7 +1800,20 @@ const UI = {
         modelDateSelect.appendChild(opt);
       }
     }
+    const dashDateSelect = document.getElementById('dashFilterDate');
+    if (dashDateSelect) {
+      dashDateSelect.innerHTML = '<option value="all">Semua Tgl</option>';
+      for (let i = 1; i <= 31; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        dashDateSelect.appendChild(opt);
+      }
+    }
     this.initCustomDropdowns();
+    if (typeof this.initDashboardDateFilter === 'function') {
+      this.initDashboardDateFilter();
+    }
   },
 
   /**
@@ -1931,7 +2125,11 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const matchingHistory = (AppState.historyData || []).filter(h => {
+      const { filtered: dashHistory } = (typeof this.getFilteredDashboardData === 'function')
+        ? this.getFilteredDashboardData()
+        : { filtered: AppState.historyData || [] };
+
+      const matchingHistory = dashHistory.filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;
@@ -2196,7 +2394,11 @@ const UI = {
         return m && m.catalogId === catalogItem.catalogId;
       });
 
-      const matchingHistory = (AppState.historyData || []).filter(h => {
+      const { filtered: dashHistory } = (typeof this.getFilteredDashboardData === 'function')
+        ? this.getFilteredDashboardData()
+        : { filtered: AppState.historyData || [] };
+
+      const matchingHistory = dashHistory.filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === catalogItem.model.toLowerCase()) return true;
@@ -2503,7 +2705,7 @@ const UI = {
    */
   initCustomDropdowns() {
     // Pastikan opsi tanggal 1..31 sudah terisi sebelum membangun custom dropdown
-    ['histFilterDate', 'modelFilterDate'].forEach(dateId => {
+    ['histFilterDate', 'modelFilterDate', 'dashFilterDate'].forEach(dateId => {
       const dateSelectCheck = document.getElementById(dateId);
       if (dateSelectCheck && dateSelectCheck.options.length <= 1) {
         dateSelectCheck.innerHTML = '<option value="all">Semua Tgl</option>';
@@ -2517,6 +2719,9 @@ const UI = {
     });
 
     const selectIds = [
+      'dashFilterDate',
+      'dashFilterMonth',
+      'dashFilterYear',
       'histFilterDate',
       'histFilterMonth',
       'histFilterYear',
@@ -2545,10 +2750,10 @@ const UI = {
       }
       selectEl.dataset.customEnhanced = 'true';
 
-      const isCompactFilter = id.startsWith('histFilter') || id.startsWith('modelFilter');
-      const isDateGrid = id === 'histFilterDate' || id === 'modelFilterDate';
-      const isMonthGrid = id === 'histFilterMonth' || id === 'modelFilterMonth';
-      const isYearFilter = id === 'histFilterYear' || id === 'modelFilterYear';
+      const isCompactFilter = id.startsWith('histFilter') || id.startsWith('modelFilter') || id.startsWith('dashFilter');
+      const isDateGrid = id === 'histFilterDate' || id === 'modelFilterDate' || id === 'dashFilterDate';
+      const isMonthGrid = id === 'histFilterMonth' || id === 'modelFilterMonth' || id === 'dashFilterMonth';
+      const isYearFilter = id === 'histFilterYear' || id === 'modelFilterYear' || id === 'dashFilterYear';
 
       // Sembunyikan ikon panah SVG bawaan di sebelah select jika ada
       const parentEl = selectEl.parentElement;
@@ -4867,6 +5072,9 @@ window.openNotificationModal = () => UI.openNotificationModal ? UI.openNotificat
 window.closeNotificationModal = () => UI.closeNotificationModal ? UI.closeNotificationModal() : null;
 window.triggerRealEmailReportNow = () => UI.triggerRealEmailReportNow ? UI.triggerRealEmailReportNow() : null;
 window.clearEmailNotificationLogs = () => UI.clearEmailNotificationLogs ? UI.clearEmailNotificationLogs() : null;
+window.applyDashboardDateFilter = () => UI.applyDashboardDateFilter();
+window.resetDashboardDateFilter = () => UI.resetDashboardDateFilter();
+window.setDashboardDateFilterToToday = () => UI.setDashboardDateFilterToToday();
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {
