@@ -13,9 +13,8 @@
  */
 
 // ----------------------------------------------------------------------------
-// KONFIGURASI GLOBAL & KEAMANAN
+// KONFIGURASI GLOBAL & KEAMANAN (ZERO-LEAKAGE: TOKEN DIKELOLA VIA SPREADSHEET / SCRIPT PROPERTIES)
 // ----------------------------------------------------------------------------
-const API_SECRET_TOKEN = "DSO-SALVAGE-SECRET-KEY-982143";
 const DEFAULT_TARGET_EMAIL = "syafirafira08162@gmail.com";
 const TIMEZONE = "Asia/Jakarta";
 
@@ -30,6 +29,40 @@ const TAB_USERS = "UserPIC";
 const TAB_HISTORY = "HistoryMutasi";
 const TAB_INVENTORY = "Inventory";
 const TAB_CONFIG = "SystemConfig";
+
+/**
+ * Mengambil Secret Token Otentikasi secara dinamis & aman tanpa hardcode di Git:
+ * 1. Prioritas 1: Google Apps Script Script Properties (Terenkripsi di Google Cloud)
+ * 2. Prioritas 2: Tab 'SystemConfig' baris 'API_SECRET_TOKEN' di Spreadsheet Database
+ */
+function getApiSecretToken(ss) {
+  // 1. Periksa Google Apps Script Script Properties
+  try {
+    const propToken = PropertiesService.getScriptProperties().getProperty("API_SECRET_TOKEN");
+    if (propToken && propToken.trim() !== "") return propToken.trim();
+  } catch (e) {}
+
+  // 2. Periksa Tab SystemConfig di Spreadsheet
+  try {
+    if (!ss) ss = getSpreadsheet();
+    if (ss) {
+      const sheetConfig = ss.getSheetByName(TAB_CONFIG);
+      if (sheetConfig) {
+        const rows = sheetConfig.getDataRange().getValues();
+        for (let i = 1; i < rows.length; i++) {
+          if (String(rows[i][0]).trim() === "API_SECRET_TOKEN" && rows[i][1]) {
+            const val = String(rows[i][1]).trim();
+            if (val !== "") return val;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    Logger.log("Peringatan saat membaca API_SECRET_TOKEN dari spreadsheet: " + err.toString());
+  }
+
+  return "";
+}
 
 /**
  * Helper untuk mendapatkan objek Spreadsheet aktif secara aman
@@ -51,17 +84,25 @@ function getSpreadsheet() {
 }
 
 /**
- * Validasi otentikasi Secret Token
+ * Validasi otentikasi Secret Token secara aman
  */
 function isAuthorized(e, body) {
-  if (!API_SECRET_TOKEN || API_SECRET_TOKEN.trim() === "") return true;
-  const expectedToken = API_SECRET_TOKEN.trim();
+  const ss = getSpreadsheet();
+  const expectedToken = getApiSecretToken(ss);
+
+  // Jika token belum diatur sama sekali di Script Properties maupun Spreadsheet,
+  // izinkan akses agar sistem tidak langsung terkunci (fail-safe onboarding)
+  if (!expectedToken) return true;
+
   const queryToken = (e && e.parameter && e.parameter.token) ? String(e.parameter.token).trim() : null;
   if (queryToken && queryToken === expectedToken) return true;
+
   const bodyToken = (body && body.token) ? String(body.token).trim() : null;
   if (bodyToken && bodyToken === expectedToken) return true;
+
   const dataToken = (body && body.data && body.data.token) ? String(body.data.token).trim() : null;
   if (dataToken && dataToken === expectedToken) return true;
+
   return false;
 }
 
@@ -778,7 +819,7 @@ function setupDatabaseSpreadsheet() {
   const configRows = [
     ["DRIVE_FOLDER_ID", DEFAULT_DRIVE_FOLDER_ID, "ID Folder Google Drive tempat foto fisik unit & dokumen bukti scan disimpan"],
     ["TARGET_EMAIL", DEFAULT_TARGET_EMAIL, "Email penerima rekapitulasi PDF harian setiap jam 08:00 WIB"],
-    ["API_SECRET_TOKEN", API_SECRET_TOKEN, "Token rahasia otentikasi API antara web frontend dan Google Apps Script"],
+    ["API_SECRET_TOKEN", getApiSecretToken(ss) || "", "Token rahasia otentikasi API antara web frontend dan Google Apps Script"],
     ["AUTO_EMAIL_ENABLED", "TRUE", "Status aktifasi otomatisasi email harian (TRUE / FALSE)"],
     ["DAILY_REPORT_HOUR", "8", "Jam pengiriman rekapitulasi harian (08:00 WIB)"],
     ["AUTO_SCHEDULE_TEXT", "Setiap Hari 08:00 WIB", "Keterangan tampilan jadwal"],

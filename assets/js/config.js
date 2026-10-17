@@ -26,12 +26,8 @@ const CONFIG = {
   // Mode Koneksi Backend: 'proxy' (Vercel Serverless Reverse Proxy)
   API_MODE: 'proxy',
 
-  // Endpoint Vercel Serverless Reverse Proxy
+  // Endpoint Vercel Serverless Reverse Proxy (Keamanan Zero-Leakage: Token dikelola murni di server Vercel)
   PROXY_ENDPOINT: '/api/proxy',
-
-  // Autentikasi Secret API Token
-  API_TOKEN: 'DSO-SALVAGE-SECRET-KEY-982143',
-  DRIVE_FOLDER_ID: '1qQR4cxbBGB2DNi9mML9I3TZzKC6992A2',
 
   // Network Timeout & Realtime Polling Interval (milidetik)
   REQUEST_TIMEOUT: 20000,
