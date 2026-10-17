@@ -11,7 +11,7 @@ const App = {
    * Titik masuk utama aplikasi saat halaman selesai dimuat
    */
   async init() {
-    console.log('[App] Memulai Management Stockyard (Astra Daihatsu Sentra Lampung)...');
+    console.log('[App] Memulai Management StockYard (Astra Daihatsu DSO Lampung)...');
 
     // 1. Inisialisasi dropdown tanggal filter riwayat
     UI.populateDateDropdown();

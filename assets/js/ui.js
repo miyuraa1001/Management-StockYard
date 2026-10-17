@@ -1344,7 +1344,7 @@ const UI = {
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184); // slate-400
       doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management Stockyard Enterprise', margin, pageHeight - 5);
+      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
     }
 
     // ==========================================
@@ -1577,8 +1577,8 @@ const UI = {
         </div>
 
         <div class="footer-note">
-          <div>Dokumen Resmi Sistem Management Stockyard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
-          <div>Dicetak secara otomatis via sistem Management Stockyard</div>
+          <div>Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
+          <div>Dicetak secara otomatis via sistem Management StockYard</div>
         </div>
 
         <script>

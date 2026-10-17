@@ -13,8 +13,8 @@
 
 const CONFIG = {
   // Informasi Cabang & Operator Lapangan
-  APP_TITLE: 'Management Stockyard',
-  APP_SUBTITLE: 'Sentra Lampung • Astra Daihatsu',
+  APP_TITLE: 'Management StockYard',
+  APP_SUBTITLE: 'Astra Daihatsu DSO Lampung',
   BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
   OPERATOR_NAME: 'Andi Pratama',
   OPERATOR_NPK: '21040889',
