@@ -417,4 +417,15 @@ body::before {
     0 20px 44px -8px rgba(15, 23, 42, 0.24),
     0 6px 16px -3px rgba(15, 23, 42, 0.10),
     0 0 0 1px rgba(15, 23, 42, 0.04) !important;
+  z-index: 100 !important;
 }
+
+.custom-select-wrapper.z-50 {
+  z-index: 100 !important;
+}
+
+.filter-card-elevated {
+  position: relative !important;
+  z-index: 45 !important;
+}
+

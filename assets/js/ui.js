@@ -2761,17 +2761,17 @@ const UI = {
       triggerBtn.appendChild(triggerLabel);
       triggerBtn.appendChild(triggerArrow);
 
-      // Buat panel menu pop-up dengan latar belakang SOLID PUTIH (#FFFFFF) agar tabel di bawahnya tidak tembus
+      // Buat panel menu pop-up dengan latar belakang SOLID PUTIH (#FFFFFF) agar tabel/kartu di bawahnya tidak tembus
       const menu = document.createElement('div');
       menu.style.backgroundColor = '#ffffff';
       if (isDateGrid) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 w-[252px] sm:w-[268px] z-50 bg-white border border-slate-200 rounded-2xl p-3';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 w-[252px] sm:w-[268px] z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-2xl ring-1 ring-black/5';
       } else if (isMonthGrid) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-[232px] sm:w-[244px] z-50 bg-white border border-slate-200 rounded-2xl p-3';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[232px] sm:w-[244px] z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-2xl ring-1 ring-black/5';
       } else if (isYearFilter) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 min-w-[132px] w-full z-50 bg-white border border-slate-200 rounded-2xl p-1.5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 min-w-[132px] w-full z-50 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-2xl ring-1 ring-black/5';
       } else {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 right-0 w-full z-50 bg-white border border-slate-200 rounded-2xl py-1.5 max-h-56 overflow-y-auto';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 right-0 w-full z-50 bg-white border border-slate-200 rounded-2xl py-1.5 max-h-56 overflow-y-auto shadow-2xl ring-1 ring-black/5';
       }
 
       const selectValueAndClose = (val) => {
@@ -2961,10 +2961,22 @@ const UI = {
             if (btn) btn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
           }
         });
+        document.querySelectorAll('.filter-card-elevated').forEach(c => {
+          c.classList.remove('filter-card-elevated');
+          c.style.zIndex = '';
+        });
 
         renderMenuOptions();
         wrapper.classList.remove('z-10');
         wrapper.classList.add('z-50');
+
+        // Dynamically elevate parent card so no sibling card or transform stacking context can paint above it
+        const parentCard = wrapper.closest('.scroll-reveal, #viewDashboard > div, #viewHistory > div, #viewModelDetail > div');
+        if (parentCard) {
+          parentCard.classList.add('filter-card-elevated');
+          parentCard.style.zIndex = '45';
+        }
+
         triggerBtn.classList.add('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         menu.classList.remove('hidden');
         triggerArrow.style.transform = 'rotate(180deg)';
@@ -2981,6 +2993,11 @@ const UI = {
         menu.classList.add('hidden');
         wrapper.classList.remove('z-50');
         wrapper.classList.add('z-10');
+        const parentCard = wrapper.closest('.filter-card-elevated');
+        if (parentCard) {
+          parentCard.classList.remove('filter-card-elevated');
+          parentCard.style.zIndex = '';
+        }
         triggerBtn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         triggerArrow.style.transform = 'rotate(0deg)';
       };
@@ -3030,6 +3047,10 @@ const UI = {
           if (arr) arr.style.transform = 'rotate(0deg)';
           const btn = w.querySelector('button');
           if (btn) btn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
+        });
+        document.querySelectorAll('.filter-card-elevated').forEach(c => {
+          c.classList.remove('filter-card-elevated');
+          c.style.zIndex = '';
         });
       });
     }
