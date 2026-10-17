@@ -361,10 +361,10 @@ const UI = {
       return `
         <div class="scroll-reveal heavy-section-deferred bg-white/95 hover:bg-white rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-4 border ${isEmpty ? 'border-rose-100/80' : 'border-white'} shadow-saas-card flex flex-col justify-between transition duration-300 group" style="--reveal-delay: ${delayMs}ms;">
           <div>
-            <!-- Top Showroom Studio Image Stage -->
-            <div class="relative w-full h-38 sm:h-42 md:h-44 rounded-2xl bg-gradient-to-b from-slate-50/75 via-white to-slate-50/90 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
+            <!-- Top Showroom Studio Image Stage (Proporsional & Bebas Terpotong di Desktop & Mobile) -->
+            <div class="relative w-full aspect-[16/10] sm:aspect-[16/10] md:h-52 lg:h-56 rounded-2xl bg-gradient-to-b from-slate-50/80 via-white to-slate-50/95 border border-slate-100 flex items-center justify-center overflow-hidden cursor-pointer group/img" onclick="openImagePreviewModal('${entry.photo}')">
               <!-- Subtle Studio Floor Shadow -->
-              <div class="absolute inset-x-10 bottom-2.5 h-3 rounded-full bg-slate-900/[0.04] blur-xs pointer-events-none"></div>
+              <div class="absolute inset-x-10 sm:inset-x-12 bottom-3 h-3 rounded-full bg-slate-900/[0.05] blur-xs pointer-events-none"></div>
 
               <!-- Jenis Kendaraan Badge (Top-Left) -->
               <span class="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full text-[9.5px] font-extrabold bg-slate-900/80 text-white backdrop-blur-md shadow-xs tracking-wide">
@@ -377,8 +377,8 @@ const UI = {
                 <span>${statusLabel}</span>
               </span>
 
-              <!-- Official Studio Car Image -->
-              <img src="${entry.photo}" alt="${entry.model}" loading="lazy" decoding="async" class="w-full h-full object-cover object-[center_74%] mix-blend-multiply transform scale-[1.02] group-hover/img:scale-[1.07] transition-transform duration-500 select-none">
+              <!-- Official Studio Car Image (1:1 Square Fully Contained, Never Cropped) -->
+              <img src="${entry.photo}" alt="${entry.model}" loading="lazy" decoding="async" class="w-full h-full object-contain p-2 sm:p-3 mix-blend-multiply transition-transform duration-500 select-none group-hover/img:scale-105">
 
               <!-- Bottom-Right Zoom Hint Pill -->
               <span class="absolute bottom-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 group-hover/img:bg-slate-900 text-slate-500 group-hover/img:text-white border border-slate-200/80 shadow-xs flex items-center justify-center transition" title="Perbesar Foto Katalog">
@@ -4755,8 +4755,8 @@ const UI = {
           <!-- Kolom 4: Kendaraan -->
           <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-2.5 min-w-0">
-              <div class="w-10 h-7 rounded-md bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-cover">
+              <div class="w-10 h-7 rounded-md bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain mix-blend-multiply">
               </div>
               <div class="min-w-0">
                 <div class="font-black text-slate-900 text-xs truncate">${item.model}</div>
