@@ -147,9 +147,20 @@ const ApiService = {
   async fetchInitialData() {
     try {
       const res = await this.request('getInitialData', 'GET');
-      if (res && res.success && res.data) {
-        if (Array.isArray(res.data.inventory)) {
-          AppState.inventoryData = res.data.inventory.map(item => ({
+      if (!res || res.error) {
+        console.warn('[ApiService] Gagal mengambil data server:', res ? res.error : 'No response');
+        return false;
+      }
+
+      // Dukung baik format { success: true, data: { inventory, history, ... } }
+      // maupun format langsung { inventory, history, config, users, ... }
+      const payload = (res.data && typeof res.data === 'object') ? res.data : res;
+      const hasInventory = Array.isArray(payload.inventory);
+      const hasHistory = Array.isArray(payload.history);
+
+      if (hasInventory || hasHistory || payload.config || payload.users || payload.user) {
+        if (hasInventory) {
+          AppState.inventoryData = payload.inventory.map(item => ({
             ...item,
             model: item.model || item.name || '',
             name: item.name || item.model || '',
@@ -158,7 +169,8 @@ const ApiService = {
             status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'Tersedia' : 'Kosong'
           }));
         }
-        if (Array.isArray(res.data.history)) {
+
+        if (hasHistory) {
           const monthMap = {
             'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
             'juli': 7, 'agustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'desember': 12
@@ -175,18 +187,36 @@ const ApiService = {
             return url;
           };
 
-          AppState.historyData = res.data.history.map(item => {
-            let d = item.date;
-            let m = item.month;
-            let y = item.year;
+          AppState.historyData = payload.history.map(item => {
+            let d = null;
+            let m = null;
+            let y = null;
+
+            if (item.ymd) {
+              const parts = String(item.ymd).split('-');
+              if (parts.length === 3) {
+                y = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10);
+                d = parseInt(parts[2], 10);
+              }
+            }
+
+            if ((!d || !m || !y) && item.date && String(item.date).includes('/')) {
+              const parts = String(item.date).split('/');
+              if (parts.length === 3) {
+                d = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10);
+                y = parseInt(parts[2], 10);
+              }
+            }
 
             if ((!d || !m || !y) && item.timestamp) {
               try {
                 const dt = new Date(item.timestamp);
                 if (!isNaN(dt.getTime())) {
-                  d = d || dt.getDate();
-                  m = m || (dt.getMonth() + 1);
-                  y = y || dt.getFullYear();
+                  d = dt.getDate();
+                  m = dt.getMonth() + 1;
+                  y = dt.getFullYear();
                 }
               } catch (e) {}
             }
@@ -196,40 +226,51 @@ const ApiService = {
               if (str.includes('/')) {
                 const parts = str.split('/');
                 if (parts.length === 3) {
-                  d = d || parseInt(parts[0], 10);
-                  m = m || parseInt(parts[1], 10);
-                  y = y || parseInt(parts[2], 10);
+                  d = parseInt(parts[0], 10);
+                  m = parseInt(parts[1], 10);
+                  y = parseInt(parts[2], 10);
                 }
               } else {
                 const parts = str.split(/\s+/);
                 if (parts.length >= 3) {
-                  d = d || parseInt(parts[0], 10);
+                  d = parseInt(parts[0], 10);
                   const mName = parts[1].toLowerCase();
-                  m = m || monthMap[mName] || 1;
-                  y = y || parseInt(parts[2], 10);
+                  m = monthMap[mName] || 1;
+                  y = parseInt(parts[2], 10);
                 }
               }
             }
 
+            const monthNames = [
+              'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            const finalD = d ? parseInt(d, 10) : new Date().getDate();
+            const finalM = m ? parseInt(m, 10) : (new Date().getMonth() + 1);
+            const finalY = y ? parseInt(y, 10) : new Date().getFullYear();
+            const dateStr = item.fullDateStr || `${finalD} ${monthNames[finalM - 1]} ${finalY}`;
+
             return {
               ...item,
-              date: d ? parseInt(d, 10) : new Date().getDate(),
-              month: m ? parseInt(m, 10) : (new Date().getMonth() + 1),
-              year: y ? parseInt(y, 10) : new Date().getFullYear(),
+              date: finalD,
+              month: finalM,
+              year: finalY,
+              fullDateStr: dateStr,
               unitPhoto: formatDriveThumb(item.unitPhoto),
               docPhoto: formatDriveThumb(item.docPhoto)
             };
           });
         }
+
         // Sinkronisasi data User PIC jika dikembalikan oleh database
-        if (res.data.user) {
-          const u = res.data.user;
+        const u = payload.user || (Array.isArray(payload.users) && payload.users.length > 0 ? payload.users[0] : null);
+        if (u) {
           if (u.name) AppState.userProfile.name = u.name;
           if (u.npk) AppState.userProfile.npk = u.npk;
           if (u.branch) AppState.userProfile.branch = u.branch;
           if (u.role) AppState.userProfile.role = u.role;
-          if (u.photo) {
-            AppState.userProfile.photo = formatDriveThumb(u.photo);
+          if (u.photo || u.avatar) {
+            AppState.userProfile.photo = (u.photo || u.avatar);
           }
           if (typeof UI !== 'undefined' && UI.applyUserProfile) {
             UI.applyUserProfile();
@@ -237,8 +278,8 @@ const ApiService = {
         }
 
         // Sinkronisasi data SystemConfig (Email & Jadwal) jika dikembalikan oleh database
-        if (res.data.config) {
-          const c = res.data.config;
+        if (payload.config) {
+          const c = payload.config;
           if (c.TARGET_EMAIL) AppState.automationConfig.email = c.TARGET_EMAIL;
           if (c.AUTO_SCHEDULE_TEXT) {
             AppState.automationConfig.schedule = c.AUTO_SCHEDULE_TEXT;
