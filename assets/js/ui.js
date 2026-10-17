@@ -1157,7 +1157,7 @@ const UI = {
     const dateFormatted = `${day}-${month}-${year}`; // Format DD-MM-YYYY untuk nama file sistem
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${now.getFullYear()}, ${timeStr} WIB`;
-    const docNumber = `SALVAGE/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
+    const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
 
     // ==========================================
     // 1. KOP SURAT RESMI ASTRA DAIHATSU
@@ -1169,7 +1169,7 @@ const UI = {
 
     doc.setFontSize(9);
     doc.setTextColor(37, 99, 235); // brand-blue
-    doc.text('REKAPITULASI AUDIT & SERAH TERIMA FISIK KENDARAAN (SALVAGE LOGISTICS)', margin, 16.5);
+    doc.text('REKAPITULASI AUDIT & SERAH TERIMA FISIK KENDARAAN (STOCKYARD LOGISTICS)', margin, 16.5);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
@@ -1344,7 +1344,7 @@ const UI = {
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184); // slate-400
       doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Salvage Enterprise', margin, pageHeight - 5);
+      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management Stockyard Enterprise', margin, pageHeight - 5);
     }
 
     // ==========================================
@@ -1373,7 +1373,7 @@ const UI = {
     const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}, ${timeStr} WIB`;
-    const docNumber = `SALVAGE/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
+    const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -1513,7 +1513,7 @@ const UI = {
         <div class="header">
           <div>
             <div class="title">PT Astra Daihatsu Motor • DSO Sentra Lampung</div>
-            <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Salvage Logistics)</div>
+            <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
             <div class="address">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
           </div>
           <div style="text-align: right; font-size: 8px; color: #64748b;">
@@ -1577,8 +1577,8 @@ const UI = {
         </div>
 
         <div class="footer-note">
-          <div>Dokumen Resmi Sistem Management Salvage • PT Astra Daihatsu Motor (Sentra Lampung)</div>
-          <div>Dicetak secara otomatis via sistem Management Salvage</div>
+          <div>Dokumen Resmi Sistem Management Stockyard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
+          <div>Dicetak secara otomatis via sistem Management Stockyard</div>
         </div>
 
         <script>
@@ -4067,7 +4067,7 @@ const UI = {
           </div>
 
           <h5 class="font-extrabold text-slate-900 text-xs sm:text-[13px] leading-tight">
-            ${item.subject || 'Laporan Mutasi Salvage Astra Daihatsu Sentra Lampung'}
+            ${item.subject || 'Laporan Mutasi Stockyard Astra Daihatsu Sentra Lampung'}
           </h5>
 
           <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
@@ -4117,7 +4117,7 @@ const UI = {
         timestamp: timestampStr,
         targetEmail: targetEmail,
         status: isSuccess ? 'SUCCESS' : 'FAILED',
-        subject: 'Rekap Laporan Mutasi Salvage • Astra Daihatsu - DSO Lampung',
+        subject: 'Rekap Laporan Mutasi Stockyard • Astra Daihatsu - DSO Lampung',
         message: isSuccess
           ? `Laporan PDF rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
           : `Gagal mengirimkan laporan email ke ${targetEmail}: ${res?.error || res?.message || 'Koneksi terputus'}`,
