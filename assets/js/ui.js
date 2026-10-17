@@ -2961,7 +2961,7 @@ const UI = {
   applyAutomationConfig() {
     const auto = AppState.automationConfig || {
       schedule: 'Setiap Hari 08:00 WIB',
-      email: 'syafirafira08162@gmail.com',
+      email: 'admin.logistics@daihatsu.co.id',
       type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
     };
 
@@ -2976,14 +2976,14 @@ const UI = {
     } else if (auto.email) {
       emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
     }
-    if (emailList.length === 0) emailList = ['syafirafira08162@gmail.com'];
+    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
 
     if (emailEl) {
       if (emailList.length > 1) {
         emailEl.innerText = `${emailList[0]} (+${emailList.length - 1} lainnya)`;
         emailEl.title = emailList.join(', ');
       } else {
-        emailEl.innerText = emailList[0] || 'syafirafira08162@gmail.com';
+        emailEl.innerText = emailList[0] || 'admin.logistics@daihatsu.co.id';
         emailEl.title = emailList[0] || '';
       }
     }
@@ -3133,7 +3133,7 @@ const UI = {
     period: 'pagi', // 'pagi' | 'siang' | 'sore' | 'malam'
     hour12: 8,
     minute: 0,
-    emails: ['syafirafira08162@gmail.com']
+    emails: ['admin.logistics@daihatsu.co.id']
   },
 
   /**
@@ -3198,7 +3198,7 @@ const UI = {
     } else if (auto.email) {
       emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
     }
-    if (emailList.length === 0) emailList = ['syafirafira08162@gmail.com'];
+    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
     this.automationState.emails = Array.from(new Set(emailList));
 
     // Update Tipe Dokumen
@@ -3997,7 +3997,7 @@ const UI = {
     // Tampilkan email target penerima aktif
     const targetEmailEl = document.getElementById('notifModalTargetEmail');
     if (targetEmailEl) {
-      targetEmailEl.textContent = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+      targetEmailEl.textContent = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
     }
 
     // Render riwayat notifikasi email
@@ -4037,7 +4037,7 @@ const UI = {
     } catch (e) {}
 
     if (!logs || logs.length === 0) {
-      const targetEmail = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+      const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
       container.innerHTML = `
         <div class="p-6 text-center text-slate-400 space-y-3 bg-slate-50/80 rounded-2xl border border-slate-200/60">
           <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center">
@@ -4092,7 +4092,7 @@ const UI = {
   async triggerRealEmailReportNow() {
     const btn = document.getElementById('btnTestSendEmail');
     const textEl = document.getElementById('btnTestSendEmailText');
-    const targetEmail = AppState.automationConfig?.email || 'syafirafira08162@gmail.com';
+    const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
 
     if (btn) btn.disabled = true;
     if (textEl) textEl.textContent = 'Mengirim...';

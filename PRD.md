@@ -61,7 +61,7 @@ flowchart TD
     end
 
     subgraph Stakeholders["Manajemen & Supervisor"]
-        EmailRecipient["Email Manajemen (syafirafira08162@gmail.com)"]
+        EmailRecipient["Email Manajemen (admin.logistics@daihatsu.co.id)"]
     end
 
     UI --> Scanner
@@ -269,7 +269,7 @@ sequenceDiagram
 | **B** | `username` | STRING | `syafira` | Username login |
 | **C** | `password_hash` | STRING | `***` | Password terenkripsi / PIN petugas |
 | **D** | `full_name` | STRING | `Syafira Fira` | Nama lengkap resmi PIC |
-| **E** | `email` | STRING | `syafirafira08162@gmail.com` | Email koordinasi petugas |
+| **E** | `email` | STRING | `admin.logistics@daihatsu.co.id` | Email koordinasi petugas |
 | **F** | `role` | ENUM | `YARD_OFFICER` / `SUPERVISOR` | Hak akses otorisasi sistem |
 
 ---
@@ -303,7 +303,7 @@ sequenceDiagram
   5. Script mengonversi dokumen HTML tersebut menjadi file PDF bernama:  
      `Rekap_Mutasi_Harian_Daihatsu_[YYYY-MM-DD].pdf`.
   6. Mengirimkan email via `GmailApp.sendEmail` ke alamat manajemen tujuan:  
-     `syafirafira08162@gmail.com`  
+     `admin.logistics@daihatsu.co.id`  
      dengan subjek: `[LAPORAN OTOMATIS] Rekap Mutasi Logistik Unit Daihatsu - Periode [TANGGAL]`.
 
 ---
@@ -353,4 +353,4 @@ git push origin main
 
 > **Pemeliharaan & Kontak:**  
 > Divisi Sistem Informasi & Manajemen Logistik Sentra Lampung — Astra Daihatsu Motor  
-> Email Korespondensi: `syafirafira08162@gmail.com`
+> Email Korespondensi: `admin.logistics@daihatsu.co.id`
