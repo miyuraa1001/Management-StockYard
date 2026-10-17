@@ -173,18 +173,8 @@ const UI = {
     // 1. Update status badge & deskripsi di card filter dashboard
     const badgeEl = document.getElementById('dashPeriodStatusBadge');
     const descEl = document.getElementById('dashPeriodDesc');
-    const kpiMasukEl = document.getElementById('dashKpiMasuk');
-    const kpiKeluarEl = document.getElementById('dashKpiKeluar');
-    const kpiTotalEl = document.getElementById('dashKpiTotal');
 
-    const totalMasuk = filtered.filter(i => i.type === 'Unit Masuk').length;
-    const totalKeluar = filtered.filter(i => i.type === 'Unit Keluar').length;
     const totalMutasi = filtered.length;
-
-    if (kpiMasukEl) kpiMasukEl.textContent = totalMasuk;
-    if (kpiKeluarEl) kpiKeluarEl.textContent = totalKeluar;
-    if (kpiTotalEl) kpiTotalEl.textContent = totalMutasi;
-
     const shortMonths = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const now = new Date();
     const isToday = (fDate === String(now.getDate()) && fMonth === String(now.getMonth() + 1) && fYear === String(now.getFullYear()));
@@ -207,7 +197,9 @@ const UI = {
 
     if (descEl) {
       if (isToday) {
-        descEl.textContent = `Menampilkan ${totalMutasi} transaksi mutasi unit yang tercatat hari ini.`;
+        descEl.textContent = totalMutasi > 0
+          ? `Menampilkan ${totalMutasi} log mutasi unit tercatat hari ini.`
+          : 'Belum ada transaksi mutasi tercatat hari ini.';
       } else if (fDate === 'all' && fMonth === 'all' && fYear === 'all') {
         descEl.textContent = `Menampilkan seluruh riwayat audit (${totalMutasi} transaksi) di pool yard.`;
       } else {
@@ -215,18 +207,8 @@ const UI = {
       }
     }
 
-    // 2. Re-render aktivitas mutasi terbaru
+    // 2. Re-render aktivitas mutasi terbaru sesuai filter tanggal
     this.renderDashboardActivities();
-
-    // 3. Perbarui count Masuk & Keluar di Hero Slides
-    if (typeof this.updateHeroSlidesData === 'function') {
-      this.updateHeroSlidesData();
-    }
-
-    // 4. Perbarui Donut Chart & Kartu Preview
-    if (typeof this.renderDashboardDonut === 'function') {
-      this.renderDashboardDonut();
-    }
   },
 
   /**
@@ -2125,11 +2107,7 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const { filtered: dashHistory } = (typeof this.getFilteredDashboardData === 'function')
-        ? this.getFilteredDashboardData()
-        : { filtered: AppState.historyData || [] };
-
-      const matchingHistory = dashHistory.filter(h => {
+      const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;
@@ -2394,11 +2372,7 @@ const UI = {
         return m && m.catalogId === catalogItem.catalogId;
       });
 
-      const { filtered: dashHistory } = (typeof this.getFilteredDashboardData === 'function')
-        ? this.getFilteredDashboardData()
-        : { filtered: AppState.historyData || [] };
-
-      const matchingHistory = dashHistory.filter(h => {
+      const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === catalogItem.model.toLowerCase()) return true;
