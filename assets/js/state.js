@@ -211,15 +211,47 @@ const AppState = {
   getUnitCurrentStatus(vin) {
     if (!vin) return null;
     const cleanVin = String(vin).trim().toUpperCase();
-    const match = this.historyData.find(item => item.vin && String(item.vin).trim().toUpperCase() === cleanVin);
-    if (!match) return null;
-    return {
-      type: match.type || 'Unit Masuk',
-      date: match.fullDateStr || (match.date ? `${match.date}/${match.month || ''}/${match.year || ''}` : ''),
-      time: match.time || '',
-      model: match.model || '',
-      pic: match.pic || ''
-    };
+    if (!cleanVin) return null;
+
+    // 1. Cek di historyData (riwayat mutasi audit terurut dari terbaru ke terlama)
+    const matches = (this.historyData || []).filter(item => {
+      const v = String(item.vin || '').trim().toUpperCase();
+      return v && v === cleanVin;
+    });
+
+    if (matches.length > 0) {
+      const latest = matches[0];
+      const typeStr = String(latest.type || '').trim();
+      const isMasuk = typeStr.toLowerCase().includes('masuk') || typeStr.toLowerCase() === 'in';
+      return {
+        type: isMasuk ? 'Unit Masuk' : 'Unit Keluar',
+        rawType: typeStr,
+        date: latest.fullDateStr || (latest.date ? `${latest.date}/${latest.month || ''}/${latest.year || ''}` : ''),
+        time: latest.time || '',
+        model: latest.model || '',
+        pic: latest.pic || ''
+      };
+    }
+
+    // 2. Fallback: Cek di inventoryData fisik yang sedang aktif di yard
+    const invItem = (this.inventoryData || []).find(item => {
+      const v = String(item.vin || '').trim().toUpperCase();
+      return v && v === cleanVin;
+    });
+
+    if (invItem) {
+      const isKeluar = invItem.status === 'Keluar' || String(invItem.status || '').toLowerCase().includes('keluar');
+      return {
+        type: isKeluar ? 'Unit Keluar' : 'Unit Masuk',
+        rawType: invItem.status || 'Unit Masuk',
+        date: invItem.date || '',
+        time: invItem.time || '',
+        model: invItem.model || '',
+        pic: invItem.pic || ''
+      };
+    }
+
+    return null;
   },
 
   /**
@@ -227,7 +259,8 @@ const AppState = {
    */
   isUnitCurrentlyInYard(vin) {
     const status = this.getUnitCurrentStatus(vin);
-    return status ? status.type === 'Unit Masuk' : false;
+    if (!status) return false;
+    return status.type === 'Unit Masuk' || String(status.rawType || '').toLowerCase().includes('masuk') || String(status.rawType || '').toLowerCase() === 'in';
   },
 
   /**

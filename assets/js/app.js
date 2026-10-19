@@ -125,13 +125,21 @@ const App = {
 
     const cleanVin = vin.trim().toUpperCase();
     const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin) : null;
-    const isInYard = currentStatus ? currentStatus.type === 'Unit Masuk' : false;
+    const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
 
     // Validasi Duplikat: Jika unit saat ini masih berada di dalam Stockyard dan dipilih 'Unit Masuk', TOLAK SIMPAN!
     if (isInYard && mutationType === 'Unit Masuk') {
-      UI.showToast(`⛔ Unit Masuk Ditolak! Unit [${cleanVin}] sudah tercatat berada di stockyard pada ${currentStatus.date || ''}. Pilih 'Unit Keluar' jika unit dikeluarkan.`, 5000);
+      if (typeof ScannerService !== 'undefined') {
+        ScannerService.playWarningBeep();
+        ScannerService.triggerWarningHaptic();
+      }
+      UI.showToast(`⛔ Unit Masuk Ditolak! Unit [${cleanVin}] sudah tercatat berada di stockyard pada ${currentStatus?.date || ''}. Tidak bisa menyimpan duplikat Unit Masuk. Silakan pilih 'Unit Keluar'.`, 6000);
       if (typeof window.validateMutationFormDuplication === 'function') {
         window.validateMutationFormDuplication();
+      }
+      const alertContainer = document.getElementById('mutationDuplicateAlert');
+      if (alertContainer) {
+        alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       return;
     }
@@ -268,7 +276,7 @@ window.validateMutationFormDuplication = function() {
     alertContainer.classList.add('hidden');
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
     }
     if (submitText) {
       submitText.textContent = 'Simpan & Verifikasi';
@@ -277,46 +285,46 @@ window.validateMutationFormDuplication = function() {
   }
 
   const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin) : null;
-  const isInYard = currentStatus ? currentStatus.type === 'Unit Masuk' : false;
+  const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
 
   if (isInYard && mutationType === 'Unit Masuk') {
     // KASUS DUPLIKAT DITOLAK: Unit sudah ada di dalam stockyard, tidak boleh didaftarkan Masuk lagi!
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-rose-50 border-rose-300 text-rose-900 shadow-xs';
+    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-rose-50 border-rose-300 text-rose-900 shadow-sm animate-pulse';
     if (alertIcon) alertIcon.textContent = '⛔';
     if (alertTitle) {
-      alertTitle.textContent = 'Duplikasi Ditolak: Unit Sedang Ada di Stockyard';
+      alertTitle.textContent = 'Duplikasi Unit Masuk Ditolak!';
       alertTitle.className = 'font-black text-xs leading-tight text-rose-800';
     }
     if (alertMsg) {
-      alertMsg.innerHTML = `Nomor VIN <b>${cleanVin}</b> sudah tercatat sebagai <b>Unit Masuk</b> di stockyard pada <i>${currentStatus.date || 'hari sebelumnya'} ${currentStatus.time || ''}</i> oleh PIC <i>${currentStatus.pic || 'Petugas'}</i>.<br><span class="text-rose-700 font-bold">Peringatan:</span> Unit tidak bisa disimpan sebagai 'Unit Masuk' ganda. Silakan ubah Jenis Mutasi menjadi <b>'Unit Keluar'</b> jika unit ini akan dikeluarkan dari yard.`;
+      alertMsg.innerHTML = `Nomor VIN <b>${cleanVin}</b> sudah pernah tercatat sebagai <b>Unit Masuk</b> di stockyard pada <i>${currentStatus?.date || 'sebelumnya'} ${currentStatus?.time || ''}</i> oleh PIC <i>${currentStatus?.pic || 'Petugas'}</i>.<br><span class="text-rose-700 font-bold">Peringatan:</span> Unit ini tidak bisa disimpan lagi sebagai 'Unit Masuk'. Silakan ubah Jenis Mutasi menjadi <b>'Unit Keluar'</b> jika unit ini akan dikeluarkan dari stockyard.`;
     }
     alertContainer.classList.remove('hidden');
 
-    // Kunci tombol simpan
+    // Ubah tombol submit menjadi tombol peringatan merah yang interaktif
     if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      submitBtn.disabled = false;
+      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-700 to-rose-600 hover:from-rose-700 hover:to-rose-800 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-rose-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer border border-rose-400/40';
     }
     if (submitText) {
-      submitText.textContent = '⛔ Unit Masuk Duplikat (Ditolak)';
+      submitText.textContent = '⛔ Unit Masuk Duplikat (Ditolak Simpan)';
     }
     return false;
   } else if (isInYard && mutationType === 'Unit Keluar') {
     // KASUS VALID: Unit memang ada di yard dan siap dikeluarkan
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-emerald-50 border-emerald-300 text-emerald-900 shadow-xs';
+    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm';
     if (alertIcon) alertIcon.textContent = '✅';
     if (alertTitle) {
       alertTitle.textContent = 'Unit Terverifikasi untuk Dikeluarkan';
       alertTitle.className = 'font-black text-xs leading-tight text-emerald-800';
     }
     if (alertMsg) {
-      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> (${currentStatus.model || 'Daihatsu'}) terkonfirmasi sedang berada di stockyard sejak <i>${currentStatus.date || ''} ${currentStatus.time || ''}</i>. Data valid untuk mutasi <b>Unit Keluar</b>.`;
+      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> (${currentStatus?.model || 'Daihatsu'}) terkonfirmasi sedang berada di stockyard sejak <i>${currentStatus?.date || ''} ${currentStatus?.time || ''}</i>. Data valid untuk mutasi <b>Unit Keluar</b>.`;
     }
     alertContainer.classList.remove('hidden');
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
     }
     if (submitText) {
       submitText.textContent = 'Simpan & Verifikasi Keluar';
@@ -324,23 +332,23 @@ window.validateMutationFormDuplication = function() {
     return true;
   } else if (!isInYard && currentStatus && mutationType === 'Unit Keluar') {
     // Unit tercatat pernah keluar sebelumnya
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-amber-50 border-amber-300 text-amber-900 shadow-xs';
+    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-amber-50 border-amber-300 text-amber-900 shadow-sm';
     if (alertIcon) alertIcon.textContent = '⚠️';
     if (alertTitle) {
       alertTitle.textContent = 'Catatan Riwayat Unit';
       alertTitle.className = 'font-black text-xs leading-tight text-amber-800';
     }
     if (alertMsg) {
-      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> terakhir tercatat berstatus <b>Unit Keluar</b> pada <i>${currentStatus.date || ''}</i>. Pastikan fisik unit benar-benar ada di yard jika akan dikeluarkan lagi.`;
+      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> terakhir tercatat berstatus <b>Unit Keluar</b> pada <i>${currentStatus?.date || ''}</i>. Pastikan fisik unit benar-benar ada di yard jika akan dikeluarkan lagi.`;
     }
     alertContainer.classList.remove('hidden');
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
     }
     if (submitText) {
-      submitText.textContent = 'Simpan & Verifikasi';
+      submitText.textContent = 'Simpan & Verifikasi Keluar';
     }
     return true;
   } else {
@@ -348,7 +356,7 @@ window.validateMutationFormDuplication = function() {
     alertContainer.classList.add('hidden');
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
     }
     if (submitText) {
       submitText.textContent = 'Simpan & Verifikasi';

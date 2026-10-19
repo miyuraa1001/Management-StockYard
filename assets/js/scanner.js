@@ -1621,12 +1621,6 @@ const ScannerService = {
     // Selaraskan nilai ke form Tahap 2
     this.syncVinEngine();
 
-    // Otomatis pilih opsi 'Unit Keluar' jika unit terdeteksi saat ini sudah ada di dalam Stockyard (Unit Masuk)
-    const mutationTypeSelect = document.getElementById('inputMutationType');
-    if (mutationTypeSelect && AppState.isUnitCurrentlyInYard(vin)) {
-      mutationTypeSelect.value = 'Unit Keluar';
-    }
-
     // Jalankan validasi status duplikasi pada form Step 2
     if (typeof window.validateMutationFormDuplication === 'function') {
       window.validateMutationFormDuplication();
