@@ -14,6 +14,7 @@ const ScannerService = {
   lastScannedIsDuplicate: false,
   scanMode: 'barcode', // 'barcode' | 'ocr'
   isOcrRunning: false,
+  isLiveOcrRunning: false,
   scanCooldown: false,
   lastExtractedData: null,
   detectedVin: '',
@@ -21,6 +22,9 @@ const ScannerService = {
   detectedModel: '',
   currentZoom: 1.0,
   ocrWorker: null,
+  zxingMultiReader: null,
+  subCropCanvas: null,
+  liveOcrCanvas: null,
 
   /**
    * Mengatur mode pemindaian: 'barcode' (Barcode Auto) atau 'ocr' (Baca Teks Stiker OCR)
@@ -454,8 +458,8 @@ const ScannerService = {
 
     this.currentZoom = 1.0;
 
-    // Siapkan engine ZXing Reader jika tersedia
-    if (typeof ZXing !== 'undefined' && !this.zxingCanvasReader) {
+    // Siapkan engine ZXing MultiFormatReader jika tersedia
+    if (typeof ZXing !== 'undefined' && !this.zxingMultiReader) {
       try {
         const hints = new Map();
         hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
@@ -466,11 +470,15 @@ const ScannerService = {
           ZXing.BarcodeFormat.QR_CODE
         ];
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
-        this.zxingCanvasReader = new ZXing.BrowserMultiFormatReader(hints);
+        this.zxingMultiReader = new ZXing.MultiFormatReader();
+        this.zxingMultiReader.setHints(hints);
       } catch (ze) {
-        console.warn('[ScannerService] ZXing Canvas Reader init fallback:', ze);
+        console.warn('[ScannerService] ZXing MultiFormatReader init fallback:', ze);
       }
     }
+
+    // Pre-warm Tesseract OCR worker di background agar instan siap tanpa jeda
+    this.getOcrWorker().catch(() => {});
 
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -492,7 +500,9 @@ const ScannerService = {
 
   /**
    * Loop deteksi barcode cerdas berbasis Region Of Interest (ROI Kotak Bidik Reticle)
-   * Mengisolasi area tengah stiker (VIN & No. Mesin) agar barcode SAP/DO di bagian atas tidak membajak pemindaian!
+   * Dilengkapi Dual-Engine real-time:
+   * 1. Multi-Zone ZXing + Native Barcode Decoder (interval ~120ms)
+   * 2. Background Live OCR Assist non-blocking (interval ~800ms) saat barcode terhalang silau kaca mobil
    */
   startNativeDetectorLoop() {
     const video = document.getElementById('scannerVideo');
@@ -501,18 +511,21 @@ const ScannerService = {
 
     let isProcessing = false;
     let lastScanTime = 0;
+    let lastLiveOcrTime = 0;
 
     const detectFrame = async (timestamp) => {
       if (!AppState.isScanningActive) return;
 
-      // Jika dalam mode OCR atau sedang cooling down atau proses OCR berjalan, lewati deteksi
-      if (this.scanMode === 'ocr' || this.isOcrRunning || this.scanCooldown) {
+      // Jika dalam pending cooldown atau manual OCR snapshot sedang berjalan dengan overlay, lewati
+      if (this.scanCooldown) {
         this.detectorAnimationId = requestAnimationFrame(detectFrame);
         return;
       }
 
-      // Interval pemeriksaan setiap 130ms untuk respon real-time tanpa membebani baterai
-      if (timestamp - lastScanTime >= 130 && !isProcessing && video.readyState >= 2 && !video.paused) {
+      // ----------------------------------------------------------------------
+      // ENGINE 1: Real-time Multi-Zone Barcode Scanning (setiap ~120ms)
+      // ----------------------------------------------------------------------
+      if (timestamp - lastScanTime >= 120 && !isProcessing && video.readyState >= 2 && !video.paused) {
         isProcessing = true;
         lastScanTime = timestamp;
         try {
@@ -520,10 +533,10 @@ const ScannerService = {
           const vh = video.videoHeight;
 
           if (vw > 0 && vh > 0 && canvas) {
-            // Targetkan area kotak bidik tengah (ROI: 80% lebar, 55% tinggi di tengah)
-            // Ini otomatis membuang barcode SAP/DO di atas sehingga scanner langsung membaca VIN / Engine!
-            const cropW = Math.floor(vw * 0.80);
-            const cropH = Math.floor(vh * 0.55);
+            // Targetkan area kotak bidik tengah (ROI: 85% lebar, 60% tinggi)
+            // Membuang barcode SAP Material & DO di bagian atas agar langsung mengunci VIN & Engine
+            const cropW = Math.floor(vw * 0.85);
+            const cropH = Math.floor(vh * 0.60);
             const startX = Math.floor((vw - cropW) / 2);
             const startY = Math.floor((vh - cropH) / 2);
 
@@ -534,7 +547,7 @@ const ScannerService = {
 
             let detectedRaw = [];
 
-            // Tahap 1: Coba deteksi pada canvas area kotak bidik (ROI) via Native BarcodeDetector
+            // Tahap 1: Coba deteksi via Hardware BarcodeDetector jika didukung browser HP
             if (this.nativeDetector) {
               try {
                 const results = await this.nativeDetector.detect(canvas);
@@ -544,17 +557,15 @@ const ScannerService = {
               } catch (e) {}
             }
 
-            // Tahap 2: Jika belum terbaca, gunakan ZXing membaca canvas kotak bidik (ROI)
-            if (detectedRaw.length === 0 && this.zxingCanvasReader) {
-              try {
-                const zxResult = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
-                if (zxResult && zxResult.getText()) {
-                  detectedRaw.push(zxResult.getText());
-                }
-              } catch (ze) {}
+            // Tahap 2: Gunakan ZXing MultiFormatReader multi-zona (Full ROI + Belah Atas/Bawah untuk VIN & Engine)
+            if (detectedRaw.length === 0 || (!this.detectedVin || !this.detectedEngine)) {
+              const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
+              if (zxResults && zxResults.length > 0) {
+                detectedRaw.push(...zxResults);
+              }
             }
 
-            // Tahap 3: Fallback ke seluruh frame jika kotak bidik belum mencakup barcode
+            // Tahap 3: Fallback ke seluruh frame video jika barcode berada di luar kotak bidik
             if (detectedRaw.length === 0 && this.nativeDetector) {
               try {
                 const fullResults = await this.nativeDetector.detect(video);
@@ -585,6 +596,19 @@ const ScannerService = {
         }
       }
 
+      // ----------------------------------------------------------------------
+      // ENGINE 2: Background Live OCR Assist Loop (setiap ~800ms)
+      // Jika salah satu dari VIN atau No. Mesin belum terbaca (misal barcode pudar/silau di kaca),
+      // Web Worker Tesseract membaca baris teks stiker di background tanpa membuat kamera lag!
+      // ----------------------------------------------------------------------
+      const now = performance.now();
+      if (!this.isLiveOcrRunning && !this.isOcrRunning && !this.scanCooldown && (now - lastLiveOcrTime >= 800)) {
+        if (!this.detectedVin || !this.detectedEngine) {
+          lastLiveOcrTime = now;
+          this.runLiveOcrPass(video);
+        }
+      }
+
       if (AppState.isScanningActive) {
         this.detectorAnimationId = requestAnimationFrame(detectFrame);
       }
@@ -594,11 +618,183 @@ const ScannerService = {
   },
 
   /**
+   * Mendekode barcode dari HTMLCanvasElement menggunakan ZXing MultiFormatReader
+   * Mendukung Code 128, Code 39, Code 93, QR Code dengan TryHarder = true
+   */
+  decodeCanvasWithZXing(canvas) {
+    if (typeof ZXing === 'undefined' || !canvas || canvas.width === 0 || canvas.height === 0) return [];
+    const results = [];
+    try {
+      if (!this.zxingMultiReader) {
+        this.zxingMultiReader = new ZXing.MultiFormatReader();
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        const formats = [
+          ZXing.BarcodeFormat.CODE_128,
+          ZXing.BarcodeFormat.CODE_39,
+          ZXing.BarcodeFormat.CODE_93,
+          ZXing.BarcodeFormat.QR_CODE
+        ];
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+        this.zxingMultiReader.setHints(hints);
+      }
+
+      const lumSource = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+      const binarizer = new ZXing.HybridBinarizer(lumSource);
+      const bitmap = new ZXing.BinaryBitmap(binarizer);
+
+      try {
+        const res = this.zxingMultiReader.decode(bitmap);
+        if (res && res.getText()) {
+          results.push(res.getText());
+        }
+      } catch (e) {
+        // Normal jika frame belum pas dengan barcode
+      }
+
+      // Jika belum ketemu, coba dengan invert (jika ada pantulan cahaya / warna terbalik di kaca)
+      if (results.length === 0) {
+        try {
+          const invBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lumSource.invert()));
+          const invRes = this.zxingMultiReader.decode(invBitmap);
+          if (invRes && invRes.getText()) {
+            results.push(invRes.getText());
+          }
+        } catch (ie) {}
+      }
+    } catch (err) {
+      console.warn('[ScannerService] decodeCanvasWithZXing error:', err);
+    }
+    return results;
+  },
+
+  /**
+   * Memindai multi-zona pada canvas untuk menangkap barcode VIN (zona atas) dan No. Mesin (zona bawah) sekaligus
+   */
+  decodeAllBarcodesFromCanvas(canvas) {
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return [];
+    const rawList = [];
+
+    // 1. Scan area utama (seluruh canvas ROI)
+    const mainResults = this.decodeCanvasWithZXing(canvas);
+    if (mainResults && mainResults.length > 0) {
+      rawList.push(...mainResults);
+    }
+
+    // 2. Jika tinggi canvas memadai (> 120px), pisahkan jadi zona atas (VIN) dan zona bawah (Engine)
+    // agar dalam satu frame video, KEDUA barcode dapat terbaca secara simultan!
+    if (canvas.height > 120) {
+      if (!this.subCropCanvas) {
+        this.subCropCanvas = document.createElement('canvas');
+      }
+      const subCanvas = this.subCropCanvas;
+      const subCtx = subCanvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const halfH = Math.floor(h * 0.58);
+
+      // A. Jika VIN belum dapat ATAU baru dapat Engine: scan separuh atas tempat barcode VIN berada
+      if (!this.detectedVin || (rawList.length > 0 && !this.smartFilterBarcodes(rawList).vin)) {
+        subCanvas.width = w;
+        subCanvas.height = halfH;
+        subCtx.drawImage(canvas, 0, 0, w, halfH, 0, 0, w, halfH);
+        const topResults = this.decodeCanvasWithZXing(subCanvas);
+        if (topResults && topResults.length > 0) {
+          rawList.push(...topResults);
+        }
+      }
+
+      // B. Jika No. Mesin belum dapat ATAU baru dapat VIN: scan separuh bawah tempat barcode ENGINE berada
+      if (!this.detectedEngine || (rawList.length > 0 && !this.smartFilterBarcodes(rawList).engine)) {
+        subCanvas.width = w;
+        subCanvas.height = halfH;
+        subCtx.drawImage(canvas, 0, h - halfH, w, halfH, 0, 0, w, halfH);
+        const botResults = this.decodeCanvasWithZXing(subCanvas);
+        if (botResults && botResults.length > 0) {
+          rawList.push(...botResults);
+        }
+      }
+    }
+
+    return Array.from(new Set(rawList));
+  },
+
+  /**
+   * Pemindaian OCR latar belakang (Web Worker) non-blocking untuk membaca teks kode stiker secara hands-free
+   * Berjalan otomatis saat barcode terhalang silau/pantulan kaca mobil tanpa membuat kamera lag
+   */
+  async runLiveOcrPass(video) {
+    if (this.isLiveOcrRunning || this.isOcrRunning || !AppState.isScanningActive || !video || video.readyState < 2) return;
+    this.isLiveOcrRunning = true;
+
+    try {
+      const worker = await this.getOcrWorker();
+      if (!worker || !AppState.isScanningActive) {
+        this.isLiveOcrRunning = false;
+        return;
+      }
+
+      if (!this.liveOcrCanvas) {
+        this.liveOcrCanvas = document.createElement('canvas');
+      }
+      const ocrCanvas = this.liveOcrCanvas;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (vw <= 0 || vh <= 0) {
+        this.isLiveOcrRunning = false;
+        return;
+      }
+
+      // Crop area fokus stiker (85% lebar, 65% tinggi di tengah)
+      const cropW = Math.floor(vw * 0.85);
+      const cropH = Math.floor(vh * 0.65);
+      const startX = Math.floor((vw - cropW) / 2);
+      const startY = Math.floor((vh - cropH) / 2);
+
+      ocrCanvas.width = cropW;
+      ocrCanvas.height = cropH;
+      const ctx = ocrCanvas.getContext('2d');
+      ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
+
+      // Normalisasi kontras adaptif untuk teks stiker
+      this.preprocessCanvasForOCR(ctx, cropW, cropH);
+
+      const res = await worker.recognize(ocrCanvas);
+      if (!AppState.isScanningActive || this.scanCooldown) {
+        this.isLiveOcrRunning = false;
+        return;
+      }
+
+      const text = res && res.data ? res.data.text : '';
+      if (text) {
+        const parsed = this.smartParseStickerText(text);
+        if (parsed && (parsed.vin || parsed.engine)) {
+          const isNewVin = parsed.vin && parsed.vin !== this.detectedVin;
+          const isNewEngine = parsed.engine && parsed.engine !== this.detectedEngine;
+          if (isNewVin || isNewEngine) {
+            console.log('[Live OCR Auto Match]', parsed);
+            this.applyExtractedStickerData(parsed, 'OCR OTOMATIS');
+            if (this.detectedVin && this.detectedEngine) {
+              this.scanCooldown = true;
+              setTimeout(() => { this.scanCooldown = false; }, 2500);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[ScannerService] Live OCR pass skipped:', e);
+    } finally {
+      this.isLiveOcrRunning = false;
+    }
+  },
+
+  /**
    * Menghentikan scanner dan menutup modal
    */
   close() {
     AppState.isScanningActive = false;
     this.isOcrRunning = false;
+    this.isLiveOcrRunning = false;
 
     const overlay = document.getElementById('ocrProcessingOverlay');
     if (overlay) overlay.classList.add('hidden');
@@ -623,9 +819,9 @@ const ScannerService = {
       AppState.codeReader = null;
     }
 
-    if (this.zxingCanvasReader) {
+    if (this.zxingMultiReader) {
       try {
-        this.zxingCanvasReader.reset();
+        this.zxingMultiReader.reset();
       } catch (e) {}
     }
 
@@ -977,15 +1173,13 @@ const ScannerService = {
         } catch (e) {}
       }
 
-      if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
-        try {
-          const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
-          if (zRes && zRes.getText()) {
-            const smartZ = this.smartFilterBarcodes([zRes.getText()]);
-            if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
-            if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
-          }
-        } catch (ze) {}
+      if (!barcodeVin || !barcodeEngine) {
+        const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
+        if (zxResults && zxResults.length > 0) {
+          const smartZ = this.smartFilterBarcodes(zxResults);
+          if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+          if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+        }
       }
 
       // 2. Preprocessing kontras dinamis & OCR pembacaan baris teks di bawah barcode
@@ -1087,15 +1281,13 @@ const ScannerService = {
             } catch (e) {}
           }
 
-          if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
-            try {
-              const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
-              if (zRes && zRes.getText()) {
-                const smartZ = this.smartFilterBarcodes([zRes.getText()]);
-                if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
-                if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
-              }
-            } catch (ze) {}
+          if (!barcodeVin || !barcodeEngine) {
+            const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
+            if (zxResults && zxResults.length > 0) {
+              const smartZ = this.smartFilterBarcodes(zxResults);
+              if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+              if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+            }
           }
 
           if (statusEl) statusEl.textContent = 'Meningkatkan kontras gambar stiker...';
@@ -1586,15 +1778,13 @@ const ScannerService = {
     }
 
     // 2. Coba deteksi barcode via ZXing jika belum lengkap
-    if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
-      try {
-        const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
-        if (zRes && zRes.getText()) {
-          const smartZ = this.smartFilterBarcodes([zRes.getText()]);
-          if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
-          if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
-        }
-      } catch (ze) {}
+    if (!barcodeVin || !barcodeEngine) {
+      const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
+      if (zxResults && zxResults.length > 0) {
+        const smartZ = this.smartFilterBarcodes(zxResults);
+        if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+        if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+      }
     }
 
     // 3. Jalankan OCR membaca baris teks stiker di bawah barcode
