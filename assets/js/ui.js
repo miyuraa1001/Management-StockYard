@@ -1187,10 +1187,12 @@ const UI = {
 
   /**
    * Mengunduh Laporan Riwayat Mutasi Kendaraan dalam format PDF Resmi
-   * Menggunakan jsPDF & AutoTable berstandar Kop Surat PT Astra Daihatsu Motor
+   * Menampilkan tabel persis seperti tabel frontend (dengan foto katalog, foto fisik unit & stiker)
+   * Menyertakan baris Total Rekapitulasi di bagian bawah tabel serta filter aktif.
    */
-  async exportHistoryPDF() {
-    const { filtered, fDate, fMonth, fYear } = this.getFilteredHistoryData();
+  exportHistoryPDF() {
+    const { filtered, fDate, fMonth, fYear, searchVal } = this.getFilteredHistoryData();
+    const tabFilter = AppState.historyTabFilter || 'all';
 
     if (!filtered || filtered.length === 0) {
       this.showToast('⚠️ Tidak ada data mutasi untuk diekspor ke PDF!');
@@ -1205,34 +1207,28 @@ const UI = {
 
     this.showToast('📄 Menyiapkan Dokumen PDF Resmi Daihatsu...');
 
-    try {
-      // Pastikan library jsPDF dan autoTable siap digunakan
-      await this.ensurePdfLibraryLoaded();
-
-      const hasJsPdf = window.jspdf && window.jspdf.jsPDF;
-      if (hasJsPdf) {
-        if (!window.jsPDF) window.jsPDF = window.jspdf.jsPDF;
-        let canDirect = false;
-        try {
-          const testDoc = new window.jspdf.jsPDF();
-          if (typeof testDoc.autoTable === 'function') {
-            canDirect = true;
-          }
-        } catch (e) {
-          canDirect = false;
-        }
-
-        if (canDirect) {
-          this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear });
-          return;
-        }
+    // Buka jendela baru secara sinkronus untuk menghindari pemblokiran pop-up browser
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Izinkan pop-up di browser Anda untuk mengunduh / mencetak laporan PDF.');
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-wait');
       }
-      
-      // Fallback: cetak / simpan PDF via browser dialog jika library eksternal terhalang
-      this.generatePrintablePdfReport(filtered, { fDate, fMonth, fYear });
+      return;
+    }
+
+    try {
+      this.generatePrintablePdfReport(filtered, {
+        fDate,
+        fMonth,
+        fYear,
+        searchVal,
+        tabFilter
+      }, printWindow);
     } catch (err) {
-      console.error('[UI] Error saat membuat PDF dengan jsPDF, beralih ke Fallback Print:', err);
-      this.generatePrintablePdfReport(filtered, { fDate, fMonth, fYear });
+      console.error('[UI] Gagal menyiapkan dokumen PDF:', err);
+      this.showToast('❌ Terjadi kendala saat menyiapkan PDF.');
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -1454,6 +1450,17 @@ const UI = {
         pic: { cellWidth: 28 },
         notes: { cellWidth: 'auto' }
       },
+      foot: [[
+        { content: 'TOTAL REKAPITULASI MUTASI', colSpan: 3, styles: { halign: 'left', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } },
+        { content: `${records.length} Unit Fisik Terdata`, colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [56, 189, 248] } },
+        { content: `Masuk: ${masukCount} | Keluar: ${keluarCount}`, colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } }
+      ]],
+      footStyles: {
+        fillColor: [15, 23, 42],
+        fontSize: 7.5,
+        textColor: [255, 255, 255],
+        cellPadding: 2
+      },
       didParseCell: function(data) {
         if (data.section === 'body' && data.column.dataKey === 'type') {
           if (data.cell.raw === 'Unit Masuk') {
@@ -1520,9 +1527,10 @@ const UI = {
   },
 
   /**
-   * Fallback Cetak / Simpan PDF jika jsPDF mengalami kendala
+   * Cetak / Simpan PDF dengan tampilan persis seperti tabel frontend
+   * Menampilkan foto katalog, bukti fisik (foto unit & stiker), filter aktif, serta baris total rekapitulasi.
    */
-  generatePrintablePdfReport(records, filterInfo) {
+  generatePrintablePdfReport(records, filterInfo = {}, existingWindow = null) {
     const profile = AppState.userProfile || {};
     const operatorName = profile.name || CONFIG.OPERATOR_NAME || 'Andi Pratama';
     const operatorNpk = profile.npk || CONFIG.OPERATOR_NPK || '21040889';
@@ -1538,35 +1546,200 @@ const UI = {
     const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}, ${timeStr} WIB`;
     const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const printWindow = window.open('', '_blank');
+    // Hitung ringkasan filter aktif
+    let periodText = 'Seluruh Waktu';
+    if (filterInfo.fDate !== 'all' || filterInfo.fMonth !== 'all' || filterInfo.fYear !== 'all') {
+      const dStr = (filterInfo.fDate && filterInfo.fDate !== 'all') ? `Tgl ${filterInfo.fDate} ` : '';
+      const mStr = (filterInfo.fMonth && filterInfo.fMonth !== 'all') ? `${monthNames[filterInfo.fMonth] || filterInfo.fMonth} ` : '';
+      const yStr = (filterInfo.fYear && filterInfo.fYear !== 'all') ? `${filterInfo.fYear}` : '';
+      periodText = `${dStr}${mStr}${yStr}`.trim() || 'Seluruh Waktu';
+    }
+
+    let typeFilterText = 'Semua Mutasi (Masuk & Keluar)';
+    if (filterInfo.tabFilter === 'in') typeFilterText = 'Hanya Unit Masuk';
+    if (filterInfo.tabFilter === 'out') typeFilterText = 'Hanya Unit Keluar';
+
+    const searchFilterText = filterInfo.searchVal ? `"${filterInfo.searchVal}"` : 'Semua Data';
+
+    // Hitung Total Akumulasi
+    const masukCount = records.filter(r => r.type === 'Unit Masuk').length;
+    const keluarCount = records.filter(r => r.type === 'Unit Keluar').length;
+
+    const baseHref = window.location.href.split('#')[0].split('?')[0];
+
+    const printWindow = existingWindow || window.open('', '_blank');
     if (!printWindow) {
       alert('Izinkan pop-up di browser Anda untuk mengunduh laporan PDF.');
       return;
     }
 
-    const rowsHtml = records.map((item, idx) => `
-      <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8.5px;">
-        <td style="padding: 3px 5px; text-align: center; font-weight: 700; color: #64748b;">${String(idx + 1).padStart(2, '0')}</td>
-        <td style="padding: 3px 5px; white-space: nowrap;"><strong>${item.fullDateStr || `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}`}</strong><br><span style="color:#64748b; font-size: 8px;">${item.time || ''} • ${item.id || ''}</span></td>
-        <td style="padding: 3px 5px; text-align: center;"><span style="display:inline-block; padding: 1.5px 6px; border-radius: 9999px; font-weight: 700; font-size: 8px; background: ${item.type === 'Unit Masuk' ? '#ecfdf5' : '#eff6ff'}; color: ${item.type === 'Unit Masuk' ? '#047857' : '#1d4ed8'}; border: 1px solid ${item.type === 'Unit Masuk' ? '#a7f3d0' : '#bfdbfe'};">${item.type}</span></td>
-        <td style="padding: 3px 5px;"><strong>${item.model}</strong></td>
-        <td style="padding: 3px 5px; font-family: monospace; font-weight: 700; font-size: 8.5px; color: #0f172a;">${item.vin}</td>
-        <td style="padding: 3px 5px; font-family: monospace; font-size: 8.5px; color: #334155;">${item.engine}</td>
-        <td style="padding: 3px 5px; color: #1e293b;">${item.pic || operatorName}</td>
-        <td style="padding: 3px 5px; color: #475569; font-size: 8px;">${item.notes || 'Pemeriksaan standar serah terima fisik.'}</td>
-      </tr>
-    `).join('');
+    const formatDriveThumb = (url) => {
+      if (!url || typeof url !== 'string') return '';
+      url = url.trim();
+      if (url === '' || url === '-') return '';
+      if (url.startsWith('data:image')) return url;
+      const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+      }
+      return url;
+    };
 
+    const rowsHtml = records.map((item, idx) => {
+      const rowNum = String(idx + 1).padStart(2, '0');
+      const isMasuk = item.type === 'Unit Masuk';
+      const typeBadgeStyle = isMasuk
+        ? 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;'
+        : 'background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;';
+      const typeArrow = isMasuk ? '↓' : '↑';
+
+      const catalogItem = (typeof AppState !== 'undefined' && AppState.getModelCatalogItem) ? AppState.getModelCatalogItem(item.model) : null;
+      const catalogPhotoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
+      const modelCategory = catalogItem ? catalogItem.category : 'Unit Daihatsu';
+
+      const rawUnitPhoto = item.unitPhoto || '';
+      const rawDocPhoto = item.docPhoto || '';
+      const unitPhotoSrc = formatDriveThumb(rawUnitPhoto) || catalogPhotoSrc;
+      const docPhotoSrc = formatDriveThumb(rawDocPhoto);
+
+      // Format Waktu: jam, DD/MM/YYYY
+      let timeFormatted = item.time || '08:00';
+      timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
+
+      let dateFormattedRow = '';
+      if (item.date && item.month && item.year) {
+        dateFormattedRow = `${String(item.date).padStart(2, '0')}/${String(item.month).padStart(2, '0')}/${item.year}`;
+      } else if (item.timestamp) {
+        const dObj = new Date(item.timestamp);
+        if (!isNaN(dObj.getTime())) {
+          dateFormattedRow = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth() + 1).padStart(2, '0')}/${dObj.getFullYear()}`;
+          const hh = String(dObj.getHours()).padStart(2, '0');
+          const mm = String(dObj.getMinutes()).padStart(2, '0');
+          timeFormatted = `${hh}:${mm}`;
+        }
+      }
+      if (!dateFormattedRow && item.fullDateStr) {
+        if (item.fullDateStr.includes('/')) {
+          dateFormattedRow = item.fullDateStr;
+        } else {
+          const parts = item.fullDateStr.split(' ');
+          if (parts.length === 3) {
+            const months = ['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+            const mIdx = months.indexOf(parts[1].toLowerCase());
+            dateFormattedRow = `${parts[0].padStart(2, '0')}/${String(mIdx !== -1 ? mIdx + 1 : 1).padStart(2, '0')}/${parts[2]}`;
+          }
+        }
+      }
+      if (!dateFormattedRow) {
+        dateFormattedRow = `${day}/${month}/${year}`;
+      }
+
+      const fullTimeDisplay = `${timeFormatted}, ${dateFormattedRow}`;
+
+      // Thumbnail Bukti Fisik Persis Frontend
+      const unitThumbnailHtml = `
+        <div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle; margin-right:3px;">
+          <img src="${unitPhotoSrc}" alt="Unit" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='${catalogPhotoSrc}';">
+          <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(15,23,42,0.78); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">Unit</span>
+        </div>
+      `;
+
+      const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
+        ? `<div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle;">
+             <img src="${docPhotoSrc}" alt="Stiker" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">Stiker</span>
+             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">Stiker</span>
+           </div>`
+        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No Doc</div>`;
+
+      return `
+        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8px;">
+          <!-- Kolom 1: No & ID Mutasi -->
+          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
+            <span style="display:inline-block; padding: 1px 4px; border-radius: 4px; background: #f1f5f9; border: 1px solid #cbd5e1; font-weight: 800; font-size: 7.5px; color: #475569; margin-right: 2px;">#${rowNum}</span>
+            <span style="font-family: monospace; font-weight: 700; font-size: 8px; color: #0f172a;">${item.id || '-'}</span>
+          </td>
+
+          <!-- Kolom 2: Waktu Mutasi -->
+          <td style="padding: 4px 6px; white-space: nowrap;">
+            <div style="font-family: monospace; font-size: 8px; font-weight: 700; color: #0f172a; background: #f8fafc; padding: 2px 5px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block;">
+              ${fullTimeDisplay}
+            </div>
+          </td>
+
+          <!-- Kolom 3: Jenis Mutasi -->
+          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
+            <span style="display:inline-block; padding: 2px 7px; border-radius: 9999px; font-weight: 800; font-size: 7.5px; ${typeBadgeStyle}">
+              ${typeArrow} ${item.type}
+            </span>
+          </td>
+
+          <!-- Kolom 4: Kendaraan (Foto Katalog + Model + Kategori) -->
+          <td style="padding: 4px 6px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <div style="width: 38px; height: 26px; border-radius: 4px; background: #ffffff; border: 1px solid #e2e8f0; padding: 1px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 800; font-size: 8.5px; color: #0f172a; line-height: 1.1;">${item.model}</div>
+                <div style="font-size: 7px; color: #64748b; margin-top: 1px;">${modelCategory}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Kolom 5: No. Rangka & Mesin -->
+          <td style="padding: 4px 6px; white-space: nowrap;">
+            <div style="font-family: monospace; font-weight: 800; font-size: 8px; color: #0f172a; background: #f1f5f9; padding: 1.5px 5px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block;">
+              ${item.vin}
+            </div>
+            <div style="font-family: monospace; font-size: 7.5px; color: #64748b; margin-top: 2px;">
+              ENG: <strong style="color: #334155;">${item.engine}</strong>
+            </div>
+          </td>
+
+          <!-- Kolom 6: Petugas PIC & Catatan -->
+          <td style="padding: 4px 6px;">
+            <div style="font-weight: 700; font-size: 8px; color: #0f172a; display: flex; align-items: center; gap: 4px;">
+              <span style="display: inline-flex; width: 14px; height: 14px; border-radius: 50%; background: #dbeafe; color: #1e40af; font-size: 7.5px; font-weight: 800; align-items: center; justify-content: center;">
+                ${(item.pic || 'A').charAt(0).toUpperCase()}
+              </span>
+              <span>${item.pic || operatorName}</span>
+            </div>
+            <div style="font-size: 7px; color: #64748b; margin-top: 2px; line-height: 1.2;">
+              ${item.notes || 'Pemeriksaan standar serah terima fisik.'}
+            </div>
+          </td>
+
+          <!-- Kolom 7: Bukti Fisik (FOTO LANGSUNG TAMPIL) -->
+          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              ${unitThumbnailHtml}
+              ${docThumbnailHtml}
+            </div>
+          </td>
+
+          <!-- Kolom 8: Status -->
+          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
+            <span style="display: inline-block; padding: 2px 6px; border-radius: 9999px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-weight: 800; font-size: 7.5px;">
+              ✓ Valid
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    printWindow.document.open();
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Laporan_Mutasi_Daihatsu_Sentra_Lampung_${dateFormatted}</title>
+        <base href="${baseHref}">
+        <title>Laporan_Mutasi_Stockyard_Daihatsu_Lampung_${dateFormatted}</title>
         <style>
           @page {
             size: A4 landscape;
-            margin: 8mm 10mm 8mm 10mm;
+            margin: 8mm 8mm 8mm 8mm;
           }
           * {
             box-sizing: border-box;
@@ -1580,8 +1753,33 @@ const UI = {
             padding: 0;
             background: #ffffff;
           }
+          .no-print {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 11px;
+          }
+          .no-print button {
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+          }
+          .no-print button:hover {
+            opacity: 0.9;
+          }
           .header {
-            border-bottom: 2px solid #2563eb;
+            border-bottom: 2.5px solid #2563eb;
             padding-bottom: 4px;
             margin-bottom: 6px;
             display: flex;
@@ -1596,14 +1794,14 @@ const UI = {
             text-transform: uppercase;
           }
           .subtitle {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 700;
             color: #2563eb;
             margin-top: 1px;
             text-transform: uppercase;
           }
           .address {
-            font-size: 8px;
+            font-size: 7.5px;
             color: #64748b;
             margin-top: 2px;
           }
@@ -1611,10 +1809,10 @@ const UI = {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 5px 10px;
+            padding: 5px 8px;
             display: flex;
             justify-content: space-between;
-            font-size: 8.5px;
+            font-size: 8px;
             margin-bottom: 6px;
             line-height: 1.35;
           }
@@ -1627,15 +1825,15 @@ const UI = {
             background: #0f172a !important;
             color: #ffffff !important;
             padding: 4px 6px;
-            font-size: 8.5px;
+            font-size: 8px;
             text-align: left;
             font-weight: 700;
             border: 1px solid #0f172a;
           }
           td {
             padding: 3px 5px;
-            font-size: 8.5px;
-            line-height: 1.25;
+            font-size: 8px;
+            line-height: 1.2;
             border: 1px solid #e2e8f0;
             vertical-align: middle;
           }
@@ -1646,11 +1844,16 @@ const UI = {
             page-break-inside: avoid;
             break-inside: avoid;
           }
+          tfoot tr td {
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border: 1px solid #1e293b;
+          }
           .signatures {
             margin-top: 10px;
             display: flex;
             justify-content: space-between;
-            font-size: 8.5px;
+            font-size: 8px;
             page-break-inside: avoid;
             break-inside: avoid;
           }
@@ -1665,97 +1868,158 @@ const UI = {
             margin-top: 8px;
             display: flex;
             justify-content: space-between;
-            font-size: 7.5px;
+            font-size: 7px;
             color: #94a3b8;
             border-top: 1px solid #e2e8f0;
             padding-top: 3px;
           }
+          @media print {
+            .no-print {
+              display: none !important;
+            }
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <div>
-            <div class="title">PT Astra Daihatsu Motor • DSO Sentra Lampung</div>
-            <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
-            <div class="address">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
+        <!-- Top Toolbar untuk Tampilan Layar (Otomatis disembunyikan saat dicetak / disimpan ke PDF) -->
+        <div class="no-print">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 800; color: #38bdf8;">Management StockYard</span>
+            <span style="color: #cbd5e1;">• Dokumen PDF Rekapitulasi Mutasi</span>
+            <span style="background: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-size: 10px;">💡 Tip: Pilih printer "Save as PDF" / "Simpan sebagai PDF"</span>
           </div>
-          <div style="text-align: right; font-size: 8px; color: #64748b;">
-            <div>Dokumen Resmi Internal</div>
-            <div style="font-weight: 700; color: #0f172a;">${docNumber}</div>
-          </div>
-        </div>
-
-        <div class="info-box">
-          <div>
-            <strong>Waktu Cetak:</strong> ${printDateStr}<br>
-            <strong>Total Rekaman:</strong> ${records.length} Unit Fisik Terdata
-          </div>
-          <div>
-            <strong>Petugas PIC:</strong> ${operatorName} (NPK: ${operatorNpk})<br>
-            <strong>Cabang Penugasan:</strong> ${operatorBranch}
-          </div>
-          <div>
-            <strong>Status Logistik:</strong> Verifikasi Lapangan Selesai<br>
-            <strong>Format Arsip:</strong> Dokumen PDF / Cetak Fisik
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button onclick="window.print()" style="background: #2563eb; color: #ffffff;">🖨️ Cetak / Simpan sebagai PDF</button>
+            <button onclick="window.close()" style="background: #475569; color: #ffffff;">✕ Tutup</button>
           </div>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 26px; text-align: center;">No</th>
-              <th style="width: 100px;">Waktu & ID</th>
-              <th style="width: 75px; text-align: center;">Jenis Mutasi</th>
-              <th style="width: 110px;">Model Kendaraan</th>
-              <th style="width: 130px;">No. Rangka (VIN)</th>
-              <th style="width: 90px;">No. Mesin</th>
-              <th style="width: 90px;">Petugas PIC</th>
-              <th>Catatan Lapangan & Fisik</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
+        <div style="padding: 6px 8px;">
+          <!-- KOP SURAT RESMI DAIHATSU -->
+          <div class="header">
+            <div>
+              <div class="title">PT Astra Daihatsu Motor • DSO Sentra Lampung</div>
+              <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
+              <div class="address">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
+            </div>
+            <div style="text-align: right; font-size: 8px; color: #64748b;">
+              <div>Dokumen Resmi Internal</div>
+              <div style="font-weight: 800; font-size: 8.5px; color: #0f172a;">${docNumber}</div>
+            </div>
+          </div>
 
-        <div class="signatures">
-          <div class="sig-col">
-            <div>Diserahkan oleh (Transporter):</div>
-            <div class="sig-space"></div>
-            <div>( ...................................................... )</div>
-            <div style="color: #64748b; font-size: 8px;">Pengemudi / Ekspedisi Car Carrier</div>
+          <!-- METADATA DOKUMEN & STATUS FILTER AKTIF -->
+          <div class="info-box">
+            <div>
+              <strong>No. Dokumen:</strong> ${docNumber}<br>
+              <strong>Waktu Cetak:</strong> ${printDateStr}<br>
+              <strong>Total Terdata:</strong> <span style="color: #0284c7; font-weight: 800;">${records.length} Unit Fisik</span>
+            </div>
+            <div>
+              <strong>Filter Periode:</strong> <span style="font-weight: 700; color: #0f172a;">${periodText}</span><br>
+              <strong>Filter Mutasi:</strong> <span style="font-weight: 700; color: #0f172a;">${typeFilterText}</span><br>
+              <strong>Pencarian:</strong> <span style="font-weight: 700; color: #0f172a;">${searchFilterText}</span>
+            </div>
+            <div>
+              <strong>Petugas PIC:</strong> ${operatorName} (NPK: ${operatorNpk})<br>
+              <strong>Cabang Penugasan:</strong> ${operatorBranch}<br>
+              <strong>Status Logistik:</strong> <span style="color: #059669; font-weight: 800;">✓ Verifikasi Lapangan Lengkap</span>
+            </div>
           </div>
-          <div class="sig-col">
-            <div>Diterima & Diperiksa oleh:</div>
-            <div class="sig-space"></div>
-            <div><strong>( ${operatorName} )</strong></div>
-            <div style="color: #64748b; font-size: 8px;">Staff Operasional Yard • NPK: ${operatorNpk}</div>
-          </div>
-          <div class="sig-col">
-            <div>Mengetahui / Menyetujui:</div>
-            <div class="sig-space"></div>
-            <div>( ...................................................... )</div>
-            <div style="color: #64748b; font-size: 8px;">Kepala Sentra Yard Lampung DSO</div>
-          </div>
-        </div>
 
-        <div class="footer-note">
-          <div>Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
-          <div>Dicetak secara otomatis via sistem Management StockYard</div>
+          <!-- TABEL PERSIS SEPERTI FRONTEND (DENGAN FOTO & TOTAL) -->
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 75px; text-align: center;">No & ID Mutasi</th>
+                <th style="width: 95px;">Waktu Mutasi</th>
+                <th style="width: 75px; text-align: center;">Jenis Mutasi</th>
+                <th style="width: 135px;">Kendaraan</th>
+                <th style="width: 125px;">No. Rangka & Mesin</th>
+                <th style="width: 145px;">Petugas PIC & Catatan</th>
+                <th style="width: 105px; text-align: center;">Bukti Fisik (Foto)</th>
+                <th style="width: 55px; text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="padding: 6px 8px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">
+                  TOTAL REKAPITULASI UNIT
+                </td>
+                <td colspan="2" style="padding: 6px 8px; font-weight: 800;">
+                  <span style="color: #38bdf8; font-size: 9px;">${records.length} Unit Fisik Terdata</span>
+                </td>
+                <td colspan="3" style="padding: 6px 8px; text-align: right;">
+                  <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: #065f46; color: #a7f3d0; margin-right: 6px; font-size: 7.5px; font-weight: 800;">
+                    ↓ Masuk: ${masukCount} Unit
+                  </span>
+                  <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: #1e40af; color: #bfdbfe; font-size: 7.5px; font-weight: 800;">
+                    ↑ Keluar: ${keluarCount} Unit
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- LEMBAR PENGESAHAN LAPANGAN -->
+          <div class="signatures">
+            <div class="sig-col">
+              <div>Diserahkan oleh (Transporter):</div>
+              <div class="sig-space"></div>
+              <div>( ...................................................... )</div>
+              <div style="color: #64748b; font-size: 7.5px;">Pengemudi / Ekspedisi Car Carrier</div>
+            </div>
+            <div class="sig-col">
+              <div>Diterima & Diperiksa oleh:</div>
+              <div class="sig-space"></div>
+              <div><strong>( ${operatorName} )</strong></div>
+              <div style="color: #64748b; font-size: 7.5px;">Staff Operasional Yard • NPK: ${operatorNpk}</div>
+            </div>
+            <div class="sig-col">
+              <div>Mengetahui / Menyetujui:</div>
+              <div class="sig-space"></div>
+              <div>( ...................................................... )</div>
+              <div style="color: #64748b; font-size: 7.5px;">Kepala Sentra Yard Lampung DSO</div>
+            </div>
+          </div>
+
+          <!-- FOOTER DOKUMEN -->
+          <div class="footer-note">
+            <div>Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
+            <div>Dicetak secara otomatis via sistem Management StockYard Enterprise</div>
+          </div>
         </div>
 
         <script>
-          window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-              window.print();
-            }, 300);
+          // Preload seluruh gambar sebelum memicu dialog print agar tidak ada foto yang kosong
+          window.addEventListener('load', function() {
+            var images = Array.prototype.slice.call(document.images);
+            var promises = images.map(function(img) {
+              if (img.complete) return Promise.resolve();
+              return new Promise(function(resolve) {
+                img.addEventListener('load', resolve);
+                img.addEventListener('error', resolve);
+              });
+            });
+            Promise.all(promises).then(function() {
+              setTimeout(function() {
+                window.print();
+              }, 300);
+            });
           });
         <\/script>
       </body>
       </html>
     `);
     printWindow.document.close();
-    this.showToast('✅ Membuka dialog cetak / Simpan sebagai PDF.');
+    this.showToast('✅ Dokumen PDF Riwayat Mutasi siap dicetak / disimpan!');
   },
 
   /**
