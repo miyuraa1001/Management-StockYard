@@ -980,16 +980,6 @@ const ScannerService = {
 
     // 1. Jika terdeteksi VIN:
     if (vin) {
-      // Periksa validasi duplikat
-      if (AppState.isVinDuplicate(vin)) {
-        this.playWarningBeep();
-        this.triggerWarningHaptic();
-        this.setReticleDuplicateStyle();
-        this.setFeedbackChipDuplicate(vin);
-        UI.showToast(`⛔ Barcode VIN [${vin}] SUDAH PERNAH TERSIMPAN! (Duplikat Ditolak)`);
-        return;
-      }
-
       this.detectedVin = vin;
       const scanVinEl = document.getElementById('scanVinInput');
       if (scanVinEl) {
@@ -1155,12 +1145,6 @@ const ScannerService = {
       parsedEngine = this.detectedEngine;
     }
 
-    // ------------------------------------------------------------------------
-    // CEK VALIDASI DUPLIKAT: Satu kode barcode yang sudah terscan hanya bisa 1x simpan!
-    // ------------------------------------------------------------------------
-    const isDuplicate = AppState.isVinDuplicate(parsedVin);
-    this.lastScannedIsDuplicate = isDuplicate;
-
     // Isi Nilai Input di Step 1
     const scanVinEl = document.getElementById('scanVinInput');
     const scanEngineEl = document.getElementById('scanEngineInput');
@@ -1175,26 +1159,8 @@ const ScannerService = {
       if (modelDropdown) modelDropdown.value = detectedModel;
     }
 
-    if (isDuplicate) {
-      // Respon visual & audio untuk BARCODE DUPLIKAT
-      this.playWarningBeep();
-      this.triggerWarningHaptic();
-      this.setReticleDuplicateStyle();
-      this.setFeedbackChipDuplicate(parsedVin);
-
-      UI.showToast(`⛔ Barcode [${parsedVin}] SUDAH PERNAH TERSIMPAN! (Duplikat Ditolak)`);
-
-      // Beri jeda 4 detik sebelum reticle kembali normal
-      setTimeout(() => {
-        if (AppState.isScanningActive && this.lastScannedIsDuplicate) {
-          this.resetReticleStyle();
-        }
-      }, 4000);
-      return;
-    }
-
     // ------------------------------------------------------------------------
-    // KASUS NORMAL / VALID: Barcode baru belum pernah tersimpan
+    // KASUS NORMAL / VALID: Barcode terbaca sukses
     // ------------------------------------------------------------------------
     this.playBeep();
     this.triggerHaptic();
@@ -1213,7 +1179,7 @@ const ScannerService = {
 
     // Beri jeda sebelum kamera boleh membaca kode lain
     setTimeout(() => {
-      if (AppState.isScanningActive && !this.lastScannedIsDuplicate) {
+      if (AppState.isScanningActive) {
         this.resetReticleStyle();
       }
     }, 3000);
@@ -1269,18 +1235,19 @@ const ScannerService = {
       if (scanEngineEl) scanEngineEl.value = engine;
     }
 
-    // PENCEGAHAN DUPLIKAT: Satu kode barcode hanya bisa sekali tersimpan!
-    if (AppState.isVinDuplicate(vin)) {
-      this.playWarningBeep();
-      this.triggerWarningHaptic();
-      this.setReticleDuplicateStyle();
-      this.setFeedbackChipDuplicate(vin);
-      UI.showToast(`⛔ Barcode / VIN [${vin}] sudah pernah tersimpan sebelumnya! 1 Barcode hanya bisa 1x simpan.`);
-      return;
-    }
-
     // Selaraskan nilai ke form Tahap 2
     this.syncVinEngine();
+
+    // Otomatis pilih opsi 'Unit Keluar' jika unit terdeteksi saat ini sudah ada di dalam Stockyard (Unit Masuk)
+    const mutationTypeSelect = document.getElementById('inputMutationType');
+    if (mutationTypeSelect && AppState.isUnitCurrentlyInYard(vin)) {
+      mutationTypeSelect.value = 'Unit Keluar';
+    }
+
+    // Jalankan validasi status duplikasi pada form Step 2
+    if (typeof window.validateMutationFormDuplication === 'function') {
+      window.validateMutationFormDuplication();
+    }
 
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');

@@ -205,13 +205,36 @@ const AppState = {
   historyData: [],
 
   /**
-   * Helper untuk memeriksa apakah kode Barcode / VIN sudah pernah tersimpan sebelumnya
-   * Mengembalikan true jika duplikat (sudah ada di historyData)
+   * Mengambil status mutasi terakhir dari nomor VIN tertentu
+   * Mengembalikan objek { type, date, time, model, pic } atau null jika belum pernah tercatat
+   */
+  getUnitCurrentStatus(vin) {
+    if (!vin) return null;
+    const cleanVin = String(vin).trim().toUpperCase();
+    const match = this.historyData.find(item => item.vin && String(item.vin).trim().toUpperCase() === cleanVin);
+    if (!match) return null;
+    return {
+      type: match.type || 'Unit Masuk',
+      date: match.fullDateStr || (match.date ? `${match.date}/${match.month || ''}/${match.year || ''}` : ''),
+      time: match.time || '',
+      model: match.model || '',
+      pic: match.pic || ''
+    };
+  },
+
+  /**
+   * Memeriksa apakah unit dengan nomor VIN ini sedang berada di dalam Stockyard (Status aktif: Unit Masuk)
+   */
+  isUnitCurrentlyInYard(vin) {
+    const status = this.getUnitCurrentStatus(vin);
+    return status ? status.type === 'Unit Masuk' : false;
+  },
+
+  /**
+   * Helper pemeriksaan duplikat: bernilai true HANYA jika unit saat ini masih berstatus Unit Masuk di yard
    */
   isVinDuplicate(vin) {
-    if (!vin) return false;
-    const cleanVin = String(vin).trim().toUpperCase();
-    return this.historyData.some(item => (item.vin && String(item.vin).trim().toUpperCase() === cleanVin));
+    return this.isUnitCurrentlyInYard(vin);
   },
 
   // Inisialisasi Cache dari LocalStorage jika ada
