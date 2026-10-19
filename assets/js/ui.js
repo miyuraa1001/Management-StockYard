@@ -4271,7 +4271,7 @@ const UI = {
           </h5>
 
           <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
-            ${item.message || 'Laporan PDF rekapitulasi mutasi fisik unit telah terkirim ke target email.'}
+            ${item.message || 'Laporan rekapitulasi mutasi fisik unit telah terkirim ke target email.'}
           </p>
 
           <div class="pt-1 flex items-center justify-between text-[10.5px] border-t ${isSuccess ? 'border-emerald-200/50 text-emerald-800' : 'border-rose-200/50 text-rose-800'} font-semibold">
@@ -4319,7 +4319,7 @@ const UI = {
         status: isSuccess ? 'SUCCESS' : 'FAILED',
         subject: 'Rekap Laporan Mutasi Stockyard • Astra Daihatsu - DSO Lampung',
         message: isSuccess
-          ? `Laporan PDF rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
+          ? `Laporan rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
           : `Gagal mengirimkan laporan email ke ${targetEmail}: ${res?.error || res?.message || 'Koneksi terputus'}`,
         read: true
       };
