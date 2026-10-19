@@ -1803,7 +1803,7 @@
                 <span id="scanStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 <span id="scanStatusText" class="text-[10px] font-black uppercase tracking-wider text-emerald-300">Live Camera Barcode & OCR</span>
               </div>
-              <span id="scanGuideSubtext" class="text-[9px] text-white/70 block mt-0.5">Arahkan ke barcode atau tulisan kode di stiker kaca</span>
+              <span id="scanGuideSubtext" class="text-[9px] text-white/80 block mt-0.5">Pas-kan VIN & No. Mesin di kotak bidik. Jika silau di kaca, gunakan tombol 📸 Foto & Baca Teks</span>
             </div>
 
             <div class="flex items-center space-x-1.5">
@@ -1856,7 +1856,7 @@
             </div>
 
             <!-- Laser Reticle Frame (Ukuran Proporsional Stiker Kaca Daihatsu) -->
-            <div id="scannerReticle" class="relative w-64 h-32 sm:w-72 sm:h-36 border-2 border-blue-400/80 rounded-2xl p-2 z-10 flex flex-col justify-between transition-all duration-300 pointer-events-none">
+            <div id="scannerReticle" class="relative w-72 h-36 sm:w-80 sm:h-40 border-2 border-blue-400/80 rounded-2xl p-2 z-10 flex flex-col justify-between transition-all duration-300 pointer-events-none">
               <div id="cornerTL" class="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-blue-500 rounded-tl transition-colors"></div>
               <div id="cornerTR" class="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-blue-500 rounded-tr transition-colors"></div>
               <div id="cornerBL" class="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-blue-500 rounded-bl transition-colors"></div>
@@ -1864,15 +1864,15 @@
 
               <div id="scannerLaser" class="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent laser-line shadow-[0_0_14px_#3b82f6]"></div>
 
-              <div class="bg-black/60 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-white/10 shadow pointer-events-none">
-                <span class="text-[8px] font-bold text-white tracking-widest flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-                  KOTAK BIDIK STIKER KACA DAIHATSU
-                </span>
+              <!-- Top Zone Indicator: VIN -->
+              <div class="bg-black/70 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-blue-400/40 shadow pointer-events-none flex items-center justify-center space-x-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-[8px] font-black text-white tracking-wider">AREA TARGET: VIN (VEHICLE IDENTIFICATION)</span>
               </div>
 
-              <div class="text-center pointer-events-none">
-                <span class="text-[7.5px] text-white/70 font-mono tracking-wider">PAS-KAN BARCODE ATAU TEKS STIKER DI SINI</span>
+              <!-- Bottom Zone Indicator: ENGINE -->
+              <div class="bg-black/70 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-indigo-400/40 shadow pointer-events-none">
+                <span class="text-[7.5px] font-bold text-indigo-300 tracking-wider">AREA TARGET: NO. MESIN (ENGINE NUMBER)</span>
               </div>
             </div>
           </div>

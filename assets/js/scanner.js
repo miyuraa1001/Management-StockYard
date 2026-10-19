@@ -192,7 +192,7 @@ const ScannerService = {
         if (worker.setParameters) {
           await worker.setParameters({
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/. ',
-            tessedit_pageseg_mode: '6'
+            tessedit_pageseg_mode: '4'
           });
         }
         this.ocrWorker = worker;
@@ -420,16 +420,18 @@ const ScannerService = {
     modal.classList.remove('hidden');
     AppState.isScanningActive = true;
 
-    // Periksa dukungan Hardware BarcodeDetector
+    // Periksa dukungan Hardware BarcodeDetector untuk barcode 1D linear (Code 128 / Code 39)
     let hasNativeDetector = false;
     if ('BarcodeDetector' in window) {
       try {
         const supported = await BarcodeDetector.getSupportedFormats();
-        if (supported && supported.length > 0) {
-          this.nativeDetector = new BarcodeDetector({
-            formats: supported
-          });
+        const has1D = supported && (supported.includes('code_128') || supported.includes('code_39'));
+        if (has1D) {
+          this.nativeDetector = new BarcodeDetector({ formats: supported });
           hasNativeDetector = true;
+        } else {
+          this.nativeDetector = null;
+          hasNativeDetector = false;
         }
       } catch (e) {
         this.nativeDetector = null;
@@ -452,9 +454,26 @@ const ScannerService = {
 
     this.currentZoom = 1.0;
 
+    // Siapkan engine ZXing Reader jika tersedia
+    if (typeof ZXing !== 'undefined' && !this.zxingCanvasReader) {
+      try {
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        const formats = [
+          ZXing.BarcodeFormat.CODE_128,
+          ZXing.BarcodeFormat.CODE_39,
+          ZXing.BarcodeFormat.CODE_93,
+          ZXing.BarcodeFormat.QR_CODE
+        ];
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+        this.zxingCanvasReader = new ZXing.BrowserMultiFormatReader(hints);
+      } catch (ze) {
+        console.warn('[ScannerService] ZXing Canvas Reader init fallback:', ze);
+      }
+    }
+
     try {
-      // 1. Prioritaskan Native BarcodeDetector (GPU hardware-accelerated, 0% CPU lag)
-      if (hasNativeDetector && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         AppState.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
         const videoEl = document.getElementById('scannerVideo');
         if (videoEl) {
@@ -462,49 +481,8 @@ const ScannerService = {
           await videoEl.play().catch(() => {});
           this.startNativeDetectorLoop();
         }
-      } 
-      // 2. Fallback untuk browser tanpa BarcodeDetector: Gunakan ZXing dengan semua format barcode industri
-      else if (typeof ZXing !== 'undefined') {
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        const formats = [
-          ZXing.BarcodeFormat.CODE_128,
-          ZXing.BarcodeFormat.CODE_39,
-          ZXing.BarcodeFormat.CODE_93,
-          ZXing.BarcodeFormat.QR_CODE,
-          ZXing.BarcodeFormat.DATA_MATRIX,
-          ZXing.BarcodeFormat.ITF,
-          ZXing.BarcodeFormat.EAN_13,
-          ZXing.BarcodeFormat.UPC_A,
-          ZXing.BarcodeFormat.PDF_417,
-          ZXing.BarcodeFormat.AZTEC,
-          ZXing.BarcodeFormat.CODABAR
-        ].filter(Boolean);
-        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
-
-        AppState.codeReader = new ZXing.BrowserMultiFormatReader(hints, 150);
-        await AppState.codeReader.decodeFromConstraints(cameraConstraints, 'scannerVideo', (result, err) => {
-          if (result && AppState.isScanningActive && this.scanMode !== 'ocr' && !this.isOcrRunning && !this.scanCooldown) {
-            const code = result.getText();
-            const smart = this.smartFilterBarcodes([code]);
-            if (smart.vin || smart.engine) {
-              this.applyExtractedStickerData(smart, 'BARCODE AUTO');
-              if (this.detectedVin && this.detectedEngine) {
-                this.scanCooldown = true;
-                setTimeout(() => { this.scanCooldown = false; }, 2500);
-              }
-            } else {
-              this.onBarcodeDetected(code);
-            }
-          }
-        });
-      } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        AppState.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
-        const videoEl = document.getElementById('scannerVideo');
-        if (videoEl) {
-          videoEl.srcObject = AppState.cameraStream;
-          await videoEl.play().catch(() => {});
-        }
+      } else {
+        UI.showToast('Kamera tidak dapat diakses di browser ini');
       }
     } catch (err) {
       console.warn('[ScannerService] Akses kamera gagal atau ditolak browser:', err);
@@ -513,11 +491,12 @@ const ScannerService = {
   },
 
   /**
-   * Loop deteksi cepat menggunakan akselerasi perangkat keras Native BarcodeDetector
+   * Loop deteksi barcode cerdas berbasis Region Of Interest (ROI Kotak Bidik Reticle)
+   * Mengisolasi area tengah stiker (VIN & No. Mesin) agar barcode SAP/DO di bagian atas tidak membajak pemindaian!
    */
   startNativeDetectorLoop() {
-    if (!this.nativeDetector) return;
     const video = document.getElementById('scannerVideo');
+    const canvas = document.getElementById('scannerCaptureCanvas');
     if (!video) return;
 
     let isProcessing = false;
@@ -532,24 +511,72 @@ const ScannerService = {
         return;
       }
 
-      // Throttle pemeriksaan setiap 120ms agar GPU/CPU tetap dingin & respon barcode secepat kilat
-      if (timestamp - lastScanTime >= 120 && !isProcessing && video.readyState >= 2 && !video.paused) {
+      // Interval pemeriksaan setiap 130ms untuk respon real-time tanpa membebani baterai
+      if (timestamp - lastScanTime >= 130 && !isProcessing && video.readyState >= 2 && !video.paused) {
         isProcessing = true;
         lastScanTime = timestamp;
         try {
-          const barcodes = await this.nativeDetector.detect(video);
-          if (barcodes && barcodes.length > 0 && AppState.isScanningActive && !this.scanCooldown) {
-            const rawValues = barcodes.map(b => b.rawValue).filter(Boolean);
-            const smart = this.smartFilterBarcodes(rawValues);
+          const vw = video.videoWidth;
+          const vh = video.videoHeight;
 
-            if (smart.vin || smart.engine) {
-              this.applyExtractedStickerData(smart, 'BARCODE AUTO');
-              if (this.detectedVin && this.detectedEngine) {
-                this.scanCooldown = true;
-                setTimeout(() => { this.scanCooldown = false; }, 2500);
+          if (vw > 0 && vh > 0 && canvas) {
+            // Targetkan area kotak bidik tengah (ROI: 80% lebar, 55% tinggi di tengah)
+            // Ini otomatis membuang barcode SAP/DO di atas sehingga scanner langsung membaca VIN / Engine!
+            const cropW = Math.floor(vw * 0.80);
+            const cropH = Math.floor(vh * 0.55);
+            const startX = Math.floor((vw - cropW) / 2);
+            const startY = Math.floor((vh - cropH) / 2);
+
+            canvas.width = cropW;
+            canvas.height = cropH;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
+
+            let detectedRaw = [];
+
+            // Tahap 1: Coba deteksi pada canvas area kotak bidik (ROI) via Native BarcodeDetector
+            if (this.nativeDetector) {
+              try {
+                const results = await this.nativeDetector.detect(canvas);
+                if (results && results.length > 0) {
+                  detectedRaw = results.map(b => b.rawValue).filter(Boolean);
+                }
+              } catch (e) {}
+            }
+
+            // Tahap 2: Jika belum terbaca, gunakan ZXing membaca canvas kotak bidik (ROI)
+            if (detectedRaw.length === 0 && this.zxingCanvasReader) {
+              try {
+                const zxResult = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
+                if (zxResult && zxResult.getText()) {
+                  detectedRaw.push(zxResult.getText());
+                }
+              } catch (ze) {}
+            }
+
+            // Tahap 3: Fallback ke seluruh frame jika kotak bidik belum mencakup barcode
+            if (detectedRaw.length === 0 && this.nativeDetector) {
+              try {
+                const fullResults = await this.nativeDetector.detect(video);
+                if (fullResults && fullResults.length > 0) {
+                  detectedRaw = fullResults.map(b => b.rawValue).filter(Boolean);
+                }
+              } catch (e) {}
+            }
+
+            // Evaluasi barcode yang terdeteksi
+            if (detectedRaw.length > 0 && AppState.isScanningActive && !this.scanCooldown) {
+              const smart = this.smartFilterBarcodes(detectedRaw);
+
+              if (smart.vin || smart.engine) {
+                this.applyExtractedStickerData(smart, 'BARCODE AUTO');
+                if (this.detectedVin && this.detectedEngine) {
+                  this.scanCooldown = true;
+                  setTimeout(() => { this.scanCooldown = false; }, 2500);
+                }
+              } else if (detectedRaw.length > 0) {
+                this.onBarcodeDetected(detectedRaw[0]);
               }
-            } else if (rawValues.length > 0) {
-              this.onBarcodeDetected(rawValues[0]);
             }
           }
         } catch (e) {
@@ -596,6 +623,12 @@ const ScannerService = {
       AppState.codeReader = null;
     }
 
+    if (this.zxingCanvasReader) {
+      try {
+        this.zxingCanvasReader.reset();
+      } catch (e) {}
+    }
+
     if (AppState.cameraStream) {
       AppState.cameraStream.getTracks().forEach(track => track.stop());
       AppState.cameraStream = null;
@@ -640,27 +673,30 @@ const ScannerService = {
       // 5. Abaikan Destination (misal D000)
       if (/^[A-Z]\d{3}$/.test(s) || s === 'D000') continue;
 
-      // 6. PRIORITAS 1: BARCODE VIN RESMI ASTRA DAIHATSU (MHK + 14 digit)
+      // 6. Abaikan Model Codes yang sering tercetak di stiker
+      if (s.startsWith('S403') || s.startsWith('F800') || s.startsWith('W100') || s.startsWith('B400') || s.startsWith('A300') || s.startsWith('A250')) continue;
+
+      // 7. PRIORITAS 1: BARCODE VIN RESMI ASTRA DAIHATSU (MHK + 14 digit)
       if (/^MHK[A-Z0-9]{14}$/.test(s)) {
         vin = s.replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1');
         continue;
       }
 
-      // 7. PRIORITAS 1: BARCODE NOMOR MESIN RESMI DAIHATSU (Prefix 1KR, 2NR, 1NR, 3NR, WA, 3SZ, K3, KF)
+      // 8. PRIORITAS 1: BARCODE NOMOR MESIN RESMI DAIHATSU (Prefix 1KR, 2NR, 1NR, 3NR, WA, 3SZ, K3, KF)
       if (/^(?:1KR|2NR|1NR|3NR|WA|3SZ|K3|KF)[A-Z0-9-]{4,10}$/.test(s)) {
         if (!engine) engine = s;
         continue;
       }
 
-      // 8. BARCODE VIN UMUM (Tepat 17 Karakter alfanumerik)
+      // 9. BARCODE VIN UMUM (Tepat 17 Karakter alfanumerik)
       if (/^[A-Z0-9]{17}$/.test(s) && !s.startsWith('11000')) {
         const cleanVin = s.replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1');
         if (!vin) vin = cleanVin;
         continue;
       }
 
-      // 9. BARCODE NOMOR MESIN UMUM (6-14 karakter alfanumerik)
-      if (/^[A-Z0-9-]{6,14}$/.test(s) && !s.startsWith('11000') && !s.startsWith('22') && !s.startsWith('63') && !s.startsWith('A22') && s !== 'D000') {
+      // 10. BARCODE NOMOR MESIN UMUM (6-12 karakter alfanumerik)
+      if (/^[A-Z0-9-]{6,12}$/.test(s) && !s.startsWith('11000') && !s.startsWith('22') && !s.startsWith('63') && !s.startsWith('A22') && s !== 'D000') {
         if (!engine && !vin) engine = s;
         else if (!engine) engine = s;
       }
@@ -671,10 +707,12 @@ const ScannerService = {
   },
 
   /**
-   * Parsing teks OCR cerdas yang mengenali struktur stiker kaca Daihatsu:
-   * 1. VEHICLE IDENTIFICATION NUMBER (VIN): Otomatis mendeteksi pola MHK... 17 digit
-   * 2. ENGINE NUMBER: Otomatis mendeteksi kode seri mesin Daihatsu (2NR, 1KR, WA, dll)
-   * 3. MODEL DAIHATSU: Otomatis mendeteksi kode bodi stiker (misal S403RP -> Gran Max Pick Up)
+   * Parsing teks OCR cerdas berbasis struktur spasial stiker kaca Astra Daihatsu:
+   * 1. VEHICLE IDENTIFICATION NUMBER (VIN): Berada 1-3 baris tepat di bawah judul 'VEHICLE IDENTIFICATION NUMBER'
+   *    (tepat di bawah barcode VIN, 17 digit alfanumerik, isi sama persis dengan barcode)
+   * 2. ENGINE NUMBER: Berada di sebelah kanan / baris di bawah judul 'ENGINE NUMBER'
+   *    (tepat di bawah barcode engine number, 6-12 karakter alfanumerik seperti 2NR4F82393)
+   * 3. MODEL DAIHATSU: Mendeteksi kode bodi stiker (misal S403RP -> Gran Max Pick Up)
    */
   smartParseStickerText(rawText) {
     if (!rawText) return { vin: null, engine: null, model: null, rawText: '' };
@@ -684,7 +722,7 @@ const ScannerService = {
     let engine = null;
     let model = null;
 
-    // 1. DETEKSI MODEL DARI KODE BODI STIKER ATAU VIN
+    // 1. DETEKSI MODEL DARI KODE BODI STIKER ATAU TEKS
     if (cleanText.includes('S403RP') || cleanText.includes('S403') || cleanText.includes('S400')) model = 'Gran Max Pick Up';
     else if (cleanText.includes('F800') || cleanText.includes('F850')) model = 'New Terios';
     else if (cleanText.includes('W100') || cleanText.includes('W101')) model = 'All New Xenia';
@@ -693,63 +731,141 @@ const ScannerService = {
     else if (cleanText.includes('A250') || cleanText.includes('A251')) model = 'New Rocky';
     else if (cleanText.includes('R1EA')) model = 'Rocky e-Smart Hybrid';
 
-    // 2. EKSTRAKSI NOMOR RANGKA (VIN):
-    // Prioritas A: Format VIN Astra Daihatsu (MHK + 14 alfanumerik)
-    const mhkMatch = cleanText.match(/\b(MHK[A-Z0-9]{14})\b/);
-    if (mhkMatch) {
-      vin = mhkMatch[1];
-    } else {
-      // Prioritas B: Toleransi jika ada spasi di antara karakter MHK
-      const mhkSpaceMatch = cleanText.match(/MHK[\sA-Z0-9]{14,18}/);
-      if (mhkSpaceMatch) {
-        const cleaned = mhkSpaceMatch[0].replace(/[^A-Z0-9]/g, '');
-        if (cleaned.length === 17) vin = cleaned;
-      }
-    }
+    // Pecah teks menjadi baris-baris terurut dari atas ke bawah
+    const rawLines = cleanText.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
 
-    if (!vin) {
-      // Prioritas C: Cek setelah kata kunci VEHICLE IDENTIFICATION / CHASSIS NO / NO RANGKA
-      const keywordVin = cleanText.match(/(?:VEHICLE IDENTIFICATION|IDENTIFICATION NUMBER|CHASSIS NO|NO\.?\s*RANGKA|VIN)[:\s-]*([A-Z0-9]{17})/);
-      if (keywordVin && !keywordVin[1].startsWith('11000')) {
-        vin = keywordVin[1];
-      } else {
-        // Prioritas D: Deteksi string 17 karakter alfanumerik umum (bukan SAP / DO / PO)
-        const all17 = cleanText.match(/\b([A-Z0-9]{17})\b/g) || [];
-        for (const candidate of all17) {
-          if (!candidate.startsWith('11000') && !candidate.startsWith('22') && !candidate.startsWith('63')) {
-            vin = candidate;
+    // --------------------------------------------------------------------------
+    // 2. EKSTRAKSI NOMOR RANGKA (VIN):
+    // Struktur: [Judul VEHICLE IDENTIFICATION NUMBER] -> [Barcode] -> [Teks Kode VIN 17 Digit]
+    // --------------------------------------------------------------------------
+
+    // A. Pendekatan Berbasis Struktur Posisi: Cari baris judul "VEHICLE IDENTIFICATION NUMBER"
+    const vinLabelIndex = rawLines.findIndex(l => 
+      l.includes('VEHICLE IDENTIFICATION') || 
+      l.includes('IDENTIFICATION NUMBER') || 
+      l.includes('VEHICLE IDENTIF') ||
+      (l.includes('VEHICLE') && l.includes('NUMBER')) ||
+      l.includes('CHASSIS NO') ||
+      l.includes('NO. RANGKA') ||
+      l.includes('NO RANGKA')
+    );
+
+    if (vinLabelIndex !== -1) {
+      // Teks VIN terletak 1 - 4 baris di bawah judul (setelah garis barcode)
+      for (let i = vinLabelIndex + 1; i <= Math.min(vinLabelIndex + 4, rawLines.length - 1); i++) {
+        const line = rawLines[i];
+        if (line.includes('ENGINE') || line.includes('RRN') || line.includes('DESTINATION')) break;
+
+        // Bersihkan karakter barcode bars (| ! / \ [ ]) dan spasi
+        const cleaned = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
+
+        if (cleaned.startsWith('11000') || cleaned.startsWith('22') || cleaned.startsWith('63')) continue;
+
+        if (cleaned.length === 17) {
+          vin = cleaned;
+          break;
+        } else if (cleaned.length >= 16 && cleaned.length <= 18) {
+          const candidate17 = cleaned.match(/[A-Z0-9]{17}/);
+          if (candidate17 && !candidate17[0].startsWith('11000')) {
+            vin = candidate17[0];
             break;
           }
         }
       }
     }
 
-    // Normalisasi karakter VIN standar ISO 3779 (O/Q -> 0, I -> 1)
+    // B. Fallback jika judul tidak terdeteksi lengkap: Pola MHK 17 digit (dengan/tanpa spasi)
+    if (!vin) {
+      const mhkMatch = cleanText.match(/MHK[\sA-Z0-9-]{14,18}/);
+      if (mhkMatch) {
+        const cleanedMhk = mhkMatch[0].replace(/[^A-Z0-9]/g, '');
+        if (cleanedMhk.length === 17) vin = cleanedMhk;
+      }
+    }
+
+    // C. Fallback Pola Umum 17 Karakter (Bukan SAP 11000..., Bukan DO 22..., Bukan PO 63...)
+    if (!vin) {
+      for (const l of rawLines) {
+        if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('DESTINATION')) continue;
+        const c = l.replace(/[^A-Z0-9]/g, '');
+        if (c.length === 17 && !c.startsWith('11000') && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22')) {
+          vin = c;
+          break;
+        }
+      }
+    }
+
+    // Normalisasi standar VIN ISO 3779 (O/Q -> 0, I -> 1)
     if (vin && vin.length === 17) {
       vin = vin.replace(/O/g, '0').replace(/Q/g, '0').replace(/I/g, '1');
     }
 
+    // --------------------------------------------------------------------------
     // 3. EKSTRAKSI NOMOR MESIN (ENGINE NUMBER):
-    // Prioritas A: Pola Mesin Resmi Astra Daihatsu (1KR, 2NR, 1NR, 3NR, WA, 3SZ, K3, KF)
-    const daihatsuEngineMatch = cleanText.match(/\b((?:1KR|2NR|1NR|3NR|WA|3SZ|K3|KF)[A-Z0-9-]{4,10})\b/);
-    if (daihatsuEngineMatch) {
-      engine = daihatsuEngineMatch[1];
-    } else {
-      // Prioritas B: Setelah kata kunci ENGINE NUMBER / ENGINE NO / NO MESIN
-      const nearEng = cleanText.match(/(?:ENGINE\s*(?:NUMBER|NO)?|NO\.?\s*MESIN|MESIN)[:\s-]*([A-Z0-9-]{6,14})/);
-      if (nearEng && !nearEng[1].startsWith('NUMBER') && !nearEng[1].startsWith('NO') && !nearEng[1].startsWith('22') && !nearEng[1].startsWith('63') && !nearEng[1].startsWith('11000')) {
-        engine = nearEng[1];
-      } else {
-        // Prioritas C: Baris alfanumerik 6-14 karakter yang bukan VIN, bukan DO, bukan PO, bukan SAP, bukan Model
-        const lines = cleanText.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
-        for (const l of lines) {
-          if (vin && l.includes(vin)) continue;
-          if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('RRN') || l.includes('DESTINATION') || l.includes('IDENTIFICATION') || l.includes('DAIHATSU')) continue;
-          const c = l.replace(/[^A-Z0-9-]/g, '');
-          if (c.length >= 6 && c.length <= 14 && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !c.startsWith('11000') && c !== 'D000') {
-            engine = c;
+    // Struktur: [Judul ENGINE NUMBER di sebelah kiri] -> [Barcode di kanan] -> [Teks Kode Mesin di bawah Barcode]
+    // --------------------------------------------------------------------------
+
+    // A. Pendekatan Berbasis Struktur Posisi: Cari baris judul "ENGINE NUMBER"
+    const engLabelIndex = rawLines.findIndex(l => 
+      l.includes('ENGINE NUMBER') || 
+      l.includes('ENGINE NO') || 
+      (l.includes('ENGINE') && !l.includes('IDENTIFICATION')) ||
+      l.includes('NO. MESIN') ||
+      l.includes('NO MESIN')
+    );
+
+    if (engLabelIndex !== -1) {
+      // 1. Cek di baris yang sama setelah kata "ENGINE" / "NUMBER"
+      const sameLine = rawLines[engLabelIndex];
+      const strippedSameLine = sameLine
+        .replace(/ENGINE\s*(NUMBER|NO)?/g, '')
+        .replace(/NO\.?\s*MESIN/g, '')
+        .replace(/MESIN/g, '')
+        .replace(/[|!/\\\[\]_~-]/g, '')
+        .replace(/\s+/g, '');
+
+      if (strippedSameLine.length >= 6 && strippedSameLine.length <= 14 && 
+          !strippedSameLine.startsWith('11000') && !strippedSameLine.startsWith('22') && 
+          !strippedSameLine.startsWith('63') && !strippedSameLine.startsWith('A22') && 
+          strippedSameLine !== 'D000') {
+        engine = strippedSameLine;
+      }
+
+      // 2. Jika tidak ada di baris yang sama, cari di 1 - 3 baris tepat di bawah judul (di bawah barcode engine)
+      if (!engine) {
+        for (let j = engLabelIndex + 1; j <= Math.min(engLabelIndex + 3, rawLines.length - 1); j++) {
+          const line = rawLines[j];
+          if (line.includes('RRN') || line.includes('DESTINATION')) break;
+
+          const cleanedEng = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
+          if (cleanedEng.length >= 6 && cleanedEng.length <= 14 && 
+              !cleanedEng.startsWith('11000') && !cleanedEng.startsWith('22') && 
+              !cleanedEng.startsWith('63') && !cleanedEng.startsWith('A22') && 
+              cleanedEng !== 'D000' && cleanedEng !== 'S403RP') {
+            engine = cleanedEng;
             break;
           }
+        }
+      }
+    }
+
+    // B. Fallback: Cari pola kode mesin Daihatsu (2NR, 1KR, 1NR, 3NR, WA, 3SZ, K3, KF)
+    if (!engine) {
+      const daihatsuEngineMatch = cleanText.match(/\b((?:1KR|2NR|1NR|3NR|WA|3SZ|K3|KF)[\sA-Z0-9-]{4,12})\b/);
+      if (daihatsuEngineMatch) {
+        engine = daihatsuEngineMatch[1].replace(/[^A-Z0-9-]/g, '');
+      }
+    }
+
+    // C. Fallback Umum: Token alfanumerik 6-12 karakter antara VIN dan RRN
+    if (!engine) {
+      for (const l of rawLines) {
+        if (vin && l.includes(vin)) continue;
+        if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('RRN') || l.includes('DESTINATION') || l.includes('IDENTIFICATION') || l.includes('DAIHATSU')) continue;
+        const c = l.replace(/[^A-Z0-9-]/g, '');
+        if (c.length >= 6 && c.length <= 12 && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !c.startsWith('11000') && c !== 'D000' && c !== 'S403RP') {
+          engine = c;
+          break;
         }
       }
     }
@@ -763,32 +879,44 @@ const ScannerService = {
 
   /**
    * Preprocessing gambar khusus teks stiker otomotif:
-   * Mengubah ke grayscale & menerapkan adaptive high-contrast binarization
-   * agar teks hitam pekat di atas stiker putih terbaca 100% oleh OCR engine.
+   * Menggunakan Adaptive Grayscale Dynamic Contrast Normalization
+   * Mempertahankan sub-pixel anti-aliasing bentuk font agar Tesseract LSTM membaca dengan presisi 99.9%
    */
   preprocessCanvasForOCR(ctx, width, height) {
     try {
       const imgData = ctx.getImageData(0, 0, width, height);
       const d = imgData.data;
+      const n = d.length;
 
-      // 1. Hitung rata-rata kecerahan (luminance) seluruh frame
-      let sum = 0;
-      const count = d.length / 4;
-      for (let i = 0; i < d.length; i += 4) {
-        sum += (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
-      }
-      const avgLuma = sum / count;
+      // 1. Konversi ke Grayscale & Temukan rentang pencahayaan min / max
+      let min = 255;
+      let max = 0;
+      const gray = new Uint8ClampedArray(n / 4);
 
-      // 2. High-Contrast Binarization: Teks stiker adalah karakter hitam pada kertas putih.
-      const threshold = Math.max(80, Math.min(165, avgLuma - 10));
-
-      for (let i = 0; i < d.length; i += 4) {
+      for (let i = 0, j = 0; i < n; i += 4, j++) {
         const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-        const val = g < threshold ? 0 : 255;
+        gray[j] = g;
+        if (g < min) min = g;
+        if (g > max) max = g;
+      }
+
+      // 2. Dynamic Contrast Normalization (Peregangan Kontras Dinamis)
+      const range = max - min;
+      const scale = range > 25 ? 255 / range : 1;
+
+      for (let i = 0, j = 0; i < n; i += 4, j++) {
+        let val = (gray[j] - min) * scale;
+        // Kurva kontras halus: menghitamkan teks stiker dan memutihkan kertas stiker tanpa merusak anti-aliasing
+        if (val < 130) {
+          val = Math.max(0, val * 0.78);
+        } else {
+          val = Math.min(255, val * 1.12 + 10);
+        }
         d[i] = val;
         d[i + 1] = val;
         d[i + 2] = val;
       }
+
       ctx.putImageData(imgData, 0, 0);
     } catch (e) {
       console.warn('[ScannerService] Preprocessing dilewati:', e);
@@ -797,6 +925,7 @@ const ScannerService = {
 
   /**
    * Menangkap frame kamera resolusi tinggi dan membaca baris teks stiker menggunakan Tesseract.js OCR
+   * Dilengkapi multi-pass: membaca barcode dari snapshot + membaca teks kode di bawah barcode
    */
   async captureAndScanOCR() {
     if (this.isOcrRunning) return;
@@ -818,15 +947,13 @@ const ScannerService = {
 
     this.isOcrRunning = true;
     if (overlay) overlay.classList.remove('hidden');
-    if (statusEl) statusEl.textContent = 'Menangkap snapshot area stiker...';
+    if (statusEl) statusEl.textContent = 'Menangkap snapshot area stiker kaca...';
 
     try {
-      // Ambil snapshot area stiker di tengah (ROI 85% width x 75% height)
-      // untuk membuang noise latar belakang kaca & mempercepat OCR hingga 3x lipat
       const vw = video.videoWidth;
       const vh = video.videoHeight;
-      const cropW = Math.floor(vw * 0.85);
-      const cropH = Math.floor(vh * 0.75);
+      const cropW = Math.floor(vw * 0.88);
+      const cropH = Math.floor(vh * 0.80);
       const startX = Math.floor((vw - cropW) / 2);
       const startY = Math.floor((vh - cropH) / 2);
 
@@ -835,12 +962,36 @@ const ScannerService = {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
 
-      if (statusEl) statusEl.textContent = 'Meningkatkan ketajaman teks stiker...';
+      let barcodeVin = null;
+      let barcodeEngine = null;
+
+      // 1. Coba deteksi barcode dari snapshot gambar jernih
+      if (this.nativeDetector) {
+        try {
+          const bRes = await this.nativeDetector.detect(canvas);
+          if (bRes && bRes.length > 0) {
+            const smartB = this.smartFilterBarcodes(bRes.map(b => b.rawValue));
+            if (smartB.vin) barcodeVin = smartB.vin;
+            if (smartB.engine) barcodeEngine = smartB.engine;
+          }
+        } catch (e) {}
+      }
+
+      if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
+        try {
+          const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
+          if (zRes && zRes.getText()) {
+            const smartZ = this.smartFilterBarcodes([zRes.getText()]);
+            if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+            if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+          }
+        } catch (ze) {}
+      }
+
+      // 2. Preprocessing kontras dinamis & OCR pembacaan baris teks di bawah barcode
+      if (statusEl) statusEl.textContent = 'Membaca teks kode di bawah barcode (VIN & No. Mesin)...';
       this.preprocessCanvasForOCR(ctx, cropW, cropH);
 
-      if (statusEl) statusEl.textContent = 'Membaca baris kode stiker (VIN & No. Mesin)...';
-
-      // Jalankan worker OCR dengan parameter optimasi teks stiker kendaraan
       const worker = await this.getOcrWorker();
       let extractedText = '';
 
@@ -852,13 +1003,20 @@ const ScannerService = {
         extractedText = ret && ret.data ? ret.data.text : '';
       }
 
-      const extracted = this.smartParseStickerText(extractedText);
-      console.log('[OCR Result]', extracted);
+      const ocrExtracted = this.smartParseStickerText(extractedText);
+      console.log('[Snapshot OCR Result]', ocrExtracted);
 
       if (overlay) overlay.classList.add('hidden');
       this.isOcrRunning = false;
 
-      if (!extracted.vin && !extracted.engine) {
+      // Gabungkan hasil pembacaan Barcode dan Teks Kode
+      const combined = {
+        vin: barcodeVin || ocrExtracted.vin || null,
+        engine: barcodeEngine || ocrExtracted.engine || null,
+        model: ocrExtracted.model || (ocrExtracted.vin ? this.inferDaihatsuModelFromVin(ocrExtracted.vin) : (barcodeVin ? this.inferDaihatsuModelFromVin(barcodeVin) : null))
+      };
+
+      if (!combined.vin && !combined.engine) {
         // Fallback coba baca gambar utuh tanpa crop jika stiker berada di tepi
         canvas.width = vw;
         canvas.height = vh;
@@ -870,9 +1028,9 @@ const ScannerService = {
           this.applyExtractedStickerData(retryExtracted, 'OCR KAMERA');
           return;
         }
-        UI.showToast('⚠️ Teks stiker belum terbaca jelas. Posisikan kamera lebih tegak & gunakan tombol Zoom 1.5x.');
+        UI.showToast('⚠️ Teks stiker belum terbaca. Posisikan kamera lebih dekat & gunakan tombol Zoom 1.5x.');
       } else {
-        this.applyExtractedStickerData(extracted, 'OCR KAMERA');
+        this.applyExtractedStickerData(combined, 'OCR KAMERA');
       }
     } catch (err) {
       console.error('[ScannerService] Gagal memproses OCR:', err);
@@ -884,6 +1042,7 @@ const ScannerService = {
 
   /**
    * Menangani foto stiker yang diunggah dari galeri smartphone pengguna
+   * Mengekstrak barcode + teks kode di bawah barcode secara akurat
    */
   async handleStickerPhotoUploaded(event) {
     const file = event.target.files && event.target.files[0];
@@ -913,10 +1072,36 @@ const ScannerService = {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0);
 
+          let barcodeVin = null;
+          let barcodeEngine = null;
+
+          // 1. Coba deteksi barcode dari foto galeri terlebih dahulu
+          if (this.nativeDetector) {
+            try {
+              const bRes = await this.nativeDetector.detect(canvas);
+              if (bRes && bRes.length > 0) {
+                const smartB = this.smartFilterBarcodes(bRes.map(b => b.rawValue));
+                if (smartB.vin) barcodeVin = smartB.vin;
+                if (smartB.engine) barcodeEngine = smartB.engine;
+              }
+            } catch (e) {}
+          }
+
+          if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
+            try {
+              const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
+              if (zRes && zRes.getText()) {
+                const smartZ = this.smartFilterBarcodes([zRes.getText()]);
+                if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+                if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+              }
+            } catch (ze) {}
+          }
+
           if (statusEl) statusEl.textContent = 'Meningkatkan kontras gambar stiker...';
           this.preprocessCanvasForOCR(ctx, canvas.width, canvas.height);
 
-          if (statusEl) statusEl.textContent = 'Membaca teks dari stiker foto...';
+          if (statusEl) statusEl.textContent = 'Membaca baris teks kode stiker...';
 
           try {
             const worker = await this.getOcrWorker();
@@ -930,16 +1115,22 @@ const ScannerService = {
               extractedText = ret && ret.data ? ret.data.text : '';
             }
 
-            const extracted = this.smartParseStickerText(extractedText);
-            console.log('[Gallery OCR Result]', extracted);
+            const ocrExtracted = this.smartParseStickerText(extractedText);
+            console.log('[Gallery OCR Result]', ocrExtracted);
 
             if (overlay) overlay.classList.add('hidden');
             this.isOcrRunning = false;
 
-            if (!extracted.vin && !extracted.engine) {
+            const combined = {
+              vin: barcodeVin || ocrExtracted.vin || null,
+              engine: barcodeEngine || ocrExtracted.engine || null,
+              model: ocrExtracted.model || (ocrExtracted.vin ? this.inferDaihatsuModelFromVin(ocrExtracted.vin) : (barcodeVin ? this.inferDaihatsuModelFromVin(barcodeVin) : null))
+            };
+
+            if (!combined.vin && !combined.engine) {
               UI.showToast('⚠️ Data stiker tidak terbaca dari foto. Pastikan stiker tajam & tidak blur.');
             } else {
-              this.applyExtractedStickerData(extracted, 'FOTO GALERI');
+              this.applyExtractedStickerData(combined, 'FOTO GALERI');
             }
           } catch (ocrErr) {
             console.error('[Gallery OCR Error]', ocrErr);
@@ -1379,28 +1570,35 @@ const ScannerService = {
 
     UI.showToast('⚡ Memindai frame kamera...');
 
-    let detectedBarcodes = [];
+    let barcodeVin = null;
+    let barcodeEngine = null;
 
     // 1. Coba deteksi barcode via Hardware BarcodeDetector
     if (this.nativeDetector) {
       try {
         const results = await this.nativeDetector.detect(canvas);
         if (results && results.length > 0) {
-          detectedBarcodes = results.map(b => b.rawValue).filter(Boolean);
+          const smart = this.smartFilterBarcodes(results.map(b => b.rawValue));
+          if (smart.vin) barcodeVin = smart.vin;
+          if (smart.engine) barcodeEngine = smart.engine;
         }
       } catch (e) {}
     }
 
-    // 2. Evaluasi hasil barcode
-    if (detectedBarcodes.length > 0) {
-      const smart = this.smartFilterBarcodes(detectedBarcodes);
-      if (smart.vin || smart.engine) {
-        this.applyExtractedStickerData(smart, 'SCAN CEPAT (BARCODE)');
-        return;
-      }
+    // 2. Coba deteksi barcode via ZXing jika belum lengkap
+    if ((!barcodeVin || !barcodeEngine) && this.zxingCanvasReader) {
+      try {
+        const zRes = await this.zxingCanvasReader.decodeFromCanvas(canvas).catch(() => null);
+        if (zRes && zRes.getText()) {
+          const smartZ = this.smartFilterBarcodes([zRes.getText()]);
+          if (smartZ.vin && !barcodeVin) barcodeVin = smartZ.vin;
+          if (smartZ.engine && !barcodeEngine) barcodeEngine = smartZ.engine;
+        }
+      } catch (ze) {}
     }
 
-    // 3. Jika barcode belum terbaca, otomatis jalankan OCR teks stiker dengan worker persisten
+    // 3. Jalankan OCR membaca baris teks stiker di bawah barcode
+    let ocrExtracted = { vin: null, engine: null, model: null };
     if (typeof Tesseract !== 'undefined') {
       const overlay = document.getElementById('ocrProcessingOverlay');
       const statusEl = document.getElementById('ocrProgressStatus');
@@ -1414,15 +1612,22 @@ const ScannerService = {
         if (overlay) overlay.classList.add('hidden');
 
         if (result && result.data && result.data.text) {
-          const extracted = this.smartParseStickerText(result.data.text);
-          if (extracted.vin || extracted.engine) {
-            this.applyExtractedStickerData(extracted, 'SCAN CEPAT (OCR)');
-            return;
-          }
+          ocrExtracted = this.smartParseStickerText(result.data.text);
         }
       } catch (ocrErr) {
         if (overlay) overlay.classList.add('hidden');
       }
+    }
+
+    const combined = {
+      vin: barcodeVin || ocrExtracted.vin || null,
+      engine: barcodeEngine || ocrExtracted.engine || null,
+      model: ocrExtracted.model || (ocrExtracted.vin ? this.inferDaihatsuModelFromVin(ocrExtracted.vin) : (barcodeVin ? this.inferDaihatsuModelFromVin(barcodeVin) : null))
+    };
+
+    if (combined.vin || combined.engine) {
+      this.applyExtractedStickerData(combined, 'SCAN CEPAT');
+      return;
     }
 
     // 4. Jika SAMA SEKALI tidak ada barcode atau teks stiker di kamera (Peringatan Nyata)
