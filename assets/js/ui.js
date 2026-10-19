@@ -1189,7 +1189,7 @@ const UI = {
    * Mengunduh Laporan Riwayat Mutasi Kendaraan Langsung ke Perangkat (Direct File Download)
    * Menampilkan tabel persis seperti tabel frontend (dengan foto katalog, foto fisik unit & stiker)
    * Menyertakan baris Total Rekapitulasi di bagian bawah tabel serta filter aktif.
-   * Langsung mengunduh file .pdf tanpa membuka dialog print browser.
+   * Langsung mengunduh file .pdf tanpa membuka dialog print browser dan tidak pernah blank/kosong.
    */
   async exportHistoryPDF() {
     const { filtered, fDate, fMonth, fYear, searchVal } = this.getFilteredHistoryData();
@@ -1206,26 +1206,14 @@ const UI = {
       btn.classList.add('opacity-70', 'cursor-wait');
     }
 
-    this.showToast('⏳ Sedang memproses unduhan file PDF...');
+    this.showToast('⏳ Memproses data & foto mutasi untuk PDF...');
 
     try {
       await this.ensurePdfLibraryLoaded();
-
-      const filterInfo = { fDate, fMonth, fYear, searchVal, tabFilter };
-
-      if (window.html2pdf) {
-        await this.downloadDirectPdfReport(filtered, filterInfo);
-      } else {
-        this.generateDirectJsPDF(filtered, filterInfo);
-      }
+      await this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, searchVal, tabFilter });
     } catch (err) {
-      console.warn('[UI] Gagal mengunduh via html2pdf, beralih ke generator jsPDF langsung:', err);
-      try {
-        this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, searchVal, tabFilter });
-      } catch (fallbackErr) {
-        console.error('[UI] Gagal fallback jsPDF:', fallbackErr);
-        this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
-      }
+      console.error('[UI] Gagal mengunduh file PDF:', err);
+      this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -1235,25 +1223,110 @@ const UI = {
   },
 
   /**
-   * Mengunduh file PDF secara langsung menggunakan html2pdf (Tabel Identik Frontend + Foto + Total)
+   * Membantu memuat gambar (katalog lokal maupun bukti fisik) menjadi format Base64 yang aman untuk jsPDF
    */
-  async downloadDirectPdfReport(records, filterInfo) {
+  loadImageAsBase64(url) {
+    return new Promise((resolve) => {
+      if (!url || typeof url !== 'string' || url.trim() === '' || url === '-') {
+        return resolve(null);
+      }
+      url = url.trim();
+      if (url.startsWith('data:image')) {
+        return resolve(url);
+      }
+
+      let targetUrl = url;
+      const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        targetUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w200`;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width || 100;
+          canvas.height = img.naturalHeight || img.height || 75;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(dataUrl);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = targetUrl;
+      setTimeout(() => resolve(null), 1500);
+    });
+  },
+
+  /**
+   * Memastikan skrip jsPDF & jspdf-autotable termuat
+   */
+  ensurePdfLibraryLoaded() {
+    return new Promise((resolve) => {
+      if (window.jspdf && window.jspdf.jsPDF) {
+        if (!window.jsPDF) window.jsPDF = window.jspdf.jsPDF;
+        return resolve(true);
+      }
+
+      const loadScript = (src) => {
+        return new Promise((res, rej) => {
+          const existing = document.querySelector(`script[src="${src}"]`);
+          if (existing) {
+            existing.addEventListener('load', () => res());
+            existing.addEventListener('error', () => rej());
+            return res();
+          }
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = () => res();
+          s.onerror = () => rej();
+          document.head.appendChild(s);
+        });
+      };
+
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+        .then(() => {
+          if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
+            window.jsPDF = window.jspdf.jsPDF;
+          }
+          return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js');
+        })
+        .then(() => {
+          if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
+            window.jsPDF = window.jspdf.jsPDF;
+          }
+          resolve(true);
+        })
+        .catch(() => resolve(false));
+    });
+  },
+
+  /**
+   * Pembuatan file PDF langsung di browser (Client-Side Vector Download)
+   * Menyertakan Foto Mobil Katalog, Foto Bukti Fisik Unit & Stiker, Filter Aktif, dan Total Rekapitulasi di bawah tabel.
+   */
+  async generateDirectJsPDF(records, filterInfo = {}) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth(); // 297 mm
+    const pageHeight = doc.internal.pageSize.getHeight(); // 210 mm
+    const margin = 12;
+
     const profile = AppState.userProfile || {};
     const operatorName = profile.name || CONFIG.OPERATOR_NAME || 'Andi Pratama';
     const operatorNpk = profile.npk || CONFIG.OPERATOR_NPK || '21040889';
     const operatorBranch = profile.branch || CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung';
 
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    const dateFormatted = `${day}-${month}-${year}`;
     const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}, ${timeStr} WIB`;
-    const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
-    const fileName = `Laporan_Mutasi_Stockyard_Daihatsu_Lampung_${dateFormatted}.pdf`;
-
     let periodText = 'Seluruh Waktu';
     if (filterInfo.fDate !== 'all' || filterInfo.fMonth !== 'all' || filterInfo.fYear !== 'all') {
       const dStr = (filterInfo.fDate && filterInfo.fDate !== 'all') ? `Tgl ${filterInfo.fDate} ` : '';
@@ -1268,37 +1341,127 @@ const UI = {
 
     const searchFilterText = filterInfo.searchVal ? `"${filterInfo.searchVal}"` : 'Semua Data';
 
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateFormatted = `${day}-${month}-${year}`; // Format DD-MM-YYYY untuk nama file sistem
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${now.getFullYear()}, ${timeStr} WIB`;
+    const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // ==========================================
+    // 1. KOP SURAT RESMI ASTRA DAIHATSU
+    // ==========================================
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text('PT ASTRA DAIHATSU MOTOR • DSO SENTRA LAMPUNG', margin, 12);
+
+    doc.setFontSize(8.5);
+    doc.setTextColor(37, 99, 235); // brand-blue
+    doc.text('REKAPITULASI AUDIT & SERAH TERIMA FISIK KENDARAAN (STOCKYARD LOGISTICS)', margin, 16.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text('Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888', margin, 20.5);
+
+    // Garis Kop Surat
+    doc.setDrawColor(37, 99, 235); // Blue
+    doc.setLineWidth(0.6);
+    doc.line(margin, 22.5, pageWidth - margin, 22.5);
+
+    doc.setDrawColor(237, 27, 36); // Daihatsu Red
+    doc.setLineWidth(0.3);
+    doc.line(margin, 23.5, pageWidth - margin, 23.5);
+
+    // ==========================================
+    // 2. METADATA DOKUMEN & KPI SUMMARY
+    // ==========================================
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.roundedRect(margin, 26, pageWidth - (margin * 2), 16, 2, 2, 'FD');
+
+    // Kolom Kiri Dokumen Info
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(71, 85, 105);
+    doc.text('No. Dokumen', margin + 3, 30.5);
+    doc.text('Filter Periode', margin + 3, 34.5);
+    doc.text('Filter Mutasi', margin + 3, 38.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`:  ${docNumber}`, margin + 25, 30.5);
+    doc.text(`:  ${periodText}`, margin + 25, 34.5);
+    doc.text(`:  ${typeFilterText}`, margin + 25, 38.5);
+
+    // Kolom Tengah Penugasan
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(71, 85, 105);
+    doc.text('Petugas PIC', margin + 95, 30.5);
+    doc.text('Cabang Penugasan', margin + 95, 34.5);
+    doc.text('Filter Pencarian', margin + 95, 38.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`:  ${operatorName} (${operatorNpk})`, margin + 125, 30.5);
+    doc.text(`:  ${operatorBranch}`, margin + 125, 34.5);
+    doc.text(`:  ${searchFilterText}`, margin + 125, 38.5);
+
+    // Kolom Kanan KPI Badge
     const masukCount = records.filter(r => r.type === 'Unit Masuk').length;
     const keluarCount = records.filter(r => r.type === 'Unit Keluar').length;
 
-    const formatDriveThumb = (url) => {
-      if (!url || typeof url !== 'string') return '';
-      url = url.trim();
-      if (url === '' || url === '-') return '';
-      if (url.startsWith('data:image')) return url;
-      const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
-      }
-      return url;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text('RINGKASAN AUDIT:', pageWidth - margin - 65, 30.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(`Total Terdata : ${records.length} Unit Fisik`, pageWidth - margin - 65, 34.5);
+    doc.text(`Masuk: ${masukCount} Unit | Keluar: ${keluarCount} Unit`, pageWidth - margin - 65, 38.5);
+
+    // ==========================================
+    // 3. PRE-LOAD FOTO (KATALOG, FISIK UNIT, DOKUMEN)
+    // ==========================================
+    const imgCache = new Map();
+    const loadCached = async (u) => {
+      if (!u) return null;
+      if (imgCache.has(u)) return imgCache.get(u);
+      const b64 = await this.loadImageAsBase64(u);
+      imgCache.set(u, b64);
+      return b64;
     };
 
-    const rowsHtml = records.map((item, idx) => {
-      const rowNum = String(idx + 1).padStart(2, '0');
-      const isMasuk = item.type === 'Unit Masuk';
-      const typeBadgeStyle = isMasuk
-        ? 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;'
-        : 'background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;';
-      const typeArrow = isMasuk ? '↓' : '↑';
-
+    const preloadPromises = records.map(async (item) => {
       const catalogItem = (typeof AppState !== 'undefined' && AppState.getModelCatalogItem) ? AppState.getModelCatalogItem(item.model) : null;
       const catalogPhotoSrc = catalogItem ? catalogItem.photo : (item.modelPhoto || 'assets/images/Inventory_Gran Max Pick Up.jpeg');
-      const modelCategory = catalogItem ? catalogItem.category : 'Unit Daihatsu';
+      const catB64 = await loadCached(catalogPhotoSrc);
+      const unitB64 = await loadCached(item.unitPhoto);
+      const docB64 = await loadCached(item.docPhoto);
+      return { catB64, unitB64, docB64, catalogItem };
+    });
+    const preloadedMedia = await Promise.all(preloadPromises);
 
-      const rawUnitPhoto = item.unitPhoto || '';
-      const rawDocPhoto = item.docPhoto || '';
-      const unitPhotoSrc = formatDriveThumb(rawUnitPhoto) || catalogPhotoSrc;
-      const docPhotoSrc = formatDriveThumb(rawDocPhoto);
+    // ==========================================
+    // 4. SUSUN TABEL AUTOTABLE (IDENTIK FRONTEND)
+    // ==========================================
+    const tableColumns = [
+      { header: 'No & ID', dataKey: 'no' },
+      { header: 'Waktu Mutasi', dataKey: 'datetime' },
+      { header: 'Jenis Mutasi', dataKey: 'type' },
+      { header: 'Kendaraan (Model & Katalog)', dataKey: 'vehicle' },
+      { header: 'No. Rangka & Mesin', dataKey: 'vin' },
+      { header: 'Petugas PIC & Catatan', dataKey: 'pic' },
+      { header: 'Bukti Fisik (Unit & Stiker)', dataKey: 'evidence' },
+      { header: 'Status', dataKey: 'status' }
+    ];
+
+    const tableRows = records.map((item, idx) => {
+      const rowNum = String(idx + 1).padStart(2, '0');
+      const media = preloadedMedia[idx] || {};
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
@@ -1331,476 +1494,148 @@ const UI = {
         dateFormattedRow = `${day}/${month}/${year}`;
       }
 
-      const fullTimeDisplay = `${timeFormatted}, ${dateFormattedRow}`;
+      const categoryName = media.catalogItem ? media.catalogItem.category : 'Unit Daihatsu';
 
-      const unitThumbnailHtml = `
-        <div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle; margin-right:3px;">
-          <img src="${unitPhotoSrc}" alt="Unit" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='${catalogPhotoSrc}';">
-          <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(15,23,42,0.78); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">Unit</span>
-        </div>
-      `;
-
-      const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
-        ? `<div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle;">
-             <img src="${docPhotoSrc}" alt="Stiker" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">Stiker</span>
-             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">Stiker</span>
-           </div>`
-        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No Doc</div>`;
-
-      return `
-        <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8px;">
-          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
-            <span style="display:inline-block; padding: 1px 4px; border-radius: 4px; background: #f1f5f9; border: 1px solid #cbd5e1; font-weight: 800; font-size: 7.5px; color: #475569; margin-right: 2px;">#${rowNum}</span>
-            <span style="font-family: monospace; font-weight: 700; font-size: 8px; color: #0f172a;">${item.id || '-'}</span>
-          </td>
-          <td style="padding: 4px 6px; white-space: nowrap;">
-            <div style="font-family: monospace; font-size: 8px; font-weight: 700; color: #0f172a; background: #f8fafc; padding: 2px 5px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block;">
-              ${fullTimeDisplay}
-            </div>
-          </td>
-          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
-            <span style="display:inline-block; padding: 2px 7px; border-radius: 9999px; font-weight: 800; font-size: 7.5px; ${typeBadgeStyle}">
-              ${typeArrow} ${item.type}
-            </span>
-          </td>
-          <td style="padding: 4px 6px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <div style="width: 38px; height: 26px; border-radius: 4px; background: #ffffff; border: 1px solid #e2e8f0; padding: 1px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <img src="${catalogPhotoSrc}" alt="${item.model}" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: contain;">
-              </div>
-              <div style="min-width: 0;">
-                <div style="font-weight: 800; font-size: 8.5px; color: #0f172a; line-height: 1.1;">${item.model}</div>
-                <div style="font-size: 7px; color: #64748b; margin-top: 1px;">${modelCategory}</div>
-              </div>
-            </div>
-          </td>
-          <td style="padding: 4px 6px; white-space: nowrap;">
-            <div style="font-family: monospace; font-weight: 800; font-size: 8px; color: #0f172a; background: #f1f5f9; padding: 1.5px 5px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block;">
-              ${item.vin}
-            </div>
-            <div style="font-family: monospace; font-size: 7.5px; color: #64748b; margin-top: 2px;">
-              ENG: <strong style="color: #334155;">${item.engine}</strong>
-            </div>
-          </td>
-          <td style="padding: 4px 6px;">
-            <div style="font-weight: 700; font-size: 8px; color: #0f172a; display: flex; align-items: center; gap: 4px;">
-              <span style="display: inline-flex; width: 14px; height: 14px; border-radius: 50%; background: #dbeafe; color: #1e40af; font-size: 7.5px; font-weight: 800; align-items: center; justify-content: center;">
-                ${(item.pic || 'A').charAt(0).toUpperCase()}
-              </span>
-              <span>${item.pic || operatorName}</span>
-            </div>
-            <div style="font-size: 7px; color: #64748b; margin-top: 2px; line-height: 1.2;">
-              ${item.notes || 'Pemeriksaan standar serah terima fisik.'}
-            </div>
-          </td>
-          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
-              ${unitThumbnailHtml}
-              ${docThumbnailHtml}
-            </div>
-          </td>
-          <td style="padding: 4px 6px; text-align: center; white-space: nowrap;">
-            <span style="display: inline-block; padding: 2px 6px; border-radius: 9999px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-weight: 800; font-size: 7.5px;">
-              ✓ Valid
-            </span>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    // Buat container tersembunyi
-    const printArea = document.createElement('div');
-    printArea.id = 'temp-direct-pdf-export';
-    printArea.style.position = 'fixed';
-    printArea.style.left = '-99999px';
-    printArea.style.top = '0';
-    printArea.style.width = '1060px';
-    printArea.style.padding = '12px 16px';
-    printArea.style.background = '#ffffff';
-    printArea.style.color = '#0f172a';
-    printArea.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-    printArea.style.zIndex = '-9999';
-
-    printArea.innerHTML = `
-      <div style="border-bottom: 2.5px solid #2563eb; padding-bottom: 4px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-          <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; text-transform: uppercase;">PT Astra Daihatsu Motor • DSO Sentra Lampung</div>
-          <div style="font-size: 9.5px; font-weight: 700; color: #2563eb; margin-top: 1px; text-transform: uppercase;">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
-          <div style="font-size: 7.5px; color: #64748b; margin-top: 2px;">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
-        </div>
-        <div style="text-align: right; font-size: 8px; color: #64748b;">
-          <div>Dokumen Resmi Internal</div>
-          <div style="font-weight: 800; font-size: 8.5px; color: #0f172a;">${docNumber}</div>
-        </div>
-      </div>
-
-      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px; display: flex; justify-content: space-between; font-size: 8px; margin-bottom: 6px; line-height: 1.35;">
-        <div>
-          <strong>No. Dokumen:</strong> ${docNumber}<br>
-          <strong>Waktu Cetak:</strong> ${printDateStr}<br>
-          <strong>Total Terdata:</strong> <span style="color: #0284c7; font-weight: 800;">${records.length} Unit Fisik</span>
-        </div>
-        <div>
-          <strong>Filter Periode:</strong> <span style="font-weight: 700; color: #0f172a;">${periodText}</span><br>
-          <strong>Filter Mutasi:</strong> <span style="font-weight: 700; color: #0f172a;">${typeFilterText}</span><br>
-          <strong>Pencarian:</strong> <span style="font-weight: 700; color: #0f172a;">${searchFilterText}</span>
-        </div>
-        <div>
-          <strong>Petugas PIC:</strong> ${operatorName} (NPK: ${operatorNpk})<br>
-          <strong>Cabang Penugasan:</strong> ${operatorBranch}<br>
-          <strong>Status Logistik:</strong> <span style="color: #059669; font-weight: 800;">✓ Verifikasi Lapangan Lengkap</span>
-        </div>
-      </div>
-
-      <table style="width: 100%; border-collapse: collapse; margin-top: 2px;">
-        <thead>
-          <tr style="background: #0f172a; color: #ffffff;">
-            <th style="width: 75px; text-align: center; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a;">No & ID Mutasi</th>
-            <th style="width: 95px; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a; text-align: left;">Waktu Mutasi</th>
-            <th style="width: 75px; text-align: center; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a;">Jenis Mutasi</th>
-            <th style="width: 135px; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a; text-align: left;">Kendaraan</th>
-            <th style="width: 125px; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a; text-align: left;">No. Rangka & Mesin</th>
-            <th style="width: 145px; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a; text-align: left;">Petugas PIC & Catatan</th>
-            <th style="width: 105px; text-align: center; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a;">Bukti Fisik (Foto)</th>
-            <th style="width: 55px; text-align: center; padding: 4px 6px; font-size: 8px; font-weight: 700; border: 1px solid #0f172a;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-        </tbody>
-        <tfoot>
-          <tr style="background: #0f172a; color: #ffffff; border-top: 2px solid #2563eb;">
-            <td colspan="3" style="padding: 6px 8px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; border: 1px solid #1e293b;">
-              TOTAL REKAPITULASI UNIT
-            </td>
-            <td colspan="2" style="padding: 6px 8px; font-weight: 800; border: 1px solid #1e293b;">
-              <span style="color: #38bdf8; font-size: 9px;">${records.length} Unit Fisik Terdata</span>
-            </td>
-            <td colspan="3" style="padding: 6px 8px; text-align: right; border: 1px solid #1e293b;">
-              <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: #065f46; color: #a7f3d0; margin-right: 6px; font-size: 7.5px; font-weight: 800;">
-                ↓ Masuk: ${masukCount} Unit
-              </span>
-              <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: #1e40af; color: #bfdbfe; font-size: 7.5px; font-weight: 800;">
-                ↑ Keluar: ${keluarCount} Unit
-              </span>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-
-      <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 8px; page-break-inside: avoid;">
-        <div style="width: 30%;">
-          <div>Diserahkan oleh (Transporter):</div>
-          <div style="height: 24px;"></div>
-          <div>( ...................................................... )</div>
-          <div style="color: #64748b; font-size: 7.5px;">Pengemudi / Ekspedisi Car Carrier</div>
-        </div>
-        <div style="width: 30%;">
-          <div>Diterima & Diperiksa oleh:</div>
-          <div style="height: 24px;"></div>
-          <div><strong>( ${operatorName} )</strong></div>
-          <div style="color: #64748b; font-size: 7.5px;">Staff Operasional Yard • NPK: ${operatorNpk}</div>
-        </div>
-        <div style="width: 30%;">
-          <div>Mengetahui / Menyetujui:</div>
-          <div style="height: 24px;"></div>
-          <div>( ...................................................... )</div>
-          <div style="color: #64748b; font-size: 7.5px;">Kepala Sentra Yard Lampung DSO</div>
-        </div>
-      </div>
-
-      <div style="margin-top: 8px; display: flex; justify-content: space-between; font-size: 7px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 3px;">
-        <div>Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
-        <div>Dicetak secara otomatis via sistem Management StockYard Enterprise</div>
-      </div>
-    `;
-
-    document.body.appendChild(printArea);
-
-    try {
-      const images = Array.prototype.slice.call(printArea.querySelectorAll('img'));
-      await Promise.all(images.map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(res => {
-          img.addEventListener('load', res);
-          img.addEventListener('error', res);
-          setTimeout(res, 800);
-        });
-      }));
-
-      const opt = {
-        margin: [6, 6, 6, 6],
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          logging: false
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'landscape'
-        }
+      return {
+        no: `#${rowNum}\n${item.id || '-'}`,
+        datetime: `${timeFormatted}\n${dateFormattedRow}`,
+        type: `${item.type === 'Unit Masuk' ? '↓ Masuk' : '↑ Keluar'}`,
+        vehicle: `${item.model}\n${categoryName}`,
+        vin: `${item.vin}\nENG: ${item.engine}`,
+        pic: `${item.pic || operatorName}\n${item.notes || 'Pemeriksaan standar.'}`,
+        evidence: ' ',
+        status: '✓ Valid',
+        catalogBase64: media.catB64,
+        unitBase64: media.unitB64,
+        docBase64: media.docB64
       };
-
-      await window.html2pdf().set(opt).from(printArea).save();
-      this.showToast(`✅ Berhasil mengunduh ${fileName}`);
-    } finally {
-      if (printArea && printArea.parentNode) {
-        printArea.parentNode.removeChild(printArea);
-      }
-    }
-  },
-
-  /**
-   * Memastikan skrip html2pdf & jsPDF termuat untuk unduhan langsung
-   */
-  ensurePdfLibraryLoaded() {
-    return new Promise((resolve) => {
-      if (window.html2pdf) {
-        if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) window.jsPDF = window.jspdf.jsPDF;
-        return resolve(true);
-      }
-
-      const loadScript = (src) => {
-        return new Promise((res, rej) => {
-          const existing = document.querySelector(`script[src="${src}"]`);
-          if (existing) {
-            existing.addEventListener('load', () => res());
-            existing.addEventListener('error', () => rej());
-            return res();
-          }
-          const s = document.createElement('script');
-          s.src = src;
-          s.onload = () => res();
-          s.onerror = () => rej();
-          document.head.appendChild(s);
-        });
-      };
-
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js')
-        .then(() => {
-          if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
-            window.jsPDF = window.jspdf.jsPDF;
-          }
-          resolve(true);
-        })
-        .catch(() => {
-          loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-            .then(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js'))
-            .then(() => {
-              if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
-                window.jsPDF = window.jspdf.jsPDF;
-              }
-              resolve(true);
-            })
-            .catch(() => resolve(false));
-        });
     });
-  },
-
-  /**
-   * Pembuatan file PDF langsung di browser (Client-Side Vector Download)
-   */
-  generateDirectJsPDF(records, filterInfo) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    const pageWidth = doc.internal.pageSize.getWidth(); // 297 mm
-    const pageHeight = doc.internal.pageSize.getHeight(); // 210 mm
-    const margin = 12;
-
-    const profile = AppState.userProfile || {};
-    const operatorName = profile.name || CONFIG.OPERATOR_NAME || 'Andi Pratama';
-    const operatorNpk = profile.npk || CONFIG.OPERATOR_NPK || '21040889';
-    const operatorBranch = profile.branch || CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung';
-
-    const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    let periodText = 'Seluruh Transaksi';
-    if (filterInfo.fDate !== 'all' || filterInfo.fMonth !== 'all' || filterInfo.fYear !== 'all') {
-      const dStr = filterInfo.fDate !== 'all' ? `${filterInfo.fDate} ` : '';
-      const mStr = filterInfo.fMonth !== 'all' ? `${monthNames[filterInfo.fMonth] || filterInfo.fMonth} ` : '';
-      const yStr = filterInfo.fYear !== 'all' ? `${filterInfo.fYear}` : '';
-      periodText = `${dStr}${mStr}${yStr}`.trim();
-    }
-
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    const dateFormatted = `${day}-${month}-${year}`; // Format DD-MM-YYYY untuk nama file sistem
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const printDateStr = `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${now.getFullYear()}, ${timeStr} WIB`;
-    const docNumber = `STOCKYARD/MUT/${year}${month}/${Math.floor(1000 + Math.random() * 9000)}`;
-
-    // ==========================================
-    // 1. KOP SURAT RESMI ASTRA DAIHATSU
-    // ==========================================
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(15, 23, 42); // slate-900
-    doc.text('PT ASTRA DAIHATSU MOTOR • DSO SENTRA LAMPUNG', margin, 12);
-
-    doc.setFontSize(9);
-    doc.setTextColor(37, 99, 235); // brand-blue
-    doc.text('REKAPITULASI AUDIT & SERAH TERIMA FISIK KENDARAAN (STOCKYARD LOGISTICS)', margin, 16.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 116, 139); // slate-500
-    doc.text('Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888', margin, 20.5);
-
-    // Garis Kop Surat
-    doc.setDrawColor(37, 99, 235); // Blue
-    doc.setLineWidth(0.6);
-    doc.line(margin, 22.5, pageWidth - margin, 22.5);
-
-    doc.setDrawColor(237, 27, 36); // Daihatsu Red
-    doc.setLineWidth(0.3);
-    doc.line(margin, 23.5, pageWidth - margin, 23.5);
-
-    // ==========================================
-    // 2. METADATA DOKUMEN & KPI SUMMARY
-    // ==========================================
-    doc.setFillColor(248, 250, 252); // slate-50
-    doc.setDrawColor(226, 232, 240); // slate-200
-    doc.roundedRect(margin, 26, pageWidth - (margin * 2), 15, 2, 2, 'FD');
-
-    // Kolom Kiri Dokumen Info
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
-    doc.text('No. Dokumen', margin + 3, 30.5);
-    doc.text('Periode Audit', margin + 3, 34.5);
-    doc.text('Waktu Cetak', margin + 3, 38.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`:  ${docNumber}`, margin + 33, 30.5);
-    doc.text(`:  ${periodText}`, margin + 33, 34.5);
-    doc.text(`:  ${printDateStr}`, margin + 33, 38.5);
-
-    // Kolom Tengah Penugasan
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
-    doc.text('Petugas PIC', margin + 100, 30.5);
-    doc.text('NPK Petugas', margin + 100, 34.5);
-    doc.text('Cabang Penugasan', margin + 100, 38.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`:  ${operatorName}`, margin + 130, 30.5);
-    doc.text(`:  ${operatorNpk}`, margin + 130, 34.5);
-    doc.text(`:  ${operatorBranch}`, margin + 130, 38.5);
-
-    // Kolom Kanan KPI Badge
-    const masukCount = records.filter(r => r.type === 'Unit Masuk').length;
-    const keluarCount = records.filter(r => r.type === 'Unit Keluar').length;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text('RINGKASAN MUTASI:', pageWidth - margin - 65, 30.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text(`Total Terdata : ${records.length} Unit Fisik`, pageWidth - margin - 65, 34.5);
-    doc.text(`Masuk: ${masukCount} | Keluar: ${keluarCount}`, pageWidth - margin - 65, 38.5);
-
-    // ==========================================
-    // 3. TABEL DATA MUTASI (AUTOTABLE)
-    // ==========================================
-    const tableColumns = [
-      { header: 'No', dataKey: 'no' },
-      { header: 'Waktu & ID', dataKey: 'datetime' },
-      { header: 'Jenis Mutasi', dataKey: 'type' },
-      { header: 'Model Kendaraan', dataKey: 'model' },
-      { header: 'No. Rangka (VIN)', dataKey: 'vin' },
-      { header: 'No. Mesin', dataKey: 'engine' },
-      { header: 'Petugas PIC', dataKey: 'pic' },
-      { header: 'Catatan & Hasil Pemeriksaan Fisik', dataKey: 'notes' }
-    ];
-
-    const tableRows = records.map((item, idx) => ({
-      no: String(idx + 1).padStart(2, '0'),
-      datetime: `${item.fullDateStr || `${now.getDate()} ${monthNames[now.getMonth() + 1]} ${year}`}\n${item.time || ''} • ${item.id || ''}`,
-      type: item.type,
-      model: item.model,
-      vin: item.vin,
-      engine: item.engine,
-      pic: item.pic || operatorName,
-      notes: item.notes || 'Pemeriksaan standar serah terima unit di lapangan.'
-    }));
 
     doc.autoTable({
       columns: tableColumns,
       body: tableRows,
-      startY: 44,
-      margin: { left: margin, right: margin, bottom: 20 },
+      startY: 45,
+      margin: { left: margin, right: margin, bottom: 22 },
       theme: 'grid',
       headStyles: {
-        fillColor: [15, 23, 42], // Slate-900
+        fillColor: [15, 23, 42],
         textColor: [255, 255, 255],
         fontSize: 7.5,
         fontStyle: 'bold',
         halign: 'center',
         valign: 'middle',
-        cellPadding: 1.8
+        cellPadding: 2
       },
       bodyStyles: {
         fontSize: 7,
         textColor: [30, 41, 59],
         valign: 'middle',
-        cellPadding: 1.4
+        minCellHeight: 12,
+        cellPadding: 1.5
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252] // Slate-50
+        fillColor: [248, 250, 252]
       },
       columnStyles: {
-        no: { halign: 'center', cellWidth: 9 },
-        datetime: { cellWidth: 32 },
-        type: { halign: 'center', cellWidth: 22, fontStyle: 'bold' },
-        model: { cellWidth: 36, fontStyle: 'bold' },
-        vin: { cellWidth: 42, font: 'courier', fontStyle: 'bold' },
-        engine: { cellWidth: 28, font: 'courier' },
-        pic: { cellWidth: 28 },
-        notes: { cellWidth: 'auto' }
+        no: { halign: 'center', cellWidth: 18, fontStyle: 'bold' },
+        datetime: { halign: 'center', cellWidth: 26, font: 'courier' },
+        type: { halign: 'center', cellWidth: 24, fontStyle: 'bold' },
+        vehicle: { cellWidth: 50, fontStyle: 'bold', cellPadding: { top: 2, right: 2, bottom: 2, left: 14 } },
+        vin: { cellWidth: 42, font: 'courier' },
+        pic: { cellWidth: 52 },
+        evidence: { halign: 'center', cellWidth: 44 },
+        status: { halign: 'center', cellWidth: 17, fontStyle: 'bold' }
       },
       foot: [[
-        { content: 'TOTAL REKAPITULASI MUTASI', colSpan: 3, styles: { halign: 'left', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } },
+        { content: 'TOTAL REKAPITULASI AUDIT', colSpan: 3, styles: { halign: 'left', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } },
         { content: `${records.length} Unit Fisik Terdata`, colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [56, 189, 248] } },
-        { content: `Masuk: ${masukCount} | Keluar: ${keluarCount}`, colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } }
+        { content: `↓ Masuk: ${masukCount} Unit   |   ↑ Keluar: ${keluarCount} Unit`, colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [15, 23, 42], textColor: [255, 255, 255] } }
       ]],
       footStyles: {
         fillColor: [15, 23, 42],
-        fontSize: 7.5,
+        fontSize: 8,
         textColor: [255, 255, 255],
-        cellPadding: 2
+        cellPadding: 2.2
       },
       didParseCell: function(data) {
-        if (data.section === 'body' && data.column.dataKey === 'type') {
-          if (data.cell.raw === 'Unit Masuk') {
-            data.cell.styles.textColor = [16, 120, 60];
-            data.cell.styles.fontStyle = 'bold';
-          } else {
-            data.cell.styles.textColor = [29, 78, 216];
-            data.cell.styles.fontStyle = 'bold';
+        if (data.section === 'body') {
+          if (data.column.dataKey === 'type') {
+            if (data.cell.raw && data.cell.raw.includes('Masuk')) {
+              data.cell.styles.textColor = [4, 120, 87];
+              data.cell.styles.fillColor = [236, 253, 245];
+            } else {
+              data.cell.styles.textColor = [29, 78, 216];
+              data.cell.styles.fillColor = [239, 246, 255];
+            }
+          }
+          if (data.column.dataKey === 'status') {
+            data.cell.styles.textColor = [5, 150, 105];
+            data.cell.styles.fillColor = [236, 253, 245];
+          }
+        }
+      },
+      didDrawCell: function(data) {
+        if (data.section === 'body') {
+          // Gambar Mobil Katalog pada Kolom Kendaraan
+          if (data.column.dataKey === 'vehicle') {
+            const raw = data.row.raw;
+            if (raw.catalogBase64) {
+              try {
+                const imgW = 10;
+                const imgH = 7.5;
+                const imgX = data.cell.x + 2;
+                const imgY = data.cell.y + (data.cell.height - imgH) / 2;
+                doc.addImage(raw.catalogBase64, 'JPEG', imgX, imgY, imgW, imgH);
+              } catch (e) {}
+            }
+          }
+
+          // Gambar Foto Unit & Stiker pada Kolom Bukti Fisik
+          if (data.column.dataKey === 'evidence') {
+            const raw = data.row.raw;
+            const imgW = 10;
+            const imgH = 7.5;
+            const imgY = data.cell.y + (data.cell.height - imgH) / 2;
+
+            if (raw.unitBase64) {
+              try {
+                const imgX = data.cell.x + 5;
+                doc.addImage(raw.unitBase64, 'JPEG', imgX, imgY, imgW, imgH);
+                doc.setFontSize(4.5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(100, 116, 139);
+                doc.text('UNIT', imgX + 2, imgY + imgH + 2);
+              } catch (e) {}
+            } else {
+              doc.setFontSize(5.5);
+              doc.setTextColor(148, 163, 184);
+              doc.text('No Unit', data.cell.x + 5, imgY + 4);
+            }
+
+            if (raw.docBase64) {
+              try {
+                const imgX = data.cell.x + 22;
+                doc.addImage(raw.docBase64, 'JPEG', imgX, imgY, imgW, imgH);
+                doc.setFontSize(4.5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(100, 116, 139);
+                doc.text('STIKER', imgX + 1.5, imgY + imgH + 2);
+              } catch (e) {}
+            } else {
+              doc.setFontSize(5.5);
+              doc.setTextColor(148, 163, 184);
+              doc.text('No Doc', data.cell.x + 22, imgY + 4);
+            }
           }
         }
       }
     });
 
     // ==========================================
-    // 4. LEMBAR PENGESAHAN LAPANGAN (SIGNATURES)
+    // 5. LEMBAR PENGESAHAN LAPANGAN (SIGNATURES)
     // ==========================================
-    let finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 110) + 6;
-    if (finalY > pageHeight - 28) {
+    let finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 110) + 7;
+    if (finalY > pageHeight - 32) {
       doc.addPage();
       finalY = 16;
     }
@@ -1813,21 +1648,30 @@ const UI = {
 
     // Kolom 1: Transporter
     doc.text('Diserahkan oleh (Transporter):', margin, finalY);
-    doc.text('( ...................................................... )', margin, finalY + 12);
-    doc.text('Ekspedisi / Pengemudi Car Carrier', margin, finalY + 16);
+    doc.text('( ...................................................... )', margin, finalY + 13);
+    doc.setFontSize(6.5);
+    doc.text('Pengemudi / Ekspedisi Car Carrier', margin, finalY + 17);
 
     // Kolom 2: Staff Penerima
+    doc.setFontSize(7);
     doc.text('Diterima & Diperiksa oleh:', margin + sigW, finalY);
-    doc.text(`( ${operatorName} )`, margin + sigW, finalY + 12);
-    doc.text(`Staff Operasional Yard • NPK: ${operatorNpk}`, margin + sigW, finalY + 16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`( ${operatorName} )`, margin + sigW, finalY + 13);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Staff Operasional Yard • NPK: ${operatorNpk}`, margin + sigW, finalY + 17);
 
     // Kolom 3: Head of Yard
+    doc.setFontSize(7);
     doc.text('Mengetahui / Menyetujui:', margin + (sigW * 2), finalY);
-    doc.text('( ...................................................... )', margin + (sigW * 2), finalY + 12);
-    doc.text('Kepala Pool Sentra Yard Lampung', margin + (sigW * 2), finalY + 16);
+    doc.text('( ...................................................... )', margin + (sigW * 2), finalY + 13);
+    doc.setFontSize(6.5);
+    doc.text('Kepala Sentra Yard Lampung DSO', margin + (sigW * 2), finalY + 17);
 
     // ==========================================
-    // 5. FOOTER & NOMOR HALAMAN PADA SEMUA HALAMAN
+    // 6. FOOTER & NOMOR HALAMAN PADA SEMUA HALAMAN
     // ==========================================
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
@@ -1836,14 +1680,13 @@ const UI = {
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184); // slate-400
       doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text('Dokumen Resmi Logistik Lapangan • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
+      doc.text('Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
     }
 
     // ==========================================
-    // 6. SIMPAN DAN DOWNLOAD FILE PDF KE PERANGKAT
+    // 7. SIMPAN DAN DOWNLOAD FILE PDF KE PERANGKAT
     // ==========================================
-    const fileName = `Laporan_Mutasi_Daihatsu_Sentra_Lampung_${dateFormatted}.pdf`;
-    
+    const fileName = `Laporan_Mutasi_Stockyard_Daihatsu_Lampung_${dateFormatted}.pdf`;
     doc.save(fileName);
     this.showToast(`✅ Berhasil mengunduh ${fileName}`);
   },
