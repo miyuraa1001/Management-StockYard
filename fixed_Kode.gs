@@ -409,10 +409,11 @@ function doGet(e) {
     const ss = getSpreadsheet();
     const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "getAll";
 
-    if (action === "health") {
+    if (action === "health" || action === "ping") {
       const config = getSystemConfigData(ss);
       const secret = getApiSecretToken(ss);
       return createJsonResponse({
+        success: true,
         status: "online",
         spreadsheetId: ss.getId(),
         spreadsheetName: ss.getName(),
@@ -480,13 +481,26 @@ function doPost(e) {
       body = e.parameter;
     }
 
-    if (!isAuthorized(e, body)) {
-      return createJsonResponse({ error: "Unauthorized: Akses ditolak. Token rahasia tidak sesuai." }, 401);
-    }
-
     const ss = getSpreadsheet();
     const action = body.action || (e && e.parameter ? e.parameter.action : null);
     const data = body.data || body;
+
+    // Respon instan untuk health check / ping tanpa validasi token
+    if (action === "ping" || action === "health") {
+      const config = getSystemConfigData(ss);
+      return createJsonResponse({
+        success: true,
+        status: "online",
+        spreadsheetId: ss.getId(),
+        spreadsheetName: ss.getName(),
+        targetEmail: config.TARGET_EMAIL,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (!isAuthorized(e, body)) {
+      return createJsonResponse({ error: "Unauthorized: Akses ditolak. Token rahasia tidak sesuai." }, 401);
+    }
 
     // A. Otentikasi Petugas PIC
     if (action === "login") {

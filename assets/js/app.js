@@ -265,6 +265,8 @@ const App = {
           mutationType: newRecord.type, // 'Unit Masuk' atau 'Unit Keluar'
           model: newRecord.model,
           vin: newRecord.vin,
+          engine: newRecord.engine || '-',
+          operator: newRecord.pic || newRecord.operator || AppState.userProfile?.name || 'Petugas Yard',
           subject: `[STOCKYARD REALTIME] ${newRecord.type}: ${newRecord.model} (${newRecord.vin})`,
           message: isMailSuccess
             ? `Notifikasi email mutasi ${newRecord.type} (${newRecord.model} • ${newRecord.vin}) berhasil dikirimkan ke ${targetEmail} via ${mailStatus?.mode === 'reply' ? 'Thread Gmail Harian' : 'Layanan Gmail'}.`
@@ -303,6 +305,8 @@ const App = {
           mutationType: newRecord.type,
           model: newRecord.model,
           vin: newRecord.vin,
+          engine: newRecord.engine || '-',
+          operator: newRecord.pic || newRecord.operator || AppState.userProfile?.name || 'Petugas Yard',
           subject: `[OFFLINE] ${newRecord.type}: ${newRecord.model} (${newRecord.vin})`,
           message: `Data tersimpan lokal di perangkat. Notifikasi email akan dikirimkan otomatis saat terhubung ke server Google.`,
           read: false

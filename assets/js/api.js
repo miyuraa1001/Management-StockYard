@@ -265,8 +265,19 @@ const ApiService = {
               } catch (e) {}
             }
 
+            const normType = item.type || item.status || 'Unit Masuk';
+            const normPic = item.pic || item.operator || 'Petugas Lapangan';
+
             return {
               ...item,
+              type: normType,
+              status: normType,
+              pic: normPic,
+              operator: normPic,
+              engine: item.engine || '-',
+              location: item.location || item.destination || '-',
+              notes: item.notes || item.keterangan || '-',
+              keterangan: item.keterangan || item.notes || '-',
               date: finalD,
               month: finalM,
               year: finalY,
@@ -410,25 +421,177 @@ const ApiService = {
   },
 
   /**
+   * Mengambil konfigurasi sistem terbaru dari backend Google Apps Script
+   */
+  async getConfig() {
+    try {
+      return await this.request('getConfig', 'GET');
+    } catch (e) {
+      console.warn('[ApiService] Gagal mengambil konfigurasi sistem:', e);
+      return null;
+    }
+  },
+
+  /**
+   * Pemeriksaan kesehatan menyeluruh (Vercel Reverse Proxy dan Google Apps Script Direct)
+   */
+  async checkHealth() {
+    const endpointInfo = CONFIG.getActiveEndpoint ? CONFIG.getActiveEndpoint() : { url: '/api/proxy', isProxy: true, mode: 'proxy' };
+    const directUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem(CONFIG.CACHE_KEYS?.DIRECT_URL || 'daihatsu_direct_appscript_url') : '') || '';
+
+    // 1. Jika mode Direct URL aktif
+    if (endpointInfo.mode === 'direct' && endpointInfo.url) {
+      try {
+        const pingUrl = endpointInfo.url + (endpointInfo.url.includes('?') ? '&' : '?') + 'action=health&ts=' + Date.now();
+        const res = await fetch(pingUrl, {
+          method: 'GET',
+          mode: 'cors',
+          redirect: 'follow'
+        });
+        const text = await res.text();
+        let json = {};
+        try { json = JSON.parse(text); } catch (e) { json = { success: res.ok, status: 'online' }; }
+
+        if (res.ok && json.success !== false) {
+          return {
+            success: true,
+            proxyStatus: 'ACTIVE',
+            mode: 'direct',
+            hasAppScriptUrl: true,
+            appScriptHost: 'script.google.com (Direct)',
+            targetEmail: json.targetEmail || AppState.automationConfig?.email,
+            spreadsheetName: json.spreadsheetName || 'Stockyard Database',
+            timestamp: json.timestamp || new Date().toISOString()
+          };
+        }
+      } catch (err) {
+        console.warn('[ApiService] Direct health check error:', err);
+      }
+    }
+
+    // 2. Mode Vercel Reverse Proxy (/api/proxy)
+    try {
+      const res = await fetch('/api/proxy?action=health', { method: 'GET' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.hasAppScriptUrl) {
+          return {
+            success: true,
+            proxyStatus: 'ACTIVE',
+            mode: 'proxy',
+            hasAppScriptUrl: true,
+            appScriptHost: data.appScriptHost || 'Google Apps Script',
+            targetEmail: AppState.automationConfig?.email,
+            tip: data.tip
+          };
+        } else {
+          // Proxy aktif namun APPSCRIPT_URL belum diset di Vercel env
+          // Cek apakah ada direct URL fallback yang tersimpan
+          if (directUrl && directUrl.startsWith('http')) {
+            const directTest = await this.testConnection(directUrl);
+            if (directTest && directTest.success) {
+              return {
+                success: true,
+                proxyStatus: 'ACTIVE',
+                mode: 'direct',
+                hasAppScriptUrl: true,
+                appScriptHost: 'script.google.com (Direct Fallback)',
+                targetEmail: AppState.automationConfig?.email
+              };
+            }
+          }
+
+          return {
+            success: false,
+            proxyStatus: 'ENV_APPSCRIPT_MISSING',
+            mode: 'proxy',
+            hasAppScriptUrl: false,
+            tip: data?.tip || 'Variabel APPSCRIPT_URL belum aktif di Vercel. Anda dapat memasukkan URL Web App langsung.'
+          };
+        }
+      }
+    } catch (errProxy) {
+      console.warn('[ApiService] Proxy check failed (offline or localhost):', errProxy.message);
+    }
+
+    // 3. Fallback: Jika proxy 404/500 (misal di localhost/preview), coba cek directUrl jika ada
+    if (directUrl && directUrl.startsWith('http')) {
+      const directTest = await this.testConnection(directUrl);
+      if (directTest && directTest.success) {
+        return {
+          success: true,
+          proxyStatus: 'ACTIVE',
+          mode: 'direct',
+          hasAppScriptUrl: true,
+          appScriptHost: 'script.google.com (Direct)',
+          targetEmail: AppState.automationConfig?.email
+        };
+      }
+    }
+
+    return {
+      success: false,
+      proxyStatus: 'OFFLINE',
+      mode: endpointInfo.mode || 'unknown',
+      hasAppScriptUrl: false,
+      error: 'Tidak dapat menjangkau server Google Apps Script atau Vercel Proxy.'
+    };
+  },
+
+  /**
+   * Simpan URL Web App Google Apps Script langsung di browser
+   */
+  saveDirectAppScriptUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const cleanUrl = url.trim();
+    if (!cleanUrl.startsWith('http')) return false;
+
+    try {
+      const key = CONFIG.CACHE_KEYS?.DIRECT_URL || 'daihatsu_direct_appscript_url';
+      localStorage.setItem(key, cleanUrl);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  /**
+   * Hapus Direct URL dan kembali ke Vercel Reverse Proxy
+   */
+  clearDirectAppScriptUrl() {
+    try {
+      const key = CONFIG.CACHE_KEYS?.DIRECT_URL || 'daihatsu_direct_appscript_url';
+      localStorage.removeItem(key);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  /**
    * Menguji status koneksi live layanan email & Google Apps Script
    */
   async checkEmailConnection() {
     try {
       const health = await this.checkHealth();
-      const configRes = await this.getConfig();
-      const targetEmail = AppState.automationConfig?.email || configRes?.config?.TARGET_EMAIL || 'admin.logistics@daihatsu.co.id';
-      const isOnline = health && health.proxyStatus === 'ACTIVE' && health.hasAppScriptUrl;
+      const targetEmail = health.targetEmail || AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const isOnline = health && health.success === true;
+
       return {
         success: isOnline,
         proxyStatus: health?.proxyStatus || 'OFFLINE',
+        mode: health?.mode || 'proxy',
         hasAppScriptUrl: !!health?.hasAppScriptUrl,
+        host: health?.appScriptHost || 'Google Apps Script',
         targetEmail: targetEmail,
+        details: health,
         timestamp: new Date().toISOString()
       };
     } catch (e) {
+      console.error('[ApiService] checkEmailConnection error:', e);
       return {
         success: false,
-        error: e.message,
+        error: e.message || 'Kesalahan memeriksa koneksi',
         targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
       };
     }

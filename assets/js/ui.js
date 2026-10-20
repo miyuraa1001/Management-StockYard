@@ -4424,11 +4424,6 @@ const UI = {
     const textEl = document.getElementById('cloudGasStatusText');
     const tipEl = document.getElementById('cloudGasStatusTip');
 
-    // Bersihkan direct url lama jika ada
-    try {
-      localStorage.removeItem('daihatsu_direct_appscript_url');
-    } catch (e) {}
-
     if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
     if (textEl) textEl.textContent = 'Memeriksa & Sinkronisasi...';
     if (tipEl) tipEl.textContent = 'Menghubungi database Google Sheets...';
@@ -4436,42 +4431,28 @@ const UI = {
     this.showToast('🔄 Memeriksa koneksi & menyinkronkan data database...', 2000);
 
     try {
-      // 1. Coba ping langsung via ApiService
-      const pingRes = await ApiService.request('ping', 'GET');
-      if (pingRes && pingRes.success) {
+      const health = await ApiService.checkHealth();
+      if (health && health.success) {
         if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        if (textEl) textEl.textContent = 'Database Cloud Terhubung';
-        if (tipEl) tipEl.textContent = 'Google Apps Script Aktif & Sinkron';
+        if (textEl) textEl.textContent = health.mode === 'direct' ? 'Database Terhubung (Direct Web App)' : 'Database Cloud Terhubung (Vercel)';
+        if (tipEl) tipEl.textContent = `Host: ${health.appScriptHost || 'Google Apps Script'} ✓`;
 
-        const syncOk = await ApiService.fetchInitialData();
+        await ApiService.fetchInitialData();
         const invCount = AppState.inventoryData?.length || 0;
         const histCount = AppState.historyData?.length || 0;
         this.showToast(`✅ Database Terhubung! ${invCount} Model, ${histCount} Mutasi tersinkronisasi.`);
         return;
       }
 
-      // 2. Fallback periksa endpoint proxy Vercel
-      const res = await fetch('/api/proxy?action=health');
-      const data = await res.json();
-
-      if (data && data.hasAppScriptUrl) {
-        if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        if (textEl) textEl.textContent = 'Database Cloud Terhubung';
-        if (tipEl) tipEl.textContent = `Host: ${data.appScriptHost || 'Google Apps Script'}`;
-
-        await ApiService.fetchInitialData();
-        this.showToast('✅ Database Terhubung! Data terbaru berhasil disinkronkan.');
-      } else {
-        if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-500';
-        if (textEl) textEl.textContent = 'Menunggu Konfigurasi URL';
-        if (tipEl) tipEl.textContent = 'Pastikan centang Production di Vercel Settings lalu Redeploy.';
-        this.showToast('⚠️ APPSCRIPT_URL belum aktif di Vercel Environment.');
-      }
+      if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-500';
+      if (textEl) textEl.textContent = 'Menunggu Konfigurasi URL';
+      if (tipEl) tipEl.textContent = health?.tip || 'Variabel APPSCRIPT_URL belum aktif di Vercel atau direct URL belum diisi.';
+      this.showToast('⚠️ Belum terhubung ke backend. Periksa konfigurasi URL Google Apps Script.');
     } catch (err) {
       if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-rose-500';
       if (textEl) textEl.textContent = 'Mode Offline (Lokal)';
       if (tipEl) tipEl.textContent = 'Aplikasi berjalan secara lokal tanpa koneksi cloud.';
-      this.showToast('⚠️ Perangkat dalam mode offline atau proxy tidak terjangkau.');
+      this.showToast('⚠️ Perangkat dalam mode offline atau server tidak terjangkau.');
     }
   },
 
@@ -4585,6 +4566,12 @@ const UI = {
 
     // 4. Update notification badge dot
     this.updateNotificationBadge();
+
+    // 5. Pre-fill Direct AppScript URL in Settings
+    const inputSettings = document.getElementById('directAppScriptUrlInputSettings');
+    if (inputSettings) {
+      inputSettings.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';
+    }
   },
 
   /**
@@ -4617,6 +4604,9 @@ const UI = {
   /**
    * Buka Modal Notifikasi Pengiriman Laporan Email Realtime
    */
+  /**
+   * Buka Modal Notifikasi Pengiriman Laporan Email Realtime & Riwayat Database
+   */
   openNotificationModal() {
     const modal = document.getElementById('emailNotificationModal');
     if (!modal) return;
@@ -4629,8 +4619,17 @@ const UI = {
       targetEmailEl.textContent = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
     }
 
-    // Render riwayat notifikasi email
+    // Isi input direct url jika ada di localStorage
+    const inputModal = document.getElementById('directAppScriptUrlInputModal');
+    if (inputModal) {
+      inputModal.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';
+    }
+
+    // Render riwayat mutasi dari database & email logs
     this.renderEmailNotifications();
+
+    // Periksa status koneksi server secara otomatis saat modal dibuka
+    this.checkEmailConnectionNow();
 
     // Tandai semua notifikasi telah dibaca
     try {
@@ -4655,19 +4654,102 @@ const UI = {
   emailNotifFilter: 'ALL',
 
   /**
-   * Filter riwayat notifikasi email (Semua, Mutasi Unit Masuk/Keluar, Laporan Harian)
+   * Toggle box konfigurasi direct URL di modal notifikasi
+   */
+  toggleDirectConnectionBox() {
+    const box = document.getElementById('directConnectionModalBox');
+    if (!box) return;
+    box.classList.toggle('hidden');
+    const input = document.getElementById('directAppScriptUrlInputModal');
+    if (input && !box.classList.contains('hidden')) {
+      input.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';
+      input.focus();
+    }
+  },
+
+  /**
+   * Simpan URL Web App langsung dari modal notifikasi
+   */
+  async saveDirectUrlFromModal() {
+    const input = document.getElementById('directAppScriptUrlInputModal');
+    const url = input ? input.value.trim() : '';
+    if (!url) {
+      this.showToast('⚠️ Masukkan URL Web App Google Apps Script.');
+      return;
+    }
+    if (!url.startsWith('http')) {
+      this.showToast('⚠️ Format URL harus diawali https://...');
+      return;
+    }
+
+    this.showToast('⏳ Menguji & menghubungkan ke Google Spreadsheet...');
+    const ok = ApiService.saveDirectAppScriptUrl(url);
+    if (!ok) {
+      this.showToast('⛔ Gagal menyimpan URL ke memori browser.');
+      return;
+    }
+
+    // Uji koneksi segera & sinkronkan database
+    await this.checkEmailConnectionNow();
+    await this.checkCloudHealth();
+  },
+
+  /**
+   * Simpan URL Web App langsung dari tab Pengaturan
+   */
+  async saveDirectUrlFromSettings() {
+    const input = document.getElementById('directAppScriptUrlInputSettings');
+    const url = input ? input.value.trim() : '';
+    if (!url) {
+      this.showToast('⚠️ Masukkan URL Web App Google Apps Script.');
+      return;
+    }
+    if (!url.startsWith('http')) {
+      this.showToast('⚠️ Format URL harus diawali https://...');
+      return;
+    }
+
+    this.showToast('⏳ Menguji koneksi & menyimpan URL...');
+    const ok = ApiService.saveDirectAppScriptUrl(url);
+    if (!ok) {
+      this.showToast('⛔ Gagal menyimpan konfigurasi.');
+      return;
+    }
+
+    await this.checkCloudHealth();
+    await this.checkEmailConnectionNow();
+  },
+
+  /**
+   * Reset ke Vercel Serverless Reverse Proxy (/api/proxy)
+   */
+  async resetToVercelProxy() {
+    ApiService.clearDirectAppScriptUrl();
+    const inputModal = document.getElementById('directAppScriptUrlInputModal');
+    if (inputModal) inputModal.value = '';
+    const inputSettings = document.getElementById('directAppScriptUrlInputSettings');
+    if (inputSettings) inputSettings.value = '';
+
+    this.showToast('ℹ️ Beralih ke Vercel Serverless Reverse Proxy (/api/proxy).');
+    await this.checkEmailConnectionNow();
+    await this.checkCloudHealth();
+  },
+
+  /**
+   * Filter riwayat notifikasi email (Semua, Unit Masuk, Unit Keluar, Laporan Harian)
    */
   setEmailNotifFilter(filter) {
     this.emailNotifFilter = filter || 'ALL';
 
     const btnAll = document.getElementById('notifFilterAll');
-    const btnMut = document.getElementById('notifFilterMutation');
+    const btnMasuk = document.getElementById('notifFilterMasuk');
+    const btnKeluar = document.getElementById('notifFilterKeluar');
     const btnDaily = document.getElementById('notifFilterDaily');
 
     const activeClasses = ['bg-blue-600', 'text-white', 'shadow-xs'];
     const inactiveClasses = ['bg-white', 'text-slate-600', 'border', 'border-slate-200/80'];
 
-    [btnAll, btnMut, btnDaily].forEach(b => {
+    [btnAll, btnMasuk, btnKeluar, btnDaily].forEach(b => {
       if (b) {
         b.classList.remove('bg-blue-600', 'text-white', 'shadow-xs', 'bg-white', 'text-slate-600', 'border', 'border-slate-200/80');
       }
@@ -4676,8 +4758,11 @@ const UI = {
     if (this.emailNotifFilter === 'ALL' && btnAll) btnAll.classList.add(...activeClasses);
     else if (btnAll) btnAll.classList.add(...inactiveClasses);
 
-    if (this.emailNotifFilter === 'MUTATION' && btnMut) btnMut.classList.add(...activeClasses);
-    else if (btnMut) btnMut.classList.add(...inactiveClasses);
+    if (this.emailNotifFilter === 'MASUK' && btnMasuk) btnMasuk.classList.add(...activeClasses);
+    else if (btnMasuk) btnMasuk.classList.add(...inactiveClasses);
+
+    if (this.emailNotifFilter === 'KELUAR' && btnKeluar) btnKeluar.classList.add(...activeClasses);
+    else if (btnKeluar) btnKeluar.classList.add(...inactiveClasses);
 
     if (this.emailNotifFilter === 'DAILY' && btnDaily) btnDaily.classList.add(...activeClasses);
     else if (btnDaily) btnDaily.classList.add(...inactiveClasses);
@@ -4697,7 +4782,7 @@ const UI = {
     } catch (e) {}
 
     logs.unshift(log);
-    if (logs.length > 30) logs = logs.slice(0, 30); // simpan 30 aktivitas terakhir
+    if (logs.length > 50) logs = logs.slice(0, 50);
     try {
       localStorage.setItem('daihatsu_email_notifications', JSON.stringify(logs));
     } catch (e) {}
@@ -4713,73 +4798,183 @@ const UI = {
     const btn = document.getElementById('btnCheckEmailConn');
     const dot = document.getElementById('emailLiveStatusDot');
     const text = document.getElementById('emailLiveStatusText');
+    const modeBadge = document.getElementById('emailLiveStatusMode');
+    const refreshIcon = document.getElementById('iconRefreshConn');
 
     if (btn) btn.disabled = true;
-    if (text) text.textContent = 'Memeriksa status koneksi...';
+    if (refreshIcon) refreshIcon.classList.add('animate-spin');
+    if (text) text.textContent = 'Memeriksa status koneksi server...';
     if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping flex-shrink-0';
-
-    this.showToast('🔍 Memeriksa koneksi server & layanan email Gmail...');
 
     try {
       const conn = await ApiService.checkEmailConnection();
       const isOk = conn && conn.success;
       const targetEmail = conn?.targetEmail || AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const modeText = conn?.mode === 'direct' ? 'DIRECT WEB APP' : (conn?.mode === 'proxy' ? 'VERCEL PROXY' : 'OFFLINE');
+
+      if (modeBadge) modeBadge.textContent = modeText;
 
       if (isOk) {
-        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0';
-        if (text) text.textContent = 'Koneksi Realtime: TERHUBUNG KE GMAIL & SPREADSHEET ✓';
-        this.showToast(`✅ Terhubung! Server Google Apps Script siap & target email (${targetEmail}) aktif.`, 5000);
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0';
+        if (text) text.textContent = `Terhubung: ${conn.host || 'Google Apps Script & Gmail'} ✓`;
+        this.showToast(`✅ Server Terhubung! Mode: ${modeText} • Target: ${targetEmail}`, 4000);
+
+        // Jika terhubung, sembunyikan kotak konfigurasi manual
+        const directBox = document.getElementById('directConnectionModalBox');
+        if (directBox && !directBox.classList.contains('hidden')) {
+          directBox.classList.add('hidden');
+        }
+
+        // Sinkronisasi data mutasi terbaru dari Google Spreadsheet
+        await ApiService.fetchInitialData();
+        this.renderEmailNotifications();
       } else {
         if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0';
-        if (text) text.textContent = 'Koneksi: BELUM TERHUBUNG KE APPS SCRIPT';
-        const tip = conn?.error || 'Pastikan variabel APPSCRIPT_URL di Vercel sudah terpasang & ter-redeploy.';
-        this.showToast(`⚠️ Server belum terhubung: ${tip}`, 6500);
+        if (text) text.textContent = 'Belum Terhubung ke Database Cloud';
+        if (modeBadge) modeBadge.textContent = 'OFFLINE';
+
+        // Tampilkan kotak konfigurasi URL langsung agar user tahu cara menghubungkannya
+        const directBox = document.getElementById('directConnectionModalBox');
+        if (directBox) directBox.classList.remove('hidden');
+
+        const tipMsg = conn?.details?.tip || conn?.error || 'Pastikan variabel APPSCRIPT_URL di Vercel aktif atau tempel URL Web App langsung.';
+        this.showToast(`⚠️ Server belum terhubung: ${tipMsg}`, 6500);
       }
     } catch (err) {
       if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0';
       if (text) text.textContent = 'Koneksi: KESALAHAN JARINGAN';
+      if (modeBadge) modeBadge.textContent = 'OFFLINE';
       this.showToast(`⛔ Gagal memeriksa koneksi: ${err.message}`, 5000);
     } finally {
       if (btn) btn.disabled = false;
+      if (refreshIcon) refreshIcon.classList.remove('animate-spin');
     }
   },
 
   /**
-   * Render daftar notifikasi laporan email yang benar-benar terkirim
-   * Mendukung filter Semua, Mutasi Unit Masuk/Keluar, dan Laporan Harian
+   * Render daftar notifikasi laporan email yang rapi, modern, dan sinkron 100% dengan database HistoryMutasi
    */
   renderEmailNotifications() {
     const container = document.getElementById('emailNotifListContainer');
     if (!container) return;
 
-    let logs = [];
+    let localLogs = [];
     try {
       const stored = localStorage.getItem('daihatsu_email_notifications');
-      if (stored) logs = JSON.parse(stored);
+      if (stored) localLogs = JSON.parse(stored);
     } catch (e) {}
 
+    const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+    const dbHistory = Array.isArray(AppState.historyData) ? AppState.historyData : [];
+
+    // Buat synthesized log dari riwayat mutasi nyata di database Google Sheets (tab HistoryMutasi)
+    const dbLogs = dbHistory.map((item, idx) => {
+      const isMasuk = (item.status === 'Unit Masuk' || item.type === 'Unit Masuk' || String(item.status || '').toLowerCase().includes('masuk'));
+      const mutationType = isMasuk ? 'Unit Masuk' : 'Unit Keluar';
+      const formattedDate = item.fullDateStr || (item.date ? `${item.date}/${item.month || ''}/${item.year || ''}` : '');
+      const timeStr = item.time ? `${item.time} WIB` : '';
+      const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
+
+      return {
+        id: item.id || `db-${item.vin || idx}-${item.date || idx}`,
+        trxId: item.id || `TRX-${idx}`,
+        timestamp: timeDisplay,
+        targetEmail: item.targetEmail || targetEmail,
+        status: 'SUCCESS',
+        category: 'MUTATION',
+        mutationType: mutationType,
+        model: item.model || item.name || 'Daihatsu',
+        vin: item.vin || '-',
+        engine: item.engine || '-',
+        operator: item.operator || item.pic || 'Petugas Stockyard',
+        location: item.location || item.destination || '-',
+        notes: item.notes || item.keterangan || '-',
+        read: true,
+        fromDatabase: true
+      };
+    });
+
+    // Gabungkan data database dengan log pengiriman lokal
+    const combinedMap = new Map();
+
+    // 1. Masukkan mutasi dari database terlebih dahulu (database sebagai single source of truth)
+    dbLogs.forEach((l, idx) => {
+      const key = (l.id && l.id !== 'MUT-TRX') ? l.id : `${l.vin}_${l.mutationType}_${l.timestamp}_${idx}`;
+      combinedMap.set(key, l);
+    });
+
+    // 2. Tambahkan/timpa dari log pengiriman lokal
+    localLogs.forEach(l => {
+      if (l.category === 'MUTATION' && l.vin) {
+        // Cari entri yang cocok berdasarkan VIN dan jenis mutasi
+        let matchedKey = null;
+        for (const [k, v] of combinedMap.entries()) {
+          if (v.vin === l.vin && v.mutationType === l.mutationType) {
+            matchedKey = k;
+            break;
+          }
+        }
+
+        if (matchedKey) {
+          const existing = combinedMap.get(matchedKey);
+          combinedMap.set(matchedKey, {
+            ...existing,
+            ...l,
+            engine: l.engine || existing?.engine || '-',
+            operator: l.operator || existing?.operator || 'Petugas Stockyard',
+            fromDatabase: true
+          });
+        } else {
+          combinedMap.set(l.id || `local-${Math.random()}`, l);
+        }
+      } else {
+        combinedMap.set(l.id || `local-${Math.random()}`, l);
+      }
+    });
+
+    const allCombined = Array.from(combinedMap.values());
+
+    // Update Counter Badges di Tab Filter
+    const countAllEl = document.getElementById('notifCountAll');
+    const countMasukEl = document.getElementById('notifCountMasuk');
+    const countKeluarEl = document.getElementById('notifCountKeluar');
+    const countDailyEl = document.getElementById('notifCountDaily');
+
+    const totalMasuk = allCombined.filter(l => l.mutationType === 'Unit Masuk').length;
+    const totalKeluar = allCombined.filter(l => l.mutationType === 'Unit Keluar').length;
+    const totalDaily = allCombined.filter(l => l.category === 'DAILY_REPORT' || !l.category).length;
+
+    if (countAllEl) countAllEl.textContent = allCombined.length;
+    if (countMasukEl) countMasukEl.textContent = totalMasuk;
+    if (countKeluarEl) countKeluarEl.textContent = totalKeluar;
+    if (countDailyEl) countDailyEl.textContent = totalDaily;
+
+    // Filter daftar sesuai tab aktif
     const filter = this.emailNotifFilter || 'ALL';
-    let filteredLogs = logs;
-    if (filter === 'MUTATION') {
-      filteredLogs = logs.filter(l => l.category === 'MUTATION');
+    let filteredLogs = allCombined;
+    if (filter === 'MASUK') {
+      filteredLogs = allCombined.filter(l => l.mutationType === 'Unit Masuk');
+    } else if (filter === 'KELUAR') {
+      filteredLogs = allCombined.filter(l => l.mutationType === 'Unit Keluar');
+    } else if (filter === 'MUTATION') {
+      filteredLogs = allCombined.filter(l => l.category === 'MUTATION');
     } else if (filter === 'DAILY') {
-      filteredLogs = logs.filter(l => l.category === 'DAILY_REPORT' || !l.category);
+      filteredLogs = allCombined.filter(l => l.category === 'DAILY_REPORT' || !l.category);
     }
 
     if (!filteredLogs || filteredLogs.length === 0) {
-      const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
-      let emptyMsg = `Target email aktif saat ini adalah <strong class="text-slate-700 font-mono">${targetEmail}</strong>. Setiap ada unit masuk atau keluar, notifikasi email akan langsung terkirim dan tercatat di sini secara realtime.`;
-      if (filter === 'MUTATION') emptyMsg = 'Belum ada riwayat email mutasi unit masuk atau keluar yang tercatat.';
-      else if (filter === 'DAILY') emptyMsg = 'Belum ada laporan harian yang dikirim hari ini. Tekan tombol "Kirim Sekarang" di atas untuk mengirimkan laporan.';
+      let emptyMsg = `Target email aktif saat ini adalah <strong class="text-slate-800 font-mono">${targetEmail}</strong>. Setiap ada unit masuk atau keluar, mutasi database dan pengiriman email akan otomatis tercatat di sini secara realtime.`;
+      if (filter === 'MUTATION') emptyMsg = 'Belum ada data mutasi unit masuk atau keluar di database HistoryMutasi.';
+      else if (filter === 'DAILY') emptyMsg = 'Belum ada laporan harian yang dikirimkan. Tekan tombol "Kirim Laporan" di atas untuk memicu laporan.';
 
       container.innerHTML = `
-        <div class="p-6 text-center text-slate-400 space-y-3 bg-slate-50/80 rounded-2xl border border-slate-200/60">
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center">
+        <div class="p-8 text-center text-slate-400 space-y-3 bg-slate-50/60 rounded-2xl border border-slate-200/60">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center shadow-2xs">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           </div>
           <div>
-            <h4 class="text-xs font-black text-slate-700">Belum Ada Riwayat ${filter === 'MUTATION' ? 'Mutasi' : (filter === 'DAILY' ? 'Laporan Harian' : 'Pengiriman')}</h4>
-            <p class="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
+            <h4 class="text-xs font-black text-slate-800">Belum Ada Riwayat ${filter === 'MUTATION' ? 'Mutasi Database' : (filter === 'DAILY' ? 'Laporan Harian' : 'Notifikasi')}</h4>
+            <p class="text-[11px] text-slate-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
               ${emptyMsg}
             </p>
           </div>
@@ -4788,6 +4983,7 @@ const UI = {
       return;
     }
 
+    // Desain Card Notifikasi: Rapi, Modern, Tidak Membosankan, Mobile-Friendly
     container.innerHTML = filteredLogs.map(item => {
       const isSuccess = item.status === 'SUCCESS';
       const isOffline = item.status === 'PENDING_OFFLINE';
@@ -4795,93 +4991,104 @@ const UI = {
       const isKeluar = item.mutationType === 'Unit Keluar';
       const isDaily = item.category === 'DAILY_REPORT' || (!isMasuk && !isKeluar);
 
-      // Desain Badge Kategori & Status
-      let badgeHtml = '';
-      let borderBg = '';
+      // Aksen card tepi kiri
+      let leftAccent = 'border-l-4 border-l-slate-300';
+      let typeBadge = '';
 
-      if (isSuccess) {
-        if (isMasuk) {
-          borderBg = 'bg-emerald-50/70 border border-emerald-200/80';
-          badgeHtml = `
-            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-md">
-              <span>↓</span>
-              <span>Unit Masuk • Email Terkirim</span>
-            </span>
-          `;
-        } else if (isKeluar) {
-          borderBg = 'bg-blue-50/70 border border-blue-200/80';
-          badgeHtml = `
-            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-md">
-              <span>↑</span>
-              <span>Unit Keluar • Email Terkirim</span>
-            </span>
-          `;
-        } else {
-          borderBg = 'bg-indigo-50/70 border border-indigo-200/80';
-          badgeHtml = `
-            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100/90 px-2 py-0.5 rounded-md">
-              <span>📄</span>
-              <span>Laporan Harian • Terkirim</span>
-            </span>
-          `;
-        }
-      } else if (isOffline) {
-        borderBg = 'bg-amber-50/70 border border-amber-200/80';
-        badgeHtml = `
-          <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-100/90 px-2 py-0.5 rounded-md">
-            <span>⏳</span>
-            <span>Tersimpan Lokal • Menunggu Online</span>
+      if (isDaily) {
+        leftAccent = 'border-l-4 border-l-indigo-500 bg-white';
+        typeBadge = `
+          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/80 uppercase">
+            <span>📄</span>
+            <span>Laporan Rekap Harian</span>
           </span>
         `;
-      } else {
-        borderBg = 'bg-rose-50/70 border border-rose-200/80';
-        badgeHtml = `
-          <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-md">
-            <span>⛔</span>
-            <span>Gagal Terkirim</span>
+      } else if (isMasuk) {
+        leftAccent = 'border-l-4 border-l-emerald-500 bg-white';
+        typeBadge = `
+          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 uppercase">
+            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            <span>Unit Masuk</span>
+          </span>
+        `;
+      } else if (isKeluar) {
+        leftAccent = 'border-l-4 border-l-blue-500 bg-white';
+        typeBadge = `
+          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/80 uppercase">
+            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            <span>Unit Keluar</span>
           </span>
         `;
       }
 
-      // Metadata unit jika ada
-      const metaUnitHtml = (item.model || item.vin) ? `
-        <div class="p-2 bg-white/80 rounded-xl border border-slate-200/60 font-mono text-[11px] space-y-0.5 text-slate-800">
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400 font-sans text-[10px]">Model:</span>
-            <span class="font-bold text-slate-900">${item.model || '-'}</span>
+      // Status Pengiriman / Database Badge
+      let statusBadge = '';
+      if (item.fromDatabase) {
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50/90 px-1.5 py-0.5 rounded border border-emerald-200">Spreadsheet Sync ✓</span>`;
+      } else if (isSuccess) {
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700 bg-blue-50/90 px-1.5 py-0.5 rounded border border-blue-200">Email Terkirim ✓</span>`;
+      } else if (isOffline) {
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Pending Sync ⏳</span>`;
+      } else {
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Gagal ⚠️</span>`;
+      }
+
+      // Unit info line
+      let unitDetailsHtml = '';
+      if (isDaily) {
+        unitDetailsHtml = `
+          <div class="text-[11.5px] text-slate-700 leading-snug">
+            <span class="font-extrabold text-slate-900 block">Rekapitulasi Mutasi Stockyard DSO Lampung</span>
+            <span class="text-[10.5px] text-slate-500">${item.message || 'Laporan ringkasan mutasi dan pergerakan stok unit kendaraan.'}</span>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400 font-sans text-[10px]">VIN:</span>
-            <span class="font-bold text-blue-700">${item.vin || '-'}</span>
+        `;
+      } else {
+        unitDetailsHtml = `
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-black text-slate-900 text-[12.5px] tracking-tight">${item.model || 'Unit Kendaraan'}</span>
+              ${item.operator ? `<span class="text-[10px] text-slate-500 font-medium">Petugas: <strong class="text-slate-800">${item.operator}</strong></span>` : ''}
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-[10.5px] font-mono">
+              <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200/60 font-bold">
+                <span class="text-slate-400 font-sans text-[9.5px]">VIN: </span><span class="text-blue-700">${item.vin || '-'}</span>
+              </span>
+              ${item.engine && item.engine !== '-' ? `
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 font-semibold">
+                  <span class="text-slate-400 font-sans text-[9.5px]">Mesin: </span>${item.engine}
+                </span>
+              ` : ''}
+              ${item.location && item.location !== '-' ? `
+                <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/50">
+                  <span class="text-slate-400 font-sans text-[9.5px]">Lokasi: </span>${item.location}
+                </span>
+              ` : ''}
+            </div>
           </div>
-        </div>
-      ` : '';
+        `;
+      }
 
       return `
-        <div class="p-3.5 sm:p-4 rounded-2xl ${borderBg} text-xs space-y-2 transition shadow-2xs">
+        <div class="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs ${leftAccent} transition hover:border-slate-300 space-y-2">
+          <!-- Top Row: Type, Status, Timestamp -->
           <div class="flex items-center justify-between gap-2">
-            ${badgeHtml}
+            <div class="flex items-center space-x-1.5 min-w-0">
+              ${typeBadge}
+              ${statusBadge}
+            </div>
             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">${item.timestamp}</span>
           </div>
 
-          <h5 class="font-extrabold text-slate-900 text-xs sm:text-[13px] leading-tight">
-            ${item.subject || 'Aktivitas Mutasi Stockyard Astra Daihatsu'}
-          </h5>
+          <!-- Body: Unit Information -->
+          ${unitDetailsHtml}
 
-          <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
-            ${item.message || 'Laporan mutasi fisik unit telah diproses.'}
-          </p>
-
-          ${metaUnitHtml}
-
-          <div class="pt-1.5 flex items-center justify-between text-[10.5px] border-t border-slate-200/60 font-semibold text-slate-700">
-            <span class="flex items-center gap-1 truncate max-w-[220px] sm:max-w-xs">
-              <svg class="w-3.5 h-3.5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
-              <span class="truncate">Tujuan: <strong class="font-mono text-slate-900">${item.targetEmail}</strong></span>
+          <!-- Footer: Email Destination -->
+          <div class="pt-1.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 font-medium">
+            <span class="flex items-center gap-1 truncate max-w-[240px]">
+              <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span class="truncate">Tujuan: <strong class="font-mono text-slate-700">${item.targetEmail}</strong></span>
             </span>
-            <span class="text-[10px] font-bold text-slate-500 whitespace-nowrap">
-              ${isSuccess ? 'Gmail Verified ✓' : (isOffline ? 'Local Sync ⏳' : 'Delivery Error ⚠️')}
-            </span>
+            <span class="text-slate-400 text-[9.5px]">Astra Daihatsu</span>
           </div>
         </div>
       `;
@@ -4939,7 +5146,7 @@ const UI = {
       this.showToast(`⛔ Kesalahan jaringan saat mengirim email: ${err.message}`, 4500);
     } finally {
       if (btn) btn.disabled = false;
-      if (textEl) textEl.textContent = 'Kirim Sekarang';
+      if (textEl) textEl.textContent = 'Kirim Laporan';
     }
   },
 
