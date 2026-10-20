@@ -175,9 +175,9 @@ const App = {
       modelPhoto: modelOfficialPhoto,
       vin: cleanVin,
       engine: cleanEngine,
-      pic: CONFIG.OPERATOR_NAME || 'Andi Pratama',
-      picNpk: CONFIG.OPERATOR_NPK || '-',
-      location: CONFIG.BRANCH_NAME || 'Pool Sentra Lampung',
+      pic: AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Andi Pratama',
+      picNpk: AppState.userProfile?.npk || CONFIG.OPERATOR_NPK || '-',
+      location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
       docPhoto: docImg

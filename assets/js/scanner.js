@@ -1590,6 +1590,36 @@ const ScannerService = {
     // Selaraskan nilai ke form Tahap 2
     this.syncVinEngine();
 
+    // Otomatis tangkap frame kamera scanner sebagai Foto Dokumen (Stiker Kaca) & Foto Bukti jika belum ada
+    const video = document.getElementById('scannerVideo');
+    if (video && video.videoWidth > 0) {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 720;
+        c.height = Math.round((720 * video.videoHeight) / video.videoWidth);
+        const ctx = c.getContext('2d');
+        ctx.drawImage(video, 0, 0, c.width, c.height);
+        const snapUrl = c.toDataURL('image/jpeg', 0.75);
+
+        if (!AppState.uploadedDocPhotoUrl) {
+          if (typeof UI !== 'undefined' && UI.setPhotoPreview) {
+            UI.setPhotoPreview('docPhoto', snapUrl);
+          } else {
+            AppState.uploadedDocPhotoUrl = snapUrl;
+          }
+        }
+        if (!AppState.uploadedUnitPhotoUrl) {
+          if (typeof UI !== 'undefined' && UI.setPhotoPreview) {
+            UI.setPhotoPreview('unitPhoto', snapUrl);
+          } else {
+            AppState.uploadedUnitPhotoUrl = snapUrl;
+          }
+        }
+      } catch (e) {
+        console.warn('[Scanner] Gagal auto-capture snapshot kamera stiker:', e);
+      }
+    }
+
     // Jalankan validasi status duplikasi pada form Step 2
     if (typeof window.validateMutationFormDuplication === 'function') {
       window.validateMutationFormDuplication();
