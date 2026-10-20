@@ -333,42 +333,17 @@ const ScannerService = {
     const chipContainer = document.getElementById('scanFeedbackChip');
 
     if (feedbackTitle) feedbackTitle.textContent = '✓ Barcode Terbaca!';
-    if (feedbackSub) feedbackSub.textContent = `VIN ${vin} terverifikasi baru. Klik Lanjut untuk isi formulir.`;
+    if (feedbackSub) feedbackSub.textContent = `VIN ${vin} berhasil dibaca. Klik Form untuk isi mutasi.`;
     if (feedbackBadge) {
       feedbackBadge.textContent = '✓';
       feedbackBadge.className = 'w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black flex-shrink-0 animate-bounce';
     }
     if (feedbackPill) {
-      feedbackPill.textContent = 'TERVERIFIKASI';
+      feedbackPill.textContent = 'TERBACA';
       feedbackPill.className = 'text-[9px] font-extrabold text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded-lg border border-emerald-500/50 uppercase tracking-wide';
     }
     if (chipContainer) {
       chipContainer.className = 'p-2.5 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl flex items-center justify-between transition-colors shadow-sm';
-    }
-  },
-
-  /**
-   * Tampilan feedback saat barcode DUPLIKAT ditolak
-   */
-  setFeedbackChipDuplicate(vin) {
-    const feedbackTitle = document.getElementById('scanFeedbackTitle');
-    const feedbackSub = document.getElementById('scanFeedbackSubtitle');
-    const feedbackBadge = document.getElementById('scanFeedbackBadgeIcon');
-    const feedbackPill = document.getElementById('scanFeedbackPill');
-    const chipContainer = document.getElementById('scanFeedbackChip');
-
-    if (feedbackTitle) feedbackTitle.textContent = '❌ Barcode Duplikat Ditolak!';
-    if (feedbackSub) feedbackSub.textContent = `Nomor VIN ${vin} sudah tersimpan di riwayat mutasi. 1 Barcode hanya 1x simpan!`;
-    if (feedbackBadge) {
-      feedbackBadge.textContent = '✕';
-      feedbackBadge.className = 'w-7 h-7 rounded-xl bg-rose-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0 animate-pulse';
-    }
-    if (feedbackPill) {
-      feedbackPill.textContent = 'DUPLIKAT (DITOLAK)';
-      feedbackPill.className = 'text-[9px] font-extrabold text-rose-300 bg-rose-950 px-2 py-0.5 rounded-lg border border-rose-500/50 uppercase tracking-wide';
-    }
-    if (chipContainer) {
-      chipContainer.className = 'p-2.5 bg-rose-950/70 border border-rose-500/50 rounded-2xl flex items-center justify-between transition-colors shadow-sm';
     }
   },
 
@@ -932,59 +907,54 @@ const ScannerService = {
 
     // --------------------------------------------------------------------------
     // 2. EKSTRAKSI NOMOR RANGKA (VIN):
-    // Struktur: [Judul VEHICLE IDENTIFICATION NUMBER] -> [Barcode] -> [Teks Kode VIN 17 Digit]
+    // Prioritas 1: Pola Resmi Astra Daihatsu Indonesia (MHK + 14 alfanumerik = tepat 17 digit)
     // --------------------------------------------------------------------------
+    const mhkMatch = cleanText.match(/\b(MHK[A-Z0-9]{14})\b/) || cleanText.match(/\b(MHK[A-Z0-9\s-]{14,18})\b/);
+    if (mhkMatch) {
+      const cleanedMhk = mhkMatch[1].replace(/[^A-Z0-9]/g, '');
+      if (cleanedMhk.length === 17) vin = cleanedMhk;
+    }
 
-    // A. Pendekatan Berbasis Struktur Posisi: Cari baris judul "VEHICLE IDENTIFICATION NUMBER"
-    const vinLabelIndex = rawLines.findIndex(l => 
-      l.includes('VEHICLE IDENTIFICATION') || 
-      l.includes('IDENTIFICATION NUMBER') || 
-      l.includes('VEHICLE IDENTIF') ||
-      (l.includes('VEHICLE') && l.includes('NUMBER')) ||
-      l.includes('CHASSIS NO') ||
-      l.includes('NO. RANGKA') ||
-      l.includes('NO RANGKA')
-    );
+    // Pendekatan Berbasis Struktur Posisi: Cari baris judul "VEHICLE IDENTIFICATION NUMBER"
+    if (!vin) {
+      const vinLabelIndex = rawLines.findIndex(l => 
+        l.includes('VEHICLE IDENTIFICATION') || 
+        l.includes('IDENTIFICATION NUMBER') || 
+        l.includes('VEHICLE IDENTIF') ||
+        (l.includes('VEHICLE') && l.includes('NUMBER')) ||
+        l.includes('CHASSIS NO') ||
+        l.includes('NO. RANGKA') ||
+        l.includes('NO RANGKA')
+      );
 
-    if (vinLabelIndex !== -1) {
-      // Teks VIN terletak 1 - 4 baris di bawah judul (setelah garis barcode)
-      for (let i = vinLabelIndex + 1; i <= Math.min(vinLabelIndex + 4, rawLines.length - 1); i++) {
-        const line = rawLines[i];
-        if (line.includes('ENGINE') || line.includes('RRN') || line.includes('DESTINATION')) break;
+      if (vinLabelIndex !== -1) {
+        for (let i = vinLabelIndex + 1; i <= Math.min(vinLabelIndex + 4, rawLines.length - 1); i++) {
+          const line = rawLines[i];
+          if (/ENGINE|RRN|DESTINATION|MATERIAL|SAP|BAP|PURCHASE|DELIVERY/.test(line)) break;
 
-        // Bersihkan karakter barcode bars (| ! / \ [ ]) dan spasi
-        const cleaned = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
+          const cleaned = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
+          if (cleaned.startsWith('11000') || cleaned.startsWith('22') || cleaned.startsWith('63') || /MATERIAL|NUMBER|BAP|SAP/.test(cleaned)) continue;
 
-        if (cleaned.startsWith('11000') || cleaned.startsWith('22') || cleaned.startsWith('63')) continue;
-
-        if (cleaned.length === 17) {
-          vin = cleaned;
-          break;
-        } else if (cleaned.length >= 16 && cleaned.length <= 18) {
-          const candidate17 = cleaned.match(/[A-Z0-9]{17}/);
-          if (candidate17 && !candidate17[0].startsWith('11000')) {
-            vin = candidate17[0];
+          if (cleaned.length === 17) {
+            vin = cleaned;
             break;
+          } else if (cleaned.length >= 16 && cleaned.length <= 18) {
+            const candidate17 = cleaned.match(/[A-Z0-9]{17}/);
+            if (candidate17 && !candidate17[0].startsWith('11000') && !/MATERIAL|NUMBER/.test(candidate17[0])) {
+              vin = candidate17[0];
+              break;
+            }
           }
         }
       }
     }
 
-    // B. Fallback jika judul tidak terdeteksi lengkap: Pola MHK 17 digit (dengan/tanpa spasi)
-    if (!vin) {
-      const mhkMatch = cleanText.match(/MHK[\sA-Z0-9-]{14,18}/);
-      if (mhkMatch) {
-        const cleanedMhk = mhkMatch[0].replace(/[^A-Z0-9]/g, '');
-        if (cleanedMhk.length === 17) vin = cleanedMhk;
-      }
-    }
-
-    // C. Fallback Pola Umum 17 Karakter (Bukan SAP 11000..., Bukan DO 22..., Bukan PO 63...)
+    // Fallback Pola Umum 17 Karakter (Bukan SAP 11000..., Bukan DO 22..., Bukan PO 63..., Bukan kata MATERIAL/NUMBER)
     if (!vin) {
       for (const l of rawLines) {
-        if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('DESTINATION')) continue;
+        if (/SAP|BAP|MATERIAL|NUMBER|DELIVERY|PURCHASE|DESTINATION|DAIHATSU|ORDER/.test(l)) continue;
         const c = l.replace(/[^A-Z0-9]/g, '');
-        if (c.length === 17 && !c.startsWith('11000') && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22')) {
+        if (c.length === 17 && !c.startsWith('11000') && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !/MATERIAL|NUMBER/.test(c)) {
           vin = c;
           break;
         }
@@ -998,68 +968,67 @@ const ScannerService = {
 
     // --------------------------------------------------------------------------
     // 3. EKSTRAKSI NOMOR MESIN (ENGINE NUMBER):
-    // Struktur: [Judul ENGINE NUMBER di sebelah kiri] -> [Barcode di kanan] -> [Teks Kode Mesin di bawah Barcode]
+    // Prioritas 1: Pola Kode Mesin Resmi Daihatsu (2NR, 1KR, 1NR, 3NR, WA, 3SZ, K3, KF)
     // --------------------------------------------------------------------------
-
-    // A. Pendekatan Berbasis Struktur Posisi: Cari baris judul "ENGINE NUMBER"
-    const engLabelIndex = rawLines.findIndex(l => 
-      l.includes('ENGINE NUMBER') || 
-      l.includes('ENGINE NO') || 
-      (l.includes('ENGINE') && !l.includes('IDENTIFICATION')) ||
-      l.includes('NO. MESIN') ||
-      l.includes('NO MESIN')
-    );
-
-    if (engLabelIndex !== -1) {
-      // 1. Cek di baris yang sama setelah kata "ENGINE" / "NUMBER"
-      const sameLine = rawLines[engLabelIndex];
-      const strippedSameLine = sameLine
-        .replace(/ENGINE\s*(NUMBER|NO)?/g, '')
-        .replace(/NO\.?\s*MESIN/g, '')
-        .replace(/MESIN/g, '')
-        .replace(/[|!/\\\[\]_~-]/g, '')
-        .replace(/\s+/g, '');
-
-      if (strippedSameLine.length >= 6 && strippedSameLine.length <= 14 && 
-          !strippedSameLine.startsWith('11000') && !strippedSameLine.startsWith('22') && 
-          !strippedSameLine.startsWith('63') && !strippedSameLine.startsWith('A22') && 
-          strippedSameLine !== 'D000') {
-        engine = strippedSameLine;
+    const daihatsuEngineMatch = cleanText.match(/\b((?:1KR|2NR|1NR|3NR|WA|3SZ|K3|KF)[A-Z0-9-]{4,10})\b/);
+    if (daihatsuEngineMatch) {
+      const cleanEng = daihatsuEngineMatch[1].replace(/[^A-Z0-9-]/g, '');
+      if (cleanEng.length >= 6 && cleanEng.length <= 14 && !/DAIHATSU|NUMBER|MATERIAL/.test(cleanEng)) {
+        engine = cleanEng;
       }
+    }
 
-      // 2. Jika tidak ada di baris yang sama, cari di 1 - 3 baris tepat di bawah judul (di bawah barcode engine)
-      if (!engine) {
-        for (let j = engLabelIndex + 1; j <= Math.min(engLabelIndex + 3, rawLines.length - 1); j++) {
-          const line = rawLines[j];
-          if (line.includes('RRN') || line.includes('DESTINATION')) break;
+    // Pendekatan Berbasis Struktur Posisi: Cari baris judul "ENGINE NUMBER"
+    if (!engine) {
+      const engLabelIndex = rawLines.findIndex(l => 
+        l.includes('ENGINE NUMBER') || 
+        l.includes('ENGINE NO') || 
+        (l.includes('ENGINE') && !l.includes('IDENTIFICATION')) ||
+        l.includes('NO. MESIN') ||
+        l.includes('NO MESIN')
+      );
 
-          const cleanedEng = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
-          if (cleanedEng.length >= 6 && cleanedEng.length <= 14 && 
-              !cleanedEng.startsWith('11000') && !cleanedEng.startsWith('22') && 
-              !cleanedEng.startsWith('63') && !cleanedEng.startsWith('A22') && 
-              cleanedEng !== 'D000' && cleanedEng !== 'S403RP') {
-            engine = cleanedEng;
-            break;
+      if (engLabelIndex !== -1) {
+        const sameLine = rawLines[engLabelIndex];
+        const strippedSameLine = sameLine
+          .replace(/ENGINE\s*(NUMBER|NO)?/g, '')
+          .replace(/NO\.?\s*MESIN/g, '')
+          .replace(/MESIN/g, '')
+          .replace(/[|!/\\\[\]_~-]/g, '')
+          .replace(/\s+/g, '');
+
+        if (strippedSameLine.length >= 6 && strippedSameLine.length <= 14 && 
+            !strippedSameLine.startsWith('11000') && !strippedSameLine.startsWith('22') && 
+            !strippedSameLine.startsWith('63') && !strippedSameLine.startsWith('A22') && 
+            strippedSameLine !== 'D000' && !/DAIHATSU|NUMBER|MATERIAL/.test(strippedSameLine)) {
+          engine = strippedSameLine;
+        }
+
+        if (!engine) {
+          for (let j = engLabelIndex + 1; j <= Math.min(engLabelIndex + 3, rawLines.length - 1); j++) {
+            const line = rawLines[j];
+            if (line.includes('RRN') || line.includes('DESTINATION')) break;
+
+            const cleanedEng = line.replace(/[|!/\\\[\]_~-]/g, '').replace(/\s+/g, '');
+            if (cleanedEng.length >= 6 && cleanedEng.length <= 14 && 
+                !cleanedEng.startsWith('11000') && !cleanedEng.startsWith('22') && 
+                !cleanedEng.startsWith('63') && !cleanedEng.startsWith('A22') && 
+                cleanedEng !== 'D000' && cleanedEng !== 'S403RP' && !/DAIHATSU|NUMBER|MATERIAL/.test(cleanedEng)) {
+              engine = cleanedEng;
+              break;
+            }
           }
         }
       }
     }
 
-    // B. Fallback: Cari pola kode mesin Daihatsu (2NR, 1KR, 1NR, 3NR, WA, 3SZ, K3, KF)
-    if (!engine) {
-      const daihatsuEngineMatch = cleanText.match(/\b((?:1KR|2NR|1NR|3NR|WA|3SZ|K3|KF)[\sA-Z0-9-]{4,12})\b/);
-      if (daihatsuEngineMatch) {
-        engine = daihatsuEngineMatch[1].replace(/[^A-Z0-9-]/g, '');
-      }
-    }
-
-    // C. Fallback Umum: Token alfanumerik 6-12 karakter antara VIN dan RRN
+    // Fallback Umum: Token alfanumerik 6-12 karakter
     if (!engine) {
       for (const l of rawLines) {
         if (vin && l.includes(vin)) continue;
-        if (l.includes('SAP') || l.includes('DELIVERY') || l.includes('PURCHASE') || l.includes('RRN') || l.includes('DESTINATION') || l.includes('IDENTIFICATION') || l.includes('DAIHATSU')) continue;
+        if (/SAP|BAP|MATERIAL|NUMBER|DELIVERY|PURCHASE|RRN|DESTINATION|IDENTIFICATION|DAIHATSU|A1000|PT/.test(l)) continue;
         const c = l.replace(/[^A-Z0-9-]/g, '');
-        if (c.length >= 6 && c.length <= 12 && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !c.startsWith('11000') && c !== 'D000' && c !== 'S403RP') {
+        if (c.length >= 6 && c.length <= 12 && !c.startsWith('22') && !c.startsWith('63') && !c.startsWith('A22') && !c.startsWith('11000') && c !== 'D000' && c !== 'S403RP' && !/DAIHATSU|NUMBER/.test(c)) {
           engine = c;
           break;
         }
@@ -1706,29 +1675,7 @@ const ScannerService = {
     }
   },
 
-  /**
-   * Mengubah reticle menjadi merah menyala saat scan duplikat ditolak
-   */
-  setReticleDuplicateStyle() {
-    const reticle = document.getElementById('scannerReticle');
-    if (reticle) {
-      reticle.classList.remove('scanner-locked');
-      reticle.style.borderColor = '#f43f5e';
-    }
-    const corners = ['cornerTL', 'cornerTR', 'cornerBL', 'cornerBR'];
-    corners.forEach(id => {
-      const c = document.getElementById(id);
-      if (c) {
-        c.classList.remove('border-blue-500', 'border-emerald-400');
-        c.classList.add('border-rose-500');
-      }
-    });
-    const statusText = document.getElementById('scanStatusText');
-    if (statusText) {
-      statusText.innerText = 'DUPLIKAT! SUDAH PERNAH TERSIMPAN';
-      statusText.className = 'text-[10px] font-black uppercase tracking-wider text-rose-400 animate-pulse';
-    }
-  },
+
 
   /**
    * TES SCAN CEPAT (100% REAL & DINAMIS):

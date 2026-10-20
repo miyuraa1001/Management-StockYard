@@ -124,8 +124,9 @@ const App = {
     }
 
     const cleanVin = vin.trim().toUpperCase();
-    const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin) : null;
-    const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
+    const cleanEngine = engine.trim().toUpperCase();
+    const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin, cleanEngine) : null;
+    const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin, cleanEngine) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
 
     // Validasi Duplikat: Jika unit saat ini masih berada di dalam Stockyard dan dipilih 'Unit Masuk', TOLAK SIMPAN!
     if (isInYard && mutationType === 'Unit Masuk') {
@@ -260,7 +261,9 @@ window.saveMutationData = () => App.saveMutationData();
  */
 window.validateMutationFormDuplication = function() {
   const vinInput = document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '';
+  const engineInput = document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '';
   const cleanVin = String(vinInput).trim().toUpperCase();
+  const cleanEngine = String(engineInput).trim().toUpperCase();
   const mutationType = document.getElementById('inputMutationType')?.value || 'Unit Masuk';
 
   const alertContainer = document.getElementById('mutationDuplicateAlert');
@@ -272,7 +275,7 @@ window.validateMutationFormDuplication = function() {
 
   if (!alertContainer) return true;
 
-  if (!cleanVin) {
+  if (!cleanVin && !cleanEngine) {
     alertContainer.classList.add('hidden');
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -284,8 +287,8 @@ window.validateMutationFormDuplication = function() {
     return true;
   }
 
-  const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin) : null;
-  const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
+  const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin, cleanEngine) : null;
+  const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin, cleanEngine) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
 
   if (isInYard && mutationType === 'Unit Masuk') {
     // KASUS DUPLIKAT DITOLAK: Unit sudah ada di dalam stockyard, tidak boleh didaftarkan Masuk lagi!

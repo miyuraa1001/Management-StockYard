@@ -205,18 +205,21 @@ const AppState = {
   historyData: [],
 
   /**
-   * Mengambil status mutasi terakhir dari nomor VIN tertentu
-   * Mengembalikan objek { type, date, time, model, pic } atau null jika belum pernah tercatat
+   * Mengambil status mutasi terakhir dari nomor VIN / Mesin tertentu
+   * Mengembalikan objek { type, date, time, model, pic, vin, engine } atau null jika belum pernah tercatat
    */
-  getUnitCurrentStatus(vin) {
-    if (!vin) return null;
-    const cleanVin = String(vin).trim().toUpperCase();
-    if (!cleanVin) return null;
+  getUnitCurrentStatus(vin, engine) {
+    const cleanVin = String(vin || '').trim().toUpperCase();
+    const cleanEngine = String(engine || '').trim().toUpperCase();
+    if (!cleanVin && !cleanEngine) return null;
 
     // 1. Cek di historyData (riwayat mutasi audit terurut dari terbaru ke terlama)
     const matches = (this.historyData || []).filter(item => {
       const v = String(item.vin || '').trim().toUpperCase();
-      return v && v === cleanVin;
+      const eng = String(item.engine || '').trim().toUpperCase();
+      const vinMatch = cleanVin && v && v === cleanVin;
+      const engMatch = cleanEngine && eng && eng === cleanEngine;
+      return vinMatch || engMatch;
     });
 
     if (matches.length > 0) {
@@ -229,14 +232,19 @@ const AppState = {
         date: latest.fullDateStr || (latest.date ? `${latest.date}/${latest.month || ''}/${latest.year || ''}` : ''),
         time: latest.time || '',
         model: latest.model || '',
-        pic: latest.pic || ''
+        pic: latest.pic || '',
+        vin: latest.vin || cleanVin,
+        engine: latest.engine || cleanEngine
       };
     }
 
     // 2. Fallback: Cek di inventoryData fisik yang sedang aktif di yard
     const invItem = (this.inventoryData || []).find(item => {
       const v = String(item.vin || '').trim().toUpperCase();
-      return v && v === cleanVin;
+      const eng = String(item.engine || '').trim().toUpperCase();
+      const vinMatch = cleanVin && v && v === cleanVin;
+      const engMatch = cleanEngine && eng && eng === cleanEngine;
+      return vinMatch || engMatch;
     });
 
     if (invItem) {
@@ -247,7 +255,9 @@ const AppState = {
         date: invItem.date || '',
         time: invItem.time || '',
         model: invItem.model || '',
-        pic: invItem.pic || ''
+        pic: invItem.pic || '',
+        vin: invItem.vin || cleanVin,
+        engine: invItem.engine || cleanEngine
       };
     }
 
@@ -255,10 +265,10 @@ const AppState = {
   },
 
   /**
-   * Memeriksa apakah unit dengan nomor VIN ini sedang berada di dalam Stockyard (Status aktif: Unit Masuk)
+   * Memeriksa apakah unit dengan nomor VIN / Mesin ini sedang berada di dalam Stockyard (Status aktif: Unit Masuk)
    */
-  isUnitCurrentlyInYard(vin) {
-    const status = this.getUnitCurrentStatus(vin);
+  isUnitCurrentlyInYard(vin, engine) {
+    const status = this.getUnitCurrentStatus(vin, engine);
     if (!status) return false;
     return status.type === 'Unit Masuk' || String(status.rawType || '').toLowerCase().includes('masuk') || String(status.rawType || '').toLowerCase() === 'in';
   },
@@ -266,8 +276,8 @@ const AppState = {
   /**
    * Helper pemeriksaan duplikat: bernilai true HANYA jika unit saat ini masih berstatus Unit Masuk di yard
    */
-  isVinDuplicate(vin) {
-    return this.isUnitCurrentlyInYard(vin);
+  isVinDuplicate(vin, engine) {
+    return this.isUnitCurrentlyInYard(vin, engine);
   },
 
   // Inisialisasi Cache dari LocalStorage jika ada
