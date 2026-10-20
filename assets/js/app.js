@@ -180,7 +180,8 @@ const App = {
       location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
-      docPhoto: docImg
+      docPhoto: docImg,
+      targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
     };
 
     // Optimistic UI Update: masukkan ke state lokal segera & amankan ke cache

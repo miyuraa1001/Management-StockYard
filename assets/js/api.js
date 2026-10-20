@@ -307,7 +307,13 @@ const ApiService = {
         // Sinkronisasi data SystemConfig (Email & Jadwal) jika dikembalikan oleh database
         if (payload.config) {
           const c = payload.config;
-          if (c.TARGET_EMAIL) AppState.automationConfig.email = c.TARGET_EMAIL;
+          if (c.TARGET_EMAIL) {
+            AppState.automationConfig.email = c.TARGET_EMAIL;
+            AppState.automationConfig.emails = String(c.TARGET_EMAIL)
+              .split(/[,;\n\s]+/)
+              .map(e => e.trim())
+              .filter(e => e.includes('@'));
+          }
           if (c.AUTO_SCHEDULE_TEXT) {
             AppState.automationConfig.schedule = c.AUTO_SCHEDULE_TEXT;
           } else if (c.DAILY_REPORT_HOUR) {
@@ -322,6 +328,7 @@ const ApiService = {
           }
           if (typeof UI !== 'undefined') {
             if (UI.applyAutomationConfig) UI.applyAutomationConfig();
+            if (UI.updateNotificationTargetEmailDisplay) UI.updateNotificationTargetEmailDisplay();
             if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
           }
         }

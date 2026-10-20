@@ -3623,6 +3623,10 @@ const UI = {
     if (inputSched) inputSched.value = auto.schedule || 'Setiap Hari 08:00 WIB';
     if (inputEmail) inputEmail.value = emailList.join(', ');
     if (inputType) inputType.value = auto.type || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
+
+    if (this.updateNotificationTargetEmailDisplay) {
+      this.updateNotificationTargetEmailDisplay();
+    }
   },
 
   /**
@@ -4343,6 +4347,8 @@ const UI = {
     AppState.automationConfig.type = type;
     AppState.saveToCache();
     this.applyAutomationConfig();
+    this.updateNotificationTargetEmailDisplay();
+    this.renderEmailNotifications();
 
     try {
       this.showToast('⏳ Menyimpan target email ke database cloud...');
@@ -4385,6 +4391,8 @@ const UI = {
         }
         AppState.saveToCache();
         this.applyAutomationConfig();
+        this.updateNotificationTargetEmailDisplay();
+        this.renderEmailNotifications();
         this.closeEditTargetEmailModal();
         this.showToast('✅ Berhasil! Target email penerima laporan tersimpan di database Google Sheets!');
       } else {
@@ -4613,11 +4621,8 @@ const UI = {
 
     modal.classList.remove('hidden');
 
-    // Tampilkan email target penerima aktif
-    const targetEmailEl = document.getElementById('notifModalTargetEmail');
-    if (targetEmailEl) {
-      targetEmailEl.textContent = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
-    }
+    // Tampilkan email target penerima aktif dalam bentuk chip & badge
+    this.updateNotificationTargetEmailDisplay();
 
     // Isi input direct url jika ada di localStorage
     const inputModal = document.getElementById('directAppScriptUrlInputModal');
@@ -4641,6 +4646,43 @@ const UI = {
     } catch (e) {}
 
     this.updateNotificationBadge();
+  },
+
+  /**
+   * Perbarui tampilan target email penerima di modal notifikasi & laporan secara reaktif
+   */
+  updateNotificationTargetEmailDisplay() {
+    const auto = AppState.automationConfig || {};
+    let emailList = [];
+    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
+      emailList = auto.emails;
+    } else if (auto.email) {
+      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    }
+    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
+
+    // Update Badge Jumlah Email
+    const badgeEl = document.getElementById('notifModalEmailCountBadge');
+    if (badgeEl) {
+      badgeEl.textContent = `${emailList.length} Email Terdaftar`;
+    }
+
+    // Update Chips Kontainer (Setiap email ditampilkan utuh sebagai chip tanpa terpotong)
+    const chipsContainer = document.getElementById('notifModalEmailChips');
+    if (chipsContainer) {
+      chipsContainer.innerHTML = emailList.map(email => `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
+          <span class="text-blue-500">@</span>
+          <span>${email}</span>
+        </span>
+      `).join('');
+    }
+
+    // Backward compatibility untuk elemen teks single
+    const targetEmailEl = document.getElementById('notifModalTargetEmail');
+    if (targetEmailEl) {
+      targetEmailEl.textContent = emailList.join(', ');
+    }
   },
 
   /**
@@ -4741,31 +4783,22 @@ const UI = {
   setEmailNotifFilter(filter) {
     this.emailNotifFilter = filter || 'ALL';
 
-    const btnAll = document.getElementById('notifFilterAll');
-    const btnMasuk = document.getElementById('notifFilterMasuk');
-    const btnKeluar = document.getElementById('notifFilterKeluar');
-    const btnDaily = document.getElementById('notifFilterDaily');
+    const buttons = [
+      { id: 'notifFilterAll', key: 'ALL' },
+      { id: 'notifFilterMasuk', key: 'MASUK' },
+      { id: 'notifFilterKeluar', key: 'KELUAR' },
+      { id: 'notifFilterDaily', key: 'DAILY' }
+    ];
 
-    const activeClasses = ['bg-blue-600', 'text-white', 'shadow-xs'];
-    const inactiveClasses = ['bg-white', 'text-slate-600', 'border', 'border-slate-200/80'];
+    const activeCls = 'flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-[11px] font-black text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-blue-600 text-white shadow-xs';
+    const inactiveCls = 'flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80';
 
-    [btnAll, btnMasuk, btnKeluar, btnDaily].forEach(b => {
-      if (b) {
-        b.classList.remove('bg-blue-600', 'text-white', 'shadow-xs', 'bg-white', 'text-slate-600', 'border', 'border-slate-200/80');
+    buttons.forEach(b => {
+      const el = document.getElementById(b.id);
+      if (el) {
+        el.className = (this.emailNotifFilter === b.key) ? activeCls : inactiveCls;
       }
     });
-
-    if (this.emailNotifFilter === 'ALL' && btnAll) btnAll.classList.add(...activeClasses);
-    else if (btnAll) btnAll.classList.add(...inactiveClasses);
-
-    if (this.emailNotifFilter === 'MASUK' && btnMasuk) btnMasuk.classList.add(...activeClasses);
-    else if (btnMasuk) btnMasuk.classList.add(...inactiveClasses);
-
-    if (this.emailNotifFilter === 'KELUAR' && btnKeluar) btnKeluar.classList.add(...activeClasses);
-    else if (btnKeluar) btnKeluar.classList.add(...inactiveClasses);
-
-    if (this.emailNotifFilter === 'DAILY' && btnDaily) btnDaily.classList.add(...activeClasses);
-    else if (btnDaily) btnDaily.classList.add(...inactiveClasses);
 
     this.renderEmailNotifications();
   },
@@ -4871,8 +4904,9 @@ const UI = {
     const dbLogs = dbHistory.map((item, idx) => {
       const isMasuk = (item.status === 'Unit Masuk' || item.type === 'Unit Masuk' || String(item.status || '').toLowerCase().includes('masuk'));
       const mutationType = isMasuk ? 'Unit Masuk' : 'Unit Keluar';
+      const cleanTime = String(item.time || '').replace(/\s*WIB\s*/gi, '').trim();
+      const timeStr = cleanTime ? `${cleanTime} WIB` : '';
       const formattedDate = item.fullDateStr || (item.date ? `${item.date}/${item.month || ''}/${item.year || ''}` : '');
-      const timeStr = item.time ? `${item.time} WIB` : '';
       const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
 
       return {
@@ -5068,28 +5102,62 @@ const UI = {
         `;
       }
 
+      // Render Daftar Target Email Penerima (Multi-Email Tags Responsive)
+      const rawTarget = item.targetEmail || targetEmail;
+      const recipientList = String(rawTarget)
+        .split(/[,;\n\s]+/)
+        .map(e => e.trim())
+        .filter(e => e.includes('@'));
+
+      let recipientsHtml = '';
+      if (recipientList.length <= 1) {
+        const singleEmail = recipientList[0] || 'admin.logistics@daihatsu.co.id';
+        recipientsHtml = `
+          <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
+            <span class="flex items-center gap-1.5 min-w-0 text-slate-500">
+              <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
+              <strong class="font-mono text-slate-700 truncate">${singleEmail}</strong>
+            </span>
+          </div>
+        `;
+      } else {
+        recipientsHtml = `
+          <div class="pt-1.5 space-y-1 border-t border-slate-100">
+            <div class="flex items-center justify-between text-[10px] text-slate-500">
+              <span class="flex items-center gap-1.5 font-medium">
+                <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="text-slate-400 text-[9.5px]">Tujuan (${recipientList.length} Penerima Terdaftar):</span>
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              ${recipientList.map(em => `
+                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9.5px] font-bold border border-slate-200/80">
+                  <span class="text-blue-500">@</span>
+                  <span class="truncate max-w-[200px]">${em}</span>
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
       return `
         <div class="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs ${leftAccent} transition hover:border-slate-300 space-y-2">
-          <!-- Top Row: Type, Status, Timestamp -->
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center space-x-1.5 min-w-0">
+          <!-- Top Row: Type, Status, Timestamp (Responsive No Overlap) -->
+          <div class="flex items-start justify-between gap-1.5">
+            <div class="flex flex-wrap items-center gap-1 min-w-0">
               ${typeBadge}
               ${statusBadge}
             </div>
-            <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">${item.timestamp}</span>
+            <span class="text-[9.5px] font-bold text-slate-400 whitespace-nowrap flex-shrink-0 text-right pt-0.5">${item.timestamp}</span>
           </div>
 
           <!-- Body: Unit Information -->
           ${unitDetailsHtml}
 
           <!-- Footer: Email Destination -->
-          <div class="pt-1.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 font-medium">
-            <span class="flex items-center gap-1 truncate max-w-[240px]">
-              <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <span class="truncate">Tujuan: <strong class="font-mono text-slate-700">${item.targetEmail}</strong></span>
-            </span>
-            <span class="text-slate-400 text-[9.5px]">Astra Daihatsu</span>
-          </div>
+          ${recipientsHtml}
         </div>
       `;
     }).join('');

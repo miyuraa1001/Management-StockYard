@@ -588,7 +588,8 @@ function doPost(e) {
           date: formattedDateStr,
           unitPhotoUrl: unitPhotoUrl,
           docPhotoUrl: docPhotoUrl,
-          newStock: newStock
+          newStock: newStock,
+          targetEmail: data.targetEmail || config.TARGET_EMAIL
         });
       } catch (mailErr) {
         Logger.log("Peringatan notifikasi email mutasi: " + mailErr.toString());
@@ -1607,7 +1608,7 @@ function sendRealtimeMutationThreadNotification(ss, item) {
   }
 
   const config = getSystemConfigData(ss);
-  const targetEmail = normalizeRecipientEmails(config.TARGET_EMAIL || DEFAULT_TARGET_EMAIL);
+  const targetEmail = normalizeRecipientEmails(item.targetEmail || config.TARGET_EMAIL || DEFAULT_TARGET_EMAIL);
   if (!targetEmail) {
     Logger.log("⚠️ Peringatan: TARGET_EMAIL belum dikonfigurasi atau tidak valid di tab SystemConfig.");
     return { success: false, error: "TARGET_EMAIL tidak valid" };
