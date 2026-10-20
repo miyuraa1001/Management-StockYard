@@ -158,26 +158,34 @@ const App = {
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
+    const dateFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+    const timeFormatted = `${hours}:${minutes} WIB`;
+
     const newRecord = {
-      id: 'HIST-' + Date.now(),
+      id: 'MUT-' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '-' + hours + minutes + String(now.getSeconds()).padStart(2, '0'),
       type: mutationType,
-      time: `${hours}:${minutes}`,
-      date: now.getDate(),
+      time: timeFormatted,
+      date: dateFormatted,
+      day: now.getDate(),
       month: now.getMonth() + 1,
       year: now.getFullYear(),
+      timestamp: now.toISOString(),
       fullDateStr: `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`,
       model: model,
       modelPhoto: modelOfficialPhoto,
       vin: cleanVin,
-      engine: engine.toUpperCase(),
+      engine: cleanEngine,
       pic: CONFIG.OPERATOR_NAME || 'Andi Pratama',
+      picNpk: CONFIG.OPERATOR_NPK || '-',
+      location: CONFIG.BRANCH_NAME || 'Pool Sentra Lampung',
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
       docPhoto: docImg
     };
 
-    // Optimistic UI Update: masukkan ke state lokal segera
+    // Optimistic UI Update: masukkan ke state lokal segera & amankan ke cache
     AppState.historyData.unshift(newRecord);
+    AppState.saveToCache();
 
     // Update status di Inventory jika ada unit dengan VIN yang sama
     const existingInv = AppState.inventoryData.find(item => item.vin === cleanVin);

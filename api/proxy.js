@@ -135,6 +135,10 @@ export default async function handler(req, res) {
         }
       }
       if (typeof payload === 'object' && payload !== null) {
+        // Normalisasi alias action: backend Google Apps Script mengharapkan 'recordMutation'
+        if (payload.action === 'saveMutation' || payload.action === 'addMutation') {
+          payload.action = 'recordMutation';
+        }
         if (apiSecretToken) {
           payload.token = apiSecretToken;
         }

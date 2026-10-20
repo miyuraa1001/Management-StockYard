@@ -248,13 +248,29 @@ const ApiService = {
             const finalD = d ? parseInt(d, 10) : new Date().getDate();
             const finalM = m ? parseInt(m, 10) : (new Date().getMonth() + 1);
             const finalY = y ? parseInt(y, 10) : new Date().getFullYear();
-            const dateStr = item.fullDateStr || `${finalD} ${monthNames[finalM - 1]} ${finalY}`;
+            const dateStr = `${finalD} ${monthNames[finalM - 1]} ${finalY}`;
+
+            // Deteksi jika kolom Tanggal berisi nilai Jam (misal "09:10 WIB") akibat pergeseran kolom spreadsheet
+            let correctedTime = item.time || '';
+            if (typeof item.date === 'string' && (item.date.includes('WIB') || (item.date.includes(':') && !item.date.includes('/')))) {
+              correctedTime = item.date.replace(/WIB/i, '').trim();
+            } else if (item.time && String(item.time).includes('T')) {
+              try {
+                const tObj = new Date(item.time);
+                if (!isNaN(tObj.getTime())) {
+                  const hh = String(tObj.getHours()).padStart(2, '0');
+                  const mm = String(tObj.getMinutes()).padStart(2, '0');
+                  correctedTime = `${hh}:${mm}`;
+                }
+              } catch (e) {}
+            }
 
             return {
               ...item,
               date: finalD,
               month: finalM,
               year: finalY,
+              time: correctedTime || item.time || '08:00',
               fullDateStr: dateStr,
               unitPhoto: formatDriveThumb(item.unitPhoto),
               docPhoto: formatDriveThumb(item.docPhoto)
@@ -316,7 +332,17 @@ const ApiService = {
    */
   async saveMutation(mutationRecord) {
     try {
-      const res = await this.request('saveMutation', 'POST', mutationRecord);
+      // Backend Google Apps Script resmi menggunakan action 'recordMutation'
+      const payload = { ...mutationRecord };
+      let res = await this.request('recordMutation', 'POST', payload);
+      if (res && res.success) {
+        return res;
+      }
+      // Fallback jika backend Apps Script versi lama menggunakan action 'saveMutation' atau 'addMutation'
+      if (!res || !res.success) {
+        const fallbackRes = await this.request('saveMutation', 'POST', payload);
+        if (fallbackRes && fallbackRes.success) return fallbackRes;
+      }
       return res;
     } catch (e) {
       console.error('[ApiService] Gagal menyimpan mutasi ke spreadsheet:', e);
