@@ -139,6 +139,10 @@ export default async function handler(req, res) {
         if (payload.action === 'saveMutation' || payload.action === 'addMutation') {
           payload.action = 'recordMutation';
         }
+        // Normalisasi alias action pengiriman laporan email
+        if (payload.action === 'triggerManualReport' || payload.action === 'sendReportEmail') {
+          payload.action = 'triggerReportEmail';
+        }
         if (apiSecretToken) {
           payload.token = apiSecretToken;
         }

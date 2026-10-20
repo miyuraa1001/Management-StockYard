@@ -394,10 +394,43 @@ const ApiService = {
   async triggerEmailReport(targetEmail = null) {
     try {
       const email = targetEmail || AppState.automationConfig?.email || '';
-      return await this.request('triggerManualReport', 'POST', { email: email });
+      let res = await this.request('triggerReportEmail', 'POST', { email: email, action: 'triggerReportEmail' });
+      if (res && (res.success || !res.error)) return res;
+      
+      // Fallback aliases
+      res = await this.request('sendReportEmail', 'POST', { email: email, action: 'sendReportEmail' });
+      if (res && (res.success || !res.error)) return res;
+
+      res = await this.request('triggerManualReport', 'POST', { email: email, action: 'triggerManualReport' });
+      return res;
     } catch (e) {
       console.error('[ApiService] Gagal memicu pengiriman laporan email:', e);
       return { success: false, error: e.message };
+    }
+  },
+
+  /**
+   * Menguji status koneksi live layanan email & Google Apps Script
+   */
+  async checkEmailConnection() {
+    try {
+      const health = await this.checkHealth();
+      const configRes = await this.getConfig();
+      const targetEmail = AppState.automationConfig?.email || configRes?.config?.TARGET_EMAIL || 'admin.logistics@daihatsu.co.id';
+      const isOnline = health && health.proxyStatus === 'ACTIVE' && health.hasAppScriptUrl;
+      return {
+        success: isOnline,
+        proxyStatus: health?.proxyStatus || 'OFFLINE',
+        hasAppScriptUrl: !!health?.hasAppScriptUrl,
+        targetEmail: targetEmail,
+        timestamp: new Date().toISOString()
+      };
+    } catch (e) {
+      return {
+        success: false,
+        error: e.message,
+        targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
+      };
     }
   }
 };

@@ -238,17 +238,79 @@ const App = {
       UI.switchTab('history');
     }, 400);
 
-    // Background Async: Kirim data ke Google Spreadsheet backend
+    // Background Async: Kirim data ke Google Spreadsheet backend & verifikasi pengiriman email realtime
     try {
       const response = await ApiService.saveMutation(newRecord);
+      const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const nowFormatted = new Date().toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }) + ' WIB';
+
       if (response && response.success && !response.isFallback && !response.isOffline) {
         console.log('[App] Data mutasi berhasil tersinkron ke Google Spreadsheet backend:', response);
-        UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
+
+        // Evaluasi status pengiriman notifikasi email realtime
+        const mailStatus = response.mailStatus;
+        const isMailSuccess = mailStatus && (mailStatus.success === true || mailStatus.mode);
+
+        // Catat ke riwayat log notifikasi frontend agar user tahu status pengiriman realtime
+        const notifLog = {
+          id: 'mail-' + (response.transactionId || Date.now()),
+          trxId: response.transactionId || newRecord.id,
+          timestamp: nowFormatted,
+          targetEmail: targetEmail,
+          status: isMailSuccess ? 'SUCCESS' : (mailStatus ? 'FAILED' : 'NO_CONFIG'),
+          category: 'MUTATION',
+          mutationType: newRecord.type, // 'Unit Masuk' atau 'Unit Keluar'
+          model: newRecord.model,
+          vin: newRecord.vin,
+          subject: `[STOCKYARD REALTIME] ${newRecord.type}: ${newRecord.model} (${newRecord.vin})`,
+          message: isMailSuccess
+            ? `Notifikasi email mutasi ${newRecord.type} (${newRecord.model} • ${newRecord.vin}) berhasil dikirimkan ke ${targetEmail} via ${mailStatus?.mode === 'reply' ? 'Thread Gmail Harian' : 'Layanan Gmail'}.`
+            : (mailStatus?.error 
+                ? `Mutasi tersimpan, namun gagal mengirim notifikasi email ke ${targetEmail}: ${mailStatus.error}` 
+                : `Notifikasi email dinonaktifkan di konfigurasi sistem.`),
+          read: false
+        };
+
+        if (typeof UI !== 'undefined' && typeof UI.recordEmailNotificationLog === 'function') {
+          UI.recordEmailNotificationLog(notifLog);
+        }
+
+        if (isMailSuccess) {
+          UI.showToast(`🎉 Data tersimpan di Spreadsheet & ✉️ Notifikasi ${newRecord.type} terkirim ke ${targetEmail}!`, 5000);
+        } else if (mailStatus && mailStatus.error) {
+          UI.showToast(`✅ Mutasi tersimpan di Spreadsheet, namun ⚠️ email notifikasi gagal: ${mailStatus.error}`, 5500);
+        } else {
+          UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
+        }
+
         // Segera sinkronkan ulang database agar chart donat & stok unit yard langsung terupdate
         this.syncBackendData();
       } else {
         const reason = response?.message || response?.error || 'URL Web App belum terhubung';
         console.warn('[App] Mutasi tersimpan lokal (belum ke database Google):', reason);
+
+        // Catat log offline pending
+        const offlineLog = {
+          id: 'mail-offline-' + Date.now(),
+          trxId: newRecord.id,
+          timestamp: nowFormatted,
+          targetEmail: targetEmail,
+          status: 'PENDING_OFFLINE',
+          category: 'MUTATION',
+          mutationType: newRecord.type,
+          model: newRecord.model,
+          vin: newRecord.vin,
+          subject: `[OFFLINE] ${newRecord.type}: ${newRecord.model} (${newRecord.vin})`,
+          message: `Data tersimpan lokal di perangkat. Notifikasi email akan dikirimkan otomatis saat terhubung ke server Google.`,
+          read: false
+        };
+        if (typeof UI !== 'undefined' && typeof UI.recordEmailNotificationLog === 'function') {
+          UI.recordEmailNotificationLog(offlineLog);
+        }
+
         UI.showToast('⚠️ Data tersimpan di HP/Lokal (Offline / Proxy Vercel sedang proses). Periksa koneksi atau redeploy Vercel jika variabel belum aktif.', 6000);
       }
     } catch (e) {

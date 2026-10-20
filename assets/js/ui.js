@@ -4652,8 +4652,101 @@ const UI = {
     if (modal) modal.classList.add('hidden');
   },
 
+  emailNotifFilter: 'ALL',
+
+  /**
+   * Filter riwayat notifikasi email (Semua, Mutasi Unit Masuk/Keluar, Laporan Harian)
+   */
+  setEmailNotifFilter(filter) {
+    this.emailNotifFilter = filter || 'ALL';
+
+    const btnAll = document.getElementById('notifFilterAll');
+    const btnMut = document.getElementById('notifFilterMutation');
+    const btnDaily = document.getElementById('notifFilterDaily');
+
+    const activeClasses = ['bg-blue-600', 'text-white', 'shadow-xs'];
+    const inactiveClasses = ['bg-white', 'text-slate-600', 'border', 'border-slate-200/80'];
+
+    [btnAll, btnMut, btnDaily].forEach(b => {
+      if (b) {
+        b.classList.remove('bg-blue-600', 'text-white', 'shadow-xs', 'bg-white', 'text-slate-600', 'border', 'border-slate-200/80');
+      }
+    });
+
+    if (this.emailNotifFilter === 'ALL' && btnAll) btnAll.classList.add(...activeClasses);
+    else if (btnAll) btnAll.classList.add(...inactiveClasses);
+
+    if (this.emailNotifFilter === 'MUTATION' && btnMut) btnMut.classList.add(...activeClasses);
+    else if (btnMut) btnMut.classList.add(...inactiveClasses);
+
+    if (this.emailNotifFilter === 'DAILY' && btnDaily) btnDaily.classList.add(...activeClasses);
+    else if (btnDaily) btnDaily.classList.add(...inactiveClasses);
+
+    this.renderEmailNotifications();
+  },
+
+  /**
+   * Catat entri riwayat pengiriman email realtime (Mutasi atau Daily Report)
+   */
+  recordEmailNotificationLog(log) {
+    if (!log) return;
+    let logs = [];
+    try {
+      const stored = localStorage.getItem('daihatsu_email_notifications');
+      if (stored) logs = JSON.parse(stored);
+    } catch (e) {}
+
+    logs.unshift(log);
+    if (logs.length > 30) logs = logs.slice(0, 30); // simpan 30 aktivitas terakhir
+    try {
+      localStorage.setItem('daihatsu_email_notifications', JSON.stringify(logs));
+    } catch (e) {}
+
+    this.renderEmailNotifications();
+    this.updateNotificationBadge();
+  },
+
+  /**
+   * Menguji koneksi live ke backend Google Apps Script & Layanan Email Gmail
+   */
+  async checkEmailConnectionNow() {
+    const btn = document.getElementById('btnCheckEmailConn');
+    const dot = document.getElementById('emailLiveStatusDot');
+    const text = document.getElementById('emailLiveStatusText');
+
+    if (btn) btn.disabled = true;
+    if (text) text.textContent = 'Memeriksa status koneksi...';
+    if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping flex-shrink-0';
+
+    this.showToast('🔍 Memeriksa koneksi server & layanan email Gmail...');
+
+    try {
+      const conn = await ApiService.checkEmailConnection();
+      const isOk = conn && conn.success;
+      const targetEmail = conn?.targetEmail || AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+
+      if (isOk) {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0';
+        if (text) text.textContent = 'Koneksi Realtime: TERHUBUNG KE GMAIL & SPREADSHEET ✓';
+        this.showToast(`✅ Terhubung! Server Google Apps Script siap & target email (${targetEmail}) aktif.`, 5000);
+      } else {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0';
+        if (text) text.textContent = 'Koneksi: BELUM TERHUBUNG KE APPS SCRIPT';
+        const tip = conn?.error || 'Pastikan variabel APPSCRIPT_URL di Vercel sudah terpasang & ter-redeploy.';
+        this.showToast(`⚠️ Server belum terhubung: ${tip}`, 6500);
+      }
+    } catch (err) {
+      if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0';
+      if (text) text.textContent = 'Koneksi: KESALAHAN JARINGAN';
+      this.showToast(`⛔ Gagal memeriksa koneksi: ${err.message}`, 5000);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  },
+
   /**
    * Render daftar notifikasi laporan email yang benar-benar terkirim
+   * Mendukung filter Semua, Mutasi Unit Masuk/Keluar, dan Laporan Harian
    */
   renderEmailNotifications() {
     const container = document.getElementById('emailNotifListContainer');
@@ -4665,17 +4758,29 @@ const UI = {
       if (stored) logs = JSON.parse(stored);
     } catch (e) {}
 
-    if (!logs || logs.length === 0) {
+    const filter = this.emailNotifFilter || 'ALL';
+    let filteredLogs = logs;
+    if (filter === 'MUTATION') {
+      filteredLogs = logs.filter(l => l.category === 'MUTATION');
+    } else if (filter === 'DAILY') {
+      filteredLogs = logs.filter(l => l.category === 'DAILY_REPORT' || !l.category);
+    }
+
+    if (!filteredLogs || filteredLogs.length === 0) {
       const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      let emptyMsg = `Target email aktif saat ini adalah <strong class="text-slate-700 font-mono">${targetEmail}</strong>. Setiap ada unit masuk atau keluar, notifikasi email akan langsung terkirim dan tercatat di sini secara realtime.`;
+      if (filter === 'MUTATION') emptyMsg = 'Belum ada riwayat email mutasi unit masuk atau keluar yang tercatat.';
+      else if (filter === 'DAILY') emptyMsg = 'Belum ada laporan harian yang dikirim hari ini. Tekan tombol "Kirim Sekarang" di atas untuk mengirimkan laporan.';
+
       container.innerHTML = `
         <div class="p-6 text-center text-slate-400 space-y-3 bg-slate-50/80 rounded-2xl border border-slate-200/60">
           <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           </div>
           <div>
-            <h4 class="text-xs font-black text-slate-700">Belum Ada Riwayat Pengiriman Hari Ini</h4>
+            <h4 class="text-xs font-black text-slate-700">Belum Ada Riwayat ${filter === 'MUTATION' ? 'Mutasi' : (filter === 'DAILY' ? 'Laporan Harian' : 'Pengiriman')}</h4>
             <p class="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
-              Target email aktif saat ini adalah <strong class="text-slate-700 font-mono">${targetEmail}</strong>. Tekan tombol <strong class="text-blue-600">"Kirim Sekarang"</strong> di atas untuk menguji pengiriman laporan email nyata.
+              ${emptyMsg}
             </p>
           </div>
         </div>
@@ -4683,32 +4788,100 @@ const UI = {
       return;
     }
 
-    container.innerHTML = logs.map(item => {
+    container.innerHTML = filteredLogs.map(item => {
       const isSuccess = item.status === 'SUCCESS';
-      return `
-        <div class="p-3.5 sm:p-4 rounded-2xl ${isSuccess ? 'bg-emerald-50/70 border border-emerald-200/80' : 'bg-rose-50/70 border border-rose-200/80'} text-xs space-y-1.5 transition">
-          <div class="flex items-center justify-between gap-2">
-            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${isSuccess ? 'text-emerald-700 bg-emerald-100/80' : 'text-rose-700 bg-rose-100/80'} px-2 py-0.5 rounded-md">
-              <span class="w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-              <span>${isSuccess ? 'Berhasil Terkirim' : 'Gagal Terkirim'}</span>
+      const isOffline = item.status === 'PENDING_OFFLINE';
+      const isMasuk = item.mutationType === 'Unit Masuk';
+      const isKeluar = item.mutationType === 'Unit Keluar';
+      const isDaily = item.category === 'DAILY_REPORT' || (!isMasuk && !isKeluar);
+
+      // Desain Badge Kategori & Status
+      let badgeHtml = '';
+      let borderBg = '';
+
+      if (isSuccess) {
+        if (isMasuk) {
+          borderBg = 'bg-emerald-50/70 border border-emerald-200/80';
+          badgeHtml = `
+            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-md">
+              <span>↓</span>
+              <span>Unit Masuk • Email Terkirim</span>
             </span>
-            <span class="text-[10px] font-bold text-slate-400">${item.timestamp}</span>
+          `;
+        } else if (isKeluar) {
+          borderBg = 'bg-blue-50/70 border border-blue-200/80';
+          badgeHtml = `
+            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-md">
+              <span>↑</span>
+              <span>Unit Keluar • Email Terkirim</span>
+            </span>
+          `;
+        } else {
+          borderBg = 'bg-indigo-50/70 border border-indigo-200/80';
+          badgeHtml = `
+            <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100/90 px-2 py-0.5 rounded-md">
+              <span>📄</span>
+              <span>Laporan Harian • Terkirim</span>
+            </span>
+          `;
+        }
+      } else if (isOffline) {
+        borderBg = 'bg-amber-50/70 border border-amber-200/80';
+        badgeHtml = `
+          <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-100/90 px-2 py-0.5 rounded-md">
+            <span>⏳</span>
+            <span>Tersimpan Lokal • Menunggu Online</span>
+          </span>
+        `;
+      } else {
+        borderBg = 'bg-rose-50/70 border border-rose-200/80';
+        badgeHtml = `
+          <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-md">
+            <span>⛔</span>
+            <span>Gagal Terkirim</span>
+          </span>
+        `;
+      }
+
+      // Metadata unit jika ada
+      const metaUnitHtml = (item.model || item.vin) ? `
+        <div class="p-2 bg-white/80 rounded-xl border border-slate-200/60 font-mono text-[11px] space-y-0.5 text-slate-800">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-sans text-[10px]">Model:</span>
+            <span class="font-bold text-slate-900">${item.model || '-'}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-sans text-[10px]">VIN:</span>
+            <span class="font-bold text-blue-700">${item.vin || '-'}</span>
+          </div>
+        </div>
+      ` : '';
+
+      return `
+        <div class="p-3.5 sm:p-4 rounded-2xl ${borderBg} text-xs space-y-2 transition shadow-2xs">
+          <div class="flex items-center justify-between gap-2">
+            ${badgeHtml}
+            <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">${item.timestamp}</span>
           </div>
 
           <h5 class="font-extrabold text-slate-900 text-xs sm:text-[13px] leading-tight">
-            ${item.subject || 'Laporan Mutasi Stockyard Astra Daihatsu Sentra Lampung'}
+            ${item.subject || 'Aktivitas Mutasi Stockyard Astra Daihatsu'}
           </h5>
 
           <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
-            ${item.message || 'Laporan rekapitulasi mutasi fisik unit telah terkirim ke target email.'}
+            ${item.message || 'Laporan mutasi fisik unit telah diproses.'}
           </p>
 
-          <div class="pt-1 flex items-center justify-between text-[10.5px] border-t ${isSuccess ? 'border-emerald-200/50 text-emerald-800' : 'border-rose-200/50 text-rose-800'} font-semibold">
-            <span class="flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
-              <span>Tujuan: <strong class="font-mono">${item.targetEmail}</strong></span>
+          ${metaUnitHtml}
+
+          <div class="pt-1.5 flex items-center justify-between text-[10.5px] border-t border-slate-200/60 font-semibold text-slate-700">
+            <span class="flex items-center gap-1 truncate max-w-[220px] sm:max-w-xs">
+              <svg class="w-3.5 h-3.5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+              <span class="truncate">Tujuan: <strong class="font-mono text-slate-900">${item.targetEmail}</strong></span>
             </span>
-            <span>Gmail Service ✓</span>
+            <span class="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+              ${isSuccess ? 'Gmail Verified ✓' : (isOffline ? 'Local Sync ⏳' : 'Delivery Error ⚠️')}
+            </span>
           </div>
         </div>
       `;
@@ -4746,6 +4919,7 @@ const UI = {
         timestamp: timestampStr,
         targetEmail: targetEmail,
         status: isSuccess ? 'SUCCESS' : 'FAILED',
+        category: 'DAILY_REPORT',
         subject: 'Rekap Laporan Mutasi Stockyard • Astra Daihatsu - DSO Lampung',
         message: isSuccess
           ? `Laporan rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
@@ -4753,18 +4927,7 @@ const UI = {
         read: true
       };
 
-      // Simpan log ke localStorage
-      let logs = [];
-      try {
-        const stored = localStorage.getItem('daihatsu_email_notifications');
-        if (stored) logs = JSON.parse(stored);
-      } catch (e) {}
-
-      logs.unshift(newLog); // masukkan ke paling atas
-      if (logs.length > 20) logs = logs.slice(0, 20); // batasi 20 log terakhir
-      localStorage.setItem('daihatsu_email_notifications', JSON.stringify(logs));
-
-      this.renderEmailNotifications();
+      this.recordEmailNotificationLog(newLog);
 
       if (isSuccess) {
         this.showToast(`🎉 Sukses! Laporan telah terkirim ke ${targetEmail}!`, 4500);
@@ -5495,6 +5658,8 @@ window.toggleDailyDigestSetting = (c) => UI.toggleDailyDigestSetting ? UI.toggle
 window.openNotificationModal = () => UI.openNotificationModal ? UI.openNotificationModal() : null;
 window.closeNotificationModal = () => UI.closeNotificationModal ? UI.closeNotificationModal() : null;
 window.triggerRealEmailReportNow = () => UI.triggerRealEmailReportNow ? UI.triggerRealEmailReportNow() : null;
+window.checkEmailConnectionNow = () => UI.checkEmailConnectionNow ? UI.checkEmailConnectionNow() : null;
+window.setEmailNotifFilter = (f) => UI.setEmailNotifFilter ? UI.setEmailNotifFilter(f) : null;
 window.clearEmailNotificationLogs = () => UI.clearEmailNotificationLogs ? UI.clearEmailNotificationLogs() : null;
 window.applyDashboardDateFilter = () => UI.applyDashboardDateFilter();
 window.resetDashboardDateFilter = () => UI.resetDashboardDateFilter();
