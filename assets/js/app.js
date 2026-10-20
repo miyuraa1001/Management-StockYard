@@ -27,10 +27,12 @@ const App = {
     // 3. Render awal komponen UI dari state
     if (typeof UI.initDashboardDateFilter === 'function') {
       UI.initDashboardDateFilter();
-    } else {
-      UI.renderDashboardActivities();
-      UI.updateDashboardKpis();
     }
+    if (typeof UI.applyDashboardDateFilter === 'function') {
+      UI.applyDashboardDateFilter();
+    }
+    UI.updateDashboardKpis();
+    UI.renderDashboardActivities();
     UI.renderInventoryList();
     UI.renderHistoryList();
     UI.initHeroCarousel();
@@ -90,10 +92,9 @@ const App = {
       if (isUpdated) {
         if (typeof UI.applyDashboardDateFilter === 'function') {
           UI.applyDashboardDateFilter();
-        } else {
-          UI.renderDashboardActivities();
-          UI.updateDashboardKpis();
         }
+        UI.updateDashboardKpis();
+        UI.renderDashboardActivities();
         UI.renderInventoryList();
         UI.renderHistoryList();
         if (UI.applyUserProfile) UI.applyUserProfile();
@@ -228,10 +229,9 @@ const App = {
     // Refresh UI & ganti tab ke Riwayat
     if (typeof UI.applyDashboardDateFilter === 'function') {
       UI.applyDashboardDateFilter();
-    } else {
-      UI.updateDashboardKpis();
-      UI.renderDashboardActivities();
     }
+    UI.updateDashboardKpis();
+    UI.renderDashboardActivities();
     UI.renderInventoryList();
     UI.renderHistoryList();
 

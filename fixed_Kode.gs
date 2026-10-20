@@ -865,9 +865,9 @@ function getInventoryData(ss) {
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r[1]) continue;
-    const totalIn = parseInt(r[3], 10) || 0;
-    const totalOut = parseInt(r[4], 10) || 0;
-    const stockYard = Math.max(0, totalIn - totalOut);
+    const stockYard = parseInt(r[3], 10) || 0;
+    const totalIn = parseInt(r[4], 10) || 0;
+    const totalOut = Math.max(0, totalIn - stockYard);
     const photoUrl = r[5] ? String(r[5]).trim() : "";
 
     inventory.push({

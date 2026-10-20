@@ -56,10 +56,9 @@ const UI = {
     if (target === 'dashboard') {
       if (typeof this.applyDashboardDateFilter === 'function') {
         this.applyDashboardDateFilter();
-      } else {
-        this.renderDashboardActivities();
-        this.updateDashboardKpis();
       }
+      this.renderDashboardActivities();
+      this.updateDashboardKpis();
       if (typeof this.startHeroAutoScroll === 'function') {
         this.startHeroAutoScroll();
       }
@@ -103,6 +102,10 @@ const UI = {
    * Render kartu KPI ringkasan mutasi di beranda
    */
   updateDashboardKpis() {
+    if (typeof AppState.updateKpiCounts === 'function') {
+      AppState.updateKpiCounts();
+    }
+
     const kpiMasuk = document.getElementById('kpiMasukVal');
     const kpiKeluar = document.getElementById('kpiKeluarVal');
     const kpiTotalStok = document.getElementById('kpiTotalStokVal') || document.getElementById('kpiIntransitVal');
@@ -209,6 +212,9 @@ const UI = {
 
     // 2. Re-render aktivitas mutasi terbaru sesuai filter tanggal
     this.renderDashboardActivities();
+
+    // 3. Re-render Distribusi Donut & KPI agar data unit masuk langsung terbaca
+    this.updateDashboardKpis();
   },
 
   /**
@@ -2527,6 +2533,11 @@ const UI = {
     };
 
     const catalog = AppState.vehicleCatalog || [];
+    const { filtered: filteredHistory, fDate, fMonth, fYear } = (typeof this.getFilteredDashboardData === 'function')
+      ? this.getFilteredDashboardData()
+      : { filtered: AppState.historyData || [], fDate: 'all', fMonth: 'all', fYear: 'all' };
+    const isFiltered = (fDate !== 'all' || fMonth !== 'all' || fYear !== 'all');
+
     const modelStats = catalog.map(cat => {
       const matchingUnits = (AppState.inventoryData || []).filter(u => {
         if (!u) return false;
@@ -2536,7 +2547,7 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const matchingHistory = (AppState.historyData || []).filter(h => {
+      const matchingAllHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;
@@ -2544,17 +2555,33 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      let count = 0;
+      const matchingFiltered = (filteredHistory || []).filter(h => {
+        if (!h || !h.model) return false;
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel === cat.model.toLowerCase()) return true;
+        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+        return matched && matched.catalogId === cat.catalogId;
+      });
+
+      const allMasuk = matchingAllHistory.filter(h => h.type === 'Unit Masuk').length;
+      const allKeluar = matchingAllHistory.filter(h => h.type === 'Unit Keluar').length;
+      const periodMasuk = matchingFiltered.filter(h => h.type === 'Unit Masuk').length;
+      const periodKeluar = matchingFiltered.filter(h => h.type === 'Unit Keluar').length;
+
+      let yardStock = 0;
       const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
       if (hasStockYardField) {
-        count = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+        yardStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
       } else {
-        count = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
+        yardStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
       }
-      if (count === 0 && (masuk - keluar) > 0) {
-        count = Math.max(0, masuk - keluar);
+
+      const netFromHistory = Math.max(0, allMasuk - allKeluar);
+      let count = Math.max(yardStock, netFromHistory);
+
+      // Jika ada unit masuk pada periode yang sedang difilter (misal hari ini), pastikan count >= periodMasuk
+      if (isFiltered && periodMasuk > 0 && count === 0) {
+        count = periodMasuk;
       }
 
       return {
@@ -2564,8 +2591,10 @@ const UI = {
         photo: cat.photo,
         color: modelColors[cat.model] || '#3b82f6',
         count: count,
-        masuk: masuk,
-        keluar: keluar
+        masuk: isFiltered ? periodMasuk : allMasuk,
+        keluar: isFiltered ? periodKeluar : allKeluar,
+        allMasuk: allMasuk,
+        allKeluar: allKeluar
       };
     });
 
