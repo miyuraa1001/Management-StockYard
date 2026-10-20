@@ -33,13 +33,13 @@ const CONFIG = {
   REQUEST_TIMEOUT: 20000,
   REALTIME_SYNC_INTERVAL: 15000,
 
-  // LocalStorage Cache Key (v5 - Murni Realtime Database Tanpa Data Fiktif)
+  // LocalStorage Cache Key (v6 - Murni Realtime Database Tanpa Data Fiktif)
   CACHE_KEYS: {
-    INVENTORY: 'daihatsu_inventory_cache_v5',
-    HISTORY: 'daihatsu_history_cache_v5',
-    KPI: 'daihatsu_kpi_cache_v5',
-    PROFILE: 'daihatsu_profile_cache_v5',
-    AUTOMATION: 'daihatsu_automation_cache_v5',
+    INVENTORY: 'daihatsu_inventory_cache_v6',
+    HISTORY: 'daihatsu_history_cache_v6',
+    KPI: 'daihatsu_kpi_cache_v6',
+    PROFILE: 'daihatsu_profile_cache_v6',
+    AUTOMATION: 'daihatsu_automation_cache_v6',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
     DIRECT_URL: 'daihatsu_direct_appscript_url'

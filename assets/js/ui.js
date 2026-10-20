@@ -2538,16 +2538,13 @@ const UI = {
       : { filtered: AppState.historyData || [], fDate: 'all', fMonth: 'all', fYear: 'all' };
     const isFiltered = (fDate !== 'all' || fMonth !== 'all' || fYear !== 'all');
 
+    // Tentukan sumber data riwayat mutasi aktif:
+    // 1. Jika filter tanggal aktif (misal Tgl 20 Oktober 2026), gunakan HANYA mutasi pada periode tersebut!
+    // 2. Jika "Semua Waktu", gunakan seluruh riwayat mutasi riil di database (tab HistoryMutasi).
+    const activeHistory = isFiltered ? (filteredHistory || []) : (AppState.historyData || []);
+
     const modelStats = catalog.map(cat => {
-      const matchingUnits = (AppState.inventoryData || []).filter(u => {
-        if (!u) return false;
-        const uModel = String(u.model || u.name || '').toLowerCase();
-        if (uModel === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
-        return matched && matched.catalogId === cat.catalogId;
-      });
-
-      const matchingAllHistory = (AppState.historyData || []).filter(h => {
+      const matchingHistory = activeHistory.filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;
@@ -2555,34 +2552,11 @@ const UI = {
         return matched && matched.catalogId === cat.catalogId;
       });
 
-      const matchingFiltered = (filteredHistory || []).filter(h => {
-        if (!h || !h.model) return false;
-        const hModel = String(h.model || '').toLowerCase();
-        if (hModel === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
-        return matched && matched.catalogId === cat.catalogId;
-      });
-
-      const allMasuk = matchingAllHistory.filter(h => h.type === 'Unit Masuk').length;
-      const allKeluar = matchingAllHistory.filter(h => h.type === 'Unit Keluar').length;
-      const periodMasuk = matchingFiltered.filter(h => h.type === 'Unit Masuk').length;
-      const periodKeluar = matchingFiltered.filter(h => h.type === 'Unit Keluar').length;
-
-      let yardStock = 0;
-      const hasStockYardField = matchingUnits.some(u => typeof u.stockYard === 'number');
-      if (hasStockYardField) {
-        yardStock = matchingUnits.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
-      } else {
-        yardStock = matchingUnits.filter(u => u.status === 'Tersedia' || u.status === 'In-Yard' || !u.status).length;
-      }
-
-      const netFromHistory = Math.max(0, allMasuk - allKeluar);
-      let count = Math.max(yardStock, netFromHistory);
-
-      // Jika ada unit masuk pada periode yang sedang difilter (misal hari ini), pastikan count >= periodMasuk
-      if (isFiltered && periodMasuk > 0 && count === 0) {
-        count = periodMasuk;
-      }
+      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
+      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
+      
+      // Stok dihitung 100% murni dan nyata dari riwayat transaksi mutasi fisik di database (HistoryMutasi)
+      const count = Math.max(0, masuk - keluar);
 
       return {
         catalogId: cat.catalogId,
@@ -2591,10 +2565,8 @@ const UI = {
         photo: cat.photo,
         color: modelColors[cat.model] || '#3b82f6',
         count: count,
-        masuk: isFiltered ? periodMasuk : allMasuk,
-        keluar: isFiltered ? periodKeluar : allKeluar,
-        allMasuk: allMasuk,
-        allKeluar: allKeluar
+        masuk: masuk,
+        keluar: keluar
       };
     });
 

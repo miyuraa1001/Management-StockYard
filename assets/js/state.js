@@ -283,8 +283,8 @@ const AppState = {
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
-      // Bersihkan seluruh cache lama (v1, v2, v3, v4) yang berisi data dummy/mock
-      ['v1', 'v2', 'v3', 'v4'].forEach(v => {
+      // Bersihkan seluruh cache lama (v1 s/d v5) yang mungkin berisi data dummy/mock
+      ['v1', 'v2', 'v3', 'v4', 'v5'].forEach(v => {
         ['inventory', 'history', 'kpi', 'profile', 'automation'].forEach(k => {
           localStorage.removeItem(`daihatsu_${k}_cache_${v}`);
         });
@@ -376,7 +376,7 @@ const AppState = {
       const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       const netFromHistory = Math.max(0, histMasuk - histKeluar);
-      const modelStock = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      const modelStock = netFromHistory;
 
       totalStokCount += modelStock;
       if (modelStock === 0) {
