@@ -1,8 +1,8 @@
 # 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem
 ## Sistem Management StockYard Kendaraan (Astra Daihatsu DSO Lampung)
 
-> **Klasifikasi:** Dokumen Resmi Spesifikasi Produk & Operasional Bisnis  
-> **Sasaran Pembaca:** Manajemen, Kepala Operasional Pool, Supervisor Logistik, & Petugas Lapangan  
+> **Klasifikasi:** Dokumen Resmi Spesifikasi Produk, Arsitektur Sistem & Operasional Bisnis  
+> **Sasaran Pembaca:** Manajemen, Kepala Operasional Pool, Supervisor Logistik, Klien Bisnis, & Tim Pengembang  
 > **Status:** Siap Operasional (*Production-Ready*)  
 > **Lokasi Implementasi:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 
@@ -13,7 +13,10 @@
 ### 1.1 Latar Belakang & Tujuan
 Operasional pengelolaan dan penataan unit kendaraan di area pool logistik dan StockYard Astra Daihatsu DSO Lampung membutuhkan kecepatan, ketelitian mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan (*audit-ready*). 
 
-Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang khusus untuk memodernisasi proses pencatatan manual berbasis kertas atau spreadsheet mandiri menjadi **sistem digital berbasis smartphone (Mobile Web)** yang terintegrasi secara langsung dengan ekosistem penyimpanan awan (*cloud*) Google Workspace yang aman, praktis, dan hemat biaya.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang khusus untuk memodernisasi proses pencatatan manual berbasis kertas atau spreadsheet mandiri menjadi **sistem digital terintegrasi** yang mencakup:
+1. **Frontend Mobile-First**: Aplikasi pemindai cepat berbasis web di smartphone petugas lapangan.
+2. **Backend Serverless & Cloud Processor**: Pemroses transaksi mutasi, kompresi berkas, dan robot otomatisasi laporan.
+3. **Database & Cloud Storage Transparan**: Basis data Google Spreadsheet yang mudah dipantau serta brankas foto Google Drive resmi perusahaan.
 
 ### 1.2 Nilai Manfaat Utama bagi Manajemen & Klien
 * **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem secara cerdas memblokir pemindaian berulang untuk unit yang sama, memastikan data inventaris di lapangan selalu 100% akurat sesuai kondisi fisik sebenarnya.
@@ -36,52 +39,149 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang khusus un
 
 ---
 
-## 3. Fitur Unggulan Sistem (System Core Features)
+## 3. Arsitektur Tiga Lapis (Frontend, Backend, & Database)
 
+Sistem dibangun dengan arsitektur 3-lapis modern yang memisahkan tampilan pengguna, lapisan keamanan pengolah data, dan tempat penyimpanan permanen:
+
+```mermaid
+flowchart TD
+    subgraph Frontend["1. LAPISAN TAMPILAN (FRONTEND SMARTPHONE)"]
+        UI["Antarmuka Modern (Tailwind CSS, Glassmorphism)"]
+        Cam["Kamera Pintar (Dual Barcode + OCR Tesseract)"]
+        Compress["Kompresor Foto Otomatis (< 400 KB)"]
+        DupeCheck["Pencegah Duplikat Seketika (Lampu Hijau / Merah)"]
+    end
+
+    subgraph Backend["2. LAPISAN PENGOLAH & PENGAMAN (BACKEND SERVERLESS)"]
+        Proxy["Gerbang Aman Vercel (/api/proxy)"]
+        Secret["Proteksi Kredensial (Token Rahasia Terenkripsi)"]
+        GAS["Mesin Google Apps Script (Pemroses Transaksi)"]
+        Cron["Robot Laporan Harian (Setiap 08:00 WIB)"]
+    end
+
+    subgraph Database["3. LAPISAN BASIS DATA & BERKAS (DATABASE & STORAGE)"]
+        Sheet1[("Sheet: Mutasi_Logistik\n(Rekam Jejak Seluruh Transaksi)")]
+        Sheet2[("Sheet: Inventory_Stok\n(Status Terkini In-Yard / In-Transit)")]
+        Sheet3[("Sheet: Master_PIC\n(Daftar Akun Petugas Resmi)")]
+        Drive[("Google Drive Khusus\n(Arsip Foto Mobil & Foto DO)")]
+    end
+
+    subgraph Output["4. DISTRIBUSI LAPORAN OTOMATIS"]
+        EmailService["Pengirim Email Gmail Korporat"]
+        PDF["Lampiran PDF Resmi Siap Cetak"]
+        Management["Email Manajemen & Supervisor"]
+    end
+
+    UI --> Cam
+    Cam --> DupeCheck
+    DupeCheck -->|Valid & Belum Pernah Masuk| Compress
+    Compress -->|Kirim Data & Foto via HTTPS| Proxy
+    Proxy --> Secret
+    Secret --> GAS
+    GAS --> Sheet1
+    GAS --> Sheet2
+    GAS --> Sheet3
+    GAS --> Drive
+    Cron -->|Jadwal Jam 08:00 WIB| GAS
+    GAS --> EmailService
+    EmailService --> PDF
+    PDF --> Management
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│             EKOSISTEM MANAGEMENT STOCKYARD (ASTRA DAIHATSU)                 │
-├──────────────────────┬───────────────────────────────┬──────────────────────┤
-│  1. PINTAR DI LAPANGAN│     2. PENGAMANAN DATA        │ 3. LAPORAN OTOMATIS  │
-│  • Scan Kamera Cepat │  • Validasi Anti-Duplikat     │ • Rekap PDF 08:00 WIB│
-│  • Baca Teks OCR     │  • Data ke Google Sheets      │ • Kirim Email Harian │
-│  • Pilihan 13 Model  │  • Foto Rapi di Google Drive  │ • Dashboard Stok Yard│
-│  • Wajib Foto Unit/DO│  • Proteksi Gerbang Server    │ • Pantauan Real-Time │
-└──────────────────────┴───────────────────────────────┴──────────────────────┘
-```
-
-### 3.1 Pemindai Cerdas 2-Mode (Smart Scanner)
-Dirancang untuk kondisi lapangan yang dinamis (terik matahari, kaca mobil melengkung, stiker sedikit kotor):
-1. **Mode Barcode Otomatis**: Cukup arahkan kamera ke stiker kaca depan, sistem langsung membaca barcode nomor rangka secara instan dalam hitungan milidetik.
-2. **Mode Baca Teks Stiker (OCR)**: Jika barcode rusak, robek, atau terkena pantulan sinar matahari, petugas cukup menekan tombol *"Foto & Baca Teks Stiker"*. Sistem akan membaca tulisan cetak di bawah barcode dan mengisi nomor sasis dan mesin secara otomatis. Petugas juga bisa memilih foto stiker dari galeri ponsel.
-
-### 3.2 Proteksi Anti-Duplikasi Multi-Sensor
-Untuk memastikan tidak ada data ganda, sistem dilengkapi alarm sensorik yang langsung dipahami petugas di lapangan:
-* **Jika Data Baru / Valid**: Terdengar bunyi *bip* nada tinggi, getaran pendek di tangan, kotak pemindai terkunci hijau, dan muncul tanda hijau **"TERVERIFIKASI"**.
-* **Jika Data Sudah Pernah Masuk (Duplikat)**: Terdengar nada alarm peringatan rendah, getaran panjang di smartphone, kotak pemindai menyala **MERAH**, dan formulir otomatis terkunci agar tidak tersimpan ganda.
-
-### 3.3 Formulir Serah Terima 2-Tahap (2-Step Progressive Handover)
-* **Tahap 1 (Verifikasi Identitas)**: Memastikan nomor sasis (VIN 17 digit) dan nomor mesin valid dan terbukti belum pernah didata ganda.
-* **Tahap 2 (Kelengkapan Dokumen & Fisik)**:
-  - Memilih jenis mutasi: **Unit Masuk** (Penerimaan dari pabrik/vendor) atau **Unit Keluar** (Pengiriman ke dealer/ekspedisi/penjualan).
-  - Memilih model kendaraan dari **13 Model Resmi Daihatsu**.
-  - Mengambil foto fisik kendaraan langsung dari kamera.
-  - Mengambil foto surat jalan / delivery order (DO) fisik.
-  - Menuliskan catatan kondisi (misalnya: *baret halus di bemper kiri, kunci cadangan lengkap*).
-
-### 3.4 Dashboard Pemantauan Stok Real-Time
-* **Statistik Cepat**: Menampilkan Total Unit, Unit Tersedia di Pool (*In-Yard*), Unit dalam Pengiriman (*In-Transit*), dan Mutasi Hari Ini.
-* **Distribusi 13 Model Kendaraan**: Pemantauan jumlah unit per tipe mobil (Ayla, Sigra, Xenia, Terios, Gran Max, Rocky, Luxio, Sirion, dll.).
-* **Katalog Visual Interaktif**: Dilengkapi banner visual interaktif yang menampilkan foto dan data pergerakan masing-masing model kendaraan.
-* **Pencarian Cepat & Filter**: Memudahkan pencarian unit berdasarkan nomor rangka, nomor mesin, model mobil, atau nama petugas penanggung jawab.
-
-### 3.5 Sistem Notifikasi & Laporan PDF Otomatis
-* **Laporan Mutasi Harian Setiap 08:00 WIB**: Setiap hari, sistem secara otomatis merangkum semua kendaraan yang masuk dan keluar dalam 24 jam terakhir, mengubahnya menjadi dokumen PDF resmi, lalu mengirimkannya ke alamat email manajemen.
-* **Indikator Konektivitas Real-Time**: Pada layar aplikasi terdapat indikator status apakah koneksi sistem dan layanan email aktif, memberikan rasa tenang kepada petugas bahwa data yang diinput pasti sampai ke tujuan.
 
 ---
 
-## 4. Alur Kerja Operasional Petugas Lapangan (SOP Ringkas)
+## 4. Rincian Teknis Setiap Lapisan Sistem
+
+### 4.1 Lapisan Antarmuka Pengguna (Frontend Layer)
+Frontend adalah aplikasi web yang diakses langsung oleh petugas lapangan melalui browser smartphone:
+1. **Desain Mobile-First & Responsif**:
+   - Dibuat dengan Tailwind CSS modern berkonsep *glassmorphism* yang nyaman di mata petugas baik di bawah terik matahari siang maupun penerangan malam hari.
+   - Tidak memerlukan instalasi toko aplikasi (hemat memori ponsel petugas).
+2. **Kamera Pemindai Ganda (Dual-Engine Smart Scanner)**:
+   - **Mode Barcode Otomatis**: Membaca barcode stiker secara langsung dalam hitungan milidetik.
+   - **Mode Baca Teks Stiker (OCR Tesseract)**: Jika barcode rusak, robek, atau kaca depan terkena silau matahari, petugas cukup menekan satu tombol untuk memotret stiker. Sistem membaca teks cetak nomor sasis dan mesin secara otomatis. Bisa juga memilih foto stiker dari galeri ponsel.
+   - **Penyaring Cerdas Multi-Barcode**: Secara otomatis memisahkan nomor rangka `MHK...`, nomor mesin, dan nomor DO dari 7 baris barcode yang bertumpuk pada stiker kaca depan Daihatsu.
+3. **Sistem Sensorik Anti-Duplikat**:
+   - Menghubungkan pemeriksaan data lokal seketika. Jika nomor rangka sudah pernah tercatat, layar menyala **MERAH**, ponsel bergetar panjang, suara peringatan berbunyi, dan tombol submit dinonaktifkan. Jika valid, layar menyala **HIJAU** dengan bunyi bip sukses.
+4. **Kompresi Gambar Otomatis di HP Petugas**:
+   - Foto mobil dan foto surat jalan beresolusi tinggi (4–8 MB) otomatis dikompresi di dalam browser ponsel menjadi < 400 KB berformat JPEG teroptimasi sebelum dikirim. Proses ini menghemat kuota internet lapangan dan memastikan pengiriman hanya membutuhkan waktu 1-2 detik.
+5. **Indikator Konektivitas Real-Time**:
+   - Memiliki indikator status koneksi yang memberi tahu petugas secara langsung bahwa sistem terhubung dengan server dan siap mengirimkan notifikasi.
+
+---
+
+### 4.2 Lapisan Pemroses & Pengaman (Backend Layer)
+Backend bertugas memproses data, menjaga keamanan data korporat, serta menjalankan otomasi:
+1. **Gerbang Pengaman Serverless (Vercel Secure Reverse Proxy)**:
+   - Bertindak sebagai benteng terdepan yang menerima perintah dari ponsel petugas di `/api/proxy`.
+   - **Tujuan Keamanan**: Menyembunyikan alamat asli database Google Spreadsheet dan token otentikasi agar tidak bisa dilihat atau diretas oleh pihak luar melalui fitur inspeksi browser (*DevTools*).
+2. **Mesin Pemroses Transaksi (Google Apps Script Engine)**:
+   - Berjalan di infrastruktur awan Google yang sangat stabil dengan uptime 99.9%.
+   - Menerima paket data mutasi dari proxy, memeriksa validitas kunci otentikasi rahasia (*API Secret Token*).
+   - Mengubah data foto Base64 menjadi berkas gambar murni (`.jpg`) dan meletakkannya langsung di Google Drive.
+   - Menuliskan data mutasi baru ke baris Google Spreadsheet secara *real-time* dan memperbarui status unit di tabel stok.
+3. **Robot Pembuat Laporan Otomatis (Time-driven Scheduled Cron)**:
+   - Sistem robotik yang aktif setiap hari tepat pukul **08:00 WIB**.
+   - Menghimpun seluruh pergerakan unit dalam 24 jam terakhir.
+   - Mengompilasi data ke dalam template laporan resmi Astra Daihatsu berformat PDF.
+   - Mengirimkan email resmi ke jajaran manajemen secara terjadwal tanpa campur tangan manusia.
+
+---
+
+### 4.3 Lapisan Basis Data & Penyimpanan Berkas (Database & Storage Layer)
+Sistem menggunakan ekosistem Google Workspace resmi yang sangat transparan dan mudah diaudit oleh manajemen:
+
+#### A. Lembar Kerja 1: `Mutasi_Logistik` (Buku Besar Rekam Jejak)
+Mencatat seluruh riwayat mutasi unit dari waktu ke waktu secara permanen:
+
+| Kolom | Nama Kolom Spreadsheet | Tipe Data | Contoh Isi Data | Penjelasan Fungsi Data |
+| :---: | :--- | :--- | :--- | :--- |
+| **A** | `timestamp` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu persis saat mutasi dicatat di pool |
+| **B** | `mutation_id` | Teks Unik | `MUT-20261021-0012` | Nomor urut kode transaksi mutasi |
+| **C** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka resmi kendaraan (Kunci Utama) |
+| **D** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
+| **E** | `car_model` | Teks Pilihan | `Gran Max Pick Up` | Varian model dari 13 katalog resmi Daihatsu |
+| **F** | `mutation_type` | Teks Pilihan | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan kendaraan di area pool |
+| **G** | `pic_name` | Teks | `Syafira Fira` | Nama petugas resmi yang melakukan serah terima |
+| **H** | `do_number` | Teks Angka | `2260411667` | Nomor Surat Jalan / Delivery Order resmi |
+| **I** | `unit_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto fisik mobil |
+| **J** | `doc_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto surat jalan DO |
+| **K** | `keterangan` | Teks Catatan | `Kondisi mulus, spion lengkap, baret halus bemper` | Catatan kondisi fisik kendaraan saat serah terima |
+
+#### B. Lembar Kerja 2: `Inventory_Stok` (Status Posisi Terkini Unit)
+Menampilkan posisi setiap kendaraan saat ini di StockYard:
+
+| Kolom | Nama Kolom Spreadsheet | Tipe Data | Contoh Isi Data | Penjelasan Fungsi Data |
+| :---: | :--- | :--- | :--- | :--- |
+| **A** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka kendaraan |
+| **B** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
+| **C** | `car_model` | Teks | `Gran Max Pick Up` | Model kendaraan |
+| **D** | `current_status` | Status | `IN_YARD` / `IN_TRANSIT` | **IN_YARD** (Ada di pool) atau **IN_TRANSIT** (Keluar/Jalan) |
+| **E** | `last_mutation_type` | Teks | `Unit Masuk` | Jenis mutasi terakhir yang dialami unit |
+| **F** | `last_updated` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu pembaruan status terakhir |
+| **G** | `pic_in_charge` | Teks | `Syafira Fira` | Petugas penanggung jawab terakhir |
+
+#### C. Lembar Kerja 3: `Master_PIC` (Daftar Identitas Petugas)
+Mencatat akun petugas lapangan yang memiliki izin memproses unit:
+
+| Kolom | Nama Kolom | Tipe Data | Contoh Isi | Penjelasan |
+| :---: | :--- | :--- | :--- | :--- |
+| **A** | `pic_id` | Teks | `PIC-001` | Kode identitas petugas |
+| **B** | `username` | Teks | `syafira` | Nama akun petugas |
+| **C** | `full_name` | Teks | `Syafira Fira` | Nama lengkap resmi petugas lapangan |
+| **D** | `email` | Teks | `admin.logistics@daihatsu.co.id` | Email koordinasi resmi |
+| **E** | `role` | Pilihan | `YARD_OFFICER` / `SUPERVISOR` | Tingkat hak akses petugas |
+
+#### D. Google Drive Cloud Storage (Arsip Bukti Foto)
+* Folder khusus terpusat di Google Drive perusahaan yang diatur agar rapi dan tidak bercampur dengan file lain.
+* Sistem otomatis menamai file dengan standar otomotif:
+  - Foto Unit: `UNIT_[NomorRangka]_[Waktu].jpg`
+  - Foto Dokumen DO: `DO_[NomorRangka]_[Waktu].jpg`
+* Foto dapat dilihat kapan saja dengan mengeklik tautan pada tabel spreadsheet atau pada tabel rekap PDF.
+
+---
+
+## 5. Alur Kerja Operasional Petugas Lapangan (SOP Ringkas)
 
 Berikut adalah tahapan praktis penggunaan aplikasi oleh petugas di pool logistik:
 
@@ -114,7 +214,7 @@ flowchart TD
 
 ---
 
-## 5. Katalog 13 Model Resmi Kendaraan Daihatsu
+## 6. Katalog 13 Model Resmi Kendaraan Daihatsu
 
 Sistem telah diprogram mengenali dan mengelompokkan 13 varian model resmi kendaraan Daihatsu yang beredar di pasar:
 
@@ -133,37 +233,6 @@ Sistem telah diprogram mengenali dan mengelompokkan 13 varian model resmi kendar
 | **11**| **Gran Max Blind Van** | Niaga Kargo Tertutup | Armada tertutup untuk ekspedisi dan kargo logistik |
 | **12**| **Gran Max Minibus** | Niaga Penumpang / Travel | Armada angkutan penumpang umum / travel |
 | **13**| **Daihatsu Luxio** | Minibus Eksekutif | Kendaraan komersial premium berkapasitas lega |
-
----
-
-## 6. Penyimpanan Data & Format Laporan (Mudah Diaudit)
-
-Untuk kemudahan klien dan manajemen non-programmer, seluruh data disimpan pada platform yang sangat familiar dan transparan:
-
-### 6.1 Database Google Spreadsheet
-Manajemen tidak perlu membuka software rumit atau query database SQL. Cukup buka link Google Spreadsheet resmi milik perusahaan:
-1. **Lembar `Mutasi_Logistik` (Buku Rekam Jejak Mutasi)**:
-   - Mencatat setiap kejadian mutasi secara urut waktu (*Waktu, ID Mutasi, No. Rangka 17 Digit, No. Mesin, Model Mobil, Status Masuk/Keluar, Nama Petugas PIC, No. Surat Jalan DO, Link Foto Mobil, Link Foto Dokumen, Catatan Fisik*).
-2. **Lembar `Inventory_Stok` (Status Terkini Setiap Unit)**:
-   - Menampilkan posisi dan status setiap kendaraan saat ini: apakah unit sedang berada di pool (**IN_YARD**) atau sedang dalam perjalanan/pengiriman (**IN_TRANSIT**).
-3. **Lembar `Master_PIC` (Daftar Petugas Resmi)**:
-   - Mencatat akun resmi petugas lapangan yang berhak melakukan pemindaian dan mutasi.
-
-### 6.2 Penyimpanan Foto Bukti Fisik di Google Drive
-* Semua foto fisik mobil dan foto surat jalan DO otomatis tersimpan dalam folder khusus di Google Drive perusahaan.
-* Nama file foto otomatis dinamai secara teratur dan seragam:  
-  - Foto Mobil: `UNIT_[NomorRangka]_[Waktu].jpg`  
-  - Foto Surat Jalan: `DO_[NomorRangka]_[Waktu].jpg`  
-* Tautan (*link*) langsung ke foto disertakan di dalam tabel spreadsheet sehingga manajemen cukup klik link untuk langsung melihat bukti fotonya.
-
-### 6.3 Laporan PDF Otomatis via Email
-* **Jadwal Pengiriman**: Setiap hari tepat pukul **08:00 WIB**.
-* **Penerima**: Alamat email resmi manajemen logistik/supervisor.
-* **Isi Laporan**:
-  - Ringkasan eksekutif mutasi 24 jam terakhir.
-  - Jumlah total unit masuk dan unit keluar.
-  - Rincian stok unit yang tersedia di pool berdasarkan 13 model mobil.
-  - Tabel rincian lengkap nomor rangka, nomor mesin, dan nomor surat jalan yang diproses.
 
 ---
 
@@ -218,4 +287,3 @@ Dokumen spesifikasi produk ini disusun untuk menjadi acuan bersama antara tim pe
 * **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
 * **Pusat Operasional:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 * **Status Dokumen:** Disetujui untuk Operasional Aktif (Versi 2.4 - Terverifikasi)  
- 
