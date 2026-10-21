@@ -1,19 +1,19 @@
 # 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem
-## Sistem Manajemen Logistik Kendaraan & Salvage Daihatsu
+## Sistem Management StockYard Kendaraan (Astra Daihatsu DSO Lampung)
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk & Operasional Bisnis  
 > **Sasaran Pembaca:** Manajemen, Kepala Operasional Pool, Supervisor Logistik, & Petugas Lapangan  
 > **Status:** Siap Operasional (*Production-Ready*)  
-> **Lokasi Implementasi:** Pool Logistik & Sentra Penanganan Unit Daihatsu  
+> **Lokasi Implementasi:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 
 ---
 
 ## 1. Ringkasan Eksekutif (Executive Summary)
 
 ### 1.1 Latar Belakang & Tujuan
-Operasional pengelolaan kendaraan di pool logistik dan unit penanganan khusus (*salvage*) Astra Daihatsu membutuhkan kecepatan, ketelitian mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan (*audit-ready*). 
+Operasional pengelolaan dan penataan unit kendaraan di area pool logistik dan StockYard Astra Daihatsu DSO Lampung membutuhkan kecepatan, ketelitian mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan (*audit-ready*). 
 
-Sistem **Daihatsu Vehicle Logistics & Salvage Management** dirancang khusus untuk memodernisasi proses pencatatan manual berbasis kertas atau spreadsheet mandiri menjadi **sistem digital berbasis smartphone (Mobile Web)** yang terintegrasi secara langsung dengan ekosistem penyimpanan awan (*cloud*) Google Workspace yang aman, praktis, dan hemat biaya.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang khusus untuk memodernisasi proses pencatatan manual berbasis kertas atau spreadsheet mandiri menjadi **sistem digital berbasis smartphone (Mobile Web)** yang terintegrasi secara langsung dengan ekosistem penyimpanan awan (*cloud*) Google Workspace yang aman, praktis, dan hemat biaya.
 
 ### 1.2 Nilai Manfaat Utama bagi Manajemen & Klien
 * **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem secara cerdas memblokir pemindaian berulang untuk unit yang sama, memastikan data inventaris di lapangan selalu 100% akurat sesuai kondisi fisik sebenarnya.
@@ -26,7 +26,7 @@ Sistem **Daihatsu Vehicle Logistics & Salvage Management** dirancang khusus untu
 
 ## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru
 
-| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Daihatsu Logistics |
+| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard |
 | :--- | :--- | :--- |
 | **Pencatatan Nomor Rangka (VIN)** | Dicatat tangan di kertas surat jalan atau diketik satu per satu di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Sistem langsung mengekstrak nomor rangka 17 digit dan nomor mesin dengan verifikasi standar ISO otomotif. |
 | **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 barcode bertumpuk (nomor vendor, barcode DO, nomor sasis, barcode suku cadang). | **Filter Cerdas Otomatis**. Kamera pintar langsung menyaring dan memilih nomor rangka berawalan `MHK` dan mengabaikan kode pabrik yang tidak diperlukan. |
@@ -40,7 +40,7 @@ Sistem **Daihatsu Vehicle Logistics & Salvage Management** dirancang khusus untu
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    EKOSISTEM SISTEM LOGISTIK DAIHATSU                       │
+│             EKOSISTEM MANAGEMENT STOCKYARD (ASTRA DAIHATSU)                 │
 ├──────────────────────┬───────────────────────────────┬──────────────────────┤
 │  1. PINTAR DI LAPANGAN│     2. PENGAMANAN DATA        │ 3. LAPORAN OTOMATIS  │
 │  • Scan Kamera Cepat │  • Validasi Anti-Duplikat     │ • Rekap PDF 08:00 WIB│
@@ -212,9 +212,10 @@ Meskipun sistem ini sangat mudah digunakan di lapangan, keamanan data tingkat ko
 
 ## 10. Pengesahan & Kontak Layanan
 
-Dokumen spesifikasi produk ini disusun untuk menjadi acuan bersama antara tim pengembang, pihak manajemen logistik, dan pengguna operasional pool Astra Daihatsu.
+Dokumen spesifikasi produk ini disusun untuk menjadi acuan bersama antara tim pengembang, pihak manajemen logistik, dan pengguna operasional StockYard Astra Daihatsu DSO Lampung.
 
-* **Penanggung Jawab Sistem:** Tim Sistem Informasi & Logistik Sentra Pool Daihatsu  
+* **Penanggung Jawab Sistem:** Tim Sistem Informasi & Manajemen StockYard Astra Daihatsu DSO Lampung  
 * **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
-* **Pusat Operasional:** Yard Logistics & Salvage Sentra Management  
+* **Pusat Operasional:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 * **Status Dokumen:** Disetujui untuk Operasional Aktif (Versi 2.4 - Terverifikasi)  
+ 
