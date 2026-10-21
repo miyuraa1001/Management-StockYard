@@ -1,356 +1,220 @@
-# 🚗 PRD & Arsitektur Teknis: Daihatsu Vehicle Logistics & Salvage Management
+# 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem
+## Sistem Manajemen Logistik Kendaraan & Salvage Daihatsu
 
-> **Dokumen Spesifikasi Produk (PRD) & Cetak Biru Arsitektur Sistem Informasi Logistik**  
-> **Klasifikasi:** Dokumen Teknis Resmi Tingkat Korporat (Enterprise IT Document)  
-> **Versi Rilis:** 2.4.0 (Production-Ready)  
-> **Lingkungan:** Web Mobile-First (PWA Ready), Serverless Vercel, & Google Cloud Workspace  
-
----
-
-## 1. Executive Summary & Problem Framing
-
-### 1.1 Latar Belakang & Kebutuhan Operasional
-Operasional penanganan unit kendaraan di pool logistik dan unit penanganan khusus (*salvage*) Astra Daihatsu memerlukan akurasi, kecepatan, dan auditabilitas fisik yang tinggi. Setiap pergerakan unit—baik penerimaan dari pabrik/vendor (*Unit Masuk*) maupun pengiriman ke dealer/ekspedisi (*Unit Keluar*)—wajib tercatat secara instan tanpa kesalahan nomor sasis (*Vehicle Identification Number* / VIN 17 digit).
-
-### 1.2 Masalah Lapangan (*Field Pain Points*)
-1. **Kompleksitas Stiker Kaca (*Multi-Barcode Windshield Label*)**:
-   - Pada stiker kaca depan asli Astra Daihatsu (seperti contoh label Karawang), terdapat hingga **7 baris barcode bertumpuk** (Nomor DO/Surat Jalan `22...`, Nomor PO `632...`, Kode Material `11...`, Nomor Rangka VIN `MHK...`, dan Nomor Mesin `2NR...`).
-   - Kamera pemindai biasa kerap salah mendeteksi barcode teratas (No. DO) alih-alih nomor VIN, atau terganggu pantulan silau matahari (*glare*) pada kaca mobil melengkung.
-2. **Risiko Duplikasi Data (*Double-Entry Disaster*)**:
-   - Potensi unit yang sama terpindai berulang kali oleh petugas lapangan, mengakibatkan selisih fisik dengan pencatatan inventaris (*inventory variance*).
-3. **Penyimpanan Bukti Fisik yang Tercecer**:
-   - Foto unit dan foto dokumen DO fisik rentan tertinggal di ponsel petugas tanpa tautan langsung ke database logistik terpusat.
-4. **Beban Rekonsiliasi Harian**:
-   - Admin pool harus merekap mutasi harian secara manual setiap pagi untuk dilaporkan ke pihak manajemen cabang.
-
-### 1.3 Solusi Sistem Terintegrasi
-Sistem **Daihatsu Vehicle Logistics & Salvage Management** menghadirkan solusi menyeluruh:
-- **Dual-Engine Scanning**: Kombinasi *Hardware-accelerated Native BarcodeDetector* dan *OCR Tesseract.js* untuk membaca teks baris kode di bawah garis barcode secara instan.
-- **Smart Multi-Barcode Filtering (`smartFilterBarcodes`)**: Algoritma cerdas yang memilah dan memprioritaskan 17-digit VIN berawalan `MHK`, nomor mesin, dan nomor DO.
-- **Validasi Ketat Anti-Duplikat (1 Barcode = 1 Catatan)**: Proteksi multi-sensor (audio frekuensi rendah, haptik panjang, reticle merah menyala, dan pemblokiran form).
-- **Alur Kerja 2-Tahap (*2-Step Progressive Handover*)**: Tahap 1 fokus pada verifikasi identitas unit; Tahap 2 melengkapi dokumen dan foto langsung dari kamera smartphone.
-- **Arsitektur Cloud Serverless (Google Workspace)**: Google Sheets sebagai basis data transaksional, Google Drive sebagai penyimpanan bukti fisik foto, dan Google Apps Script dengan *Time-driven Trigger* setiap pukul **08:00 WIB** untuk mengirimkan rekap PDF mutasi 24 jam terakhir ke email manajemen.
+> **Klasifikasi:** Dokumen Resmi Spesifikasi Produk & Operasional Bisnis  
+> **Sasaran Pembaca:** Manajemen, Kepala Operasional Pool, Supervisor Logistik, & Petugas Lapangan  
+> **Status:** Siap Operasional (*Production-Ready*)  
+> **Lokasi Implementasi:** Pool Logistik & Sentra Penanganan Unit Daihatsu  
 
 ---
 
-## 2. Arsitektur Sistem & Aliran Data (Data Flow Architecture)
+## 1. Ringkasan Eksekutif (Executive Summary)
+
+### 1.1 Latar Belakang & Tujuan
+Operasional pengelolaan kendaraan di pool logistik dan unit penanganan khusus (*salvage*) Astra Daihatsu membutuhkan kecepatan, ketelitian mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan (*audit-ready*). 
+
+Sistem **Daihatsu Vehicle Logistics & Salvage Management** dirancang khusus untuk memodernisasi proses pencatatan manual berbasis kertas atau spreadsheet mandiri menjadi **sistem digital berbasis smartphone (Mobile Web)** yang terintegrasi secara langsung dengan ekosistem penyimpanan awan (*cloud*) Google Workspace yang aman, praktis, dan hemat biaya.
+
+### 1.2 Nilai Manfaat Utama bagi Manajemen & Klien
+* **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem secara cerdas memblokir pemindaian berulang untuk unit yang sama, memastikan data inventaris di lapangan selalu 100% akurat sesuai kondisi fisik sebenarnya.
+* **Proses Masuk/Keluar Super Cepat (< 20 Detik per Unit)**: Petugas lapangan cukup mengarahkan kamera smartphone ke stiker kaca mobil tanpa perlu mengetik manual 17 digit nomor rangka yang rawan salah ketik.
+* **Bukti Fisik Lengkap & Otomatis Terarsip**: Setiap mutasi unit wajib menyertakan foto fisik mobil dan foto surat jalan (DO) yang otomatis tersimpan rapi di Google Drive perusahaan.
+* **Transparansi Tanpa Repot**: Laporan mutasi harian berformat PDF resmi terkirim otomatis ke email manajemen setiap pagi pukul **08:00 WIB**, tanpa perlu ada admin yang lembur merekap manual.
+* **Akses Mudah Tanpa Instalasi Rumit**: Aplikasi dapat langsung dibuka melalui browser di smartphone Android maupun iPhone tanpa perlu install aplikasi berat dari toko aplikasi.
+
+---
+
+## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru
+
+| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Daihatsu Logistics |
+| :--- | :--- | :--- |
+| **Pencatatan Nomor Rangka (VIN)** | Dicatat tangan di kertas surat jalan atau diketik satu per satu di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Sistem langsung mengekstrak nomor rangka 17 digit dan nomor mesin dengan verifikasi standar ISO otomotif. |
+| **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 barcode bertumpuk (nomor vendor, barcode DO, nomor sasis, barcode suku cadang). | **Filter Cerdas Otomatis**. Kamera pintar langsung menyaring dan memilih nomor rangka berawalan `MHK` dan mengabaikan kode pabrik yang tidak diperlukan. |
+| **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi langsung berbunyi peringatan, bergetar panjang, dan layar memblokir tombol simpan. |
+| **Arsip Bukti Foto Fisik & Surat Jalan** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau tercecer. | **Terunggah Otomatis ke Google Drive Resmi**. Foto langsung terhubung dengan nomor rangka kendaraan dan dapat dibuka kapan saja melalui link di laporan. |
+| **Laporan Harian ke Pihak Manajemen** | Admin pool harus mengetik rekap manual setiap sore atau pagi hari, rentan terlambat. | **Otomatis Kirim PDF ke Email Jam 08:00 WIB**. Sistem bekerja mandiri merekap mutasi 24 jam terakhir dan melampirkannya dalam format PDF siap cetak. |
+
+---
+
+## 3. Fitur Unggulan Sistem (System Core Features)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    EKOSISTEM SISTEM LOGISTIK DAIHATSU                       │
+├──────────────────────┬───────────────────────────────┬──────────────────────┤
+│  1. PINTAR DI LAPANGAN│     2. PENGAMANAN DATA        │ 3. LAPORAN OTOMATIS  │
+│  • Scan Kamera Cepat │  • Validasi Anti-Duplikat     │ • Rekap PDF 08:00 WIB│
+│  • Baca Teks OCR     │  • Data ke Google Sheets      │ • Kirim Email Harian │
+│  • Pilihan 13 Model  │  • Foto Rapi di Google Drive  │ • Dashboard Stok Yard│
+│  • Wajib Foto Unit/DO│  • Proteksi Gerbang Server    │ • Pantauan Real-Time │
+└──────────────────────┴───────────────────────────────┴──────────────────────┘
+```
+
+### 3.1 Pemindai Cerdas 2-Mode (Smart Scanner)
+Dirancang untuk kondisi lapangan yang dinamis (terik matahari, kaca mobil melengkung, stiker sedikit kotor):
+1. **Mode Barcode Otomatis**: Cukup arahkan kamera ke stiker kaca depan, sistem langsung membaca barcode nomor rangka secara instan dalam hitungan milidetik.
+2. **Mode Baca Teks Stiker (OCR)**: Jika barcode rusak, robek, atau terkena pantulan sinar matahari, petugas cukup menekan tombol *"Foto & Baca Teks Stiker"*. Sistem akan membaca tulisan cetak di bawah barcode dan mengisi nomor sasis dan mesin secara otomatis. Petugas juga bisa memilih foto stiker dari galeri ponsel.
+
+### 3.2 Proteksi Anti-Duplikasi Multi-Sensor
+Untuk memastikan tidak ada data ganda, sistem dilengkapi alarm sensorik yang langsung dipahami petugas di lapangan:
+* **Jika Data Baru / Valid**: Terdengar bunyi *bip* nada tinggi, getaran pendek di tangan, kotak pemindai terkunci hijau, dan muncul tanda hijau **"TERVERIFIKASI"**.
+* **Jika Data Sudah Pernah Masuk (Duplikat)**: Terdengar nada alarm peringatan rendah, getaran panjang di smartphone, kotak pemindai menyala **MERAH**, dan formulir otomatis terkunci agar tidak tersimpan ganda.
+
+### 3.3 Formulir Serah Terima 2-Tahap (2-Step Progressive Handover)
+* **Tahap 1 (Verifikasi Identitas)**: Memastikan nomor sasis (VIN 17 digit) dan nomor mesin valid dan terbukti belum pernah didata ganda.
+* **Tahap 2 (Kelengkapan Dokumen & Fisik)**:
+  - Memilih jenis mutasi: **Unit Masuk** (Penerimaan dari pabrik/vendor) atau **Unit Keluar** (Pengiriman ke dealer/ekspedisi/penjualan).
+  - Memilih model kendaraan dari **13 Model Resmi Daihatsu**.
+  - Mengambil foto fisik kendaraan langsung dari kamera.
+  - Mengambil foto surat jalan / delivery order (DO) fisik.
+  - Menuliskan catatan kondisi (misalnya: *baret halus di bemper kiri, kunci cadangan lengkap*).
+
+### 3.4 Dashboard Pemantauan Stok Real-Time
+* **Statistik Cepat**: Menampilkan Total Unit, Unit Tersedia di Pool (*In-Yard*), Unit dalam Pengiriman (*In-Transit*), dan Mutasi Hari Ini.
+* **Distribusi 13 Model Kendaraan**: Pemantauan jumlah unit per tipe mobil (Ayla, Sigra, Xenia, Terios, Gran Max, Rocky, Luxio, Sirion, dll.).
+* **Katalog Visual Interaktif**: Dilengkapi banner visual interaktif yang menampilkan foto dan data pergerakan masing-masing model kendaraan.
+* **Pencarian Cepat & Filter**: Memudahkan pencarian unit berdasarkan nomor rangka, nomor mesin, model mobil, atau nama petugas penanggung jawab.
+
+### 3.5 Sistem Notifikasi & Laporan PDF Otomatis
+* **Laporan Mutasi Harian Setiap 08:00 WIB**: Setiap hari, sistem secara otomatis merangkum semua kendaraan yang masuk dan keluar dalam 24 jam terakhir, mengubahnya menjadi dokumen PDF resmi, lalu mengirimkannya ke alamat email manajemen.
+* **Indikator Konektivitas Real-Time**: Pada layar aplikasi terdapat indikator status apakah koneksi sistem dan layanan email aktif, memberikan rasa tenang kepada petugas bahwa data yang diinput pasti sampai ke tujuan.
+
+---
+
+## 4. Alur Kerja Operasional Petugas Lapangan (SOP Ringkas)
+
+Berikut adalah tahapan praktis penggunaan aplikasi oleh petugas di pool logistik:
 
 ```mermaid
 flowchart TD
-    subgraph Client["Frontend Client (Mobile PWA / Browser)"]
-        UI["User Interface (Tailwind CSS, Glassmorphism)"]
-        Scanner["Dual Scanner Engine (scanner.js)"]
-        BarcodeEngine["Native BarcodeDetector / ZXing"]
-        OCREngine["Tesseract.js v5 OCR (Image Preprocessing)"]
-        DupeValidator["Duplicate Check (AppState.isVinDuplicate)"]
-        FormStep["2-Step Form Workflow (Camera -> Form Mutasi)"]
-        CameraUpload["Direct Camera Native Input (Unit & DO Photos)"]
-    end
-
-    subgraph Proxy["Serverless Security Layer (Vercel)"]
-        VercelFn["api/proxy.js (Reverse Proxy)"]
-        SecretHeader["X-API-SECRET Header Authentication"]
-    end
-
-    subgraph CloudBackend["Cloud Backend (Google Workspace Ecosystem)"]
-        GAS["Google Apps Script (Code.gs Web App)"]
-        GSheet["Database Transaksional (Google Sheets)"]
-        GDrive["Media Cloud Storage (Google Drive Target Folder)"]
-        CronTrigger["Automated Cron Trigger (Setiap Hari 08:00 WIB)"]
-        GmailService["Gmail API Service (PDF Generation & Dispatch)"]
-    end
-
-    subgraph Stakeholders["Manajemen & Supervisor"]
-        EmailRecipient["Email Manajemen (admin.logistics@daihatsu.co.id)"]
-    end
-
-    UI --> Scanner
-    Scanner --> BarcodeEngine
-    Scanner --> OCREngine
-    BarcodeEngine --> DupeValidator
-    OCREngine --> DupeValidator
-    DupeValidator -->|Valid & Non-Duplicate| FormStep
-    FormStep --> CameraUpload
-    CameraUpload -->|Payload JSON + Base64 Compressed Images| VercelFn
-    VercelFn -->|Forward with Secret Token| GAS
-    GAS -->|Append Mutasi & Update Status| GSheet
-    GAS -->|Stream Base64 to Binary File| GDrive
-    CronTrigger -->|Setiap 08:00 WIB Trigger Job| GAS
-    GAS -->|Kueri Transaksi 24 Jam Terakhir| GSheet
-    GAS -->|Generate Laporan HTML -> PDF Attachment| GmailService
-    GmailService -->|Kirim Rekap PDF Harian| EmailRecipient
+    Start([Petugas Tiba di Depan Mobil]) --> OpenApp[Buka Aplikasi di Smartphone]
+    OpenApp --> ClickScan[Tekan Tombol 'Scan Barcode Unit']
+    ClickScan --> ChooseMode{Pilih Metode}
+    
+    ChooseMode -->|Barcode Terbaca Jelas| ModeBarcode[Arahkan Kamera ke Barcode Kaca Depan]
+    ChooseMode -->|Barcode Silau / Rusak| ModeOCR[Tekan 'Foto & Baca Teks Stiker' / Unggah Galeri]
+    
+    ModeBarcode --> CheckDupe{Pengecekan Otomatis}
+    ModeOCR --> CheckDupe
+    
+    CheckDupe -->|Unit Sudah Pernah Ada| Blocked[Layar Merah & Alarm Bunyi: Data Ditolak / Duplikat]
+    Blocked --> FinishDuplicate([Pemeriksaan Selesai - Tidak Ada Data Ganda])
+    
+    CheckDupe -->|Unit Baru & Valid| Verified[Layar Hijau: Data Valid & Terverifikasi]
+    Verified --> Step2[Klik 'Lanjut ke Formulir Mutasi']
+    
+    Step2 --> FillForm[Pilih Status: Unit Masuk / Keluar & Model Mobil]
+    FillForm --> SnapPhotos[Ambil Foto Fisik Mobil & Foto Surat Jalan DO]
+    SnapPhotos --> Submit[Tekan 'Simpan & Verifikasi Mutasi']
+    
+    Submit --> CloudSync[Data Tersimpan di Google Spreadsheet & Foto di Google Drive]
+    CloudSync --> AutoReport[Otomatis Masuk Rekap PDF Harian Pukul 08:00 WIB]
+    AutoReport --> Done([Selesai & Dashboard Terupdate])
 ```
 
 ---
 
-## 3. Struktur Direktori Proyek & Rincian Kode
+## 5. Katalog 13 Model Resmi Kendaraan Daihatsu
 
-```text
-Management Salvage/
-├── api/
-│   └── proxy.js                # Vercel Serverless Function (Reverse Proxy & Kredensial Terenkripsi)
-├── assets/
-│   ├── css/
-│   │   └── styles.css          # Animasi laser scanner, custom scrollbar, glassmorphism, responsive UI
-│   ├── images/                 # Banner & visual resmi 13 model Daihatsu (Ayla, Sigra, Xenia, Rocky, dll.)
-│   └── js/
-│       ├── config.js           # Konfigurasi routing API, secret token, dan endpoint backend
-│       ├── state.js            # Single source of truth (State management, inventory calculation, cache)
-│       ├── api.js              # HTTP Client Service untuk komunikasi aman ke proxy/Apps Script
-│       ├── scanner.js          # Hardware camera, Dual Barcode & OCR Tesseract, Smart Filter, Audio/Haptics
-│       ├── ui.js               # UI Renderer (Dashboard, Modal, Riwayat Mutasi, Tabel Stok, Toast, Filter)
-│       └── app.js              # Entrypoint utama aplikasi & orchestrator inisialisasi lifecycle
-├── index.html                  # Master Single Page Application (SPA) semantic layout
-├── vercel.json                 # Routing rules, header keamanan, dan konfigurasi serverless Vercel
-├── .gitignore                  # Proteksi keamanan repository (mengecualikan file credential/rahasia)
-└── README.md                   # Dokumen PRD & Arsitektur Teknis Sistem (File ini)
-```
+Sistem telah diprogram mengenali dan mengelompokkan 13 varian model resmi kendaraan Daihatsu yang beredar di pasar:
 
-### 3.1 Penjelasan Rinci Setiap Modul Kode (*Code Breakdown*)
-
-#### 1. [`index.html`](file:///index.html) — Antarmuka Pengguna Utama (SPA)
-- **Header & Profil Navigasi**: Status sinkronisasi real-time, lencana yard aktif (*Sentra Lampung Pool*), dan penunjuk waktu.
-- **Hero Carousel Banner (13 Model Resmi Daihatsu)**: Visual bergerak (*auto-sliding carousel*) yang memuat statistik pergerakan stok unit In-Yard dan In-Transit untuk Rocky Hybrid, Terios SE, New Terios, All New Xenia, New Sigra, All New Ayla, New Rocky, Rocky ADS, New Sirion, Luxio, Gran Max Minibus, Gran Max Blind Van, dan Gran Max Pick Up.
-- **Modal Pemindai 2-Tahap (`#scannerModalOverlay`)**:
-  - **Tahap 1 (`#scanStep1_Camera`)**: Viewport kamera live, reticle laser dengan deteksi 4 sudut, pemilih mode ganda (*[║▌║ Barcode Auto]* vs *[🔤 Baca Teks (OCR)]*), tombol snapshot OCR, tombol pemilih galeri, chip indikator feedback, summary pills ekstraksi data (VIN, Mesin, DO), serta kolom input VIN & Mesin.
-  - **Tahap 2 (`#scanStep2_Form`)**: Formulir serah terima kendaraan, banner identitas unit terverifikasi, pilihan jenis mutasi (*Unit Masuk* / *Unit Keluar*), dropdown 13 model Daihatsu, dual-upload foto fisik unit dan foto dokumen DO (langsung memanggil sensor kamera ponsel), serta textarea keterangan kondisi.
-- **Tabel Inventaris & Riwayat Mutasi**: Dilengkapi tab filter status (*Semua, In-Yard, In-Transit*), bar pencarian dinamis, dan modal pembesar gambar (*image lightbox*).
-
-#### 2. [`assets/js/scanner.js`](file:///assets/js/scanner.js) — Hardware & Optical Recognition Module
-- **Dual Decoding Engine**:
-  - **Native BarcodeDetector**: Menggunakan akselerasi GPU perangkat keras bawaan Chromium untuk pembacaan instan dalam interval loop 140ms.
-  - **ZXing BrowserMultiFormatReader**: Fallback tingkat industri dengan konfigurasi `TRY_HARDER` dan format spesifik otomotif (Code 128, Code 39, QR Code, Data Matrix).
-- **OCR Tesseract.js Engine**:
-  - `captureAndScanOCR()`: Mengambil snapshot resolusi penuh dari `<video>`, menjalankan `preprocessCanvasForOCR()` untuk konversi grayscale dan peningkatan kontras 35%, lalu mengekstrak teks baris kode menggunakan `Tesseract.recognize()`.
-  - `handleStickerPhotoUploaded(event)`: Membaca file foto stiker dari galeri ponsel dan mengekstrak datanya via OCR.
-- **Smart Multi-Barcode Filtering (`smartFilterBarcodes`)**:
-  - Mengeliminasi kode material SAP (`11...`) dan nomor PO (`632...`).
-  - Mengisolasi dan memvalidasi nomor rangka VIN 17 karakter berawalan `MHK` atau `MFK`/`MR`.
-  - Mengisolasi nomor mesin Daihatsu (`2NR`, `1KR`, `3NR`, `WA`, `3SZ`, `KF`).
-  - Mengisolasi nomor DO 10 digit (`22...`).
-- **Normalisasi Karakter Otomotif**:
-  - Mencegah kesalahan umum OCR pada karakter angka (`I` -> `1`, `O` -> `0`, `Q` -> `0`, `S` -> `5`, `Z` -> `2`) pada nomor seri digit VIN sesuai standar ISO 3779.
-- **Validasi Anti-Duplikasi & Multi-Sensory Feedback**:
-  - Memanggil `AppState.isVinDuplicate(vin)`.
-  - *Jika Duplikat*: Bunyi alarm nada rendah sawtooth (440Hz -> 330Hz), getaran haptik panjang (*180-80-240ms*), reticle berubah merah menyala, dan navigasi ke form diblokir.
-  - *Jika Baru / Valid*: Bunyi bip frekuensi tinggi (1760Hz), getaran haptik standar (*80-40-80ms*), reticle terkunci hijau emerald, dan status pill berubah menjadi `TERVERIFIKASI`.
-
-#### 3. [`assets/js/state.js`](file:///assets/js/state.js) — Single Source of Truth & Local Storage
-- Mengelola state global aplikasi: `AppState.inventory`, `AppState.mutations`, `AppState.activeFilter`, `AppState.searchQuery`.
-- **Fungsi Kunci Anti-Duplikasi (`isVinDuplicate`)**:
-  ```javascript
-  isVinDuplicate(vin) {
-    if (!vin) return false;
-    const cleanVin = String(vin).trim().toUpperCase();
-    const inMutations = this.mutations.some(m => String(m.vin || '').trim().toUpperCase() === cleanVin);
-    const inInventory = this.inventory.some(i => String(i.vin || '').trim().toUpperCase() === cleanVin);
-    return inMutations || inInventory;
-  }
-  ```
-- **Fungsi Sinkronisasi Inventaris**: Otomatis menghitung ulang stok unit In-Yard vs In-Transit untuk setiap model kendaraan ketika terjadi mutasi baru.
-- **Offline Persistence**: Menyimpan cadangan data mutasi sementara di `localStorage` jika jaringan internet lapangan mengalami kendala.
-
-#### 4. [`assets/js/api.js`](file:///assets/js/api.js) — Komunikasi Jaringan & Gateway API
-- Bertindak sebagai service layer untuk mengirimkan request ke backend:
-  - `fetchInventory()`: Mengambil data inventaris dan riwayat mutasi dari database.
-  - `submitMutation(mutationData)`: Mengirimkan payload transaksi mutasi beserta payload foto terkompresi Base64.
-  - `checkVinAvailability(vin)`: Verifikasi duplikasi VIN secara remote ke server.
-- Otomatis mengarahkan ke Vercel Serverless Reverse Proxy (`/api/proxy`) pada lingkungan produksi atau fallback langsung jika menggunakan mode standalone.
-
-#### 5. [`assets/js/ui.js`](file:///assets/js/ui.js) — Renderer Tampilan & Event Handlers
-- **Render Dashboard**: Memperbarui kartu statistik (*Total Unit, In-Yard, In-Transit, Mutasi Hari Ini*).
-- **Render Tabel Riwayat Mutasi**: Menghasilkan baris tabel yang rapi, lencana status (*Badge Hijau/Biru*), tombol preview foto unit dan foto dokumen DO.
-- **Render Tabel Stok per Model**: Menampilkan detail stok per masing-masing dari 13 model Daihatsu.
-- **Kompresi Gambar di Sisi Klien**: Mengompresi file foto kamera smartphone berukuran besar menjadi JPEG teroptimasi (< 400 KB) sebelum diunggah ke cloud.
-- **Toast Notification Engine**: Komponen notifikasi pop-up mengambang untuk memberikan umpan balik instan ke pengguna.
-
-#### 6. [`assets/js/config.js`](file:///assets/js/config.js) — Manajemen Konfigurasi
-- Menyimpan konfigurasi lingkungan, URL endpoint backend, durasi timeout, dan konstanta nama sheet.
-
-#### 7. [`assets/js/app.js`](file:///assets/js/app.js) — App Orchestrator & Lifecycle
-- Menginisialisasi event listeners, mendaftarkan keyboard shortcuts, memuat data awal dari backend, dan menyelaraskan siklus hidup aplikasi (*DOM ready & service startup*).
-
-#### 8. [`assets/css/styles.css`](file:///assets/css/styles.css) — Desain & Animasi Khusus
-- Styling efek laser scanner vertikal (`@keyframes scanLaser`), animasi reticle pulsing, scrollbar tersembunyi, dan utilitas responsif.
-
-#### 9. [`api/proxy.js`](file:///api/proxy.js) & [`vercel.json`](file:///vercel.json) — Serverless Gateway
-- Berjalan di edge serverless function Vercel.
-- Menyembunyikan URL asli Google Apps Script dan secret token dari inspeksi jaringan browser (*DevTools*).
-- Mengamankan komunikasi dengan menyisipkan header rahasia `X-API-SECRET` sebelum request diteruskan ke backend Google Apps Script.
+| No | Nama Model Kendaraan | Kategori Segmen | Karakteristik Penggunaan Lapangan |
+| :-: | :--- | :--- | :--- |
+| **1** | **All New Ayla** | Hatchback / LCGC | Penempatan di area parkir city car / compact yard |
+| **2** | **New Sigra** | MPV 7-Seater / LCGC | Unit volume tinggi, fast-moving distribusi keluarga |
+| **3** | **All New Xenia** | MPV Keluarga | Mobil keluarga multifungsi, perputaran unit tinggi |
+| **4** | **New Terios** | Compact SUV | Unit petualang / medium ground clearance |
+| **5** | **Terios Special Edition (SE)**| Compact SUV Khusus | Unit edisi terbatas dengan aksesoris khusus |
+| **6** | **New Rocky** | Compact Crossover | Unit SUV turbo compact modern |
+| **7** | **Rocky ADS** | Crossover Sporty | Edisi sporty dengan paket bodykit Astra Daihatsu Styling |
+| **8** | **Rocky Hybrid** | Crossover Elektrik/Hybrid | Penanganan khusus unit berteknologi baterai/hybrid |
+| **9** | **New Sirion** | City Car Premium | Hatchback premium perkotaan |
+| **10**| **Gran Max Pick Up** | Niaga Komersial Ringan | Armada angkutan barang terbuka, frekuensi mutasi tinggi |
+| **11**| **Gran Max Blind Van** | Niaga Kargo Tertutup | Armada tertutup untuk ekspedisi dan kargo logistik |
+| **12**| **Gran Max Minibus** | Niaga Penumpang / Travel | Armada angkutan penumpang umum / travel |
+| **13**| **Daihatsu Luxio** | Minibus Eksekutif | Kendaraan komersial premium berkapasitas lega |
 
 ---
 
-## 4. Alur Kerja Operasional Lapangan (Step-by-Step SOP)
+## 6. Penyimpanan Data & Format Laporan (Mudah Diaudit)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor PIC as Petugas Lapangan (Yard PIC)
-    participant App as Mobile Web App (Scanner)
-    participant OCR as OCR / Barcode Engine
-    participant Proxy as Vercel API Proxy
-    participant GAS as Google Apps Script
-    participant DB as Google Sheets & Drive
-    participant Cron as Time-driven Trigger (08:00 WIB)
-    actor Mgr as Email Manajemen
+Untuk kemudahan klien dan manajemen non-programmer, seluruh data disimpan pada platform yang sangat familiar dan transparan:
 
-    PIC->>App: Buka Scanner Unit (Tombol "Scan Barcode")
-    alt Mode Barcode Auto
-        PIC->>App: Arahkan kamera ke stiker kaca unit
-        App->>OCR: Deteksi barcode via Native BarcodeDetector / ZXing
-    else Mode Baca Teks Stiker (OCR)
-        PIC->>App: Arahkan kamera & tekan "📸 Foto & Baca Teks Stiker" / "Pilih Galeri"
-        App->>OCR: Preprocessing kanvas + Tesseract.js OCR
-    end
-    OCR->>App: Ekstraksi Data (VIN, Mesin, DO, Model)
-    App->>App: Cek Validasi Duplikat (isVinDuplicate)
-    alt Barcode Sudah Pernah Tersimpan (Duplikat)
-        App-->>PIC: ❌ Reticle Merah, Audio Peringatan Rendah, Haptik Panjang, Blokir Lanjut
-    else Barcode Baru & Valid
-        App-->>PIC: ✓ Reticle Hijau Terkunci, Bip 1760Hz, Tampilkan Chip Summary Pills
-        PIC->>App: Klik "Lanjut ke Formulir Mutasi →"
-        App-->>PIC: Tampilkan Tahap 2 (Identitas Unit Terkunci)
-        PIC->>App: Pilih Jenis Mutasi (Unit Masuk / Unit Keluar)
-        PIC->>App: Ambil Foto Fisik Unit (Kamera HP)
-        PIC->>App: Ambil Foto Dokumen DO (Kamera HP)
-        PIC->>App: Klik "Simpan & Verifikasi"
-        App->>Proxy: Kirim Payload JSON + Base64 Compressed Photos
-        Proxy->>GAS: Teruskan request dengan X-API-SECRET
-        GAS->>DB: Simpan Baris di Sheets 'Mutasi_Logistik'
-        GAS->>DB: Perbarui Status di Sheets 'Inventory_Stok'
-        GAS->>DB: Simpan File Gambar ke Folder Google Drive
-        GAS-->>App: Respon Berhasil (200 OK)
-        App-->>PIC: Tampilkan Toast Sukses & Perbarui Dashboard
-    end
+### 6.1 Database Google Spreadsheet
+Manajemen tidak perlu membuka software rumit atau query database SQL. Cukup buka link Google Spreadsheet resmi milik perusahaan:
+1. **Lembar `Mutasi_Logistik` (Buku Rekam Jejak Mutasi)**:
+   - Mencatat setiap kejadian mutasi secara urut waktu (*Waktu, ID Mutasi, No. Rangka 17 Digit, No. Mesin, Model Mobil, Status Masuk/Keluar, Nama Petugas PIC, No. Surat Jalan DO, Link Foto Mobil, Link Foto Dokumen, Catatan Fisik*).
+2. **Lembar `Inventory_Stok` (Status Terkini Setiap Unit)**:
+   - Menampilkan posisi dan status setiap kendaraan saat ini: apakah unit sedang berada di pool (**IN_YARD**) atau sedang dalam perjalanan/pengiriman (**IN_TRANSIT**).
+3. **Lembar `Master_PIC` (Daftar Petugas Resmi)**:
+   - Mencatat akun resmi petugas lapangan yang berhak melakukan pemindaian dan mutasi.
 
-    Note over Cron,Mgr: Otomatisasi Setiap Hari Pukul 08:00 WIB
-    Cron->>GAS: Eksekusi Trigger cronDailyReport()
-    GAS->>DB: Kueri transaksi mutasi 24 jam terakhir
-    GAS->>GAS: Render tabel data ke format PDF resmi
-    GAS->>Mgr: Kirim Email via Gmail Service (Lampiran PDF)
-```
+### 6.2 Penyimpanan Foto Bukti Fisik di Google Drive
+* Semua foto fisik mobil dan foto surat jalan DO otomatis tersimpan dalam folder khusus di Google Drive perusahaan.
+* Nama file foto otomatis dinamai secara teratur dan seragam:  
+  - Foto Mobil: `UNIT_[NomorRangka]_[Waktu].jpg`  
+  - Foto Surat Jalan: `DO_[NomorRangka]_[Waktu].jpg`  
+* Tautan (*link*) langsung ke foto disertakan di dalam tabel spreadsheet sehingga manajemen cukup klik link untuk langsung melihat bukti fotonya.
+
+### 6.3 Laporan PDF Otomatis via Email
+* **Jadwal Pengiriman**: Setiap hari tepat pukul **08:00 WIB**.
+* **Penerima**: Alamat email resmi manajemen logistik/supervisor.
+* **Isi Laporan**:
+  - Ringkasan eksekutif mutasi 24 jam terakhir.
+  - Jumlah total unit masuk dan unit keluar.
+  - Rincian stok unit yang tersedia di pool berdasarkan 13 model mobil.
+  - Tabel rincian lengkap nomor rangka, nomor mesin, dan nomor surat jalan yang diproses.
 
 ---
 
-## 5. Spesifikasi Basis Data & Google Workspace Backend
+## 7. Keamanan Sistem & Perlindungan Privasi Data
 
-### 5.1 Skema Lembar Kerja (*Google Sheets Database Schema*)
+Meskipun sistem ini sangat mudah digunakan di lapangan, keamanan data tingkat korporat tetap menjadi prioritas utama:
 
-#### Sheet 1: `Mutasi_Logistik` (Buku Besar Mutasi Unit)
-| Indeks | Nama Kolom | Format Data | Contoh Isi | Keterangan |
-| :---: | :--- | :--- | :--- | :--- |
-| **A** | `timestamp` | DATETIME | `2026-10-14 08:30:15` | Waktu pencatatan mutasi di lapangan |
-| **B** | `mutation_id` | STRING | `MUT-20261014-0041` | Kode unik transaksi mutasi |
-| **C** | `vin_number` | STRING (17) | `MHKP3FA1JTK137533` | Nomor Rangka Unit (Index Unik) |
-| **D** | `engine_number` | STRING | `2NR4F82393` | Nomor Mesin Kendaraan |
-| **E** | `car_model` | STRING | `Gran Max Pick Up` | Model resmi dari 13 katalog Daihatsu |
-| **F** | `mutation_type` | ENUM | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan logistik |
-| **G** | `pic_name` | STRING | `Syafira Fira` | Nama petugas PIC yang bertugas |
-| **H** | `do_number` | STRING | `2260411667` | Nomor Delivery Note / Surat Jalan |
-| **I** | `unit_photo_url` | URL STRING | `https://drive.google.com/uc?id=...` | Tautan langsung foto fisik unit di Drive |
-| **J** | `doc_photo_url` | URL STRING | `https://drive.google.com/uc?id=...` | Tautan langsung foto dokumen DO di Drive |
-| **K** | `keterangan` | TEXT | `Unit tiba kondisi baik, perlengkapan lengkap` | Catatan kondisi fisik unit |
-
-#### Sheet 2: `Inventory_Stok` (Status Terkini Inventaris Yard)
-| Indeks | Nama Kolom | Format Data | Contoh Isi | Keterangan |
-| :---: | :--- | :--- | :--- | :--- |
-| **A** | `vin_number` | STRING (17) | `MHKP3FA1JTK137533` | Primary Key unik per unit kendaraan |
-| **B** | `engine_number` | STRING | `2NR4F82393` | Nomor Mesin |
-| **C** | `car_model` | STRING | `Gran Max Pick Up` | Model Kendaraan |
-| **D** | `current_status` | ENUM | `IN_YARD` / `IN_TRANSIT` | Status lokasi fisik unit saat ini |
-| **E** | `last_mutation_type` | STRING | `Unit Masuk` | Jenis mutasi terakhir |
-| **F** | `last_updated` | DATETIME | `2026-10-14 08:30:15` | Timestamp pembaharuan status |
-| **G** | `pic_in_charge` | STRING | `Syafira Fira` | PIC penanggung jawab terakhir |
-
-#### Sheet 3: `Master_PIC` (Autentikasi & Daftar Petugas)
-| Indeks | Nama Kolom | Format Data | Contoh Isi | Keterangan |
-| :---: | :--- | :--- | :--- | :--- |
-| **A** | `pic_id` | STRING | `PIC-001` | ID identifikasi petugas |
-| **B** | `username` | STRING | `syafira` | Username login |
-| **C** | `password_hash` | STRING | `***` | Password terenkripsi / PIN petugas |
-| **D** | `full_name` | STRING | `Syafira Fira` | Nama lengkap resmi PIC |
-| **E** | `email` | STRING | `admin.logistics@daihatsu.co.id` | Email koordinasi petugas |
-| **F** | `role` | ENUM | `YARD_OFFICER` / `SUPERVISOR` | Hak akses otorisasi sistem |
+1. **Kode Rahasia Tidak Terekspos ke Publik**:
+   - Sistem backend menggunakan mekanisme serverless yang aman. Kredensial rahasia, token, dan skrip internal Google dilindungi di balik pintu gerbang terenkripsi (*Reverse Proxy*).
+   - Berkas skrip backend tidak pernah diletakkan di tempat terbuka yang dapat diakses oleh pihak luar.
+2. **Akses Kamera Aman (HTTPS Terenkripsi)**:
+   - Seluruh komunikasi data dari browser petugas ke database terlindungi enkripsi standar SSL/TLS 256-bit.
+3. **Pemberian Hak Akses Terbatas (Role-Based Access)**:
+   - Petugas lapangan hanya memiliki akses untuk memindai dan memasukkan data.
+   - Pihak manajemen dan supervisor memiliki akses penuh untuk meninjau spreadsheet, folder foto Google Drive, dan menerima email PDF harian.
 
 ---
 
-### 5.2 Google Drive Integration (Penyimpanan Foto Bukti Fisik)
-- Folder target di Google Drive ditentukan melalui konfigurasi ID Folder (`DRIVE_FOLDER_ID`).
-- Setiap gambar diterima oleh Google Apps Script dalam bentuk string Base64 dari klien, lalu didekode menjadi blob gambar murni (`Utilities.newBlob`) dengan tipe MIME `image/jpeg`.
-- **Standar Penamaan File**:
-  - Foto Fisik Unit: `UNIT_[VIN]_[TIMESTAMP].jpg`
-  - Foto Dokumen DO: `DO_[VIN]_[TIMESTAMP].jpg`
-- Akses file diatur agar dapat dilihat secara terpusat oleh akun yang memiliki hak akses (*viewable via URL*), dan URL publiknya dicatat langsung pada kolom `unit_photo_url` dan `doc_photo_url` di Google Sheets.
+## 8. Target Kinerja & Jaminan Mutu (SLA & Key Performance Indicators)
 
----
-
-### 5.3 Otomatisasi Rekap PDF Harian (Time-driven Trigger Pukul 08:00 WIB)
-- **Mekanisme Pemicu**: Menggunakan Google Apps Script Time-driven Trigger:
-  ```javascript
-  ScriptApp.newTrigger('cronSendDailyRecapEmail')
-    .timeBased()
-    .everyDays(1)
-    .atHour(8)
-    .nearMinute(0)
-    .inTimezone('Asia/Jakarta')
-    .create();
-  ```
-- **Alur Eksekusi**:
-  1. Trigger berjalan otomatis setiap hari pada pukul **08:00 WIB**.
-  2. Script mengambil seluruh transaksi di sheet `Mutasi_Logistik` yang tercatat dalam kurun waktu 24 jam terakhir (dari pukul 08:00 kemarin s/d 08:00 hari ini).
-  3. Script menghitung ringkasan: Total Unit Masuk, Total Unit Keluar, dan Sisa Stok In-Yard per model.
-  4. Script merender template HTML berstandar korporat Astra Daihatsu (tata letak rapi, tabel formal, header logo, dan kolom tanda tangan).
-  5. Script mengonversi dokumen HTML tersebut menjadi file PDF bernama:  
-     `Rekap_Mutasi_Harian_Daihatsu_[YYYY-MM-DD].pdf`.
-  6. Mengirimkan email via `GmailApp.sendEmail` ke alamat manajemen tujuan:  
-     `admin.logistics@daihatsu.co.id`  
-     dengan subjek: `[LAPORAN OTOMATIS] Rekap Mutasi Logistik Unit Daihatsu - Periode [TANGGAL]`.
-
----
-
-## 6. Panduan Implementasi & Deployment (*Runbook*)
-
-### 6.1 Langkah 1: Push Update Frontend ke GitHub
-Seluruh perubahan kode frontend sudah berada di branch `main` repository:
-```bash
-git add assets/js/scanner.js index.html README.md
-git commit -m "docs: add enterprise PRD & system architecture specification"
-git push origin main
-```
-
-### 6.2 Langkah 2: Deployment Vercel Serverless Function
-1. Buka [Vercel Dashboard](https://vercel.com/dashboard) dan import repository ini.
-2. Tambahkan **Environment Variables** di Vercel:
-   - `APPSCRIPT_URL`: URL Deployment Web App Google Apps Script Anda.
-   - `API_SECRET_TOKEN`: Token rahasia pilihan Anda untuk otentikasi aman.
-3. Klik **Deploy**. Vercel akan otomatis menyajikan aplikasi frontend sekaligus mengaktifkan serverless proxy di endpoint `/api/proxy`.
-
-### 6.3 Langkah 3: Setup Google Apps Script (`Code.gs`)
-1. Buka Google Spreadsheet baru di Google Drive Anda.
-2. Buat 3 lembar kerja (*sheet*) dengan nama: `Mutasi_Logistik`, `Inventory_Stok`, dan `Master_PIC` sesuai struktur kolom pada Bagian 5.1.
-3. Buat folder baru di Google Drive untuk menampung foto bukti fisik unit & DO, lalu salin ID Foldernya dari URL browser.
-4. Di Spreadsheet, buka menu **Extensions** > **Apps Script**.
-5. Masukkan kode backend `Code.gs` yang mengimplementasikan `doGet()`, `doPost()`, penyimpanan ke Drive, dan fungsi `cronSendDailyRecapEmail()`.
-6. Klik **Deploy** > **New Deployment** > Pilih type **Web App**:
-   - *Execute as*: **Me (pemilik email)**
-   - *Who has access*: **Anyone**
-7. Salin URL Web App yang dihasilkan dan tempelkan ke variabel `APPSCRIPT_URL` di Vercel.
-8. Jalankan fungsi pemicu trigger satu kali di editor Apps Script untuk mengaktifkan jadwal otomatis jam 08:00 WIB.
-
----
-
-## 7. Metrik Evaluasi Kinerja Sistem (*Key Performance Indicators*)
-
-| Metrik Evaluasi | Target KPI | Metode Pengukuran |
+| Indikator Kinerja (KPI) | Target Standar | Manfaat Nyata di Lapangan |
 | :--- | :---: | :--- |
-| **Zero Duplicate Error** | **0%** | Tidak ada nomor VIN yang sama dicatat dua kali pada siklus mutasi yang sama |
-| **Kecepatan Input Unit** | **< 20 detik** | Durasi dari pemindaian stiker kaca hingga data tersimpan di backend |
-| **Akurasi Ekstraksi OCR** | **> 98%** | Persentase nomor VIN dan mesin yang berhasil diekstrak tanpa koreksi manual |
-| **Ketepatan Rekap PDF Otomatis** | **100%** | Email rekap harian terkirim setiap pukul 08:00 WIB tanpa keterlambatan |
-| **Integritas Bukti Fisik** | **100%** | Seluruh transaksi mutasi memiliki tautan foto fisik unit & foto dokumen DO di Drive |
+| **Tingkat Kesalahan Data Ganda (*Duplicate Rate*)** | **0% (Nol Kesalahan)** | Tidak akan ada unit yang terhitung ganda dalam laporan stok fisik. |
+| **Kecepatan Input per Kendaraan** | **< 20 Detik** | Petugas dapat menyelesaikan input 1 mobil lengkap dengan 2 foto dalam kurang dari setengah menit. |
+| **Akurasi Pemindaian Nomor Rangka** | **> 98%** | Kamera mengenali nomor rangka dan nomor mesin tanpa perlu input manual. |
+| **Ketersediaan Bukti Foto Fisik** | **100% Wajib** | Tidak ada kendaraan yang masuk atau keluar tanpa memiliki foto mobil dan foto surat jalan. |
+| **Ketepatan Waktu Laporan Harian** | **Tepat Pukul 08:00 WIB** | Manajemen selalu menerima laporan di meja kerja setiap pagi secara otomatis. |
 
 ---
 
-> **Pemeliharaan & Kontak:**  
-> Divisi Sistem Informasi & Manajemen Logistik Sentra Lampung — Astra Daihatsu Motor  
-> Email Korespondensi: `admin.logistics@daihatsu.co.id`
+## 9. Pertanyaan yang Sering Diajukan (FAQ) untuk Tim Lapangan
+
+> [!NOTE]
+> **T: Bagaimana jika stiker kaca depan mobil terkena pantulan sinar matahari yang silau atau kotor?**  
+> **J:** Petugas cukup beralih ke tombol **"🔤 Baca Teks Stiker (OCR)"**. Sistem secara otomatis akan mempertajam kontras gambar dan membaca teks nomor rangka di bawah garis barcode. Petugas juga dapat memotret stiker terlebih dahulu, lalu memilih fotonya dari galeri smartphone.
+
+> [!TIP]
+> **T: Apakah petugas lapangan perlu membuat akun Google baru untuk menggunakan aplikasi ini?**  
+> **J:** Tidak perlu. Aplikasi berbasis web ini dapat langsung diakses melalui tautan web di browser smartphone (Chrome atau Safari). Petugas cukup memilih nama mereka saat melakukan verifikasi mutasi.
+
+> [!IMPORTANT]
+> **T: Jika jaringan internet di pool tiba-tiba lambat atau terputus sementara, apakah data hilang?**  
+> **J:** Sistem dirancang memiliki memori cadangan lokal sementara di browser smartphone (*Local Storage*). Jika koneksi terputus saat proses pengiriman, petugas akan diberi tahu melalui notifikasi peringatan agar dapat mencoba kembali saat sinyal kembali stabil tanpa harus memindai ulang dari awal.
+
+---
+
+## 10. Pengesahan & Kontak Layanan
+
+Dokumen spesifikasi produk ini disusun untuk menjadi acuan bersama antara tim pengembang, pihak manajemen logistik, dan pengguna operasional pool Astra Daihatsu.
+
+* **Penanggung Jawab Sistem:** Tim Sistem Informasi & Logistik Sentra Pool Daihatsu  
+* **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
+* **Pusat Operasional:** Yard Logistics & Salvage Sentra Management  
+* **Status Dokumen:** Disetujui untuk Operasional Aktif (Versi 2.4 - Terverifikasi)  
