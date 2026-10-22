@@ -165,8 +165,9 @@ Sistem Management StockYard dirancang dengan antarmuka yang sangat kaya fitur, m
    - Kotak pencarian yang mampu mencari kecocokan nomor DO, nomor rangka, nomor mesin, model, maupun nama petugas penginput.
 5. **Tiga Metode Ekspor Laporan Resmi**:
    - **Cetak Langsung (*Print-Ready*)**: Memformat tabel mutasi ke tata letak cetak ramah kertas A4/Folio tanpa elemen antarmuka website.
-   - **Download PDF Berkop Resmi Astra Daihatsu**: Dihasilkan secara instan di dalam browser (*client-side PDF generator via jsPDF/AutoTable/html2pdf*). Menghasilkan dokumen resmi berlogo Astra Daihatsu, nomor dokumen, tanggal cetak, tabel terstruktur, dan kolom tanda tangan pengesahan supervisor.
-   - **Ekspor Format Spreadsheet (Excel / CSV)**: Mengunduh data tabel mentah untuk keperluan analisis keuangan atau audit internal kantor.
+   - **Download PDF Berkop Resmi Astra Daihatsu**: Dihasilkan secara instan di dalam browser (*client-side PDF generator via jsPDF/AutoTable*). Menghasilkan dokumen resmi berlogo Astra Daihatsu, nomor dokumen, tanggal cetak, tabel terstruktur, baris jumlah, dan kolom tanda tangan pengesahan Petugas Security, PIC, serta HDA/DM.
+   - **Ekspor Format Spreadsheet (Excel / CSV)**: Mengunduh data tabel mentah untuk keperluan analisis keuangan, pembukuan, atau audit internal kantor.
+   - **Otomatisasi Email Rekapitulasi Terjadwal (08:00 WIB)**: Mengirimkan email ringkasan eksekutif dengan lampiran dokumen resmi **PDF** dan **Excel (.xlsx)** yang dilengkapi baris jumlah unit serta legalitas tanda tangan **Security Pool** dan **HDA / DM (Head Dept Area / District Manager)**.
 6. **Aksi Pembuka Foto Bukti Fisik**:
    - Tombol thumbnail foto mobil dan foto dokumen DO pada setiap baris tabel. Mengeklik tombol ini akan membuka foto dalam ukuran penuh di modal penampil gambar.
 
@@ -432,7 +433,7 @@ flowchart TD
     
     Submit --> CompressImg[Kompresi Otomatis di HP < 400 KB]
     CompressImg --> CloudSync[Data Tersimpan di Google Spreadsheet & Foto di Drive]
-    CloudSync --> AutoReport[Otomatis Masuk Rekap PDF Harian Pukul 08:00 WIB]
+    CloudSync --> AutoReport[Otomatis Masuk Rekap Harian Pukul 08:00 WIB via PDF & Excel Lengkap TTD Security & HDA/DM]
     AutoReport --> Done([Selesai - Dashboard & Log Terupdate])
 ```
 
