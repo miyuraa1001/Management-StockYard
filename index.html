@@ -772,14 +772,14 @@
                   <option value="2024">2024</option>
                 </select>
 
-                <!-- Dropdown Kode BA Dashboard -->
+                <!-- Dropdown Kode BA / Cabang Dashboard -->
                 <select id="dashFilterBa" onchange="applyDashboardDateFilter()" class="bg-amber-50/90 border border-amber-200/90 rounded-xl px-2.5 py-2 text-xs font-black text-amber-900 focus:outline-none">
-                  <option value="all" selected>Semua BA</option>
-                  <option value="D660">BA: D660</option>
-                  <option value="D661">BA: D661</option>
-                  <option value="D662">BA: D662</option>
-                  <option value="D663">BA: D663</option>
-                  <option value="D664">BA: D664</option>
+                  <option value="all" selected>Semua Cabang (BA)</option>
+                  <option value="D660">D660 - Ahmad Yani</option>
+                  <option value="D661">D661 - Soekarno Hatta</option>
+                  <option value="D662">D662 - Bandar Jaya</option>
+                  <option value="D663">D663 - Lampung Utara</option>
+                  <option value="D664">D664 - Lampung Timur</option>
                 </select>
               </div>
             </div>
@@ -989,15 +989,15 @@
               </button>
             </div>
 
-            <!-- Dropdown Filter Kode BA di Inventory -->
+            <!-- Dropdown Filter Kode BA / Cabang di Inventory -->
             <div class="flex-shrink-0">
               <select id="invFilterBa" onchange="filterInventory()" class="bg-amber-50/90 border border-amber-200/90 rounded-2xl px-3 py-2.5 text-xs font-black text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer shadow-2xs">
-                <option value="all" selected>Semua Kode BA</option>
-                <option value="D660">Kode BA: D660</option>
-                <option value="D661">Kode BA: D661</option>
-                <option value="D662">Kode BA: D662</option>
-                <option value="D663">Kode BA: D663</option>
-                <option value="D664">Kode BA: D664</option>
+                <option value="all" selected>Semua Cabang (BA)</option>
+                <option value="D660">D660 - Ahmad Yani</option>
+                <option value="D661">D661 - Soekarno Hatta</option>
+                <option value="D662">D662 - Bandar Jaya</option>
+                <option value="D663">D663 - Lampung Utara</option>
+                <option value="D664">D664 - Lampung Timur</option>
               </select>
             </div>
 
@@ -1157,14 +1157,14 @@
                   <option value="2024">2024</option>
                 </select>
 
-                <!-- Dropdown Kode BA di Rincian Model -->
+                <!-- Dropdown Kode BA / Cabang di Rincian Model -->
                 <select id="modelFilterBa" onchange="applyModelDateFilter()" class="bg-amber-50/90 border border-amber-200/90 rounded-xl px-2 py-2.5 text-xs font-black text-amber-900 focus:outline-none">
-                  <option value="all" selected>Semua BA</option>
-                  <option value="D660">BA: D660</option>
-                  <option value="D661">BA: D661</option>
-                  <option value="D662">BA: D662</option>
-                  <option value="D663">BA: D663</option>
-                  <option value="D664">BA: D664</option>
+                  <option value="all" selected>Semua Cabang (BA)</option>
+                  <option value="D660">D660 - Ahmad Yani</option>
+                  <option value="D661">D661 - Soekarno Hatta</option>
+                  <option value="D662">D662 - Bandar Jaya</option>
+                  <option value="D663">D663 - Lampung Utara</option>
+                  <option value="D664">D664 - Lampung Timur</option>
                 </select>
               </div>
             </div>
@@ -1346,14 +1346,14 @@
                   <option value="2024">2024</option>
                 </select>
 
-                <!-- Dropdown Kode BA di Riwayat -->
+                <!-- Dropdown Kode BA / Cabang di Riwayat -->
                 <select id="histFilterBa" onchange="applyHistoryDateFilter()" class="bg-amber-50/90 border border-amber-200/90 rounded-xl px-2 py-2.5 text-xs font-black text-amber-900 focus:outline-none">
-                  <option value="all" selected>Semua BA</option>
-                  <option value="D660">BA: D660</option>
-                  <option value="D661">BA: D661</option>
-                  <option value="D662">BA: D662</option>
-                  <option value="D663">BA: D663</option>
-                  <option value="D664">BA: D664</option>
+                  <option value="all" selected>Semua Cabang (BA)</option>
+                  <option value="D660">D660 - Ahmad Yani</option>
+                  <option value="D661">D661 - Soekarno Hatta</option>
+                  <option value="D662">D662 - Bandar Jaya</option>
+                  <option value="D663">D663 - Lampung Utara</option>
+                  <option value="D664">D664 - Lampung Timur</option>
                 </select>
               </div>
             </div>
@@ -2154,26 +2154,26 @@
               </div>
             </div>
 
-            <!-- Field 3: Nomor / Kode Berita Acara (No. BA) - Dropdown Pilihan D660 - D664 -->
+            <!-- Field 3: Cabang / Kode Berita Acara (No. BA) - Dropdown Pilihan D660 - D664 -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label for="inputNoBa" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  <span>Kode Berita Acara (No. BA)</span>
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                  <span>Cabang / Kode Berita Acara (BA)</span>
                 </label>
-                <span class="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">DROPDOWN KODE BA</span>
+                <span class="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">PILIHAN CABANG</span>
               </div>
               <div class="relative">
-                <select id="inputNoBa" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-mono font-black text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                  <option value="D660" selected>D660</option>
-                  <option value="D661">D661</option>
-                  <option value="D662">D662</option>
-                  <option value="D663">D663</option>
-                  <option value="D664">D664</option>
+                <select id="inputNoBa" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                  <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
+                  <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
+                  <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
+                  <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
+                  <option value="D664 - Lampung Timur">D664 - Lampung Timur</option>
                 </select>
                 <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
               </div>
-              <span class="text-[9.5px] text-slate-400 mt-1 block">Pilihan kode Berita Acara: <strong>D660, D661, D662, D663, D664</strong>.</span>
+              <span class="text-[9.5px] text-slate-400 mt-1 block">Pilihan cabang resmi: <strong>D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur</strong>.</span>
             </div>
 
             <!-- Field 4: Dual Upload Foto (Mobil & Dokumen) Langsung Buka Kamera HP -->

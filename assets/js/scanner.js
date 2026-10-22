@@ -388,10 +388,10 @@ const ScannerService = {
     if (inputVinEl) inputVinEl.value = '';
     if (inputEngineEl) inputEngineEl.value = '';
 
-    // Pastikan No. BA default D660 terisi
+    // Pastikan No. BA default D660 - Ahmad Yani terisi
     const inputNoBaEl = document.getElementById('inputNoBa');
     if (inputNoBaEl && !inputNoBaEl.value.trim()) {
-      inputNoBaEl.value = 'D660';
+      inputNoBaEl.value = 'D660 - Ahmad Yani';
     }
 
     const displayVinEl = document.getElementById('displaySummaryVin');
@@ -1627,10 +1627,10 @@ const ScannerService = {
     // Selaraskan nilai ke form Tahap 2
     this.syncVinEngine();
 
-    // Pastikan No. BA terisi D660 jika kosong
+    // Pastikan No. BA terisi D660 - Ahmad Yani jika kosong
     const formNoBaEl = document.getElementById('inputNoBa');
     if (formNoBaEl && !formNoBaEl.value.trim()) {
-      formNoBaEl.value = 'D660';
+      formNoBaEl.value = 'D660 - Ahmad Yani';
     }
 
     // Otomatis tangkap frame kamera scanner sebagai Foto Dokumen (Stiker Kaca) & Foto Bukti jika belum ada

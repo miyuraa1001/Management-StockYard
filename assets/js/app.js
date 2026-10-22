@@ -117,7 +117,7 @@ const App = {
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
     const model = document.getElementById('inputCarModel')?.value;
-    const noBa = (document.getElementById('inputNoBa')?.value || 'D660').trim().toUpperCase() || 'D660';
+    const noBa = (document.getElementById('inputNoBa')?.value || 'D660 - Ahmad Yani').trim();
     const notes = document.getElementById('inputKeterangan')?.value.trim();
 
     if (!vin || !engine) {
@@ -224,7 +224,7 @@ const App = {
     const keteranganEl = document.getElementById('inputKeterangan');
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');
-    if (noBaEl) noBaEl.value = 'D660';
+    if (noBaEl) noBaEl.value = 'D660 - Ahmad Yani';
     UI.removeImagePreview('unitPhoto');
     UI.removeImagePreview('docPhoto');
 

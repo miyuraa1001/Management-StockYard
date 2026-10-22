@@ -16,6 +16,27 @@ const CONFIG = {
   APP_TITLE: 'Management StockYard',
   APP_SUBTITLE: 'Astra Daihatsu DSO Lampung',
   BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
+
+  // Daftar Cabang Resmi Astra Daihatsu Lampung (Kode BA & Nama Cabang)
+  BRANCH_LIST: [
+    { code: 'D660', name: 'Ahmad Yani', label: 'D660 - Ahmad Yani' },
+    { code: 'D661', name: 'Soekarno Hatta', label: 'D661 - Soekarno Hatta' },
+    { code: 'D662', name: 'Bandar Jaya', label: 'D662 - Bandar Jaya' },
+    { code: 'D663', name: 'Lampung Utara', label: 'D663 - Lampung Utara' },
+    { code: 'D664', name: 'Lampung Timur', label: 'D664 - Lampung Timur' }
+  ],
+
+  /**
+   * Memformat kode BA menjadi nama cabang lengkap (misal: "D660" -> "D660 - Ahmad Yani")
+   */
+  formatBranch(ba) {
+    if (!ba) return 'D660 - Ahmad Yani';
+    const s = String(ba).trim();
+    if (s.includes(' - ')) return s;
+    const match = this.BRANCH_LIST.find(b => b.code.toUpperCase() === s.toUpperCase());
+    return match ? match.label : s;
+  },
+
   OPERATOR_NAME: 'Andi Pratama',
   OPERATOR_NPK: '21040889',
   OPERATOR_NIP: '19870215201001123',

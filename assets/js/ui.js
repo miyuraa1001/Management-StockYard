@@ -126,6 +126,42 @@ const UI = {
   },
 
   /**
+   * Format kode / nama cabang resmi (misal: "D660" -> "D660 - Ahmad Yani")
+   */
+  formatBranchName(ba) {
+    if (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function') {
+      return CONFIG.formatBranch(ba);
+    }
+    if (!ba) return 'D660 - Ahmad Yani';
+    const s = String(ba).trim();
+    if (s.includes(' - ')) return s;
+    const map = {
+      'D660': 'D660 - Ahmad Yani',
+      'D661': 'D661 - Soekarno Hatta',
+      'D662': 'D662 - Bandar Jaya',
+      'D663': 'D663 - Lampung Utara',
+      'D664': 'D664 - Lampung Timur'
+    };
+    return map[s.toUpperCase()] || s;
+  },
+
+  /**
+   * Pengecekan kecocokan filter cabang (mendukung kode "D660", nama cabang, atau gabungan)
+   */
+  isBranchMatch(itemBa, filterBa) {
+    if (!filterBa || filterBa === 'all') return true;
+    const rawItem = String(itemBa || 'D660 - Ahmad Yani').toUpperCase();
+    const rawFilter = String(filterBa).toUpperCase();
+
+    const filterCode = rawFilter.match(/D66[0-4]/);
+    const itemCode = rawItem.match(/D66[0-4]/);
+    if (filterCode && itemCode) {
+      return filterCode[0] === itemCode[0];
+    }
+    return rawItem.includes(rawFilter) || rawFilter.includes(rawItem);
+  },
+
+  /**
    * Mengambil data riwayat mutasi yang sedang difilter khusus untuk Dashboard
    */
   getFilteredDashboardData() {
@@ -139,7 +175,7 @@ const UI = {
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
+      const baMatch = this.isBranchMatch(item.noBa, fBa);
       return dateMatch && monthMatch && yearMatch && baMatch;
     });
 
@@ -367,9 +403,9 @@ const UI = {
                   <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider select-none">VIN</span>
                   <span class="font-extrabold text-slate-800 truncate">${item.vin || '-'}</span>
                 </span>
-                <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
-                  <span class="text-[7px] text-amber-600 font-bold uppercase">BA:</span>
-                  <span>${item.noBa || 'D660'}</span>
+                <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Cabang: ${this.formatBranchName(item.noBa)}">
+                  <span class="text-[7px] text-amber-600 font-bold uppercase">Cabang:</span>
+                  <span>${this.formatBranchName(item.noBa)}</span>
                 </span>
               </div>
               <span class="inline-flex items-center space-x-0.5 text-[8.5px] sm:text-[9.5px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70 flex-shrink-0 leading-none">
@@ -422,7 +458,7 @@ const UI = {
           const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
           if (!matched || matched.catalogId !== cat.catalogId) return false;
         }
-        if (fBa !== 'all' && String(u.noBa || 'D660').toUpperCase() !== String(fBa).toUpperCase()) {
+        if (!this.isBranchMatch(u.noBa, fBa)) {
           return false;
         }
         return true;
@@ -440,7 +476,7 @@ const UI = {
           const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
           if (!matched || matched.catalogId !== cat.catalogId) return false;
         }
-        if (fBa !== 'all' && String(h.noBa || 'D660').toUpperCase() !== String(fBa).toUpperCase()) {
+        if (!this.isBranchMatch(h.noBa, fBa)) {
           return false;
         }
         return true;
@@ -754,7 +790,7 @@ const UI = {
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
+      const baMatch = this.isBranchMatch(item.noBa, fBa);
 
       if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
 
@@ -973,9 +1009,9 @@ const UI = {
             <div class="text-[9.5px] font-mono text-slate-500 mt-0.5">
               ENG: <span class="font-bold text-slate-700">${item.engine}</span>
             </div>
-            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
-              <span class="text-[7.5px] text-amber-600 font-bold uppercase">No. BA:</span>
-              <span>${item.noBa || 'D660'}</span>
+            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Cabang: ${this.formatBranchName(item.noBa)}">
+              <span class="text-[7.5px] text-amber-600 font-bold uppercase">Cabang:</span>
+              <span>${this.formatBranchName(item.noBa)}</span>
             </div>
           </td>
 
@@ -1492,7 +1528,7 @@ const UI = {
       { header: 'Waktu Mutasi', dataKey: 'datetime' },
       { header: 'Jenis Mutasi', dataKey: 'type' },
       { header: 'Kendaraan (Model & Katalog)', dataKey: 'vehicle' },
-      { header: 'No. Rangka, Mesin & BA', dataKey: 'vin' },
+      { header: 'No. Rangka, Mesin & Cabang', dataKey: 'vin' },
       { header: 'Petugas PIC & Catatan', dataKey: 'pic' },
       { header: 'Bukti Fisik (Unit & Stiker)', dataKey: 'evidence' },
       { header: 'Status', dataKey: 'status' }
@@ -1540,7 +1576,7 @@ const UI = {
         datetime: `${timeFormatted}\n${dateFormattedRow}`,
         type: `${item.type === 'Unit Masuk' ? '↓ Masuk' : '↑ Keluar'}`,
         vehicle: `${item.model}\n${categoryName}`,
-        vin: `${item.vin}\nENG: ${item.engine}\nBA: ${item.noBa || 'D660'}`,
+        vin: `${item.vin}\nENG: ${item.engine}\n${this.formatBranchName(item.noBa)}`,
         pic: `${item.pic || operatorName}\n${item.notes || 'Pemeriksaan standar.'}`,
         evidence: ' ',
         status: '✓ Valid',
@@ -1900,7 +1936,7 @@ const UI = {
               ENG: <strong style="color: #334155;">${item.engine}</strong>
             </div>
             <div style="font-family: monospace; font-size: 7px; color: #b45309; font-weight: 800; margin-top: 2px; background: #fef3c7; border: 1px solid #fde68a; padding: 1px 4px; border-radius: 3px; display: inline-block;">
-              No. BA: ${item.noBa || 'D660'}
+              Cabang: ${this.formatBranchName(item.noBa)}
             </div>
           </td>
 
@@ -5690,7 +5726,7 @@ const UI = {
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
+      const baMatch = this.isBranchMatch(item.noBa, fBa);
 
       if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
 
@@ -5878,9 +5914,9 @@ const UI = {
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="VIN: ${item.vin || '-'}">${item.vin || '-'}</div>
             <div class="font-mono text-[10px] text-slate-500 font-medium truncate mt-0.5" title="Mesin: ${item.engine || '-'}">No. Mesin: ${item.engine || '-'}</div>
-            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
-              <span class="text-[7.5px] text-amber-600 font-bold uppercase">No. BA:</span>
-              <span>${item.noBa || 'D660'}</span>
+            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Cabang: ${this.formatBranchName(item.noBa)}">
+              <span class="text-[7.5px] text-amber-600 font-bold uppercase">Cabang:</span>
+              <span>${this.formatBranchName(item.noBa)}</span>
             </div>
           </td>
 

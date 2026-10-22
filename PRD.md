@@ -212,7 +212,12 @@ Merupakan fitur inti operasional petugas di lapangan:
   - Banner identitas nomor sasis dan mesin yang telah terkunci (mencegah salah input).
   - Pilihan radio button: **Unit Masuk** atau **Unit Keluar**.
   - Dropdown pilihan **13 Model Resmi Kendaraan Daihatsu**.
-  - **Dropdown Kode Berita Acara (No. BA)**: Menu dropdown terstandar untuk memilih kode BA resmi cabang: **D660** (default), **D661**, **D662**, **D663**, dan **D664**.
+  - **Dropdown Cabang / Kode Berita Acara (No. BA)**: Menu dropdown terstandar untuk memilih cabang & kode BA resmi:
+    - **D660 - Ahmad Yani** (Default)
+    - **D661 - Soekarno Hatta**
+    - **D662 - Bandar Jaya**
+    - **D663 - Lampung Utara**
+    - **D664 - Lampung Timur**
   - **Dua Slot Unggahan Foto Wajib**:
     - *Slot 1: Foto Fisik Mobil* (langsung memicu kamera smartphone).
     - *Slot 2: Foto Dokumen Surat Jalan DO* (langsung memicu kamera smartphone).
@@ -343,7 +348,7 @@ Seluruh data transaksi dan inventaris disimpan dalam format tabel Google Spreads
 | **E** | `car_model` | Teks Pilihan | `Gran Max Pick Up` | Varian model dari 13 katalog resmi Daihatsu |
 | **F** | `mutation_type` | Teks Pilihan | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan kendaraan di area pool |
 | **G** | `pic_name` | Teks | `Syafira Fira` | Nama petugas resmi yang melakukan serah terima |
-| **H** | `no_ba` | Teks (Dropdown) | `D660` | Kode Berita Acara Cabang (Pilihan: D660, D661, D662, D663, D664) |
+| **H** | `no_ba` / `cabang` | Teks (Dropdown) | `D660 - Ahmad Yani` | Kode BA & Cabang (D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur) |
 | **I** | `do_number` | Teks Angka | `2260411667` | Nomor Surat Jalan / Delivery Order resmi |
 | **J** | `unit_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto fisik mobil |
 | **K** | `doc_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto surat jalan DO |
@@ -354,7 +359,7 @@ Seluruh data transaksi dan inventaris disimpan dalam format tabel Google Spreads
 | :---: | :--- | :--- | :--- | :--- |
 | **A** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka kendaraan |
 | **B** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
-| **C** | `no_ba` | Teks (Dropdown) | `D660` | Kode Berita Acara Cabang (D660, D661, D662, D663, D664) |
+| **C** | `no_ba` / `cabang` | Teks (Dropdown) | `D660 - Ahmad Yani` | Kode BA & Cabang Resmi Astra Daihatsu Lampung |
 | **D** | `car_model` | Teks | `Gran Max Pick Up` | Model kendaraan |
 | **E** | `current_status` | Status | `IN_YARD` / `IN_TRANSIT` | **IN_YARD** (Ada di pool) atau **IN_TRANSIT** (Keluar/Jalan) |
 | **F** | `last_mutation_type` | Teks | `Unit Masuk` | Jenis mutasi terakhir yang dialami unit |
