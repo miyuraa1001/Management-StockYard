@@ -164,6 +164,7 @@ const ApiService = {
             ...item,
             model: item.model || item.name || '',
             name: item.name || item.model || '',
+            noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || 'D660',
             stockYard: parseInt(item.stockYard != null ? item.stockYard : (item.inYard || 0), 10) || 0,
             stockTransit: parseInt(item.stockTransit != null ? item.stockTransit : (item.inTransit || 0), 10) || 0,
             status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'Tersedia' : 'Kosong'
@@ -275,6 +276,7 @@ const ApiService = {
               pic: normPic,
               operator: normPic,
               engine: item.engine || '-',
+              noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || 'D660',
               location: item.location || item.destination || '-',
               notes: item.notes || item.keterangan || '-',
               keterangan: item.keterangan || item.notes || '-',
@@ -351,7 +353,11 @@ const ApiService = {
   async saveMutation(mutationRecord) {
     try {
       // Backend Google Apps Script resmi menggunakan action 'recordMutation'
-      const payload = { ...mutationRecord };
+      const payload = { 
+        ...mutationRecord,
+        noBa: mutationRecord.noBa || 'D660',
+        no_ba: mutationRecord.noBa || 'D660'
+      };
       let res = await this.request('recordMutation', 'POST', payload);
       if (res && res.success) {
         return res;

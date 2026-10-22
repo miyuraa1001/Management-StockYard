@@ -1166,7 +1166,7 @@
                   <th class="py-3 px-3 w-[150px] border-r border-slate-200">Waktu</th>
                   <th class="py-3 px-2.5 w-[100px] text-center border-r border-slate-200">Mutasi</th>
                   <th class="py-3 px-3 w-[185px] border-r border-slate-200">Kendaraan</th>
-                  <th class="py-3 px-3 w-[165px] border-r border-slate-200">No. Rangka & Mesin</th>
+                  <th class="py-3 px-3 w-[175px] border-r border-slate-200">No. Rangka, Mesin & BA</th>
                   <th class="py-3 px-3 w-[160px] border-r border-slate-200">PIC & Catatan</th>
                   <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
                   <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
@@ -1343,7 +1343,7 @@
                   <th class="py-3 px-3 w-[150px] border-r border-slate-200">Waktu</th>
                   <th class="py-3 px-2.5 w-[100px] text-center border-r border-slate-200">Mutasi</th>
                   <th class="py-3 px-3 w-[185px] border-r border-slate-200">Kendaraan</th>
-                  <th class="py-3 px-3 w-[165px] border-r border-slate-200">No. Rangka & Mesin</th>
+                  <th class="py-3 px-3 w-[175px] border-r border-slate-200">No. Rangka, Mesin & BA</th>
                   <th class="py-3 px-3 w-[160px] border-r border-slate-200">PIC & Catatan</th>
                   <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
                   <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
@@ -2112,7 +2112,22 @@
               </div>
             </div>
 
-            <!-- Field 3: Dual Upload Foto (Mobil & Dokumen) Langsung Buka Kamera HP -->
+            <!-- Field 3: Nomor Berita Acara (No. BA - Kode Cabang D660) -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="inputNoBa" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Nomor Berita Acara (No. BA)</span>
+                </label>
+                <span class="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">KODE CABANG D660</span>
+              </div>
+              <div class="relative">
+                <input type="text" id="inputNoBa" value="D660" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-mono font-black text-slate-800 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs" placeholder="Contoh: D660 atau D660-202610-001">
+              </div>
+              <span class="text-[9.5px] text-slate-400 mt-1 block">Kode resmi Berita Acara cabang Astra Daihatsu DSO Lampung: <strong>D660</strong>.</span>
+            </div>
+
+            <!-- Field 4: Dual Upload Foto (Mobil & Dokumen) Langsung Buka Kamera HP -->
             <div class="grid grid-cols-2 gap-3 pt-1">
               <!-- Upload Foto Fisik Unit -->
               <div class="flex flex-col">

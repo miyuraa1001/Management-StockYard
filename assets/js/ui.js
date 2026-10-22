@@ -356,11 +356,17 @@ const UI = {
               <span class="hidden sm:inline text-[9.5px] font-semibold text-slate-400 truncate flex-shrink-0">${catalogItem ? catalogItem.category : 'Unit Daihatsu'}</span>
             </div>
 
-            <!-- Baris 3: VIN Tag Monospace + Badge Valid -->
+            <!-- Baris 3: VIN Tag Monospace + No. BA D660 + Badge Valid -->
             <div class="flex items-center justify-between gap-1.5 mt-1 pt-1 border-t border-slate-100/90">
-              <div class="inline-flex items-center space-x-1 font-mono text-[9px] sm:text-[10px] text-slate-600 min-w-0 truncate">
-                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider select-none">VIN</span>
-                <span class="font-extrabold text-slate-800 truncate">${item.vin || '-'}</span>
+              <div class="inline-flex items-center space-x-1.5 font-mono text-[9px] sm:text-[10px] text-slate-600 min-w-0 truncate">
+                <span class="inline-flex items-center space-x-1 truncate">
+                  <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider select-none">VIN</span>
+                  <span class="font-extrabold text-slate-800 truncate">${item.vin || '-'}</span>
+                </span>
+                <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
+                  <span class="text-[7px] text-amber-600 font-bold uppercase">BA:</span>
+                  <span>${item.noBa || 'D660'}</span>
+                </span>
               </div>
               <span class="inline-flex items-center space-x-0.5 text-[8.5px] sm:text-[9.5px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70 flex-shrink-0 leading-none">
                 <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -489,7 +495,8 @@ const UI = {
       const matchesUnit = entry.units.some(u =>
         (u.vin && u.vin.toLowerCase().includes(searchVal)) ||
         (u.plate && u.plate.toLowerCase().includes(searchVal)) ||
-        (u.engine && u.engine.toLowerCase().includes(searchVal))
+        (u.engine && u.engine.toLowerCase().includes(searchVal)) ||
+        (u.noBa && u.noBa.toLowerCase().includes(searchVal))
       );
 
       return matchesStatus && (matchesCatalog || matchesUnit);
@@ -737,6 +744,7 @@ const UI = {
         (item.model && item.model.toLowerCase().includes(searchVal)) ||
         (item.vin && item.vin.toLowerCase().includes(searchVal)) ||
         (item.engine && item.engine.toLowerCase().includes(searchVal)) ||
+        (item.noBa && item.noBa.toLowerCase().includes(searchVal)) ||
         (item.pic && item.pic.toLowerCase().includes(searchVal)) ||
         (item.notes && item.notes.toLowerCase().includes(searchVal)) ||
         (item.id && item.id.toLowerCase().includes(searchVal))
@@ -938,13 +946,17 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: No. Rangka (VIN) & Mesin -->
+          <!-- Kolom 5: No. Rangka (VIN), Mesin & No. BA -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-900">
               ${item.vin}
             </div>
             <div class="text-[9.5px] font-mono text-slate-500 mt-0.5">
               ENG: <span class="font-bold text-slate-700">${item.engine}</span>
+            </div>
+            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
+              <span class="text-[7.5px] text-amber-600 font-bold uppercase">No. BA:</span>
+              <span>${item.noBa || 'D660'}</span>
             </div>
           </td>
 
@@ -1858,13 +1870,16 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: No. Rangka & Mesin -->
+          <!-- Kolom 5: No. Rangka, Mesin & No. BA -->
           <td style="padding: 4px 6px; white-space: nowrap;">
             <div style="font-family: monospace; font-weight: 800; font-size: 8px; color: #0f172a; background: #f1f5f9; padding: 1.5px 5px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block;">
               ${item.vin}
             </div>
             <div style="font-family: monospace; font-size: 7.5px; color: #64748b; margin-top: 2px;">
               ENG: <strong style="color: #334155;">${item.engine}</strong>
+            </div>
+            <div style="font-family: monospace; font-size: 7px; color: #b45309; font-weight: 800; margin-top: 2px; background: #fef3c7; border: 1px solid #fde68a; padding: 1px 4px; border-radius: 3px; display: inline-block;">
+              No. BA: ${item.noBa || 'D660'}
             </div>
           </td>
 
@@ -2110,7 +2125,7 @@ const UI = {
                 <th style="width: 95px;">Waktu Mutasi</th>
                 <th style="width: 75px; text-align: center;">Jenis Mutasi</th>
                 <th style="width: 135px;">Kendaraan</th>
-                <th style="width: 125px;">No. Rangka & Mesin</th>
+                <th style="width: 130px;">No. Rangka, Mesin & BA</th>
                 <th style="width: 145px;">Petugas PIC & Catatan</th>
                 <th style="width: 105px; text-align: center;">Bukti Fisik (Foto)</th>
                 <th style="width: 55px; text-align: center;">Status</th>
@@ -5659,6 +5674,7 @@ const UI = {
         (item.vin && item.vin.toLowerCase().includes(searchVal)) ||
         (item.plate && item.plate.toLowerCase().includes(searchVal)) ||
         (item.engine && item.engine.toLowerCase().includes(searchVal)) ||
+        (item.noBa && item.noBa.toLowerCase().includes(searchVal)) ||
         (item.pic && item.pic.toLowerCase().includes(searchVal)) ||
         (item.notes && item.notes.toLowerCase().includes(searchVal)) ||
         (item.id && item.id.toLowerCase().includes(searchVal))
@@ -5833,10 +5849,14 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: No. Rangka & Mesin -->
+          <!-- Kolom 5: No. Rangka, Mesin & No. BA -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="VIN: ${item.vin || '-'}">${item.vin || '-'}</div>
             <div class="font-mono text-[10px] text-slate-500 font-medium truncate mt-0.5" title="Mesin: ${item.engine || '-'}">No. Mesin: ${item.engine || '-'}</div>
+            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Nomor Berita Acara: ${item.noBa || 'D660'}">
+              <span class="text-[7.5px] text-amber-600 font-bold uppercase">No. BA:</span>
+              <span>${item.noBa || 'D660'}</span>
+            </div>
           </td>
 
           <!-- Kolom 6: PIC & Catatan -->

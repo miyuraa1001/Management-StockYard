@@ -212,6 +212,7 @@ Merupakan fitur inti operasional petugas di lapangan:
   - Banner identitas nomor sasis dan mesin yang telah terkunci (mencegah salah input).
   - Pilihan radio button: **Unit Masuk** atau **Unit Keluar**.
   - Dropdown pilihan **13 Model Resmi Kendaraan Daihatsu**.
+  - **Nomor Berita Acara (No. BA)**: Kolom input resmi No. BA dengan kode default cabang **D660** (Astra Daihatsu DSO Lampung) yang dapat disesuaikan dengan dokumen fisik serah terima.
   - **Dua Slot Unggahan Foto Wajib**:
     - *Slot 1: Foto Fisik Mobil* (langsung memicu kamera smartphone).
     - *Slot 2: Foto Dokumen Surat Jalan DO* (langsung memicu kamera smartphone).
@@ -342,21 +343,23 @@ Seluruh data transaksi dan inventaris disimpan dalam format tabel Google Spreads
 | **E** | `car_model` | Teks Pilihan | `Gran Max Pick Up` | Varian model dari 13 katalog resmi Daihatsu |
 | **F** | `mutation_type` | Teks Pilihan | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan kendaraan di area pool |
 | **G** | `pic_name` | Teks | `Syafira Fira` | Nama petugas resmi yang melakukan serah terima |
-| **H** | `do_number` | Teks Angka | `2260411667` | Nomor Surat Jalan / Delivery Order resmi |
-| **I** | `unit_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto fisik mobil |
-| **J** | `doc_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto surat jalan DO |
-| **K** | `keterangan` | Teks Catatan | `Kondisi mulus, spion lengkap, baret halus bemper` | Catatan kondisi fisik kendaraan saat serah terima |
+| **H** | `no_ba` | Teks | `D660` | Nomor Berita Acara / Kode Cabang Astra Daihatsu DSO Lampung |
+| **I** | `do_number` | Teks Angka | `2260411667` | Nomor Surat Jalan / Delivery Order resmi |
+| **J** | `unit_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto fisik mobil |
+| **K** | `doc_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto surat jalan DO |
+| **L** | `keterangan` | Teks Catatan | `Kondisi mulus, spion lengkap, baret halus bemper` | Catatan kondisi fisik kendaraan saat serah terima |
 
 ### 5.2 Lembar Kerja 2: `Inventory_Stok` (Status Posisi Terkini Unit)
 | Kolom | Nama Kolom Spreadsheet | Tipe Data | Contoh Isi Data | Penjelasan Fungsi Data |
 | :---: | :--- | :--- | :--- | :--- |
 | **A** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka kendaraan |
 | **B** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
-| **C** | `car_model` | Teks | `Gran Max Pick Up` | Model kendaraan |
-| **D** | `current_status` | Status | `IN_YARD` / `IN_TRANSIT` | **IN_YARD** (Ada di pool) atau **IN_TRANSIT** (Keluar/Jalan) |
-| **E** | `last_mutation_type` | Teks | `Unit Masuk` | Jenis mutasi terakhir yang dialami unit |
-| **F** | `last_updated` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu pembaruan status terakhir |
-| **G** | `pic_in_charge` | Teks | `Syafira Fira` | Petugas penanggung jawab terakhir |
+| **C** | `no_ba` | Teks | `D660` | Nomor Berita Acara / Kode Cabang DSO Lampung |
+| **D** | `car_model` | Teks | `Gran Max Pick Up` | Model kendaraan |
+| **E** | `current_status` | Status | `IN_YARD` / `IN_TRANSIT` | **IN_YARD** (Ada di pool) atau **IN_TRANSIT** (Keluar/Jalan) |
+| **F** | `last_mutation_type` | Teks | `Unit Masuk` | Jenis mutasi terakhir yang dialami unit |
+| **G** | `last_updated` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu pembaruan status terakhir |
+| **H** | `pic_in_charge` | Teks | `Syafira Fira` | Petugas penanggung jawab terakhir |
 
 ### 5.3 Lembar Kerja 3: `Master_PIC` (Daftar Identitas Petugas)
 | Kolom | Nama Kolom | Tipe Data | Contoh Isi | Penjelasan |

@@ -117,6 +117,7 @@ const App = {
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
     const model = document.getElementById('inputCarModel')?.value;
+    const noBa = (document.getElementById('inputNoBa')?.value || 'D660').trim().toUpperCase() || 'D660';
     const notes = document.getElementById('inputKeterangan')?.value.trim();
 
     if (!vin || !engine) {
@@ -176,6 +177,7 @@ const App = {
       modelPhoto: modelOfficialPhoto,
       vin: cleanVin,
       engine: cleanEngine,
+      noBa: noBa,
       pic: AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Andi Pratama',
       picNpk: AppState.userProfile?.npk || CONFIG.OPERATOR_NPK || '-',
       location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
@@ -195,6 +197,7 @@ const App = {
       existingInv.status = mutationType === 'Unit Masuk' ? 'Tersedia' : 'Keluar';
       existingInv.photo = modelOfficialPhoto;
       existingInv.docPhoto = docImg;
+      existingInv.noBa = noBa;
     } else {
       // Jika belum ada di inventory dan jenis mutasi adalah Unit Masuk, tambahkan ke inventory
       if (mutationType === 'Unit Masuk') {
@@ -205,6 +208,7 @@ const App = {
           plate: '-',
           vin: cleanVin,
           engine: engine.toUpperCase(),
+          noBa: noBa,
           status: 'Tersedia',
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: modelOfficialPhoto,
@@ -219,6 +223,8 @@ const App = {
     // Reset Form Input
     const keteranganEl = document.getElementById('inputKeterangan');
     if (keteranganEl) keteranganEl.value = '';
+    const noBaEl = document.getElementById('inputNoBa');
+    if (noBaEl) noBaEl.value = 'D660';
     UI.removeImagePreview('unitPhoto');
     UI.removeImagePreview('docPhoto');
 
