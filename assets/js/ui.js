@@ -132,16 +132,18 @@ const UI = {
     const fDate = document.getElementById('dashFilterDate')?.value || 'all';
     const fMonth = document.getElementById('dashFilterMonth')?.value || 'all';
     const fYear = document.getElementById('dashFilterYear')?.value || 'all';
+    const fBa = document.getElementById('dashFilterBa')?.value || 'all';
 
     const filtered = (AppState.historyData || []).filter(item => {
       const parts = this.parseItemDate(item);
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      return dateMatch && monthMatch && yearMatch;
+      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
+      return dateMatch && monthMatch && yearMatch && baMatch;
     });
 
-    return { filtered, fDate, fMonth, fYear };
+    return { filtered, fDate, fMonth, fYear, fBa };
   },
 
   /**
@@ -242,14 +244,16 @@ const UI = {
     const d = document.getElementById('dashFilterDate');
     const m = document.getElementById('dashFilterMonth');
     const y = document.getElementById('dashFilterYear');
+    const b = document.getElementById('dashFilterBa');
     if (d) d.value = 'all';
     if (m) m.value = 'all';
     if (y) y.value = 'all';
+    if (b) b.value = 'all';
     if (typeof this.initCustomDropdowns === 'function') {
       this.initCustomDropdowns();
     }
     this.applyDashboardDateFilter();
-    this.showToast('Filter dashboard di-reset (Semua Waktu)');
+    this.showToast('Filter dashboard di-reset (Semua Waktu & BA)');
   },
 
   setDashboardDateFilterToAll() {
@@ -404,6 +408,7 @@ const UI = {
     if (!container) return;
 
     const catalog = AppState.vehicleCatalog || [];
+    const fBa = document.getElementById('invFilterBa')?.value || 'all';
 
     // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData & riwayat mutasi
     const hasRealHistory = (AppState.historyData || []).length > 0;
@@ -413,9 +418,14 @@ const UI = {
       const units = (AppState.inventoryData || []).filter(u => {
         if (!u) return false;
         const uModel = String(u.model || u.name || '').toLowerCase();
-        if (uModel === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
-        return matched && matched.catalogId === cat.catalogId;
+        if (uModel !== cat.model.toLowerCase()) {
+          const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
+          if (!matched || matched.catalogId !== cat.catalogId) return false;
+        }
+        if (fBa !== 'all' && String(u.noBa || 'D660').toUpperCase() !== String(fBa).toUpperCase()) {
+          return false;
+        }
+        return true;
       });
 
       // Hitung dari data stok spreadsheet
@@ -426,9 +436,14 @@ const UI = {
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
-        if (hModel === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
-        return matched && matched.catalogId === cat.catalogId;
+        if (hModel !== cat.model.toLowerCase()) {
+          const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+          if (!matched || matched.catalogId !== cat.catalogId) return false;
+        }
+        if (fBa !== 'all' && String(h.noBa || 'D660').toUpperCase() !== String(fBa).toUpperCase()) {
+          return false;
+        }
+        return true;
       });
 
       const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
@@ -632,6 +647,8 @@ const UI = {
   clearInventorySearch() {
     const input = document.getElementById('inventorySearchInput');
     if (input) input.value = '';
+    const ba = document.getElementById('invFilterBa');
+    if (ba) ba.value = 'all';
     this.renderInventoryList();
   },
 
@@ -726,18 +743,20 @@ const UI = {
     const fDate = document.getElementById('histFilterDate')?.value || 'all';
     const fMonth = document.getElementById('histFilterMonth')?.value || 'all';
     const fYear = document.getElementById('histFilterYear')?.value || 'all';
+    const fBa = document.getElementById('histFilterBa')?.value || 'all';
     const searchInput = document.getElementById('historySearchInput');
     const searchVal = (searchInput?.value || '').toLowerCase().trim();
 
-    // Filter tahap 1: Periode Waktu & Pencarian (Setiap dropdown tanggal, bulan, tahun bekerja independen!)
+    // Filter tahap 1: Periode Waktu, Kode BA & Pencarian
     const baseFiltered = (AppState.historyData || []).filter(item => {
       const parts = this.parseItemDate(item);
 
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
 
-      if (!dateMatch || !monthMatch || !yearMatch) return false;
+      if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
 
       if (!searchVal) return true;
       return (
@@ -758,7 +777,7 @@ const UI = {
       return true;
     });
 
-    return { filtered, baseFiltered, fDate, fMonth, fYear, searchVal };
+    return { filtered, baseFiltered, fDate, fMonth, fYear, fBa, searchVal };
   },
 
   /**
@@ -1030,11 +1049,13 @@ const UI = {
     const d = document.getElementById('histFilterDate');
     const m = document.getElementById('histFilterMonth');
     const y = document.getElementById('histFilterYear');
+    const b = document.getElementById('histFilterBa');
     if (d) d.value = 'all';
     if (m) m.value = 'all';
     if (y) y.value = 'all';
+    if (b) b.value = 'all';
     this.renderHistoryList();
-    this.showToast('Filter waktu berhasil di-reset!');
+    this.showToast('Filter waktu & kode BA berhasil di-reset!');
   },
 
   /**
@@ -1210,7 +1231,7 @@ const UI = {
    * Langsung mengunduh file .pdf tanpa membuka dialog print browser dan tidak pernah blank/kosong.
    */
   async exportHistoryPDF() {
-    const { filtered, fDate, fMonth, fYear, searchVal } = this.getFilteredHistoryData();
+    const { filtered, fDate, fMonth, fYear, fBa, searchVal } = this.getFilteredHistoryData();
     const tabFilter = AppState.historyTabFilter || 'all';
 
     if (!filtered || filtered.length === 0) {
@@ -1228,7 +1249,7 @@ const UI = {
 
     try {
       await this.ensurePdfLibraryLoaded();
-      await this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, searchVal, tabFilter });
+      await this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
     } catch (err) {
       console.error('[UI] Gagal mengunduh file PDF:', err);
       this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
@@ -1471,7 +1492,7 @@ const UI = {
       { header: 'Waktu Mutasi', dataKey: 'datetime' },
       { header: 'Jenis Mutasi', dataKey: 'type' },
       { header: 'Kendaraan (Model & Katalog)', dataKey: 'vehicle' },
-      { header: 'No. Rangka & Mesin', dataKey: 'vin' },
+      { header: 'No. Rangka, Mesin & BA', dataKey: 'vin' },
       { header: 'Petugas PIC & Catatan', dataKey: 'pic' },
       { header: 'Bukti Fisik (Unit & Stiker)', dataKey: 'evidence' },
       { header: 'Status', dataKey: 'status' }
@@ -1519,7 +1540,7 @@ const UI = {
         datetime: `${timeFormatted}\n${dateFormattedRow}`,
         type: `${item.type === 'Unit Masuk' ? '↓ Masuk' : '↑ Keluar'}`,
         vehicle: `${item.model}\n${categoryName}`,
-        vin: `${item.vin}\nENG: ${item.engine}`,
+        vin: `${item.vin}\nENG: ${item.engine}\nBA: ${item.noBa || 'D660'}`,
         pic: `${item.pic || operatorName}\n${item.notes || 'Pemeriksaan standar.'}`,
         evidence: ' ',
         status: '✓ Valid',
@@ -5590,9 +5611,11 @@ const UI = {
     const fDate = document.getElementById('modelFilterDate');
     const fMonth = document.getElementById('modelFilterMonth');
     const fYear = document.getElementById('modelFilterYear');
+    const fBa = document.getElementById('modelFilterBa');
     if (fDate) fDate.value = 'all';
     if (fMonth) fMonth.value = 'all';
     if (fYear) fYear.value = 'all';
+    if (fBa) fBa.value = 'all';
     this.renderModelDetailTable();
   },
 
@@ -5654,10 +5677,11 @@ const UI = {
       }
     }
 
-    // Filter tanggal, bulan, tahun & pencarian
+    // Filter tanggal, bulan, tahun, kode BA & pencarian
     const fDate = document.getElementById('modelFilterDate')?.value || 'all';
     const fMonth = document.getElementById('modelFilterMonth')?.value || 'all';
     const fYear = document.getElementById('modelFilterYear')?.value || 'all';
+    const fBa = document.getElementById('modelFilterBa')?.value || 'all';
     const sInput = document.getElementById('modelDetailSearchInput');
     const searchVal = (sInput?.value || '').toLowerCase().trim();
 
@@ -5666,8 +5690,9 @@ const UI = {
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+      const baMatch = (fBa === 'all') || (String(item.noBa || 'D660').toUpperCase() === String(fBa).toUpperCase());
 
-      if (!dateMatch || !monthMatch || !yearMatch) return false;
+      if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
 
       if (!searchVal) return true;
       return (
