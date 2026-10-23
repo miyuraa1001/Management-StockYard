@@ -2313,7 +2313,7 @@
     </div>
 
     <!-- Image Preview Modal -->
-    <div id="imagePreviewModal" class="fixed inset-0 z-50 bg-black/90 hidden flex flex-col justify-between p-4" onclick="closeImagePreviewModal()">
+    <div id="imagePreviewModal" class="fixed inset-0 z-[90] bg-black/90 hidden flex flex-col justify-between p-4" style="z-index: 90;" onclick="closeImagePreviewModal()">
       <div class="flex justify-end pt-2 pr-2">
         <button class="w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-bold" aria-label="Tutup Preview">&times;</button>
       </div>
@@ -2323,8 +2323,143 @@
       <p class="text-center text-white/60 text-xs pb-4">Ketuk di mana saja untuk menutup</p>
     </div>
 
+    <!-- Email Notification Modal (Sinkronisasi Laporan Realtime & Riwayat Database) -->
+    <div id="emailNotificationModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+      <div class="bg-white rounded-[28px] max-w-lg w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modern Header -->
+        <div class="px-5 sm:px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center space-x-3 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center space-x-2">
+                <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Notifikasi & Laporan</h3>
+                <span id="notifDatabaseSyncBadge" class="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">Database Sync</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-medium">Log riwayat mutasi fisik & pengiriman email realtime</p>
+            </div>
+          </div>
+          <button type="button" onclick="UI.closeNotificationModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer" aria-label="Tutup Modal">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Unified Controls Card (Clean, Compact, High Contrast) -->
+        <div class="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-100 space-y-2.5">
+          <!-- Server Status & Actions -->
+          <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+            <div class="flex items-center space-x-2.5 min-w-0">
+              <span id="emailLiveStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+              <div class="min-w-0">
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">Server Status</span>
+                  <span id="emailLiveStatusMode" class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 uppercase">PROXY / DIRECT</span>
+                </div>
+                <span id="emailLiveStatusText" class="text-xs font-black text-slate-900 truncate block">Memeriksa status koneksi...</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-1.5 flex-shrink-0">
+              <button type="button" onclick="UI.toggleDirectConnectionBox()" id="btnToggleDirectConfig" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-bold transition cursor-pointer flex items-center space-x-1" title="Atur URL Google Apps Script">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>URL</span>
+              </button>
+              <button type="button" onclick="UI.checkEmailConnectionNow()" id="btnCheckEmailConn" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10.5px] font-black transition cursor-pointer flex items-center space-x-1" title="Uji Koneksi Server">
+                <svg id="iconRefreshConn" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Uji</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Direct URL Connection Card (Expandable) -->
+          <div id="directConnectionModalBox" class="hidden bg-white rounded-2xl p-3 border border-blue-200/90 shadow-2xs space-y-2 animate-in fade-in duration-150">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-black text-slate-800 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                <span>Sambungkan Web App Google Apps Script</span>
+              </span>
+              <button type="button" onclick="UI.resetToVercelProxy()" class="text-[9.5px] text-blue-600 font-bold hover:underline cursor-pointer">Gunakan Proxy Vercel</button>
+            </div>
+            <p class="text-[10px] text-slate-500 leading-tight">
+              Jika Vercel belum diredeploy, tempelkan URL Web App (<code class="text-blue-700 font-mono">https://script.google.com/macros/s/.../exec</code>):
+            </p>
+            <div class="flex items-center gap-1.5">
+              <input type="url" id="directAppScriptUrlInputModal" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-[11px] px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+              <button type="button" onclick="UI.saveDirectUrlFromModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black transition active:scale-95 cursor-pointer whitespace-nowrap">
+                Hubungkan Database
+              </button>
+            </div>
+          </div>
+
+          <!-- Target Email & Manual Trigger (Multi-Email Tags Responsive) -->
+          <div class="bg-gradient-to-r from-blue-50/90 to-indigo-50/70 rounded-2xl p-3 border border-blue-100/90 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center space-x-1.5 min-w-0">
+                <span class="text-[9.5px] font-black uppercase tracking-wider text-blue-700">Target Email Penerima</span>
+                <span id="notifModalEmailCountBadge" class="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 border border-blue-200">1 Email</span>
+              </div>
+              <button type="button" onclick="UI.openEditTargetEmailModal()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition flex items-center space-x-0.5 cursor-pointer flex-shrink-0" title="Kelola Email Penerima">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                <span>Kelola Email</span>
+              </button>
+            </div>
+            
+            <!-- Dynamic Chips Container for Registered Emails (No Ugly Truncation) -->
+            <div id="notifModalEmailChips" class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
+                <span class="text-blue-500">@</span>
+                <span id="notifModalTargetEmail">admin.logistics@daihatsu.co.id</span>
+              </span>
+            </div>
+
+            <!-- Sub-actions: Info and Kirim Laporan Button -->
+            <div class="pt-1.5 border-t border-blue-100/70 flex items-center justify-between gap-2">
+              <span class="text-[10px] text-slate-500 font-medium leading-tight">Rekap scan fisik & laporan otomatis terkirim realtime</span>
+              <button type="button" onclick="UI.triggerRealEmailReportNow()" id="btnTestSendEmail" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-black shadow-xs active:scale-95 transition cursor-pointer flex items-center space-x-1.5 flex-shrink-0" title="Kirim Laporan Rekapitulasi Manual Sekarang">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                <span id="btnTestSendEmailText">Kirim Laporan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Segmented Filter Pills: Semua, Masuk, Keluar, Laporan (Mobile-Optimized High Contrast) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5 w-full">
+            <button type="button" id="notifFilterAll" onclick="UI.setEmailNotifFilter('ALL')" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-[11px] font-black text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-blue-600 text-white shadow-xs">
+              Semua (<span id="notifCountAll">0</span>)
+            </button>
+            <button type="button" id="notifFilterMasuk" onclick="UI.setEmailNotifFilter('MASUK')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
+              Masuk (<span id="notifCountMasuk">0</span>)
+            </button>
+            <button type="button" id="notifFilterKeluar" onclick="UI.setEmailNotifFilter('KELUAR')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
+              Keluar (<span id="notifCountKeluar">0</span>)
+            </button>
+            <button type="button" id="notifFilterDaily" onclick="UI.setEmailNotifFilter('DAILY')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
+              Laporan (<span id="notifCountDaily">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification List Container (Sleek Scrollable Body, Full Height Flex) -->
+        <div id="emailNotifListContainer" class="p-3 sm:p-4 space-y-2.5 overflow-y-auto flex-1 min-h-[220px] max-h-[52vh] bg-slate-50/40">
+          <!-- Rendered dynamically by UI.renderEmailNotifications() -->
+        </div>
+
+        <!-- Clean Footer (Sticky Bottom, Clean Spacing) -->
+        <div class="px-4 sm:px-5 py-3 bg-white border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 flex-shrink-0">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span class="font-bold text-slate-600 text-[10.5px]">Astra Daihatsu DSO • Realtime Database</span>
+          </div>
+          <button type="button" onclick="UI.clearEmailNotificationLogs()" class="text-rose-600 hover:text-rose-700 font-bold transition cursor-pointer flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-rose-50 text-[10.5px]">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <span>Bersihkan Riwayat</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 1. Dedicated Modal: Jadwal Pengiriman (Analog Clock Face "Jam Bulet" & Frekuensi) -->
-    <div id="editScheduleModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div id="editScheduleModal" class="fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4" style="z-index: 80;">
       <div class="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[92vh]">
         <!-- Header -->
         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
@@ -2479,7 +2614,7 @@
     </div>
 
     <!-- 2. Dedicated Modal: Target Email Penerima (Multi-Email Chips > 5 Email) -->
-    <div id="editTargetEmailModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div id="editTargetEmailModal" class="fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4" style="z-index: 80;">
       <div class="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[92vh]">
         <!-- Header -->
         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
@@ -2540,141 +2675,6 @@
           </button>
           <button type="button" onclick="UI.closeEditTargetEmailModal()" class="py-3 px-4 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-98 transition cursor-pointer">
             Batal
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Email Notification Modal (Sinkronisasi Laporan Realtime & Riwayat Database) -->
-    <div id="emailNotificationModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
-      <div class="bg-white rounded-[28px] max-w-lg w-full shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-        <!-- Modern Header -->
-        <div class="px-5 sm:px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
-          <div class="flex items-center space-x-3 min-w-0">
-            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-center space-x-2">
-                <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Notifikasi & Laporan</h3>
-                <span id="notifDatabaseSyncBadge" class="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">Database Sync</span>
-              </div>
-              <p class="text-[11px] text-slate-400 font-medium">Log riwayat mutasi fisik & pengiriman email realtime</p>
-            </div>
-          </div>
-          <button type="button" onclick="UI.closeNotificationModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer" aria-label="Tutup Modal">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-
-        <!-- Unified Controls Card (Clean, Compact, High Contrast) -->
-        <div class="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-100 space-y-2.5">
-          <!-- Server Status & Actions -->
-          <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-2xs flex items-center justify-between gap-2.5">
-            <div class="flex items-center space-x-2.5 min-w-0">
-              <span id="emailLiveStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
-              <div class="min-w-0">
-                <div class="flex items-center space-x-1.5">
-                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">Server Status</span>
-                  <span id="emailLiveStatusMode" class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 uppercase">PROXY / DIRECT</span>
-                </div>
-                <span id="emailLiveStatusText" class="text-xs font-black text-slate-900 truncate block">Memeriksa status koneksi...</span>
-              </div>
-            </div>
-            <div class="flex items-center space-x-1.5 flex-shrink-0">
-              <button type="button" onclick="UI.toggleDirectConnectionBox()" id="btnToggleDirectConfig" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-bold transition cursor-pointer flex items-center space-x-1" title="Atur URL Google Apps Script">
-                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span>URL</span>
-              </button>
-              <button type="button" onclick="UI.checkEmailConnectionNow()" id="btnCheckEmailConn" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10.5px] font-black transition cursor-pointer flex items-center space-x-1" title="Uji Koneksi Server">
-                <svg id="iconRefreshConn" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span>Uji</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Quick Direct URL Connection Card (Expandable) -->
-          <div id="directConnectionModalBox" class="hidden bg-white rounded-2xl p-3 border border-blue-200/90 shadow-2xs space-y-2 animate-in fade-in duration-150">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-black text-slate-800 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                <span>Sambungkan Web App Google Apps Script</span>
-              </span>
-              <button type="button" onclick="UI.resetToVercelProxy()" class="text-[9.5px] text-blue-600 font-bold hover:underline cursor-pointer">Gunakan Proxy Vercel</button>
-            </div>
-            <p class="text-[10px] text-slate-500 leading-tight">
-              Jika Vercel belum diredeploy, tempelkan URL Web App (<code class="text-blue-700 font-mono">https://script.google.com/macros/s/.../exec</code>):
-            </p>
-            <div class="flex items-center gap-1.5">
-              <input type="url" id="directAppScriptUrlInputModal" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-[11px] px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
-              <button type="button" onclick="UI.saveDirectUrlFromModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black transition active:scale-95 cursor-pointer whitespace-nowrap">
-                Hubungkan Database
-              </button>
-            </div>
-          </div>
-
-          <!-- Target Email & Manual Trigger (Multi-Email Tags Responsive) -->
-          <div class="bg-gradient-to-r from-blue-50/90 to-indigo-50/70 rounded-2xl p-3 border border-blue-100/90 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center space-x-1.5 min-w-0">
-                <span class="text-[9.5px] font-black uppercase tracking-wider text-blue-700">Target Email Penerima</span>
-                <span id="notifModalEmailCountBadge" class="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 border border-blue-200">1 Email</span>
-              </div>
-              <button type="button" onclick="UI.openEditTargetEmailModal()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition flex items-center space-x-0.5 cursor-pointer flex-shrink-0" title="Kelola Email Penerima">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                <span>Kelola Email</span>
-              </button>
-            </div>
-            
-            <!-- Dynamic Chips Container for Registered Emails (No Ugly Truncation) -->
-            <div id="notifModalEmailChips" class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
-                <span class="text-blue-500">@</span>
-                <span id="notifModalTargetEmail">admin.logistics@daihatsu.co.id</span>
-              </span>
-            </div>
-
-            <!-- Sub-actions: Info and Kirim Laporan Button -->
-            <div class="pt-1.5 border-t border-blue-100/70 flex items-center justify-between gap-2">
-              <span class="text-[10px] text-slate-500 font-medium leading-tight">Rekap scan fisik & laporan otomatis terkirim realtime</span>
-              <button type="button" onclick="UI.triggerRealEmailReportNow()" id="btnTestSendEmail" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-black shadow-xs active:scale-95 transition cursor-pointer flex items-center space-x-1.5 flex-shrink-0" title="Kirim Laporan Rekapitulasi Manual Sekarang">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                <span id="btnTestSendEmailText">Kirim Laporan</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Segmented Filter Pills: Semua, Masuk, Keluar, Laporan (Mobile-Optimized High Contrast) -->
-          <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5 w-full">
-            <button type="button" id="notifFilterAll" onclick="UI.setEmailNotifFilter('ALL')" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-[11px] font-black text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-blue-600 text-white shadow-xs">
-              Semua (<span id="notifCountAll">0</span>)
-            </button>
-            <button type="button" id="notifFilterMasuk" onclick="UI.setEmailNotifFilter('MASUK')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Masuk (<span id="notifCountMasuk">0</span>)
-            </button>
-            <button type="button" id="notifFilterKeluar" onclick="UI.setEmailNotifFilter('KELUAR')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Keluar (<span id="notifCountKeluar">0</span>)
-            </button>
-            <button type="button" id="notifFilterDaily" onclick="UI.setEmailNotifFilter('DAILY')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Laporan (<span id="notifCountDaily">0</span>)
-            </button>
-          </div>
-        </div>
-
-        <!-- Notification List Container (Sleek Scrollable Body, Full Height Flex) -->
-        <div id="emailNotifListContainer" class="p-3 sm:p-4 space-y-2.5 overflow-y-auto flex-1 min-h-[220px] max-h-[52vh] bg-slate-50/40">
-          <!-- Rendered dynamically by UI.renderEmailNotifications() -->
-        </div>
-
-        <!-- Clean Footer (Sticky Bottom, Clean Spacing) -->
-        <div class="px-4 sm:px-5 py-3 bg-white border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 flex-shrink-0">
-          <div class="flex items-center space-x-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span class="font-bold text-slate-600 text-[10.5px]">Astra Daihatsu DSO • Realtime Database</span>
-          </div>
-          <button type="button" onclick="UI.clearEmailNotificationLogs()" class="text-rose-600 hover:text-rose-700 font-bold transition cursor-pointer flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-rose-50 text-[10.5px]">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            <span>Bersihkan Riwayat</span>
           </button>
         </div>
       </div>

@@ -4568,7 +4568,10 @@ const UI = {
   openEditScheduleModal() {
     this.initAutomationModal();
     const modal = document.getElementById('editScheduleModal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.style.zIndex = '80';
+      modal.classList.remove('hidden');
+    }
   },
 
   /**
@@ -4585,7 +4588,10 @@ const UI = {
   openEditTargetEmailModal() {
     this.initAutomationModal();
     const modal = document.getElementById('editTargetEmailModal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.style.zIndex = '80';
+      modal.classList.remove('hidden');
+    }
   },
 
   /**
