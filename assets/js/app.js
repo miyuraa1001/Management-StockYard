@@ -116,8 +116,10 @@ const App = {
     const vin = (document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '').trim();
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
+    const docType = (document.getElementById('inputMutationDocType')?.value || 'SPP DC').trim();
     const model = document.getElementById('inputCarModel')?.value;
-    const noBa = (document.getElementById('inputNoBa')?.value || 'D660 - Ahmad Yani').trim();
+    const noBaInput = (document.getElementById('inputNoBa')?.value || '').trim();
+    const noBa = (!AppState.isAdmin() && AppState.getUserBranch) ? AppState.getUserBranch() : (noBaInput || 'D660 - Ahmad Yani');
     const notes = document.getElementById('inputKeterangan')?.value.trim();
 
     if (!vin || !engine) {
@@ -184,6 +186,7 @@ const App = {
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
       docPhoto: docImg,
+      docType: docType,
       targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
     };
 
@@ -197,6 +200,7 @@ const App = {
       existingInv.status = mutationType === 'Unit Masuk' ? 'Tersedia' : 'Keluar';
       existingInv.photo = modelOfficialPhoto;
       existingInv.docPhoto = docImg;
+      existingInv.docType = docType;
       existingInv.noBa = noBa;
     } else {
       // Jika belum ada di inventory dan jenis mutasi adalah Unit Masuk, tambahkan ke inventory
@@ -212,7 +216,8 @@ const App = {
           status: 'Tersedia',
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: modelOfficialPhoto,
-          docPhoto: docImg
+          docPhoto: docImg,
+          docType: docType
         });
       }
     }
@@ -225,6 +230,11 @@ const App = {
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');
     if (noBaEl) noBaEl.value = 'D660 - Ahmad Yani';
+    const docTypeEl = document.getElementById('inputMutationDocType');
+    if (docTypeEl) docTypeEl.value = 'SPP DC';
+    if (typeof window.onMutationDocTypeChanged === 'function') {
+      window.onMutationDocTypeChanged();
+    }
     UI.removeImagePreview('unitPhoto');
     UI.removeImagePreview('docPhoto');
 

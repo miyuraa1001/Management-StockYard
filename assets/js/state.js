@@ -18,9 +18,10 @@ const AppState = {
   facingMode: 'environment',
   isTorchOn: false,
 
-  // Dual Image Upload Cache
+  // Dual Image Upload Cache & Document Type
   uploadedUnitPhotoUrl: null,
   uploadedDocPhotoUrl: null,
+  selectedDocType: 'SPP DC',
 
   // Network & Sync Indicators
   isLoading: false,
@@ -30,9 +31,37 @@ const AppState = {
   userProfile: {
     name: CONFIG.OPERATOR_NAME || 'Andi Pratama',
     npk: CONFIG.OPERATOR_NPK || '21040889',
-    branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
-    role: CONFIG.OPERATOR_ROLE || 'Staff Operasional',
+    branch: CONFIG.OPERATOR_BRANCH || 'D660 - Ahmad Yani',
+    role: CONFIG.OPERATOR_ROLE || 'Admin',
     photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+  },
+
+  /**
+   * Cek apakah role petugas saat ini adalah Admin (akses semua cabang)
+   */
+  isAdmin() {
+    const r = String(this.userProfile?.role || CONFIG.OPERATOR_ROLE || 'Admin').trim().toLowerCase();
+    return r === 'admin' || r.includes('administrator') || r.includes('head') || r.includes('manager');
+  },
+
+  /**
+   * Dapatkan nama cabang resmi penugasan user saat ini
+   */
+  getUserBranch() {
+    const b = this.userProfile?.branch || CONFIG.OPERATOR_BRANCH || 'D660 - Ahmad Yani';
+    if (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function') {
+      return CONFIG.formatBranch(b);
+    }
+    return b;
+  },
+
+  /**
+   * Dapatkan kode cabang resmi (D660 s/d D664)
+   */
+  getUserBranchCode() {
+    const b = this.getUserBranch();
+    const match = b.match(/D66[0-4]/i);
+    return match ? match[0].toUpperCase() : 'D660';
   },
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
@@ -340,11 +369,29 @@ const AppState = {
   },
 
   // Update KPI secara dinamis 100% Realtime dari Database & Scan Lapangan (Tanpa Data Fiktif)
+  // Mendukung Role Admin (Semua Cabang) & User Cabang (Khusus Cabang Saja)
   updateKpiCounts() {
     let masukCount = 0;
     let keluarCount = 0;
     
-    (this.historyData || []).forEach(item => {
+    const isUserRole = !this.isAdmin();
+    const userBranchCode = this.getUserBranchCode();
+
+    const targetHistory = isUserRole
+      ? (this.historyData || []).filter(item => {
+          const ba = (item.noBa || item.branch || item.location || '').toUpperCase();
+          return ba.includes(userBranchCode);
+        })
+      : (this.historyData || []);
+
+    const targetInventory = isUserRole
+      ? (this.inventoryData || []).filter(item => {
+          const ba = (item.noBa || item.branch || item.location || '').toUpperCase();
+          return ba.includes(userBranchCode);
+        })
+      : (this.inventoryData || []);
+
+    targetHistory.forEach(item => {
       if (item && item.type === 'Unit Masuk') masukCount++;
       if (item && item.type === 'Unit Keluar') keluarCount++;
     });
@@ -354,7 +401,7 @@ const AppState = {
     let kosongCount = 0;
 
     catalog.forEach(cat => {
-      const units = (this.inventoryData || []).filter(u => {
+      const units = targetInventory.filter(u => {
         if (!u) return false;
         const uModel = String(u.model || u.name || '').toLowerCase();
         if (uModel === cat.model.toLowerCase()) return true;
@@ -365,7 +412,7 @@ const AppState = {
       const sheetYardStock = units.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
       const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || u.status === 'Tersedia' || !u.status)).length;
 
-      const matchingHistory = (this.historyData || []).filter(h => {
+      const matchingHistory = targetHistory.filter(h => {
         if (!h || !h.model) return false;
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;

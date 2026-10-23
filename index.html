@@ -113,6 +113,12 @@
             <span id="headerNotifBadgeDot" class="w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white absolute -top-0.5 -right-0.5 animate-pulse hidden"></span>
           </button>
 
+          <!-- Role Quick Toggle Pill Badge (Admin vs User Cabang) -->
+          <button type="button" onclick="UI.quickToggleRole()" id="headerRoleBadgeBtn" class="inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0" title="Klik untuk beralih mode: Admin (Semua Cabang) vs User (Khusus Cabang)">
+            <span id="headerRoleBadgeIcon">🛡️</span>
+            <span id="headerRoleBadgeText">Admin</span>
+          </button>
+
           <!-- Profile Avatar & Dropdown Chevron -->
           <button onclick="switchTab('settings')" class="relative flex items-center pl-0.5 pr-1 py-0.5 md:pr-2.5 bg-slate-50/90 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95 cursor-pointer" aria-label="Pengaturan Profil">
             <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
@@ -1203,7 +1209,7 @@
                   <th class="py-3 px-3 w-[155px] border-r border-slate-200">Cabang</th>
                   <th class="py-3 px-3 w-[165px] border-r border-slate-200">No. Rangka & Mesin</th>
                   <th class="py-3 px-3 w-[155px] border-r border-slate-200">PIC & Catatan</th>
-                  <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
+                  <th class="py-3 px-3 w-[190px] text-center border-r border-slate-200">Bukti Fisik & Dokumen (SPP DC / BSTKB / OKK)</th>
                   <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
                 </tr>
               </thead>
@@ -1239,7 +1245,7 @@
           <!-- Table Footer Bar -->
           <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
             <span id="modelDetailFooterSummary">Menampilkan seluruh mutasi unit model ini.</span>
-            <span>Klik <strong class="text-slate-600">Foto Unit</strong> atau <strong class="text-slate-600">Dokumen DO</strong> untuk zoom bukti fisik.</span>
+            <span>Klik <strong class="text-slate-600">Foto Unit</strong> atau <strong class="text-slate-600">Dokumen (SPP DC / BSTKB / OKK)</strong> untuk zoom bukti fisik.</span>
           </div>
         </div>
       </section>
@@ -1397,7 +1403,7 @@
                   <th class="py-3 px-3 w-[185px] border-r border-slate-200">Kendaraan</th>
                   <th class="py-3 px-3 w-[175px] border-r border-slate-200">No. Rangka, Mesin & BA</th>
                   <th class="py-3 px-3 w-[160px] border-r border-slate-200">PIC & Catatan</th>
-                  <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
+                  <th class="py-3 px-3 w-[190px] text-center border-r border-slate-200">Bukti Fisik & Dokumen (SPP DC / BSTKB / OKK)</th>
                   <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
                 </tr>
               </thead>
@@ -1410,7 +1416,7 @@
           <!-- Table Footer Bar -->
           <div class="px-4 sm:px-5 py-2.5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10.5px] text-slate-400 font-medium">
             <span id="historyFooterSummary">Menampilkan seluruh rekaman audit yang sesuai dengan filter aktif.</span>
-            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">DO</strong> untuk melihat foto bukti fisik.</span>
+            <span>Klik <strong class="text-slate-600">Mobil</strong> atau <strong class="text-slate-600">Dokumen (SPP DC / BSTKB / OKK)</strong> untuk melihat foto bukti fisik.</span>
           </div>
         </div>
       </section>
@@ -1494,10 +1500,14 @@
                   </div>
 
                   <!-- Edit Profile Action Button -->
-                  <div class="pt-1">
-                    <button type="button" onclick="event.stopPropagation(); UI.openEditProfilePage()" class="w-full py-2.5 px-4 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer active:scale-98">
+                  <div class="pt-1 grid grid-cols-2 gap-2">
+                    <button type="button" onclick="event.stopPropagation(); UI.quickToggleRole()" class="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-black transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98 shadow-sm" title="Beralih peran antara Admin dan User">
+                      <span id="profileCardToggleIcon">🔄</span>
+                      <span id="profileCardToggleText">Ganti ke User</span>
+                    </button>
+                    <button type="button" onclick="event.stopPropagation(); UI.openEditProfilePage()" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                      <span>Perbarui Data Profil</span>
+                      <span>Edit Profil</span>
                     </button>
                   </div>
                 </div>
@@ -1768,18 +1778,29 @@
                   <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                   </div>
-                  <input type="text" id="inputProfileBranch" value="Sentra Lampung • Astra Daihatsu DSO Lampung" class="w-full bg-slate-50/90 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Contoh: Sentra Lampung • Astra Daihatsu DSO Lampung">
+                  <select id="inputProfileBranch" class="w-full bg-slate-50/90 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition appearance-none cursor-pointer">
+                    <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
+                    <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
+                    <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
+                    <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
+                    <option value="D664 - Lampung Timur">D664 - Lampung Timur</option>
+                  </select>
+                  <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
               </div>
 
-              <!-- Field 4: Jabatan Operator -->
+              <!-- Field 4: Peran / Hak Akses Sistem -->
               <div>
-                <label for="inputProfileRole" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Jabatan Operator</label>
+                <label for="inputProfileRole" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Peran / Hak Akses Sistem</label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                   </div>
-                  <input type="text" id="inputProfileRole" value="Staff Operasional" class="w-full bg-slate-50/90 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-3.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Contoh: Staff Operasional / Field Logistics Officer">
+                  <select id="inputProfileRole" class="w-full bg-slate-50/90 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition appearance-none cursor-pointer">
+                    <option value="Admin" selected>Admin (Bisa akses semua cabang, history, dashboard & inventory)</option>
+                    <option value="User">User Cabang (Hanya info history, dashboard & inventory untuk cabangnya saja)</option>
+                  </select>
+                  <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
               </div>
             </div>
@@ -2186,7 +2207,27 @@
               <span class="text-[9.5px] text-slate-400 mt-1 block">Pilihan cabang resmi: <strong>D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur</strong>.</span>
             </div>
 
-            <!-- Field 4: Dual Upload Foto (Mobil & Dokumen) Langsung Buka Kamera HP -->
+            <!-- Field 4: Jenis Dokumen Fisik (SPP DC / BSTKB / OKK) -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="inputMutationDocType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Jenis Dokumen Fisik</span>
+                </label>
+                <span class="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">SPP DC / BSTKB / OKK</span>
+              </div>
+              <div class="relative">
+                <select id="inputMutationDocType" onchange="if(typeof onMutationDocTypeChanged==='function') onMutationDocTypeChanged()" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                  <option value="SPP DC" selected>SPP DC (Surat Pengantar Pengiriman Dealer / Car)</option>
+                  <option value="BSTKB">BSTKB (Bukti Serah Terima Kendaraan Baru)</option>
+                  <option value="OKK">OKK (Order Konfirmasi Kendaraan)</option>
+                </select>
+                <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+              <span class="text-[9.5px] text-slate-400 mt-1 block">Pilih tipe dokumen fisik serah terima: <strong>SPP DC</strong>, <strong>BSTKB</strong>, atau <strong>OKK</strong>.</span>
+            </div>
+
+            <!-- Field 5: Dual Upload Foto (Mobil & Dokumen Fisik) Langsung Buka Kamera HP -->
             <div class="grid grid-cols-2 gap-3 pt-1">
               <!-- Upload Foto Fisik Unit -->
               <div class="flex flex-col">
@@ -2215,18 +2256,18 @@
 
               <!-- Upload Foto Dokumen Order Kirim (DO) -->
               <div class="flex flex-col">
-                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Foto Dokumen (DO)</label>
+                <label id="docPhotoCardLabel" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Foto Dokumen (SPP DC)</label>
                 
                 <div id="docPhotoBox" class="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl h-44 md:h-52 flex flex-col items-center justify-center bg-white hover:bg-indigo-50/20 transition group overflow-hidden cursor-pointer shadow-2xs">
                   <!-- Native Transparent File Input Covering Entire Card (Langsung Buka Kamera HP) -->
-                  <input type="file" id="docPhotoInput" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" onchange="handleFileSelected(event, 'docPhoto')" aria-label="Ambil Foto Dokumen DO">
+                  <input type="file" id="docPhotoInput" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10" onchange="handleFileSelected(event, 'docPhoto')" aria-label="Ambil Foto Dokumen Fisik">
 
                   <!-- Placeholder State -->
                   <div id="docPhotoPlaceholder" class="text-center pointer-events-none p-3">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition shadow-2xs">
                       <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
-                    <span class="text-xs font-black text-slate-800 block">Ambil Foto DO</span>
+                    <span id="docPhotoUploadTitle" class="text-xs font-black text-slate-800 block">Ambil Foto SPP DC</span>
                     <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Ketuk buka kamera HP</span>
                   </div>
 
@@ -2234,12 +2275,12 @@
                   <img id="docPhotoPreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl z-15 cursor-pointer" alt="Preview DO" onclick="openImagePreviewModal(this.src)" title="Klik untuk perbesar dokumen">
                   
                   <!-- Remove Image Button -->
-                  <button type="button" id="docPhotoRemoveBtn" onclick="removeImagePreview('docPhoto')" class="hidden absolute top-2 right-2 w-7 h-7 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-sm font-black shadow-lg z-20 cursor-pointer active:scale-90 transition" title="Hapus Dokumen" aria-label="Hapus Foto DO">&times;</button>
+                  <button type="button" id="docPhotoRemoveBtn" onclick="removeImagePreview('docPhoto')" class="hidden absolute top-2 right-2 w-7 h-7 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-sm font-black shadow-lg z-20 cursor-pointer active:scale-90 transition" title="Hapus Dokumen" aria-label="Hapus Foto Dokumen">&times;</button>
                 </div>
               </div>
             </div>
 
-            <!-- Field 4: Keterangan / Catatan Kondisi -->
+            <!-- Field 6: Keterangan / Catatan Kondisi -->
             <div>
               <label for="inputKeterangan" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Keterangan / Catatan Kondisi</label>
               <textarea id="inputKeterangan" rows="2" placeholder="Contoh: Unit tiba dalam kondisi bersih, kelengkapan dongkrak & buku servis lengkap..." class="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none shadow-2xs"></textarea>

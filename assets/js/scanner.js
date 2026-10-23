@@ -1668,6 +1668,11 @@ const ScannerService = {
       window.validateMutationFormDuplication();
     }
 
+    // Selaraskan label & placeholder tipe dokumen (SPP DC / BSTKB / OKK)
+    if (typeof window.onMutationDocTypeChanged === 'function') {
+      window.onMutationDocTypeChanged();
+    }
+
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');
 
@@ -1910,3 +1915,11 @@ window.setCameraZoom = (level) => ScannerService.setZoom(level);
 window.tapCameraFocus = (event) => ScannerService.tapToFocus(event);
 window.pasteVinFromClipboard = () => ScannerService.pasteToVin();
 window.pasteEngineFromClipboard = () => ScannerService.pasteToEngine();
+window.onMutationDocTypeChanged = function() {
+  const docType = (document.getElementById('inputMutationDocType')?.value || 'SPP DC').trim();
+  if (typeof AppState !== 'undefined') AppState.selectedDocType = docType;
+  const labelEl = document.getElementById('docPhotoCardLabel');
+  if (labelEl) labelEl.textContent = `Foto Dokumen (${docType})`;
+  const titleEl = document.getElementById('docPhotoUploadTitle');
+  if (titleEl) titleEl.textContent = `Ambil Foto ${docType}`;
+};

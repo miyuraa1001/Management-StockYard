@@ -268,6 +268,7 @@ const ApiService = {
 
             const normType = item.type || item.status || 'Unit Masuk';
             const normPic = item.pic || item.operator || 'Petugas Lapangan';
+            const normDocType = (item.docType || item.doctype || item.doc_type || 'SPP DC').toString().trim().toUpperCase();
 
             return {
               ...item,
@@ -275,6 +276,7 @@ const ApiService = {
               status: normType,
               pic: normPic,
               operator: normPic,
+              docType: normDocType,
               engine: item.engine || '-',
               noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || item.cabang || item.branch || 'D660 - Ahmad Yani',
               location: item.location || item.destination || '-',
@@ -356,6 +358,8 @@ const ApiService = {
       const defaultBranch = mutationRecord.noBa || 'D660 - Ahmad Yani';
       const payload = { 
         ...mutationRecord,
+        docType: mutationRecord.docType || 'SPP DC',
+        doc_type: mutationRecord.docType || 'SPP DC',
         noBa: defaultBranch,
         no_ba: defaultBranch,
         cabang: defaultBranch,

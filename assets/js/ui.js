@@ -75,6 +75,10 @@ const UI = {
       }
       if (typeof this.applyUserProfile === 'function') {
         this.applyUserProfile();
+        AppState.updateKpiCounts();
+        this.applyDashboardDateFilter();
+        this.renderInventoryList();
+        this.renderHistoryList();
       }
       if (typeof this.syncSettingsPreferences === 'function') {
         this.syncSettingsPreferences();
@@ -168,7 +172,12 @@ const UI = {
     const fDate = document.getElementById('dashFilterDate')?.value || 'all';
     const fMonth = document.getElementById('dashFilterMonth')?.value || 'all';
     const fYear = document.getElementById('dashFilterYear')?.value || 'all';
-    const fBa = document.getElementById('dashFilterBa')?.value || 'all';
+    let fBa = document.getElementById('dashFilterBa')?.value || 'all';
+    if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+      fBa = AppState.getUserBranchCode();
+      const el = document.getElementById('dashFilterBa');
+      if (el && el.value !== fBa) el.value = fBa;
+    }
 
     const filtered = (AppState.historyData || []).filter(item => {
       const parts = this.parseItemDate(item);
@@ -444,7 +453,12 @@ const UI = {
     if (!container) return;
 
     const catalog = AppState.vehicleCatalog || [];
-    const fBa = document.getElementById('invFilterBa')?.value || 'all';
+    let fBa = document.getElementById('invFilterBa')?.value || 'all';
+    if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+      fBa = AppState.getUserBranchCode();
+      const el = document.getElementById('invFilterBa');
+      if (el && el.value !== fBa) el.value = fBa;
+    }
 
     // Gabungkan data katalog 13 model dengan stok unit fisik aktual di AppState.inventoryData & riwayat mutasi
     const hasRealHistory = (AppState.historyData || []).length > 0;
@@ -471,6 +485,10 @@ const UI = {
       // Cek mutasi masuk & keluar dari riwayat audit
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        const userCode = AppState.getUserBranchCode();
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+      }
         const hModel = String(h.model || '').toLowerCase();
         if (hModel !== cat.model.toLowerCase()) {
           const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
@@ -779,7 +797,12 @@ const UI = {
     const fDate = document.getElementById('histFilterDate')?.value || 'all';
     const fMonth = document.getElementById('histFilterMonth')?.value || 'all';
     const fYear = document.getElementById('histFilterYear')?.value || 'all';
-    const fBa = document.getElementById('histFilterBa')?.value || 'all';
+    let fBa = document.getElementById('histFilterBa')?.value || 'all';
+    if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+      fBa = AppState.getUserBranchCode();
+      const el = document.getElementById('histFilterBa');
+      if (el && el.value !== fBa) el.value = fBa;
+    }
     const searchInput = document.getElementById('historySearchInput');
     const searchVal = (searchInput?.value || '').toLowerCase().trim();
 
@@ -951,14 +974,14 @@ const UI = {
       `;
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
-        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO / Stiker">
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPP DC'})">
              <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">Stiker</div>
-             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">Stiker</span>
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
+             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/85 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
            </div>`
-        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`;
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
 
       return `
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
@@ -1435,7 +1458,7 @@ const UI = {
     const headerRow = worksheet.addRow([
       'No', 'ID Mutasi', 'Waktu Mutasi', 'Jenis Mutasi', 'Model Kendaraan', 
       'Cabang Resmi', 'No. Rangka (VIN)', 'No. Mesin', 'Petugas PIC', 'Catatan Audit', 
-      'Foto Fisik Unit', 'Foto Dokumen DO', 'Status'
+      'Foto Fisik Unit', 'Dokumen (SPP DC / BSTKB / OKK)', 'Status'
     ]);
     headerRow.height = 28;
     headerRow.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -1601,7 +1624,7 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
     const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
-    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'HDA / DM (HEAD DEPT / DISTRICT MANAGER)']);
+    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'ADH / DM (ADMIN HEAD / DISTRICT MANAGER)']);
     const ttdRow = ttd1.number;
 
     worksheet.mergeCells(`B${ttdRow}:E${ttdRow}`);
@@ -1621,7 +1644,7 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Kepala Cabang / Head Dept )']);
+    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / District Manager )']);
     const ttdSignRow = ttdSign.number;
     worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
     worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
@@ -1878,7 +1901,7 @@ const UI = {
       { header: 'Kendaraan (Model & Katalog)', dataKey: 'vehicle' },
       { header: 'No. Rangka, Mesin & Cabang', dataKey: 'vin' },
       { header: 'Petugas PIC & Catatan', dataKey: 'pic' },
-      { header: 'Bukti Fisik (Unit & Stiker)', dataKey: 'evidence' },
+      { header: 'Bukti Fisik & Dokumen (SPP DC / BSTKB / OKK)', dataKey: 'evidence' },
       { header: 'Status', dataKey: 'status' }
     ];
 
@@ -1930,7 +1953,8 @@ const UI = {
         status: '✓ Valid',
         catalogBase64: media.catB64,
         unitBase64: media.unitB64,
-        docBase64: media.docB64
+        docBase64: media.docB64,
+        docType: item.docType || 'SPP DC'
       };
     });
 
@@ -2042,7 +2066,8 @@ const UI = {
                 doc.setFontSize(4.5);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 116, 139);
-                doc.text('STIKER', imgX + 1.5, imgY + imgH + 2);
+                const docLbl = String(raw.docType || 'SPP DC').toUpperCase();
+                doc.text(docLbl, imgX + 1.0, imgY + imgH + 2);
               } catch (e) {}
             } else {
               doc.setFontSize(5.5);
@@ -2086,8 +2111,8 @@ const UI = {
     doc.text('Mengetahui & Menyetujui:', margin + sigW + 15, finalY);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 32, 91);
-    doc.text('HDA / DM (HEAD DEPT / DISTRICT MANAGER)', margin + sigW + 15, finalY + 4);
-    doc.text('( Kepala Cabang / Head Dept )', margin + sigW + 15, finalY + 14);
+    doc.text('ADH / DM (ADMIN HEAD / DISTRICT MANAGER)', margin + sigW + 15, finalY + 4);
+    doc.text('( Admin Head / District Manager )', margin + sigW + 15, finalY + 14);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
@@ -2234,11 +2259,11 @@ const UI = {
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
         ? `<div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle;">
-             <img src="${docPhotoSrc}" alt="Stiker" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">Stiker</span>
-             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">Stiker</span>
+             <img src="${docPhotoSrc}" alt="${item.docType || 'SPP DC'}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">${item.docType || 'SPP DC'}</span>
+             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">${item.docType || 'SPP DC'}</span>
            </div>`
-        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No Doc</div>`;
+        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No ${item.docType || 'SPP DC'}</div>`;
 
       return `
         <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8px;">
@@ -2966,6 +2991,10 @@ const UI = {
     const modelStats = catalog.map(cat => {
       const matchingHistory = activeHistory.filter(h => {
         if (!h || !h.model) return false;
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        const userCode = AppState.getUserBranchCode();
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+      }
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === cat.model.toLowerCase()) return true;
         const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
@@ -3224,6 +3253,10 @@ const UI = {
 
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        const userCode = AppState.getUserBranchCode();
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+      }
         const hModel = String(h.model || '').toLowerCase();
         if (hModel === catalogItem.model.toLowerCase()) return true;
         const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
@@ -3971,7 +4004,12 @@ const UI = {
 
     if (avatarEl && profile.photo) avatarEl.src = profile.photo;
     if (nameEl) nameEl.innerText = profile.name;
-    if (roleEl) roleEl.innerText = profile.role;
+    const isAdmin = AppState.isAdmin();
+    const userBranch = AppState.getUserBranch();
+    const userBranchCode = AppState.getUserBranchCode();
+    if (roleEl) roleEl.innerText = isAdmin ? 'Admin (Semua Cabang)' : `User Cabang (${userBranchCode})`;
+    const toggleTextEl = document.getElementById('profileCardToggleText');
+    if (toggleTextEl) toggleTextEl.innerText = isAdmin ? 'Ganti ke User' : 'Ganti ke Admin';
     if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
@@ -3985,7 +4023,26 @@ const UI = {
 
     if (headerAvatar && profile.photo) headerAvatar.src = profile.photo;
     if (headerName) headerName.innerText = profile.name;
-    if (headerRole) headerRole.innerText = profile.role;
+    if (headerRole) headerRole.innerText = isAdmin ? 'Admin (Semua Cabang)' : `User Cabang (${userBranchCode})`;
+
+    // Update Header Role Pill Badge
+    const roleBadgeBtn = document.getElementById('headerRoleBadgeBtn');
+    const roleBadgeIcon = document.getElementById('headerRoleBadgeIcon');
+    const roleBadgeText = document.getElementById('headerRoleBadgeText');
+
+    if (roleBadgeBtn) {
+      if (isAdmin) {
+        roleBadgeBtn.className = 'inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0';
+        if (roleBadgeIcon) roleBadgeIcon.innerText = '🛡️';
+        if (roleBadgeText) roleBadgeText.innerText = 'Admin (Semua)';
+        roleBadgeBtn.title = 'Mode Admin: Akses semua cabang. Klik untuk beralih ke Mode User Cabang.';
+      } else {
+        roleBadgeBtn.className = 'inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 flex-shrink-0';
+        if (roleBadgeIcon) roleBadgeIcon.innerText = '👤';
+        if (roleBadgeText) roleBadgeText.innerText = `User (${userBranchCode})`;
+        roleBadgeBtn.title = `Mode User: Terbatas hanya cabang ${userBranch}. Klik untuk beralih ke Mode Admin.`;
+      }
+    }
 
     // Update Sub-Page Edit Form
     const inputName = document.getElementById('inputProfileName');
@@ -3996,13 +4053,77 @@ const UI = {
 
     if (inputName) inputName.value = profile.name;
     if (inputNpk) inputNpk.value = profile.npk;
-    if (inputBranch) inputBranch.value = profile.branch;
-    if (inputRole) inputRole.value = profile.role;
+    if (inputBranch) inputBranch.value = userBranch;
+    if (inputRole) inputRole.value = isAdmin ? 'Admin' : 'User';
     if (editPreview && profile.photo) editPreview.src = profile.photo;
 
     // Sync CONFIG operator name for recording PIC
     if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
     if (profile.npk) CONFIG.OPERATOR_NPK = profile.npk;
+    this.syncRoleBranchUI();
+  },
+
+  /**
+   * Mengatur disable/enable dan nilai dropdown cabang sesuai role (Admin vs User Cabang)
+   */
+  syncRoleBranchUI() {
+    const isAdmin = AppState.isAdmin();
+    const userBranch = AppState.getUserBranch();
+    const userBranchCode = AppState.getUserBranchCode();
+
+    const branchDropdowns = [
+      document.getElementById('dashFilterBa'),
+      document.getElementById('invFilterBa'),
+      document.getElementById('histFilterBa')
+    ];
+
+    branchDropdowns.forEach(dd => {
+      if (!dd) return;
+      if (!isAdmin) {
+        dd.value = userBranchCode;
+        dd.disabled = true;
+        dd.classList.add('opacity-75', 'cursor-not-allowed', 'bg-amber-100/90');
+        dd.title = `Terkunci: Role User hanya dapat mengakses data cabang ${userBranch}`;
+      } else {
+        dd.disabled = false;
+        dd.classList.remove('opacity-75', 'cursor-not-allowed', 'bg-amber-100/90');
+        dd.title = 'Filter Cabang (Akses Admin ke Semua Cabang)';
+      }
+    });
+
+    const inputNoBa = document.getElementById('inputNoBa');
+    if (inputNoBa) {
+      if (!isAdmin) {
+        inputNoBa.value = userBranch;
+        inputNoBa.disabled = true;
+        inputNoBa.classList.add('opacity-80', 'cursor-not-allowed', 'bg-amber-50');
+        inputNoBa.title = `Terkunci: Petugas User mencatat mutasi untuk cabang ${userBranch}`;
+      } else {
+        inputNoBa.disabled = false;
+        inputNoBa.classList.remove('opacity-80', 'cursor-not-allowed', 'bg-amber-50');
+        inputNoBa.title = 'Pilih cabang pencatatan unit';
+      }
+    }
+  },
+
+  /**
+   * Beralih peran instan antara Admin (akses 5 cabang) dan User (khusus cabangnya saja)
+   */
+  quickToggleRole() {
+    const wasAdmin = AppState.isAdmin();
+    const newRole = wasAdmin ? 'User' : 'Admin';
+    AppState.userProfile.role = newRole;
+    AppState.saveToCache();
+    this.applyUserProfile();
+    AppState.updateKpiCounts();
+    this.applyDashboardDateFilter();
+    this.renderInventoryList();
+    this.renderHistoryList();
+    if (wasAdmin) {
+      this.showToast(`👤 Mode User Cabang Aktif: Akses dibatasi hanya untuk ${AppState.getUserBranch()}!`, 4000);
+    } else {
+      this.showToast('🛡️ Mode Admin Aktif: Akses penuh ke seluruh cabang, riwayat, dashboard & inventory!', 4000);
+    }
   },
 
   /**
@@ -4162,6 +4283,10 @@ const UI = {
         AppState._tempProfilePhoto = null;
         AppState.saveToCache();
         this.applyUserProfile();
+        AppState.updateKpiCounts();
+        this.applyDashboardDateFilter();
+        this.renderInventoryList();
+        this.renderHistoryList();
         this.closeEditProfilePage();
         this.showToast('✅ Berhasil! Perubahan profil tersimpan di database Google Sheets!');
       } else {
@@ -6028,6 +6153,10 @@ const UI = {
     // Ambil data mutasi yang cocok dari riwayat audit AppState.historyData
     let modelHistory = (AppState.historyData || []).filter(h => {
       if (!h || !h.model) return false;
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        const userCode = AppState.getUserBranchCode();
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+      }
       const hModel = String(h.model).toLowerCase();
       if (hModel === catalogItem.model.toLowerCase()) return true;
       const m = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
@@ -6212,14 +6341,14 @@ const UI = {
       `;
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
-        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen DO / Stiker">
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPP DC'})">
              <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">Stiker</div>
-             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/80 text-white text-[7.5px] font-bold text-center py-0.2">Stiker</span>
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
+             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/85 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
            </div>`
-        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7.5px] text-slate-400 font-semibold text-center leading-tight">No Doc</div>`;
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
 
       return `
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
@@ -6370,6 +6499,7 @@ window.clearEmailNotificationLogs = () => UI.clearEmailNotificationLogs ? UI.cle
 window.applyDashboardDateFilter = () => UI.applyDashboardDateFilter();
 window.resetDashboardDateFilter = () => UI.resetDashboardDateFilter();
 window.setDashboardDateFilterToToday = () => UI.setDashboardDateFilterToToday();
+window.quickToggleRole = () => UI.quickToggleRole();
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
 document.addEventListener('DOMContentLoaded', () => {

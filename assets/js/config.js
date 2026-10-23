@@ -40,8 +40,8 @@ const CONFIG = {
   OPERATOR_NAME: 'Andi Pratama',
   OPERATOR_NPK: '21040889',
   OPERATOR_NIP: '19870215201001123',
-  OPERATOR_ROLE: 'Staff Operasional',
-  OPERATOR_BRANCH: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+  OPERATOR_ROLE: 'Admin',
+  OPERATOR_BRANCH: 'D660 - Ahmad Yani',
   OPERATOR_PHOTO: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
 
   // Mode Koneksi Backend: 'proxy' (Vercel Serverless Reverse Proxy)
