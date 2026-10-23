@@ -91,6 +91,45 @@ export default async function handler(req, res) {
     });
   }
 
+  // Endpoint Image Proxy untuk Unduh Gambar Bersih Bebas Hambatan CORS (PDF & Excel Export)
+  if (queryAction === 'imageProxy') {
+    const fileId = (req.query?.fileId || '').trim();
+    let imgUrl = (req.query?.url || '').trim();
+
+    if (!imgUrl && fileId) {
+      imgUrl = `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
+    }
+
+    if (!imgUrl) {
+      return res.status(400).send('Missing url or fileId parameter');
+    }
+
+    try {
+      const imgRes = await fetch(imgUrl, {
+        method: 'GET',
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+
+      if (!imgRes.ok) {
+        return res.status(imgRes.status).send('Failed to fetch image from source');
+      }
+
+      const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+      const arrayBuffer = await imgRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800');
+      return res.status(200).send(buffer);
+    } catch (err) {
+      console.error('[ImageProxy Error]:', err.message);
+      return res.status(502).send('Gateway Error: ' + err.message);
+    }
+  }
+
   // Validasi konfigurasi environment
   if (!appScriptUrl) {
     return res.status(500).json({
