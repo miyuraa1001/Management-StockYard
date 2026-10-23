@@ -163,11 +163,11 @@ Sistem Management StockYard dirancang dengan antarmuka yang sangat kaya fitur, m
    - Tombol cepat: **Semua Mutasi**, **Unit Masuk**, dan **Unit Keluar**.
 4. **Pencarian Global Riwayat**:
    - Kotak pencarian yang mampu mencari kecocokan nomor DO, nomor rangka, nomor mesin, model, maupun nama petugas penginput.
-5. **Tiga Metode Ekspor Laporan Resmi**:
+5. **Empat Metode Ekspor & Laporan Resmi Lengkap**:
+   - **Download PDF Berkop Resmi Astra Daihatsu**: Dihasilkan secara instan di browser (*client-side vector PDF via jsPDF/AutoTable*). Menghasilkan berkas PDF landscape berlogo resmi Astra Daihatsu, nomor dokumen, tanggal cetak, tabel 9 kolom dengan foto fisik unit & foto dokumen DO, baris total jumlah unit, serta 2 tanda tangan resmi: **SECURITY POOL / YARD** dan **HDA / DM (HEAD DEPT / DISTRICT MANAGER)**.
+   - **Unduh Excel Murni (.xlsx) Berfoto Langsung di Frontend**: Tombol **Export Excel** di samping Export PDF yang mengekspor file `.xlsx` secara instan menggunakan ExcelJS langsung di browser. Menyematkan foto fisik unit dan foto dokumen DO nyata di dalam sel tabel, kolom Cabang resmi terpisah, baris total mutasi, dan 2 tanda tangan resmi.
    - **Cetak Langsung (*Print-Ready*)**: Memformat tabel mutasi ke tata letak cetak ramah kertas A4/Folio tanpa elemen antarmuka website.
-   - **Download PDF Berkop Resmi Astra Daihatsu**: Dihasilkan secara instan di dalam browser (*client-side PDF generator via jsPDF/AutoTable*). Menghasilkan dokumen resmi berlogo Astra Daihatsu, nomor dokumen, tanggal cetak, tabel terstruktur, baris jumlah, dan kolom tanda tangan pengesahan Petugas Security, PIC, serta HDA/DM.
-   - **Ekspor Format Spreadsheet (Excel / CSV)**: Mengunduh data tabel mentah untuk keperluan analisis keuangan, pembukuan, atau audit internal kantor.
-   - **Otomatisasi Email Rekapitulasi Terjadwal (08:00 WIB)**: Mengirimkan email ringkasan eksekutif dengan lampiran dokumen resmi **PDF** dan **Excel (.xlsx) yang dipisahkan tersendiri per cabang resmi (D660 s/d D664)**, dilengkapi foto visual fisik unit & DO, baris total jumlah unit per cabang, serta 2 pengesahan tanda tangan: **SECURITY POOL / YARD** dan **HDA / DM (Head Dept Area / District Manager)**.
+   - **Otomatisasi Email Rekapitulasi Terjadwal & Manual (Backend PRO V2.11)**: Mengirimkan email ringkasan eksekutif dengan lampiran dokumen resmi **PDF** dan **Excel (.xlsx murni anti-gagal)** yang dipisahkan tersendiri per cabang resmi (D660 s/d D664), memuat foto visual fisik unit & DO, baris total unit, serta 2 pengesahan tanda tangan: **SECURITY POOL / YARD** dan **HDA / DM**. Dilengkapi validasi biner ZIP 'PK' dan penanganan redirect 302 agar berkas Excel tidak pernah hilang atau diblokir filter email.
 6. **Aksi Pembuka Foto Bukti Fisik**:
    - Tombol thumbnail foto mobil dan foto dokumen DO pada setiap baris tabel. Mengeklik tombol ini akan membuka foto dalam ukuran penuh di modal penampil gambar.
 
