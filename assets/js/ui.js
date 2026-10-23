@@ -1595,7 +1595,9 @@ const UI = {
       };
     }
 
-    // 2 Tanda Tangan Resmi (TTD): SECURITY & HDA/DM
+    // 2 Tanda Tangan Resmi (TTD): DITURUNKAN LAPANG DENGAN JARAK KOSONG
+    worksheet.addRow([]);
+    worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
     const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
@@ -1612,6 +1614,9 @@ const UI = {
     ttd2.font = { name: 'Arial', size: 10.5, bold: true, color: { argb: 'FF00205B' } };
     ttd2.alignment = { vertical: 'middle', horizontal: 'center' };
 
+    // Ruang Tanda Tangan: 5 baris kosong
+    worksheet.addRow([]);
+    worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
@@ -1620,7 +1625,7 @@ const UI = {
     const ttdSignRow = ttdSign.number;
     worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
     worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
-    ttdSign.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+    ttdSign.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
     ttdSign.alignment = { vertical: 'middle', horizontal: 'center' };
 
     // Export buffer & download berkas
