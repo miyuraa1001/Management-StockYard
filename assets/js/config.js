@@ -32,9 +32,22 @@ const CONFIG = {
   formatBranch(ba) {
     if (!ba) return 'D660 - Ahmad Yani';
     const s = String(ba).trim();
-    if (s.includes(' - ')) return s;
-    const match = this.BRANCH_LIST.find(b => b.code.toUpperCase() === s.toUpperCase());
-    return match ? match.label : s;
+    // 1. Cek kode resmi D660 s/d D664
+    const matchCode = s.match(/D66[0-4]/i);
+    if (matchCode) {
+      const code = matchCode[0].toUpperCase();
+      const match = this.BRANCH_LIST.find(b => b.code === code);
+      if (match) return match.label;
+    }
+    // 2. Cek nama spesifik cabang
+    const lower = s.toLowerCase();
+    if (lower.includes('ahmad yani') || lower.includes('yani')) return 'D660 - Ahmad Yani';
+    if (lower.includes('soekarno') || lower.includes('hatta')) return 'D661 - Soekarno Hatta';
+    if (lower.includes('bandar jaya') || lower.includes('jaya')) return 'D662 - Bandar Jaya';
+    if (lower.includes('lampung utara') || lower.includes('kotabumi')) return 'D663 - Lampung Utara';
+    if (lower.includes('lampung timur')) return 'D664 - Lampung Timur';
+    // 3. Default resmi jika nama umum entitas ('Astra Daihatsu DSO Lampung')
+    return 'D660 - Ahmad Yani';
   },
 
   OPERATOR_NAME: 'Andi Pratama',

@@ -388,10 +388,9 @@ const ScannerService = {
     if (inputVinEl) inputVinEl.value = '';
     if (inputEngineEl) inputEngineEl.value = '';
 
-    // Pastikan No. BA default D660 - Ahmad Yani terisi
-    const inputNoBaEl = document.getElementById('inputNoBa');
-    if (inputNoBaEl && !inputNoBaEl.value.trim()) {
-      inputNoBaEl.value = 'D660 - Ahmad Yani';
+    // Pastikan pilihan cabang formulir mutasi sinkron dengan peran (Admin vs User Cabang)
+    if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
+      UI.syncRoleBranchUI();
     }
 
     const displayVinEl = document.getElementById('displaySummaryVin');

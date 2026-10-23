@@ -4092,32 +4092,57 @@ const UI = {
     });
 
     const inputNoBa = document.getElementById('inputNoBa');
+    const inputNoBaBadge = document.getElementById('inputNoBaRoleBadge');
+    const inputNoBaHint = document.getElementById('inputNoBaHint');
+
     if (inputNoBa) {
       if (!isAdmin) {
-        // Mode User: HANYA ada pilihan cabangnya sendiri yang sedang login
+        // Mode User: Otomatis langsung cabangnya sendiri (D660 dll) dan terkunci
         inputNoBa.innerHTML = `<option value="${userBranch}" selected>${userBranch}</option>`;
         inputNoBa.value = userBranch;
         inputNoBa.disabled = true;
-        inputNoBa.classList.add('opacity-85', 'cursor-not-allowed', 'bg-amber-50/90');
+        inputNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 appearance-none focus:outline-none shadow-2xs opacity-95 cursor-not-allowed';
         inputNoBa.title = `Terkunci: Petugas User mencatat mutasi khusus cabang ${userBranch}`;
+
+        if (inputNoBaBadge) {
+          inputNoBaBadge.className = 'text-[9px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300';
+          inputNoBaBadge.textContent = `TERKUNCI: ${userBranchCode}`;
+        }
+        if (inputNoBaHint) {
+          inputNoBaHint.innerHTML = `Mode User: Mutasi otomatis tercatat khusus cabang penugasan <strong>${userBranch}</strong>.`;
+        }
       } else {
-        // Mode Admin: Dropdown lengkap SEMUA CABANG (D660 s/d D664)
+        // Mode Admin: Bebas memilih SEMUA CABANG (D660 s/d D664)
         const branches = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.BRANCH_LIST))
           ? CONFIG.BRANCH_LIST
           : [
-              { label: 'D660 - Ahmad Yani' },
-              { label: 'D661 - Soekarno Hatta' },
-              { label: 'D662 - Bandar Jaya' },
-              { label: 'D663 - Lampung Utara' },
-              { label: 'D664 - Lampung Timur' }
+              { code: 'D660', label: 'D660 - Ahmad Yani' },
+              { code: 'D661', label: 'D661 - Soekarno Hatta' },
+              { code: 'D662', label: 'D662 - Bandar Jaya' },
+              { code: 'D663', label: 'D663 - Lampung Utara' },
+              { code: 'D664', label: 'D664 - Lampung Timur' }
             ];
-        const prevVal = inputNoBa.value || userBranch || 'D660 - Ahmad Yani';
+        const validLabels = branches.map(b => b.label);
+        let selectedVal = inputNoBa.value;
+        if (!validLabels.includes(selectedVal)) {
+          selectedVal = validLabels.includes(userBranch) ? userBranch : 'D660 - Ahmad Yani';
+        }
+
         inputNoBa.innerHTML = branches.map(b => 
-          `<option value="${b.label}" ${b.label === prevVal ? 'selected' : ''}>${b.label}</option>`
+          `<option value="${b.label}" ${b.label === selectedVal ? 'selected' : ''}>${b.label}</option>`
         ).join('');
+        inputNoBa.value = selectedVal;
         inputNoBa.disabled = false;
-        inputNoBa.classList.remove('opacity-85', 'cursor-not-allowed', 'bg-amber-50/90');
+        inputNoBa.className = 'w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer';
         inputNoBa.title = 'Akses Admin: Bebas memilih semua cabang untuk pencatatan unit';
+
+        if (inputNoBaBadge) {
+          inputNoBaBadge.className = 'text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
+          inputNoBaBadge.textContent = 'ADMIN: PILIH CABANG';
+        }
+        if (inputNoBaHint) {
+          inputNoBaHint.innerHTML = 'Akses Admin: Silakan pilih cabang penyerahan/penerimaan unit (<strong>D660 s/d D664</strong>).';
+        }
       }
     }
   },

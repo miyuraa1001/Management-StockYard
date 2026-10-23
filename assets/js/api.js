@@ -333,7 +333,11 @@ const ApiService = {
         if (u) {
           if (u.name) AppState.userProfile.name = u.name;
           if (u.npk) AppState.userProfile.npk = u.npk;
-          if (u.branch) AppState.userProfile.branch = u.branch;
+          if (u.branch) {
+            AppState.userProfile.branch = (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function')
+              ? CONFIG.formatBranch(u.branch)
+              : u.branch;
+          }
           if (u.role) AppState.userProfile.role = u.role;
           if (u.photo || u.avatar) {
             AppState.userProfile.photo = (u.photo || u.avatar);
