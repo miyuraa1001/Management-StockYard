@@ -2106,7 +2106,7 @@ const UI = {
     doc.setTextColor(71, 85, 105);
     doc.text(`Petugas Security On-Duty • NPK: ${operatorNpk}`, margin + 15, finalY + 18);
 
-    // TTD 2: HDA / DM (KANAN)
+    // TTD 2: ADH / DM (KANAN)
     doc.setFontSize(7);
     doc.text('Mengetahui & Menyetujui:', margin + sigW + 15, finalY);
     doc.setFont('helvetica', 'bold');
