@@ -1404,7 +1404,7 @@ const UI = {
     const printDateStr = `${day}/${month}/${year} ${timeStr} WIB`;
 
     // Row 1: Header Kop Perusahaan
-    const r1 = worksheet.addRow(['PT ASTRA DAIHATSU MOTOR • DSO SENTRA LAMPUNG']);
+    const r1 = worksheet.addRow(['ASTRA DAIHATSU DSO LAMPUNG']);
     worksheet.mergeCells('A1:M1');
     r1.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FF00205B' } };
     r1.alignment = { vertical: 'middle' };
@@ -1779,7 +1779,7 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(15, 23, 42); // slate-900
-    doc.text('PT ASTRA DAIHATSU MOTOR • DSO SENTRA LAMPUNG', margin, 12);
+    doc.text('ASTRA DAIHATSU DSO LAMPUNG', margin, 12);
 
     doc.setFontSize(8.5);
     doc.setTextColor(37, 99, 235); // brand-blue
@@ -2103,7 +2103,7 @@ const UI = {
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184); // slate-400
       doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text('Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung) • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
+      doc.text('Dokumen Resmi Sistem Management StockYard • Astra Daihatsu DSO Lampung • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
     }
 
     // ==========================================
@@ -2493,7 +2493,7 @@ const UI = {
           <!-- KOP SURAT RESMI DAIHATSU -->
           <div class="header">
             <div>
-              <div class="title">PT Astra Daihatsu Motor • DSO Sentra Lampung</div>
+              <div class="title">Astra Daihatsu DSO Lampung</div>
               <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
               <div class="address">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
             </div>
@@ -2583,7 +2583,7 @@ const UI = {
 
           <!-- FOOTER DOKUMEN -->
           <div class="footer-note">
-            <div>Dokumen Resmi Sistem Management StockYard • PT Astra Daihatsu Motor (Sentra Lampung)</div>
+            <div>Dokumen Resmi Sistem Management StockYard • Astra Daihatsu DSO Lampung</div>
             <div>Dicetak secara otomatis via sistem Management StockYard Enterprise</div>
           </div>
         </div>
