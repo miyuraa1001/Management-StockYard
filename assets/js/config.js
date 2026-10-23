@@ -15,10 +15,11 @@ const CONFIG = {
   // Informasi Cabang & Operator Lapangan
   APP_TITLE: 'Management StockYard',
   APP_SUBTITLE: 'Astra Daihatsu DSO Lampung',
-  BRANCH_NAME: 'Astra Daihatsu DSO Lampung',
+  BRANCH_NAME: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
 
   // Daftar Cabang Resmi Astra Daihatsu Lampung (Kode BA & Nama Cabang)
   BRANCH_LIST: [
+    { code: 'ALL',  name: 'Sentra Lampung', label: 'Sentra Lampung • Astra Daihatsu DSO Lampung' },
     { code: 'D660', name: 'Ahmad Yani', label: 'D660 - Ahmad Yani' },
     { code: 'D661', name: 'Soekarno Hatta', label: 'D661 - Soekarno Hatta' },
     { code: 'D662', name: 'Bandar Jaya', label: 'D662 - Bandar Jaya' },
@@ -26,11 +27,81 @@ const CONFIG = {
     { code: 'D664', name: 'Lampung Timur', label: 'D664 - Lampung Timur' }
   ],
 
+  // 6 Akun Resmi Sesuai Database Google Spreadsheet Tab UserPIC
+  USER_ACCOUNTS: [
+    {
+      id: 'USR-001',
+      username: 'DSO LAMPUNG',
+      name: 'ADMIN HEAD / DISTRICT MANAGER',
+      branch: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+      branchCode: 'ALL',
+      role: 'ADMIN HEAD / DISTRICT MANAGER',
+      systemRole: 'Admin',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    },
+    {
+      id: 'USR-002',
+      username: 'D660',
+      name: 'SECURITY - D660',
+      branch: 'D660 - Ahmad Yani',
+      branchCode: 'D660',
+      role: 'SECURITY',
+      systemRole: 'User',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    },
+    {
+      id: 'USR-003',
+      username: 'D661',
+      name: 'SECURITY - D661',
+      branch: 'D661 - Soekarno Hatta',
+      branchCode: 'D661',
+      role: 'SECURITY',
+      systemRole: 'User',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    },
+    {
+      id: 'USR-004',
+      username: 'D662',
+      name: 'SECURITY - D662',
+      branch: 'D662 - Bandar Jaya',
+      branchCode: 'D662',
+      role: 'SECURITY',
+      systemRole: 'User',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    },
+    {
+      id: 'USR-005',
+      username: 'D663',
+      name: 'SECURITY - D663',
+      branch: 'D663 - Lampung Utara',
+      branchCode: 'D663',
+      role: 'SECURITY',
+      systemRole: 'User',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    },
+    {
+      id: 'USR-006',
+      username: 'D664',
+      name: 'SECURITY - D664',
+      branch: 'D664 - Lampung Timur',
+      branchCode: 'D664',
+      role: 'SECURITY',
+      systemRole: 'User',
+      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    }
+  ],
+
   /**
    * Memformat kode BA menjadi nama cabang lengkap (misal: "D660" -> "D660 - Ahmad Yani")
    */
   formatBranch(ba) {
-    if (!ba) return 'D660 - Ahmad Yani';
+    if (!ba) return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
     const s = String(ba).trim();
     // 1. Cek kode resmi D660 s/d D664
     const matchCode = s.match(/D66[0-4]/i);
@@ -46,15 +117,17 @@ const CONFIG = {
     if (lower.includes('bandar jaya') || lower.includes('jaya')) return 'D662 - Bandar Jaya';
     if (lower.includes('lampung utara') || lower.includes('kotabumi')) return 'D663 - Lampung Utara';
     if (lower.includes('lampung timur')) return 'D664 - Lampung Timur';
+    if (lower.includes('sentra') || lower.includes('dso')) return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
     // 3. Default resmi jika nama umum entitas ('Astra Daihatsu DSO Lampung')
-    return 'D660 - Ahmad Yani';
+    return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
   },
 
-  OPERATOR_NAME: 'Andi Pratama',
-  OPERATOR_NPK: '21040889',
+  OPERATOR_NAME: 'ADMIN HEAD / DISTRICT MANAGER',
+  OPERATOR_NPK: 'USR-001',
   OPERATOR_NIP: '19870215201001123',
   OPERATOR_ROLE: 'Admin',
-  OPERATOR_BRANCH: 'D660 - Ahmad Yani',
+  OPERATOR_BRANCH: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+  OPERATOR_USERNAME: 'DSO LAMPUNG',
   OPERATOR_PHOTO: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
 
   // Mode Koneksi Backend: 'proxy' (Vercel Serverless Reverse Proxy)
@@ -67,13 +140,14 @@ const CONFIG = {
   REQUEST_TIMEOUT: 20000,
   REALTIME_SYNC_INTERVAL: 15000,
 
-  // LocalStorage Cache Key (v6 - Murni Realtime Database Tanpa Data Fiktif)
+  // LocalStorage Cache Key (v8 - Sinkronisasi UserPIC & Target Email Per-Cabang)
   CACHE_KEYS: {
-    INVENTORY: 'daihatsu_inventory_cache_v7',
-    HISTORY: 'daihatsu_history_cache_v7',
-    KPI: 'daihatsu_kpi_cache_v7',
-    PROFILE: 'daihatsu_profile_cache_v6',
-    AUTOMATION: 'daihatsu_automation_cache_v6',
+    INVENTORY: 'daihatsu_inventory_cache_v8',
+    HISTORY: 'daihatsu_history_cache_v8',
+    KPI: 'daihatsu_kpi_cache_v8',
+    PROFILE: 'daihatsu_profile_cache_v8',
+    AUTOMATION: 'daihatsu_automation_cache_v8',
+    BRANCH_EMAILS: 'daihatsu_branch_emails_v8',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
     DIRECT_URL: 'daihatsu_direct_appscript_url'

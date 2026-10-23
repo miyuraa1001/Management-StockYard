@@ -4136,9 +4136,9 @@ const UI = {
     const isAdmin = AppState.isAdmin();
     const userBranch = AppState.getUserBranch();
     const userBranchCode = AppState.getUserBranchCode();
-    if (roleEl) roleEl.innerText = isAdmin ? 'Admin (Semua Cabang)' : `User Cabang (${userBranchCode})`;
+    if (roleEl) roleEl.innerText = profile.position || (isAdmin ? 'ADMIN HEAD / DISTRICT MANAGER' : `SECURITY (${userBranchCode})`);
     const toggleTextEl = document.getElementById('profileCardToggleText');
-    if (toggleTextEl) toggleTextEl.innerText = isAdmin ? 'Ganti ke User' : 'Ganti ke Admin';
+    if (toggleTextEl) toggleTextEl.innerText = isAdmin ? 'Ganti ke User (D660)' : 'Ganti ke Admin';
     if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
@@ -4281,8 +4281,42 @@ const UI = {
    */
   quickToggleRole() {
     const wasAdmin = AppState.isAdmin();
-    const newRole = wasAdmin ? 'User' : 'Admin';
-    AppState.userProfile.role = newRole;
+    if (wasAdmin) {
+      // Beralih ke Akun User Cabang D660
+      const userAcc = (CONFIG.USER_ACCOUNTS && CONFIG.USER_ACCOUNTS.find(u => u.username === 'D660')) || {
+        id: 'USR-002',
+        username: 'D660',
+        name: 'SECURITY - D660',
+        branch: 'D660 - Ahmad Yani',
+        role: 'SECURITY',
+        systemRole: 'User'
+      };
+      AppState.userProfile.id = userAcc.id;
+      AppState.userProfile.username = userAcc.username;
+      AppState.userProfile.name = userAcc.name;
+      AppState.userProfile.npk = userAcc.id;
+      AppState.userProfile.branch = userAcc.branch;
+      AppState.userProfile.role = 'User';
+      AppState.userProfile.position = userAcc.role;
+    } else {
+      // Beralih ke Akun Admin Head DSO LAMPUNG
+      const adminAcc = (CONFIG.USER_ACCOUNTS && CONFIG.USER_ACCOUNTS.find(u => u.username === 'DSO LAMPUNG')) || {
+        id: 'USR-001',
+        username: 'DSO LAMPUNG',
+        name: 'ADMIN HEAD / DISTRICT MANAGER',
+        branch: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+        role: 'ADMIN HEAD / DISTRICT MANAGER',
+        systemRole: 'Admin'
+      };
+      AppState.userProfile.id = adminAcc.id;
+      AppState.userProfile.username = adminAcc.username;
+      AppState.userProfile.name = adminAcc.name;
+      AppState.userProfile.npk = adminAcc.id;
+      AppState.userProfile.branch = adminAcc.branch;
+      AppState.userProfile.role = 'Admin';
+      AppState.userProfile.position = adminAcc.role;
+    }
+
     AppState.saveToCache();
     this.applyUserProfile();
     AppState.updateKpiCounts();
@@ -4290,9 +4324,9 @@ const UI = {
     this.renderInventoryList();
     this.renderHistoryList();
     if (wasAdmin) {
-      this.showToast(`👤 Mode User Cabang Aktif: Akses dibatasi hanya untuk ${AppState.getUserBranch()}!`, 4000);
+      this.showToast(`👤 Mode User Aktif (${AppState.userProfile.name}): Akses dibatasi untuk cabang ${AppState.getUserBranch()}!`, 4000);
     } else {
-      this.showToast('🛡️ Mode Admin Aktif: Akses penuh ke seluruh cabang, riwayat, dashboard & inventory!', 4000);
+      this.showToast('🛡️ Mode Admin Aktif (ADMIN HEAD / DISTRICT MANAGER): Akses penuh ke seluruh cabang!', 4000);
     }
   },
 
@@ -4585,12 +4619,78 @@ const UI = {
   /**
    * Buka modal pengaturan Target Email Penerima (Multi-Email Tags/Chips)
    */
-  openEditTargetEmailModal() {
+    openEditTargetEmailModal() {
     this.initAutomationModal();
+
+    // Sinkronkan Branch Selector Dropdown sesuai hak akses (Admin bisa pilih cabang, User terkunci)
+    const branchSelect = document.getElementById('selectTargetEmailBranch');
+    const branchBadge = document.getElementById('targetEmailBranchBadge');
+    const branchNotice = document.getElementById('targetEmailBranchNotice');
+    const isAdmin = AppState.isAdmin();
+    const userBranchCode = AppState.getUserBranchCode();
+
+    let targetBranchKey = 'DSO LAMPUNG';
+    if (!isAdmin) {
+      targetBranchKey = userBranchCode;
+    } else if (this.automationState && this.automationState.selectedBranch) {
+      targetBranchKey = this.automationState.selectedBranch;
+    }
+
+    if (branchSelect) {
+      branchSelect.value = targetBranchKey;
+      if (!isAdmin) {
+        branchSelect.disabled = true;
+        branchSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'opacity-85');
+        if (branchBadge) {
+          branchBadge.innerText = `Cabang ${userBranchCode}`;
+          branchBadge.className = 'text-[9.5px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200';
+        }
+        if (branchNotice) {
+          branchNotice.innerText = `Anda memiliki hak mengelola email laporan khusus untuk cabang ${AppState.getUserBranch()}.`;
+        }
+      } else {
+        branchSelect.disabled = false;
+        branchSelect.classList.remove('bg-slate-100', 'cursor-not-allowed', 'opacity-85');
+        if (branchBadge) {
+          branchBadge.innerText = 'Admin (Semua Cabang)';
+          branchBadge.className = 'text-[9.5px] font-black px-2 py-0.5 rounded-full bg-white text-indigo-700 border border-indigo-200';
+        }
+        if (branchNotice) {
+          branchNotice.innerText = 'Sebagai Admin, Anda dapat memilih cabang mana saja untuk memantau & mengubah target emailnya.';
+        }
+      }
+    }
+
+    // Muat target email cabang yang dipilih ke chips
+    this.loadBranchEmailsToModal(targetBranchKey);
+
     const modal = document.getElementById('editTargetEmailModal');
     if (modal) {
       modal.style.zIndex = '80';
       modal.classList.remove('hidden');
+    }
+  },
+
+  /**
+   * Muat daftar email cabang tertentu ke dalam state modal
+   */
+  loadBranchEmailsToModal(branchKey) {
+    if (!this.automationState) this.automationState = {};
+    this.automationState.selectedBranch = branchKey;
+    const emails = AppState.getBranchTargetEmails(branchKey);
+    this.automationState.emails = [...emails];
+    this.renderEmailChips();
+    this.syncHiddenEmailInput();
+  },
+
+  /**
+   * Handler ketika dropdown cabang penerima email diubah oleh Admin
+   */
+  handleTargetEmailBranchChange(branchKey) {
+    this.loadBranchEmailsToModal(branchKey);
+    const badge = document.getElementById('targetEmailBranchBadge');
+    if (badge && AppState.isAdmin()) {
+      badge.innerText = `Cabang: ${branchKey}`;
     }
   },
 
@@ -5053,6 +5153,8 @@ const UI = {
       return;
     }
 
+    const selectedBranch = this.automationState.selectedBranch || (AppState.isAdmin() ? (document.getElementById('selectTargetEmailBranch')?.value || 'DSO LAMPUNG') : AppState.getUserBranchCode());
+
     const saveBtn = document.querySelector('button[onclick*="saveTargetEmailData"]');
     const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
     if (saveBtn) {
@@ -5063,9 +5165,13 @@ const UI = {
       `;
     }
 
+    // Simpan ke state cabang lokal
+    AppState.setBranchTargetEmails(selectedBranch, emailList);
     if (!AppState.automationConfig) AppState.automationConfig = {};
-    AppState.automationConfig.email = emailStr;
-    AppState.automationConfig.emails = emailList;
+    if (selectedBranch === 'DSO LAMPUNG' || !AppState.isAdmin()) {
+      AppState.automationConfig.email = emailStr;
+      AppState.automationConfig.emails = emailList;
+    }
     AppState.automationConfig.type = type;
     AppState.saveToCache();
     this.applyAutomationConfig();
@@ -5073,63 +5179,44 @@ const UI = {
     this.renderEmailNotifications();
 
     try {
-      this.showToast('⏳ Menyimpan target email ke database cloud...');
-      const payload = {
-        email: emailStr,
-        emails: emailList,
-        TARGET_EMAIL: emailStr,
-        type: type,
-        REPORT_DOCUMENT_TYPE: type
-      };
+      this.showToast(`⏳ Menyimpan target email untuk ${selectedBranch} ke database...`);
+      
+      // Kirim ke updateBranchTargetEmail
+      let res = await ApiService.updateBranchTargetEmail(selectedBranch, emailStr);
+      console.log('[UI] Hasil respons updateBranchTargetEmail:', res);
 
-      console.log('[UI] Mengirim data target email ke backend:', payload);
-      let res = await ApiService.updateConfig(payload);
-      console.log('[UI] Hasil respons update email:', res);
-
-      let usedFallback = false;
-
-      if (!res || !res.success) {
-        console.warn('[UI] updateConfig belum aktif di live Apps Script, mencoba fallback updateProfile...', res);
-        const profileRes = await ApiService.updateProfile({ 
-          email: emailStr, 
+      // Sinkronkan juga SystemConfig jika ini DSO LAMPUNG
+      if (selectedBranch === 'DSO LAMPUNG' || selectedBranch.includes('Sentra')) {
+        await ApiService.updateConfig({
+          email: emailStr,
           emails: emailList,
           TARGET_EMAIL: emailStr,
-          type: type 
-        });
-        console.log('[UI] Hasil respons fallback updateProfile email:', profileRes);
-        if (profileRes && profileRes.success) {
-          usedFallback = true;
-          res = { success: true, message: 'Target email berhasil diperbarui di database.' };
-        }
+          type: type,
+          REPORT_DOCUMENT_TYPE: type
+        }).catch(err => console.warn('[UI] Gagal update SystemConfig fallback:', err));
       }
 
       if (res && res.success) {
-        if (res.config && res.config.TARGET_EMAIL) {
-          AppState.automationConfig.email = res.config.TARGET_EMAIL;
-          AppState.automationConfig.emails = String(res.config.TARGET_EMAIL).split(/[,;\n\s]+/).filter(e => e.includes('@'));
-        }
-        if (res.config && res.config.REPORT_DOCUMENT_TYPE) {
-          AppState.automationConfig.type = res.config.REPORT_DOCUMENT_TYPE;
-        }
-        AppState.saveToCache();
-        this.applyAutomationConfig();
-        this.updateNotificationTargetEmailDisplay();
-        this.renderEmailNotifications();
         this.closeEditTargetEmailModal();
-        this.showToast('✅ Berhasil! Target email penerima laporan tersimpan di database Google Sheets!');
+        this.showToast(`✅ Berhasil! Target email untuk ${selectedBranch} tersimpan di Google Sheets (Tab UserPIC)!`);
       } else {
-        const errMsg = (res && (res.message || res.error)) ? res.message || res.error : '';
+        const profileRes = await ApiService.updateProfile({
+          username: selectedBranch,
+          branch: selectedBranch,
+          email: emailStr,
+          targetEmail: emailStr
+        });
         this.closeEditTargetEmailModal();
-        if (errMsg && errMsg.includes('401')) {
-          this.showToast('⚠️ Token API tidak cocok. Pastikan Apps Script telah diperbarui.');
+        if (profileRes && profileRes.success) {
+          this.showToast(`✅ Berhasil! Target email ${selectedBranch} tersimpan di Google Sheets!`);
         } else {
-          this.showToast('⚠️ Tersimpan di HP. Untuk sinkron cloud: Terapkan Deployment Versi Baru di Apps Script.');
+          this.showToast(`✅ Target email tersimpan di perangkat lokal untuk ${selectedBranch}.`);
         }
       }
     } catch (err) {
       console.error('[UI] Gagal simpan target email ke backend:', err);
       this.closeEditTargetEmailModal();
-      this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
+      this.showToast(`⚠️ Target email tersimpan di perangkat lokal untuk ${selectedBranch}.`);
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
@@ -5374,22 +5461,27 @@ const UI = {
    * Perbarui tampilan target email penerima di modal notifikasi & laporan secara reaktif
    */
   updateNotificationTargetEmailDisplay() {
-    const auto = AppState.automationConfig || {};
-    let emailList = [];
-    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
-      emailList = auto.emails;
-    } else if (auto.email) {
-      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    const activeBranch = AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode();
+    let emailList = AppState.getBranchTargetEmails(activeBranch);
+    if (!emailList || emailList.length === 0) {
+      const auto = AppState.automationConfig || {};
+      if (Array.isArray(auto.emails) && auto.emails.length > 0) {
+        emailList = auto.emails;
+      } else if (auto.email) {
+        emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+      }
     }
-    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
+    if (!emailList || emailList.length === 0) {
+      emailList = ['syafirafira08162@gmail.com', 'nabila38148@gmail.com', 'andikaintan4@gmail.com', 'nabilatria044@gmail.com'];
+    }
 
     // Update Badge Jumlah Email
     const badgeEl = document.getElementById('notifModalEmailCountBadge');
     if (badgeEl) {
-      badgeEl.textContent = `${emailList.length} Email Terdaftar`;
+      badgeEl.textContent = `${emailList.length} Email Terdaftar (${activeBranch})`;
     }
 
-    // Update Chips Kontainer (Setiap email ditampilkan utuh sebagai chip tanpa terpotong)
+    // Update Chips Kontainer
     const chipsContainer = document.getElementById('notifModalEmailChips');
     if (chipsContainer) {
       chipsContainer.innerHTML = emailList.map(email => `
@@ -6697,3 +6789,5 @@ document.addEventListener('DOMContentLoaded', () => {
     UI.syncSettingsPreferences();
   }
 });
+
+window.handleTargetEmailBranchChange = (b) => UI.handleTargetEmailBranchChange(b);

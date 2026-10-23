@@ -445,6 +445,23 @@ const ApiService = {
   },
 
   /**
+   * Memperbarui target email per-cabang di database Google Sheets (tab UserPIC Kolom G)
+   */
+  async updateBranchTargetEmail(branchOrUsername, emailStr) {
+    try {
+      return await this.request('updateBranchTargetEmail', 'POST', {
+        branch: branchOrUsername,
+        username: branchOrUsername,
+        email: emailStr,
+        TARGET_EMAIL: emailStr
+      });
+    } catch (e) {
+      console.error('[ApiService] Gagal update target email cabang di server:', e);
+      return { success: false, error: e.message };
+    }
+  },
+
+  /**
    * Mengambil seluruh data inventory terbaru
    */
   async getInventory() {

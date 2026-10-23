@@ -27,13 +27,55 @@ const AppState = {
   isLoading: false,
   isOnline: navigator.onLine,
 
-  // Profil Petugas Operator & Otomatisasi
+  // Profil Petugas Operator & Otomatisasi Sesuai Sheet UserPIC
   userProfile: {
-    name: CONFIG.OPERATOR_NAME || 'Andi Pratama',
-    npk: CONFIG.OPERATOR_NPK || '21040889',
-    branch: CONFIG.OPERATOR_BRANCH || 'D660 - Ahmad Yani',
+    id: CONFIG.OPERATOR_NPK || 'USR-001',
+    username: CONFIG.OPERATOR_USERNAME || 'DSO LAMPUNG',
+    name: CONFIG.OPERATOR_NAME || 'ADMIN HEAD / DISTRICT MANAGER',
+    npk: CONFIG.OPERATOR_NPK || 'USR-001',
+    branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
     role: CONFIG.OPERATOR_ROLE || 'Admin',
     photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+  },
+
+  // Target Email Per-Cabang (Sesuai Tab UserPIC Kolom G)
+  branchEmails: {
+    'DSO LAMPUNG': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'D660': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'D661': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'D662': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'D663': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'D664': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com'
+  },
+
+  /**
+   * Mengambil daftar email target untuk cabang tertentu
+   */
+  getBranchTargetEmails(branchKey) {
+    if (!branchKey) {
+      branchKey = this.isAdmin() ? 'DSO LAMPUNG' : this.getUserBranchCode();
+    }
+    const cleanKey = String(branchKey).trim();
+    const m = cleanKey.match(/D66[0-4]/i);
+    const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') ? 'DSO LAMPUNG' : cleanKey);
+    const raw = this.branchEmails[key] || this.branchEmails['DSO LAMPUNG'] || this.automationConfig.email || '';
+    return String(raw).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+  },
+
+  /**
+   * Menyimpan daftar target email untuk cabang tertentu
+   */
+  setBranchTargetEmails(branchKey, emailList) {
+    const cleanKey = String(branchKey).trim();
+    const m = cleanKey.match(/D66[0-4]/i);
+    const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') ? 'DSO LAMPUNG' : cleanKey);
+    const str = Array.isArray(emailList) ? emailList.join(', ') : String(emailList);
+    this.branchEmails[key] = str;
+    if (key === 'DSO LAMPUNG' || !this.automationConfig.email) {
+      this.automationConfig.email = str;
+      this.automationConfig.emails = Array.isArray(emailList) ? emailList : str.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    }
+    this.saveToCache();
   },
 
   /**
@@ -48,7 +90,7 @@ const AppState = {
    * Dapatkan nama cabang resmi penugasan user saat ini
    */
   getUserBranch() {
-    const b = this.userProfile?.branch || CONFIG.OPERATOR_BRANCH || 'D660 - Ahmad Yani';
+    const b = this.userProfile?.branch || CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung';
     if (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function') {
       return CONFIG.formatBranch(b);
     }
@@ -56,16 +98,18 @@ const AppState = {
   },
 
   /**
-   * Dapatkan kode cabang resmi (D660 s/d D664)
+   * Dapatkan kode cabang resmi (D660 s/d D664 atau ALL untuk DSO Lampung)
    */
   getUserBranchCode() {
     const b = this.getUserBranch();
     const match = b.match(/D66[0-4]/i);
-    return match ? match[0].toUpperCase() : 'D660';
+    if (match) return match[0].toUpperCase();
+    if (b.toLowerCase().includes('sentra') || b.toLowerCase().includes('dso')) return 'ALL';
+    return 'D660';
   },
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
-    email: 'admin.logistics@daihatsu.co.id',
+    email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
     type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar',
     enabled: true
   },
@@ -350,6 +394,11 @@ const AppState = {
       if (cachedAutomation) {
         this.automationConfig = Object.assign({}, this.automationConfig, JSON.parse(cachedAutomation));
       }
+
+      const cachedBranchEmails = localStorage.getItem(CONFIG.CACHE_KEYS.BRANCH_EMAILS);
+      if (cachedBranchEmails) {
+        this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
+      }
     } catch (e) {
       console.warn('[AppState] Gagal membaca cache local storage:', e);
     }
@@ -363,6 +412,7 @@ const AppState = {
       localStorage.setItem(CONFIG.CACHE_KEYS.KPI, JSON.stringify(this.kpi));
       localStorage.setItem(CONFIG.CACHE_KEYS.PROFILE, JSON.stringify(this.userProfile));
       localStorage.setItem(CONFIG.CACHE_KEYS.AUTOMATION, JSON.stringify(this.automationConfig));
+      localStorage.setItem(CONFIG.CACHE_KEYS.BRANCH_EMAILS, JSON.stringify(this.branchEmails));
     } catch (e) {
       console.warn('[AppState] Gagal menyimpan ke cache local storage:', e);
     }

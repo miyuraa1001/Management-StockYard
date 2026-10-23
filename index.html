@@ -1660,33 +1660,6 @@
                     <svg class="w-4 h-4 text-blue-600 sm:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </div>
                 </div>
-
-                <!-- Accordion Konfigurasi Sambungan URL Web App -->
-                <details class="pt-2 border-t border-slate-100 group">
-                  <summary class="text-xs font-bold text-slate-600 flex items-center justify-between cursor-pointer select-none py-1">
-                    <span class="flex items-center space-x-1.5 text-blue-600">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                      <span>Konfigurasi Endpoint Google Apps Script</span>
-                    </span>
-                    <svg class="w-3.5 h-3.5 text-slate-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </summary>
-                  <div class="mt-2.5 space-y-2 text-xs bg-slate-50/70 p-3 rounded-2xl border border-slate-200/60">
-                    <p class="text-[11px] text-slate-500 leading-relaxed">
-                      Jika variabel <code>APPSCRIPT_URL</code> di Vercel belum aktif, Anda dapat memasukkan URL Web App Google Apps Script secara langsung di sini:
-                    </p>
-                    <div class="space-y-1.5">
-                      <input type="url" id="directAppScriptUrlInputSettings" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex items-center gap-2 pt-1">
-                      <button type="button" onclick="UI.saveDirectUrlFromSettings()" class="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition cursor-pointer active:scale-95">
-                        Simpan & Sambungkan
-                      </button>
-                      <button type="button" onclick="UI.resetToVercelProxy()" class="py-2 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer active:scale-95">
-                        Gunakan Proxy
-                      </button>
-                    </div>
-                  </div>
-                </details>
               </div>
 
             </div>
@@ -1780,7 +1753,8 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                   </div>
                   <select id="inputProfileBranch" class="w-full bg-slate-50/90 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition appearance-none cursor-pointer">
-                    <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
+                    <option value="Sentra Lampung • Astra Daihatsu DSO Lampung" selected>Sentra Lampung • Astra Daihatsu DSO Lampung</option>
+                    <option value="D660 - Ahmad Yani">D660 - Ahmad Yani</option>
                     <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
                     <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
                     <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
@@ -2360,38 +2334,12 @@
               </div>
             </div>
             <div class="flex items-center space-x-1.5 flex-shrink-0">
-              <button type="button" onclick="UI.toggleDirectConnectionBox()" id="btnToggleDirectConfig" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-bold transition cursor-pointer flex items-center space-x-1" title="Atur URL Google Apps Script">
-                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span>URL</span>
-              </button>
               <button type="button" onclick="UI.checkEmailConnectionNow()" id="btnCheckEmailConn" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10.5px] font-black transition cursor-pointer flex items-center space-x-1" title="Uji Koneksi Server">
                 <svg id="iconRefreshConn" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 <span>Uji</span>
               </button>
             </div>
-          </div>
-
-          <!-- Quick Direct URL Connection Card (Expandable) -->
-          <div id="directConnectionModalBox" class="hidden bg-white rounded-2xl p-3 border border-blue-200/90 shadow-2xs space-y-2 animate-in fade-in duration-150">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-black text-slate-800 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                <span>Sambungkan Web App Google Apps Script</span>
-              </span>
-              <button type="button" onclick="UI.resetToVercelProxy()" class="text-[9.5px] text-blue-600 font-bold hover:underline cursor-pointer">Gunakan Proxy Vercel</button>
-            </div>
-            <p class="text-[10px] text-slate-500 leading-tight">
-              Jika Vercel belum diredeploy, tempelkan URL Web App (<code class="text-blue-700 font-mono">https://script.google.com/macros/s/.../exec</code>):
-            </p>
-            <div class="flex items-center gap-1.5">
-              <input type="url" id="directAppScriptUrlInputModal" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 text-[11px] px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
-              <button type="button" onclick="UI.saveDirectUrlFromModal()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black transition active:scale-95 cursor-pointer whitespace-nowrap">
-                Hubungkan Database
-              </button>
-            </div>
-          </div>
-
-          <!-- Target Email & Manual Trigger (Multi-Email Tags Responsive) -->
+          </div><!-- Target Email & Manual Trigger (Multi-Email Tags Responsive) -->
           <div class="bg-gradient-to-r from-blue-50/90 to-indigo-50/70 rounded-2xl p-3 border border-blue-100/90 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center space-x-1.5 min-w-0">
@@ -2634,6 +2582,33 @@
         <div class="p-4 sm:p-5 space-y-4 overflow-y-auto">
           <!-- Hidden Input for Backward Compatibility -->
           <input type="hidden" id="inputAutoEmail" value="admin.logistics@daihatsu.co.id">
+
+          <!-- PILIHAN CABANG PENERIMA EMAIL (ADMIN BISA PILIH CABANG, USER TERKUNCI KE CABANGNYA) -->
+          <div id="targetEmailBranchSelectorContainer" class="space-y-1.5 p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100">
+            <div class="flex items-center justify-between">
+              <label for="selectTargetEmailBranch" class="text-[11px] font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <span>Cabang Penerima Email</span>
+              </label>
+              <span id="targetEmailBranchBadge" class="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-white text-indigo-700 border border-indigo-200">
+                Admin Mode
+              </span>
+            </div>
+            <div class="relative">
+              <select id="selectTargetEmailBranch" onchange="UI.handleTargetEmailBranchChange(this.value)" class="w-full bg-white border border-indigo-200 rounded-xl py-2 px-3 pr-8 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer appearance-none">
+                <option value="DSO LAMPUNG">Sentra Lampung • Astra Daihatsu DSO Lampung (Admin Head / District Manager)</option>
+                <option value="D660">D660 - Ahmad Yani (Security)</option>
+                <option value="D661">D661 - Soekarno Hatta (Security)</option>
+                <option value="D662">D662 - Bandar Jaya (Security)</option>
+                <option value="D663">D663 - Lampung Utara (Security)</option>
+                <option value="D664">D664 - Lampung Timur (Security)</option>
+              </select>
+              <svg class="w-4 h-4 text-indigo-500 absolute right-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <p id="targetEmailBranchNotice" class="text-[10px] text-indigo-700/80 leading-tight">
+              Sebagai Admin, Anda dapat memantau dan mengubah target email untuk setiap cabang secara independen.
+            </p>
+          </div>
 
           <!-- TARGET EMAIL PENERIMA (MULTI-EMAIL CHIPS, BISA > 5 EMAIL) -->
           <div class="space-y-2">
