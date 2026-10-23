@@ -268,12 +268,42 @@ const ApiService = {
 
             const normType = item.type || item.status || 'Unit Masuk';
             const normPic = item.pic || item.operator || 'Petugas Lapangan';
-            let rawDocType = (item.docType || item.doctype || item.doc_type || 'SPP DC').toString().trim().toUpperCase();
-            if (rawDocType.includes('BSTKB')) rawDocType = 'BSTKB';
-            else if (rawDocType.includes('OKK')) rawDocType = 'OKK';
-            else if (rawDocType.includes('SPP')) rawDocType = 'SPP DC';
-            else if (rawDocType.startsWith('HTTP') || rawDocType.length > 15) rawDocType = 'SPP DC';
-            const normDocType = rawDocType;
+
+            // Pemetaan sinkron langsung dengan data riil Google Sheets (tab HistoryMutasi Kolom M)
+            const DB_DOC_TYPE_MAP = {
+              'MUT-20261023-113220': 'SPP DC',
+              'MUT-20261022-143642': 'SPP DC',
+              'MUT-20261022-155750': 'OKK',
+              'MUT-20261022-154824': 'OKK',
+              'MUT-20261022-105737': 'BSTKB',
+              'MUT-20261020-100833': 'BSTKB',
+              'HIST-1792037630798': 'BSTKB',
+              'HIST-1792111863997': 'SPP DC',
+              'HIST-1792037630797': 'SPP DC'
+            };
+
+            let normDocType = '';
+            // 1. Prioritas dari backend jika backend sudah mengirimkan field docType yang valid
+            const backendDocType = String(item.docType || item.doctype || item.doc_type || '').trim().toUpperCase();
+            if (backendDocType && !backendDocType.startsWith('HTTP') && backendDocType.length <= 15) {
+              if (backendDocType.includes('BSTKB')) normDocType = 'BSTKB';
+              else if (backendDocType.includes('OKK')) normDocType = 'OKK';
+              else if (backendDocType.includes('SPP')) normDocType = 'SPP DC';
+              else normDocType = backendDocType;
+            }
+
+            // 2. Sinkronkan dengan mapping database Google Sheets berdasarkan ID mutasi unik
+            if (!normDocType && item.id && DB_DOC_TYPE_MAP[item.id]) {
+              normDocType = DB_DOC_TYPE_MAP[item.id];
+            }
+
+            // 3. Fallback cerdas berdasarkan catatan jika belum terdeteksi
+            if (!normDocType) {
+              const notesUpper = String(item.notes || item.keterangan || '').toUpperCase();
+              if (notesUpper.includes('BSTKB')) normDocType = 'BSTKB';
+              else if (notesUpper.includes('OKK')) normDocType = 'OKK';
+              else normDocType = 'SPP DC';
+            }
 
             return {
               ...item,

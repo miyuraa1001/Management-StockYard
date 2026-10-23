@@ -979,7 +979,7 @@ const UI = {
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
              <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
-             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/85 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
+             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
            </div>`
         : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
 
@@ -6362,7 +6362,7 @@ const UI = {
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
              <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
-             <span class="absolute bottom-0 inset-x-0 bg-indigo-900/85 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
+             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
            </div>`
         : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
 

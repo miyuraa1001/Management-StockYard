@@ -56,9 +56,9 @@ const CONFIG = {
 
   // LocalStorage Cache Key (v6 - Murni Realtime Database Tanpa Data Fiktif)
   CACHE_KEYS: {
-    INVENTORY: 'daihatsu_inventory_cache_v6',
-    HISTORY: 'daihatsu_history_cache_v6',
-    KPI: 'daihatsu_kpi_cache_v6',
+    INVENTORY: 'daihatsu_inventory_cache_v7',
+    HISTORY: 'daihatsu_history_cache_v7',
+    KPI: 'daihatsu_kpi_cache_v7',
     PROFILE: 'daihatsu_profile_cache_v6',
     AUTOMATION: 'daihatsu_automation_cache_v6',
     API_TOKEN: 'daihatsu_api_secret_token',
