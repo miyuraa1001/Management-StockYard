@@ -4032,14 +4032,14 @@ const UI = {
 
     if (roleBadgeBtn) {
       if (isAdmin) {
-        roleBadgeBtn.className = 'inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0';
+        roleBadgeBtn.className = 'h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0';
         if (roleBadgeIcon) roleBadgeIcon.innerText = '🛡️';
-        if (roleBadgeText) roleBadgeText.innerText = 'Admin (Semua)';
+        if (roleBadgeText) roleBadgeText.innerHTML = '<span class="font-bold">Admin</span><span class="hidden sm:inline font-semibold"> (Semua)</span>';
         roleBadgeBtn.title = 'Mode Admin: Akses semua cabang. Klik untuk beralih ke Mode User Cabang.';
       } else {
-        roleBadgeBtn.className = 'inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 flex-shrink-0';
+        roleBadgeBtn.className = 'h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 flex-shrink-0';
         if (roleBadgeIcon) roleBadgeIcon.innerText = '👤';
-        if (roleBadgeText) roleBadgeText.innerText = `User (${userBranchCode})`;
+        if (roleBadgeText) roleBadgeText.innerHTML = `<span class="hidden sm:inline font-semibold">User </span><span class="font-bold">${userBranchCode}</span>`;
         roleBadgeBtn.title = `Mode User: Terbatas hanya cabang ${userBranch}. Klik untuk beralih ke Mode Admin.`;
       }
     }
