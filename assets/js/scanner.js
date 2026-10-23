@@ -1627,10 +1627,9 @@ const ScannerService = {
     // Selaraskan nilai ke form Tahap 2
     this.syncVinEngine();
 
-    // Pastikan No. BA terisi D660 - Ahmad Yani jika kosong
-    const formNoBaEl = document.getElementById('inputNoBa');
-    if (formNoBaEl && !formNoBaEl.value.trim()) {
-      formNoBaEl.value = 'D660 - Ahmad Yani';
+    // Selaraskan opsi dropdown cabang di formulir mutasi sesuai peran operator (Admin vs User Cabang)
+    if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
+      UI.syncRoleBranchUI();
     }
 
     // Otomatis tangkap frame kamera scanner sebagai Foto Dokumen (Stiker Kaca) & Foto Bukti jika belum ada

@@ -1042,7 +1042,7 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 6: Petugas PIC & Catatan Audit -->
+          <!-- Kolom 7: Petugas PIC & Catatan Lapangan (Sesuai Database) -->
           <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
               <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
@@ -1055,7 +1055,7 @@ const UI = {
             </p>
           </td>
 
-          <!-- Kolom 7: Bukti Fisik (FOTO LANGSUNG TAMPIL) -->
+          <!-- Kolom 8: Bukti Fisik & Dokumen (SPP DC / BSTKB / OKK) -->
           <td class="py-2.5 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
             <div class="flex items-center justify-center space-x-2">
               ${unitThumbnailHtml}
@@ -1063,7 +1063,7 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 8: Status -->
+          <!-- Kolom 9: Status -->
           <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle whitespace-nowrap text-right">
             <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
               <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -4094,14 +4094,30 @@ const UI = {
     const inputNoBa = document.getElementById('inputNoBa');
     if (inputNoBa) {
       if (!isAdmin) {
+        // Mode User: HANYA ada pilihan cabangnya sendiri yang sedang login
+        inputNoBa.innerHTML = `<option value="${userBranch}" selected>${userBranch}</option>`;
         inputNoBa.value = userBranch;
         inputNoBa.disabled = true;
-        inputNoBa.classList.add('opacity-80', 'cursor-not-allowed', 'bg-amber-50');
-        inputNoBa.title = `Terkunci: Petugas User mencatat mutasi untuk cabang ${userBranch}`;
+        inputNoBa.classList.add('opacity-85', 'cursor-not-allowed', 'bg-amber-50/90');
+        inputNoBa.title = `Terkunci: Petugas User mencatat mutasi khusus cabang ${userBranch}`;
       } else {
+        // Mode Admin: Dropdown lengkap SEMUA CABANG (D660 s/d D664)
+        const branches = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.BRANCH_LIST))
+          ? CONFIG.BRANCH_LIST
+          : [
+              { label: 'D660 - Ahmad Yani' },
+              { label: 'D661 - Soekarno Hatta' },
+              { label: 'D662 - Bandar Jaya' },
+              { label: 'D663 - Lampung Utara' },
+              { label: 'D664 - Lampung Timur' }
+            ];
+        const prevVal = inputNoBa.value || userBranch || 'D660 - Ahmad Yani';
+        inputNoBa.innerHTML = branches.map(b => 
+          `<option value="${b.label}" ${b.label === prevVal ? 'selected' : ''}>${b.label}</option>`
+        ).join('');
         inputNoBa.disabled = false;
-        inputNoBa.classList.remove('opacity-80', 'cursor-not-allowed', 'bg-amber-50');
-        inputNoBa.title = 'Pilih cabang pencatatan unit';
+        inputNoBa.classList.remove('opacity-85', 'cursor-not-allowed', 'bg-amber-50/90');
+        inputNoBa.title = 'Akses Admin: Bebas memilih semua cabang untuk pencatatan unit';
       }
     }
   },

@@ -268,7 +268,12 @@ const ApiService = {
 
             const normType = item.type || item.status || 'Unit Masuk';
             const normPic = item.pic || item.operator || 'Petugas Lapangan';
-            const normDocType = (item.docType || item.doctype || item.doc_type || 'SPP DC').toString().trim().toUpperCase();
+            let rawDocType = (item.docType || item.doctype || item.doc_type || 'SPP DC').toString().trim().toUpperCase();
+            if (rawDocType.includes('BSTKB')) rawDocType = 'BSTKB';
+            else if (rawDocType.includes('OKK')) rawDocType = 'OKK';
+            else if (rawDocType.includes('SPP')) rawDocType = 'SPP DC';
+            else if (rawDocType.startsWith('HTTP') || rawDocType.length > 15) rawDocType = 'SPP DC';
+            const normDocType = rawDocType;
 
             return {
               ...item,
