@@ -23,6 +23,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js"></script>
   <!-- html2pdf for Direct Client-Side PDF Download with Full HTML & Image Fidelity -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- ExcelJS for Native Client-Side Excel (.xlsx) Generation with Embedded Photos -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 
   <!-- Tailwind CSS Configuration -->
   <script>
@@ -1191,15 +1193,16 @@
 
           <!-- Responsive Table Scroll Container -->
           <div class="w-full overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[980px]">
+            <table class="w-full text-left border-collapse min-w-[1080px]">
               <thead>
                 <tr class="bg-slate-100/90 border-b-2 border-slate-300 text-[10px] font-black uppercase tracking-wider text-slate-700 select-none">
                   <th class="py-3 pl-4 sm:pl-5 pr-2.5 w-[110px] border-r border-slate-200">ID Mutasi</th>
                   <th class="py-3 px-3 w-[150px] border-r border-slate-200">Waktu</th>
                   <th class="py-3 px-2.5 w-[100px] text-center border-r border-slate-200">Mutasi</th>
-                  <th class="py-3 px-3 w-[185px] border-r border-slate-200">Kendaraan</th>
-                  <th class="py-3 px-3 w-[175px] border-r border-slate-200">No. Rangka, Mesin & BA</th>
-                  <th class="py-3 px-3 w-[160px] border-r border-slate-200">PIC & Catatan</th>
+                  <th class="py-3 px-3 w-[180px] border-r border-slate-200">Kendaraan</th>
+                  <th class="py-3 px-3 w-[155px] border-r border-slate-200">Cabang</th>
+                  <th class="py-3 px-3 w-[165px] border-r border-slate-200">No. Rangka & Mesin</th>
+                  <th class="py-3 px-3 w-[155px] border-r border-slate-200">PIC & Catatan</th>
                   <th class="py-3 px-3 w-[170px] text-center border-r border-slate-200">Bukti Fisik (Foto)</th>
                   <th class="py-3 pl-2.5 pr-4 sm:pr-5 w-[90px] text-right">Status</th>
                 </tr>
@@ -1265,11 +1268,18 @@
               </div>
             </div>
 
-            <button type="button" id="exportHistoryPdfBtn" onclick="exportHistoryPDF()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 rounded-2xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 transition active:scale-95 cursor-pointer flex-shrink-0" title="Unduh Rekap Riwayat dalam format PDF">
-              <svg class="w-4 h-4 sm:mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span class="hidden sm:inline">Export PDF</span>
-              <span class="sm:hidden ml-1">PDF</span>
-            </button>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button type="button" id="exportHistoryPdfBtn" onclick="exportHistoryPDF()" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/80 transition active:scale-95 cursor-pointer flex-shrink-0" title="Unduh Rekap Riwayat dalam format PDF">
+                <svg class="w-4 h-4 sm:mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="hidden sm:inline">Export PDF</span>
+                <span class="sm:hidden ml-1">PDF</span>
+              </button>
+              <button type="button" id="exportHistoryExcelBtn" onclick="exportHistoryExcel()" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition active:scale-95 cursor-pointer flex-shrink-0" title="Unduh Rekap Riwayat dalam format Microsoft Excel (.xlsx)">
+                <svg class="w-4 h-4 sm:mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="hidden sm:inline">Export Excel</span>
+                <span class="sm:hidden ml-1">Excel</span>
+              </button>
+            </div>
           </div>
 
           <!-- Row 2: Segmented Tabs, Search Input & Clean Custom Period Dropdowns -->

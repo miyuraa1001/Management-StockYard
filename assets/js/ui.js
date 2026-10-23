@@ -859,7 +859,7 @@ const UI = {
     if (filtered.length === 0) {
       container.innerHTML = `
         <tr>
-          <td colspan="8" class="py-10 px-6 text-center">
+          <td colspan="9" class="py-10 px-6 text-center">
             <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
@@ -1001,17 +1001,21 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: No. Rangka (VIN), Mesin & No. BA -->
+          <!-- Kolom 5: Cabang (TERPISAH) -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+              <span>${this.formatBranchName(item.noBa || item.branch)}</span>
+            </div>
+          </td>
+
+          <!-- Kolom 6: No. Rangka (VIN) & Mesin -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-900">
               ${item.vin}
             </div>
             <div class="text-[9.5px] font-mono text-slate-500 mt-0.5">
               ENG: <span class="font-bold text-slate-700">${item.engine}</span>
-            </div>
-            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Cabang: ${this.formatBranchName(item.noBa)}">
-              <span class="text-[7.5px] text-amber-600 font-bold uppercase">Cabang:</span>
-              <span>${this.formatBranchName(item.noBa)}</span>
             </div>
           </td>
 
@@ -1296,6 +1300,345 @@ const UI = {
       }
     }
   },
+
+  /**
+   * Memastikan pustaka ExcelJS termuat untuk export Excel murni (.xlsx)
+   */
+  ensureExcelLibraryLoaded() {
+    return new Promise((resolve) => {
+      if (window.ExcelJS) {
+        return resolve(true);
+      }
+      const existing = document.querySelector('script[src*="exceljs"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(true));
+        existing.addEventListener('error', () => resolve(false));
+        return resolve(true);
+      }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+      s.onload = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+    });
+  },
+
+  /**
+   * Mengunduh Laporan Riwayat Mutasi Kendaraan Langsung dalam format Microsoft Excel (.xlsx MURNI)
+   * Menyertakan Foto Fisik Unit & Foto DO Langsung di Sel Tabel, Kolom Cabang, Baris Total, dan 2 TTD Resmi
+   */
+  async exportHistoryExcel() {
+    const { filtered, fDate, fMonth, fYear, fBa, searchVal } = this.getFilteredHistoryData();
+    const tabFilter = AppState.historyTabFilter || 'all';
+
+    if (!filtered || filtered.length === 0) {
+      this.showToast('⚠️ Tidak ada data mutasi untuk diekspor ke Excel!');
+      return;
+    }
+
+    const btn = document.getElementById('exportHistoryExcelBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('opacity-70', 'cursor-wait');
+    }
+
+    this.showToast('⏳ Memproses file Excel (.xlsx) & foto mutasi...');
+
+    try {
+      await this.ensureExcelLibraryLoaded();
+      if (!window.ExcelJS) {
+        throw new Error('Pustaka ExcelJS belum siap.');
+      }
+      await this.generateDirectExcelXlsx(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
+    } catch (err) {
+      console.error('[UI] Gagal mengunduh file Excel:', err);
+      this.showToast('❌ Terjadi kendala saat membuat file Excel.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-wait');
+      }
+    }
+  },
+
+  /**
+   * Pembuatan file Excel (.xlsx) murni di browser menggunakan ExcelJS dengan Foto Nyata di Sel
+   */
+  async generateDirectExcelXlsx(records, filterInfo = {}) {
+    const ExcelJS = window.ExcelJS;
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Management StockYard Astra Daihatsu';
+    workbook.created = new Date();
+
+    const branchFilter = filterInfo.fBa && filterInfo.fBa !== 'all' 
+      ? this.formatBranchName(filterInfo.fBa) 
+      : 'Semua Cabang (Astra Daihatsu DSO Lampung)';
+
+    const worksheet = workbook.addWorksheet('Rekap Mutasi Stockyard', {
+      views: [{ showGridLines: true }]
+    });
+
+    // Definisi Kolom Excel
+    worksheet.columns = [
+      { key: 'no', width: 6 },
+      { key: 'id', width: 18 },
+      { key: 'waktu', width: 22 },
+      { key: 'jenis', width: 16 },
+      { key: 'kendaraan', width: 25 },
+      { key: 'cabang', width: 26 },
+      { key: 'vin', width: 24 },
+      { key: 'mesin', width: 16 },
+      { key: 'pic', width: 18 },
+      { key: 'catatan', width: 28 },
+      { key: 'foto_unit', width: 20 },
+      { key: 'foto_do', width: 20 },
+      { key: 'status', width: 12 }
+    ];
+
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateFormatted = `${day}-${month}-${year}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const printDateStr = `${day}/${month}/${year} ${timeStr} WIB`;
+
+    // Row 1: Header Kop Perusahaan
+    const r1 = worksheet.addRow(['PT ASTRA DAIHATSU MOTOR • DSO SENTRA LAMPUNG']);
+    worksheet.mergeCells('A1:M1');
+    r1.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FF00205B' } };
+    r1.alignment = { vertical: 'middle' };
+    r1.height = 24;
+
+    // Row 2: Judul Dokumen
+    const r2 = worksheet.addRow(['BERITA ACARA REKAPITULASI AUDIT & MUTASI HARIAN KENDARAAN (STOCKYARD)']);
+    worksheet.mergeCells('A2:M2');
+    r2.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFE60012' } };
+    r2.alignment = { vertical: 'middle' };
+    r2.height = 20;
+
+    // Row 3: Info Cabang & Waktu Cetak
+    const r3 = worksheet.addRow([`CABANG: ${branchFilter.toUpperCase()} | Dicetak: ${printDateStr}`]);
+    worksheet.mergeCells('A3:M3');
+    r3.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF92400E' } };
+    r3.alignment = { vertical: 'middle' };
+    r3.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFEF3C7' }
+    };
+    r3.height = 22;
+
+    worksheet.addRow([]); // Row 4 Kosong
+
+    // Row 5: Table Header
+    const headerRow = worksheet.addRow([
+      'No', 'ID Mutasi', 'Waktu Mutasi', 'Jenis Mutasi', 'Model Kendaraan', 
+      'Cabang Resmi', 'No. Rangka (VIN)', 'No. Mesin', 'Petugas PIC', 'Catatan Audit', 
+      'Foto Fisik Unit', 'Foto Dokumen DO', 'Status'
+    ]);
+    headerRow.height = 28;
+    headerRow.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF00205B' }
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        bottom: { style: 'medium', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+      };
+    });
+
+    let totalMasuk = 0;
+    let totalKeluar = 0;
+
+    // Isi Baris Data & Sisipkan Foto Visual
+    for (let i = 0; i < records.length; i++) {
+      const item = records[i];
+      const isMasuk = item.type === 'Unit Masuk';
+      if (isMasuk) totalMasuk++; else totalKeluar++;
+
+      const branchName = this.formatBranchName(item.noBa || item.branch);
+
+      let timeFormatted = item.time || '08:00';
+      timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
+      let dateFormattedRow = item.date && item.month && item.year 
+        ? `${String(item.date).padStart(2,'0')}/${String(item.month).padStart(2,'0')}/${item.year}`
+        : `${day}/${month}/${year}`;
+      const fullTime = `${timeFormatted}, ${dateFormattedRow}`;
+
+      const row = worksheet.addRow([
+        i + 1,
+        item.id || '-',
+        fullTime,
+        item.type || 'Unit Masuk',
+        item.model || '-',
+        branchName,
+        item.vin || '-',
+        item.engine || '-',
+        item.pic || 'Security Yard',
+        item.notes || 'Pemeriksaan standar unit.',
+        '', // Foto Unit Cell
+        '', // Foto DO Cell
+        'Valid'
+      ]);
+
+      const rowIndex = row.number;
+      row.height = 60; // Tinggi baris untuk menampilkan foto
+      row.alignment = { vertical: 'middle' };
+
+      // Styling spesifik cell
+      row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+      row.getCell(2).font = { name: 'Courier New', size: 9, bold: true, color: { argb: 'FF0284C7' } };
+      row.getCell(3).font = { name: 'Courier New', size: 8.5 };
+      row.getCell(4).font = { name: 'Arial', size: 9, bold: true, color: { argb: isMasuk ? 'FF15803D' : 'FF1D4ED8' } };
+      row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+      row.getCell(5).font = { name: 'Arial', size: 9, bold: true };
+      row.getCell(6).font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF92400E' } };
+      row.getCell(7).font = { name: 'Courier New', size: 9, bold: true };
+      row.getCell(8).font = { name: 'Courier New', size: 8.5 };
+      row.getCell(13).font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF16A34A' } };
+      row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Border baris
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+        };
+      });
+
+      // Muat dan sematkan Foto Fisik Unit ke dalam cell (Kolom 11)
+      const unitB64 = await this.loadImageAsBase64(item.unitPhoto);
+      if (unitB64 && unitB64.startsWith('data:image')) {
+        try {
+          const unitImgId = workbook.addImage({
+            base64: unitB64,
+            extension: 'jpeg'
+          });
+          worksheet.addImage(unitImgId, {
+            tl: { col: 10.15, row: rowIndex - 1 + 0.1 },
+            ext: { width: 96, height: 68 },
+            editAs: 'oneCell'
+          });
+        } catch (imgErr) {
+          row.getCell(11).value = 'Tersimpan';
+        }
+      } else {
+        row.getCell(11).value = 'Tidak Ada Foto';
+        row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+        row.getCell(11).font = { size: 8, color: { argb: 'FF94A3B8' } };
+      }
+
+      // Muat dan sematkan Foto Dokumen DO ke dalam cell (Kolom 12)
+      const docB64 = await this.loadImageAsBase64(item.docPhoto);
+      if (docB64 && docB64.startsWith('data:image')) {
+        try {
+          const docImgId = workbook.addImage({
+            base64: docB64,
+            extension: 'jpeg'
+          });
+          worksheet.addImage(docImgId, {
+            tl: { col: 11.15, row: rowIndex - 1 + 0.1 },
+            ext: { width: 96, height: 68 },
+            editAs: 'oneCell'
+          });
+        } catch (imgErr) {
+          row.getCell(12).value = 'Tersimpan';
+        }
+      } else {
+        row.getCell(12).value = 'Tidak Ada Foto';
+        row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+        row.getCell(12).font = { size: 8, color: { argb: 'FF94A3B8' } };
+      }
+    }
+
+    // Baris Total Rekapitulasi
+    worksheet.addRow([]);
+    const totalRow = worksheet.addRow([
+      'TOTAL REKAPITULASI MUTASI KENDARAAN:', '', '', '', '', '', '',
+      `${records.length} Unit`,
+      `MASUK: ${totalMasuk} Unit`,
+      `KELUAR: ${totalKeluar} Unit`,
+      '', '', ''
+    ]);
+    const totRowNum = totalRow.number;
+    worksheet.mergeCells(`A${totRowNum}:G${totRowNum}`);
+    worksheet.mergeCells(`I${totRowNum}:M${totRowNum}`);
+    totalRow.height = 28;
+    totalRow.alignment = { vertical: 'middle' };
+    totalRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'right' };
+    totalRow.getCell(1).font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
+    totalRow.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+    totalRow.getCell(8).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF00205B' } };
+    totalRow.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+    totalRow.getCell(9).font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF15803D' } };
+
+    for (let c = 1; c <= 13; c++) {
+      totalRow.getCell(c).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE2E8F0' }
+      };
+      totalRow.getCell(c).border = {
+        top: { style: 'medium', color: { argb: 'FF94A3B8' } },
+        bottom: { style: 'medium', color: { argb: 'FF94A3B8' } },
+        left: { style: 'thin', color: { argb: 'FF94A3B8' } },
+        right: { style: 'thin', color: { argb: 'FF94A3B8' } }
+      };
+    }
+
+    // 2 Tanda Tangan Resmi (TTD): SECURITY & HDA/DM
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
+    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'HDA / DM (HEAD DEPT / DISTRICT MANAGER)']);
+    const ttdRow = ttd1.number;
+
+    worksheet.mergeCells(`B${ttdRow}:E${ttdRow}`);
+    worksheet.mergeCells(`H${ttdRow}:L${ttdRow}`);
+    worksheet.mergeCells(`B${ttdRow + 1}:E${ttdRow + 1}`);
+    worksheet.mergeCells(`H${ttdRow + 1}:L${ttdRow + 1}`);
+
+    ttd1.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF475569' } };
+    ttd1.alignment = { vertical: 'middle', horizontal: 'center' };
+    ttd2.font = { name: 'Arial', size: 10.5, bold: true, color: { argb: 'FF00205B' } };
+    ttd2.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+
+    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Kepala Cabang / Head Dept )']);
+    const ttdSignRow = ttdSign.number;
+    worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
+    worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
+    ttdSign.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+    ttdSign.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Export buffer & download berkas
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fileName = `Laporan_Mutasi_Stockyard_Daihatsu_${dateFormatted}.xlsx`;
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+
+    this.showToast(`🎉 Berhasil mengunduh ${fileName}`);
+  },
+
 
   /**
    * Membantu memuat gambar (katalog lokal maupun bukti fisik) menjadi format Base64 yang aman untuk jsPDF
@@ -1719,31 +2062,31 @@ const UI = {
     doc.setFontSize(7);
     doc.setTextColor(71, 85, 105);
 
-    const sigW = (pageWidth - (margin * 2)) / 3;
+    const sigW = (pageWidth - (margin * 2)) / 2;
 
-    // Kolom 1: Transporter
-    doc.text('Diserahkan oleh (Transporter):', margin, finalY);
-    doc.text('( ...................................................... )', margin, finalY + 13);
-    doc.setFontSize(6.5);
-    doc.text('Pengemudi / Ekspedisi Car Carrier', margin, finalY + 17);
-
-    // Kolom 2: Staff Penerima
+    // TTD 1: SECURITY POOL / YARD (KIRI)
     doc.setFontSize(7);
-    doc.text('Diterima & Diperiksa oleh:', margin + sigW, finalY);
+    doc.text('Petugas Pemeriksa & Pemindai:', margin + 15, finalY);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`( ${operatorName} )`, margin + sigW, finalY + 13);
+    doc.setTextColor(0, 32, 91);
+    doc.text('SECURITY POOL / YARD', margin + 15, finalY + 4);
+    doc.text(`( ${operatorName} )`, margin + 15, finalY + 14);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
-    doc.text(`Staff Operasional Yard • NPK: ${operatorNpk}`, margin + sigW, finalY + 17);
+    doc.text(`Petugas Security On-Duty • NPK: ${operatorNpk}`, margin + 15, finalY + 18);
 
-    // Kolom 3: Head of Yard
+    // TTD 2: HDA / DM (KANAN)
     doc.setFontSize(7);
-    doc.text('Mengetahui / Menyetujui:', margin + (sigW * 2), finalY);
-    doc.text('( ...................................................... )', margin + (sigW * 2), finalY + 13);
+    doc.text('Mengetahui & Menyetujui:', margin + sigW + 15, finalY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 32, 91);
+    doc.text('HDA / DM (HEAD DEPT / DISTRICT MANAGER)', margin + sigW + 15, finalY + 4);
+    doc.text('( Kepala Cabang / Head Dept )', margin + sigW + 15, finalY + 14);
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
-    doc.text('Kepala Sentra Yard Lampung DSO', margin + (sigW * 2), finalY + 17);
+    doc.setTextColor(71, 85, 105);
+    doc.text('Astra Daihatsu Motor Lampung', margin + sigW + 15, finalY + 18);
 
     // ==========================================
     // 6. FOOTER & NOMOR HALAMAN PADA SEMUA HALAMAN
@@ -5990,6 +6333,7 @@ window.handleFileSelected = (e, type) => UI.handleFileSelected(e, type);
 window.captureFromScanner = (type) => UI.captureFromScanner(type);
 window.removeImagePreview = (type) => UI.removeImagePreview(type);
 window.exportHistoryPDF = () => UI.exportHistoryPDF();
+window.exportHistoryExcel = () => UI.exportHistoryExcel();
 window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;
 window.prevHeroSlide = () => UI.prevHeroSlide ? UI.prevHeroSlide() : null;
 window.goToHeroSlide = (idx) => UI.goToHeroSlide ? UI.goToHeroSlide(idx) : null;
