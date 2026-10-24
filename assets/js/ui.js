@@ -1314,8 +1314,14 @@ const UI = {
       await this.ensurePdfLibraryLoaded();
       await this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
     } catch (err) {
-      console.error('[UI] Gagal mengunduh file PDF:', err);
-      this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
+      console.error('[UI] Gagal direct jsPDF, mencoba fallback modal print:', err);
+      try {
+        this.showToast('ℹ️ Membuka jendela pratinjau / cetak PDF...');
+        this.generatePrintablePdfReport(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
+      } catch (fallbackErr) {
+        console.error('[UI] Fallback cetak PDF gagal:', fallbackErr);
+        this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
+      }
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -1824,38 +1830,55 @@ const UI = {
    */
   ensurePdfLibraryLoaded() {
     return new Promise((resolve) => {
-      if (window.jspdf && window.jspdf.jsPDF) {
-        if (!window.jsPDF) window.jsPDF = window.jspdf.jsPDF;
+      const getJsPdfClass = () => {
+        if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+        if (window.jsPDF) return window.jsPDF;
+        return null;
+      };
+
+      const hasAutoTable = (pdfClass) => {
+        if (!pdfClass) return false;
+        try {
+          const testDoc = new pdfClass();
+          return typeof testDoc.autoTable === 'function';
+        } catch (e) {
+          return false;
+        }
+      };
+
+      const cls = getJsPdfClass();
+      if (cls && hasAutoTable(cls)) {
+        if (!window.jsPDF) window.jsPDF = cls;
         return resolve(true);
       }
 
       const loadScript = (src) => {
-        return new Promise((res, rej) => {
+        return new Promise((res) => {
           const existing = document.querySelector(`script[src="${src}"]`);
           if (existing) {
-            existing.addEventListener('load', () => res());
-            existing.addEventListener('error', () => rej());
-            return res();
+            if (existing.getAttribute('data-loaded') === 'true') return res(true);
+            existing.addEventListener('load', () => res(true));
+            existing.addEventListener('error', () => res(false));
+            return setTimeout(() => res(true), 2500);
           }
           const s = document.createElement('script');
           s.src = src;
-          s.onload = () => res();
-          s.onerror = () => rej();
+          s.async = false;
+          s.onload = () => { s.setAttribute('data-loaded', 'true'); res(true); };
+          s.onerror = () => res(false);
           document.head.appendChild(s);
         });
       };
 
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
         .then(() => {
-          if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
-            window.jsPDF = window.jspdf.jsPDF;
-          }
+          const loadedCls = getJsPdfClass();
+          if (loadedCls && !window.jsPDF) window.jsPDF = loadedCls;
           return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js');
         })
         .then(() => {
-          if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
-            window.jsPDF = window.jspdf.jsPDF;
-          }
+          const finalCls = getJsPdfClass();
+          if (finalCls && !window.jsPDF) window.jsPDF = finalCls;
           resolve(true);
         })
         .catch(() => resolve(false));
@@ -1867,12 +1890,27 @@ const UI = {
    * Format & Desain Selaras 100% dengan Berkas Lampiran Email Backend
    */
   async generateDirectJsPDF(records, filterInfo = {}) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
+    const JsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!JsPDFClass) {
+      throw new Error('Pustaka jsPDF tidak dapat dimuat di browser.');
+    }
+
+    const doc = new JsPDFClass({
       orientation: 'landscape',
       unit: 'mm',
       format: 'a4'
     });
+
+    if (typeof doc.autoTable !== 'function') {
+      const at = (window.jspdf && window.jspdf.autoTable) || window.autoTable;
+      if (typeof at === 'function') {
+        doc.autoTable = function(opts) { return at(doc, opts); };
+      } else {
+        throw new Error('Plugin jsPDF-AutoTable belum terpasang dengan baik.');
+      }
+    }
+
+    
 
     const pageWidth = doc.internal.pageSize.getWidth(); // 297 mm
     const pageHeight = doc.internal.pageSize.getHeight(); // 210 mm
@@ -1994,10 +2032,23 @@ const UI = {
       return b64;
     };
 
+    const withTimeout = (promise, ms = 2000) => {
+      return Promise.race([
+        promise,
+        new Promise(res => setTimeout(() => res(null), ms))
+      ]);
+    };
+
     const preloadPromises = records.map(async (item) => {
-      const unitB64 = await loadCached(item.unitPhoto);
-      const docB64 = await loadCached(item.docPhoto);
-      return { unitB64, docB64 };
+      try {
+        const [unitB64, docB64] = await Promise.all([
+          withTimeout(loadCached(item.unitPhoto || item.unitPhotoUrl)),
+          withTimeout(loadCached(item.docPhoto || item.docPhotoUrl))
+        ]);
+        return { unitB64, docB64 };
+      } catch (e) {
+        return { unitB64: null, docB64: null };
+      }
     });
     const preloadedMedia = await Promise.all(preloadPromises);
 
