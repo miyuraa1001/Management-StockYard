@@ -328,8 +328,44 @@ const ApiService = {
           });
         }
 
-        // Sinkronisasi data User PIC jika dikembalikan oleh database
-        const u = payload.user || (Array.isArray(payload.users) && payload.users.length > 0 ? payload.users[0] : null);
+        // Sinkronisasi seluruh daftar akun UserPIC ke CONFIG.USER_ACCOUNTS secara live
+        if (Array.isArray(payload.users) && payload.users.length > 0) {
+          CONFIG.USER_ACCOUNTS = payload.users.map(dbUser => {
+            const isAdm = (dbUser.role === 'Admin') || 
+                          (dbUser.position && dbUser.position.toUpperCase().includes('ADMIN')) || 
+                          (dbUser.username && dbUser.username.toUpperCase().includes('DSO'));
+            return {
+              id: dbUser.id || 'USR-001',
+              username: dbUser.username || '',
+              name: dbUser.name || '',
+              branch: dbUser.branch || '',
+              branchCode: (dbUser.branch && dbUser.branch.match(/D66[0-4]/i)) 
+                ? dbUser.branch.match(/D66[0-4]/i)[0].toUpperCase() 
+                : (dbUser.username.includes('DSO') ? 'ALL' : dbUser.username),
+              role: dbUser.position || dbUser.role || 'SECURITY',
+              systemRole: isAdm ? 'Admin' : 'User',
+              email: dbUser.email || dbUser.targetEmail || '',
+              avatar: dbUser.photo || dbUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
+              password: dbUser.password || 'daihatsu2026'
+            };
+          });
+          if (typeof UI !== 'undefined' && UI.renderLoginBranchCards) {
+            UI.renderLoginBranchCards();
+          }
+        }
+
+        // Sinkronisasi data User PIC aktif yang sedang login
+        const currentActiveUsername = (AppState.userProfile && AppState.userProfile.username) || '';
+        let u = null;
+        if (Array.isArray(payload.users) && payload.users.length > 0) {
+          if (currentActiveUsername) {
+            u = payload.users.find(usr => usr.username.toLowerCase() === currentActiveUsername.toLowerCase());
+          }
+          if (!u) u = payload.users[0];
+        } else if (payload.user) {
+          u = payload.user;
+        }
+
         if (u) {
           if (u.name) AppState.userProfile.name = u.name;
           if (u.npk) AppState.userProfile.npk = u.npk;
