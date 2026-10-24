@@ -442,6 +442,101 @@ const ApiService = {
   },
 
   /**
+   * Autentikasi kredensial login petugas ke database Google Sheets (tab UserPIC)
+   * Mendukung validasi server langsung & fallback kredensial resmi
+   */
+  async login(username, password) {
+    const cleanUser = String(username || '').trim();
+    const cleanPass = String(password || '').trim();
+
+    if (!cleanUser) {
+      return { success: false, message: 'Harap masukkan Username atau ID Cabang.' };
+    }
+
+    try {
+      // 1. Kirim permintaan verifikasi ke server Apps Script (action 'login')
+      const payload = { username: cleanUser, password: cleanPass };
+      let res = await this.request('login', 'POST', payload);
+
+      if (res && (res.success || res.user)) {
+        return {
+          success: true,
+          message: res.message || 'Otentikasi berhasil!',
+          user: res.user || res.data
+        };
+      }
+
+      if (res && res.success === false && res.message) {
+        // Cek jika akun resmi terdaftar di cache lokal
+        const local = this.verifyLocalCredentials(cleanUser, cleanPass);
+        if (local.success) return local;
+        return res;
+      }
+    } catch (apiErr) {
+      console.warn('[ApiService] Server login tidak merespons, beralih ke verifikasi lokal:', apiErr);
+    }
+
+    // 2. Fallback verifikasi lokal jika server offline/kendala jaringan
+    return this.verifyLocalCredentials(cleanUser, cleanPass);
+  },
+
+  /**
+   * Verifikasi kredensial lokal dari daftar akun resmi CONFIG.USER_ACCOUNTS
+   */
+  verifyLocalCredentials(username, password) {
+    const search = String(username || '').trim().toLowerCase();
+    const inputPass = String(password || '').trim();
+
+    const accounts = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.USER_ACCOUNTS)) 
+      ? CONFIG.USER_ACCOUNTS 
+      : [];
+
+    const matched = accounts.find(acc => {
+      const u = String(acc.username || '').toLowerCase();
+      const id = String(acc.id || '').toLowerCase();
+      const b = String(acc.branch || '').toLowerCase();
+      const bc = String(acc.branchCode || '').toLowerCase();
+      return u === search || id === search || bc === search || (search.length >= 4 && b.includes(search));
+    });
+
+    if (!matched) {
+      return { 
+        success: false, 
+        message: `Akun petugas '${username}' tidak terdaftar di sistem UserPIC.` 
+      };
+    }
+
+    const expectedPass = matched.password || 'daihatsu2026';
+    if (inputPass === expectedPass) {
+      const isAdm = (matched.systemRole === 'Admin') || 
+                    (matched.role && matched.role.toUpperCase().includes('ADMIN')) || 
+                    (matched.username && matched.username.toUpperCase().includes('DSO'));
+      return {
+        success: true,
+        message: 'Otentikasi berhasil!',
+        user: {
+          id: matched.id || 'USR-001',
+          username: matched.username,
+          name: matched.name,
+          npk: matched.id,
+          branch: matched.branch,
+          role: isAdm ? 'Admin' : 'User',
+          position: matched.role,
+          targetEmail: matched.email,
+          email: matched.email,
+          avatar: matched.avatar,
+          photo: matched.avatar
+        }
+      };
+    }
+
+    return { 
+      success: false, 
+      message: 'Kata sandi yang Anda masukkan tidak sesuai.' 
+    };
+  },
+
+  /**
    * Menyimpan data mutasi hasil pemindaian VIN ke Google Spreadsheet & Google Drive
    */
   async saveMutation(mutationRecord) {
