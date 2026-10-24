@@ -1436,33 +1436,87 @@ const UI = {
       periodText = `${dStr}${mStr}${yStr}`.trim() || 'Seluruh Waktu';
     }
 
-    // Row 1: Header Kop Perusahaan (Warna Biru Daihatsu #00205B)
-    const r1 = worksheet.addRow(['ASTRA DAIHATSU DSO LAMPUNG']);
-    worksheet.mergeCells('A1:M1');
-    r1.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FF00205B' } };
-    r1.alignment = { vertical: 'middle', horizontal: 'left' };
-    r1.height = 25;
+    // Row 1: KOP RESMI PERUSAHAAN (Kiri: PT Astra International Tbk - DSO Lampung, Kanan: Form ID & Klasifikasi)
+    const r1 = worksheet.addRow([
+      'PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', '', '', '', '', '', '', '',
+      'KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', '', '', '', ''
+    ]);
+    worksheet.mergeCells('A1:H1');
+    worksheet.mergeCells('I1:M1');
+    r1.height = 22;
+    r1.getCell(1).font = { name: 'Arial', size: 11.5, bold: true, color: { argb: 'FF00205B' } };
+    r1.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+    r1.getCell(9).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF475569' } };
+    r1.getCell(9).alignment = { vertical: 'middle', horizontal: 'right' };
 
-    // Row 2: Judul Dokumen (Merah Daihatsu #E60012)
-    const r2 = worksheet.addRow(['BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)']);
-    worksheet.mergeCells('A2:M2');
-    r2.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFE60012' } };
-    r2.alignment = { vertical: 'middle', horizontal: 'left' };
-    r2.height = 20;
+    // Row 2: Sub-Kop Sentra Wilayah
+    const r2 = worksheet.addRow([
+      'Sentra Distribusi & Manajemen Stockyard Area Lampung', '', '', '', '', '', '', '',
+      'Astra Daihatsu DSO Lampung', '', '', '', ''
+    ]);
+    worksheet.mergeCells('A2:H2');
+    worksheet.mergeCells('I2:M2');
+    r2.height = 16;
+    r2.getCell(1).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF64748B' } };
+    r2.getCell(1).alignment = { vertical: 'top', horizontal: 'left' };
+    r2.getCell(9).font = { name: 'Arial', size: 8, color: { argb: 'FF94A3B8' } };
+    r2.getCell(9).alignment = { vertical: 'top', horizontal: 'right' };
 
-    // Row 3: Info Cabang Resmi & Waktu
-    const r3 = worksheet.addRow([`CABANG RESMI: ${branchFilter.toUpperCase()} | Periode: ${periodText} | Dicetak: ${printDateStr}`]);
-    worksheet.mergeCells('A3:M3');
-    r3.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF92400E' } };
-    r3.alignment = { vertical: 'middle', horizontal: 'left' };
-    r3.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFFEF3C7' }
-    };
-    r3.height = 22;
+    // Row 3: Garis Aksen Korporat Astra (Merah & Navy)
+    const r3 = worksheet.addRow(['', '', '', '', '', '', '', '', '', '', '', '', '']);
+    r3.height = 3.5;
+    for (let c = 1; c <= 7; c++) {
+      r3.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFED1B24' } };
+    }
+    for (let c = 8; c <= 13; c++) {
+      r3.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00205B' } };
+    }
 
-    worksheet.addRow([]); // Row 4 Kosong
+    const rSpacer1 = worksheet.addRow([]);
+    rSpacer1.height = 6;
+
+    // Row 5: Judul Dokumen Utama
+    const r5 = worksheet.addRow(['BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)']);
+    worksheet.mergeCells('A5:M5');
+    r5.height = 22;
+    r5.getCell(1).font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+    r5.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+    // Row 6: Metadata Info Panel (Sleek Slate Matrix #F1F5F9 dengan border rapi)
+    const r6 = worksheet.addRow([
+      `🏢 CABANG: ${branchFilter.toUpperCase()}`, '', '', '',
+      `📅 PERIODE: ${periodText}`, '', '', '',
+      `🕒 CETAK: ${printDateStr}`, '', '',
+      `🔒 STATUS: TERVERIFIKASI`, ''
+    ]);
+    worksheet.mergeCells('A6:D6');
+    worksheet.mergeCells('E6:H6');
+    worksheet.mergeCells('I6:K6');
+    worksheet.mergeCells('L6:M6');
+    r6.height = 22;
+    r6.alignment = { vertical: 'middle' };
+
+    r6.getCell(1).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF00205B' } };
+    r6.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+    r6.getCell(5).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF0F172A' } };
+    r6.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+    r6.getCell(9).font = { name: 'Arial', size: 8, color: { argb: 'FF475569' } };
+    r6.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+    r6.getCell(12).font = { name: 'Arial', size: 8, bold: true, color: { argb: 'FF15803D' } };
+    r6.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+
+    for (let c = 1; c <= 13; c++) {
+      r6.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+      r6.getCell(c).border = {
+        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+      };
+    }
+
+    const rSpacer2 = worksheet.addRow([]);
+    rSpacer2.height = 6;
 
     // Row 5: Table Header (Warna Biru Tua #00205B, Teks Putih Tebal, Border Hitam Tegas)
     const headerRow = worksheet.addRow([
@@ -1955,32 +2009,68 @@ const UI = {
     const printDateStr = day + '/' + month + '/' + year + ' ' + timeStr + ' WIB';
 
     // ==========================================
-    // 1. KOP SURAT RESMI IDENTIK 100% DENGAN FORMAT EXCEL
+    // 1. KOP SURAT RESMI IDENTIK 100% DENGAN FORMAT EXCEL (ASTRA CORPORATE STANDARD)
     // ==========================================
-    // Baris 1: Nama Perusahaan
+    // Baris 1: Nama Resmi Perusahaan (Kiri) & Kode Form (Kanan)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
+    doc.setFontSize(10.5);
     doc.setTextColor(0, 32, 91); // Daihatsu Navy #00205B
-    doc.text('ASTRA DAIHATSU DSO LAMPUNG', margin, 11);
+    doc.text('PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', margin, 10.5);
 
-    // Kode Dokumen di Kanan Atas
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(0, 32, 91);
-    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 11, { align: 'right' });
+    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 10.5, { align: 'right' });
 
-    // Baris 2: Judul Dokumen (Merah Daihatsu #E60012)
-    doc.setFontSize(10.5);
-    doc.setTextColor(230, 0, 18);
-    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', margin, 16);
+    // Baris 2: Sub-Kop Sentra Wilayah
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Sentra Distribusi & Manajemen Stockyard Area Lampung', margin, 14);
 
-    // Baris 3: Badge Info Cabang Resmi & Waktu (Kotak Kuning/Amber persis Row 3 Excel)
-    doc.setFillColor(254, 243, 199); // #FEF3C7
-    doc.setDrawColor(245, 158, 11);  // #F59E0B
-    doc.roundedRect(margin, 18.5, pageWidth - (margin * 2), 6.5, 1, 1, 'FD');
-    doc.setFontSize(8);
+    doc.setFontSize(6.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('KLASIFIKASI: DOKUMEN AUDIT RESMI', pageWidth - margin, 14, { align: 'right' });
+
+    // Garis Aksen Korporat Astra (Merah & Navy)
+    const contentW = pageWidth - margin * 2;
+    doc.setDrawColor(237, 27, 36); // #ED1B24
+    doc.setLineWidth(0.6);
+    doc.line(margin, 16, margin + contentW * 0.55, 16);
+    doc.setDrawColor(0, 32, 91); // #00205B
+    doc.line(margin + contentW * 0.55, 16, pageWidth - margin, 16);
+
+    // Baris 3: Judul Dokumen Utama
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(146, 64, 14); // #92400E
-    doc.text('CABANG RESMI: ' + branchFilter.toUpperCase() + ' | Periode: ' + periodText + ' | Dicetak: ' + printDateStr, margin + 3, 22.8);
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42); // #0F172A
+    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', pageWidth / 2, 20.5, { align: 'center' });
+
+    // Baris 4: Metadata Info Card (Elegan Abu-abu Slate #F1F5F9 dengan Border #CBD5E1)
+    const cardY = 22.5;
+    const cardH = 5.8;
+    doc.setFillColor(241, 245, 249); // #F1F5F9
+    doc.setDrawColor(203, 213, 225); // #CBD5E1
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, cardY, contentW, cardH, 1, 1, 'FD');
+
+    const segW = contentW / 4;
+    doc.setFontSize(6.8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 32, 91);
+    doc.text('CABANG: ' + branchFilter.toUpperCase(), margin + 3, cardY + 4);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text('PERIODE: ' + periodText, margin + segW + 3, cardY + 4);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105);
+    doc.text('CETAK: ' + printDateStr, margin + segW * 2 + 3, cardY + 4);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(21, 128, 61);
+    doc.text('STATUS: TERVERIFIKASI', margin + segW * 3 + 3, cardY + 4);
 
     // ==========================================
     // 2. PRE-LOAD FOTO DENGAN SAFE TIMEOUT
@@ -2088,7 +2178,7 @@ const UI = {
     doc.autoTable({
       columns: tableColumns,
       body: tableRows,
-      startY: 27.5,
+      startY: 30.5,
       margin: { left: margin, right: margin, bottom: 22 },
       theme: 'grid',
       headStyles: {
