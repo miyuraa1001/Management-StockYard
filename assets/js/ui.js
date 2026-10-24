@@ -1314,14 +1314,8 @@ const UI = {
       await this.ensurePdfLibraryLoaded();
       await this.generateDirectJsPDF(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
     } catch (err) {
-      console.error('[UI] Gagal direct jsPDF, mencoba fallback modal print:', err);
-      try {
-        this.showToast('ℹ️ Membuka jendela pratinjau / cetak PDF...');
-        this.generatePrintablePdfReport(filtered, { fDate, fMonth, fYear, fBa, searchVal, tabFilter });
-      } catch (fallbackErr) {
-        console.error('[UI] Fallback cetak PDF gagal:', fallbackErr);
-        this.showToast('❌ Terjadi kendala saat mengunduh PDF.');
-      }
+      console.error('[UI] Gagal mengunduh file PDF secara langsung:', err);
+      this.showToast('❌ Gagal mengunduh file PDF: ' + (err.message || 'Silakan coba lagi'));
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -1902,11 +1896,22 @@ const UI = {
     });
 
     if (typeof doc.autoTable !== 'function') {
-      const at = (window.jspdf && window.jspdf.autoTable) || window.autoTable;
-      if (typeof at === 'function') {
-        doc.autoTable = function(opts) { return at(doc, opts); };
-      } else {
-        throw new Error('Plugin jsPDF-AutoTable belum terpasang dengan baik.');
+      if (window.jspdfAutotable && typeof window.jspdfAutotable.applyPlugin === 'function') {
+        try { window.jspdfAutotable.applyPlugin(JsPDFClass); } catch (e) {}
+      }
+      if (typeof doc.autoTable !== 'function') {
+        const at = (window.jspdf && typeof window.jspdf.autoTable === 'function')
+          ? ((opts) => window.jspdf.autoTable(doc, opts))
+          : (typeof window.autoTable === 'function')
+            ? ((opts) => window.autoTable(doc, opts))
+            : (window.jspdfAutotable && typeof window.jspdfAutotable.default === 'function')
+              ? ((opts) => window.jspdfAutotable.default(doc, opts))
+              : null;
+        if (at) {
+          doc.autoTable = at;
+        } else {
+          throw new Error('Plugin jsPDF-AutoTable belum terpasang dengan baik.');
+        }
       }
     }
 
@@ -2275,10 +2280,22 @@ const UI = {
     }
 
     // ==========================================
-    // 7. SIMPAN DAN DOWNLOAD FILE PDF KE PERANGKAT
+    // 7. SIMPAN DAN DOWNLOAD FILE PDF KE PERANGKAT (IDENTIK SEPERTI EXCEL)
     // ==========================================
     const fileName = 'Laporan_Mutasi_Stockyard_Daihatsu_Lampung_' + dateFormatted + '.pdf';
-    doc.save(fileName);
+    try {
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+    } catch (saveErr) {
+      doc.save(fileName);
+    }
     this.showToast('✅ Berhasil mengunduh ' + fileName);
   },
 
