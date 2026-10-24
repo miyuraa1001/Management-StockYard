@@ -19,6 +19,13 @@ const App = {
     // 2. Muat data cache lokal jika tersedia
     AppState.loadFromCache();
 
+    // Periksa status autentikasi sesi enterprise (Tampilkan portal login jika belum terautentikasi)
+    if (!AppState.isAuthenticated) {
+      if (typeof UI !== 'undefined' && UI.showLoginScreen) {
+        UI.showLoginScreen();
+      }
+    }
+
     // Terapkan data profil operator & info otomatisasi
     if (UI.applyUserProfile) UI.applyUserProfile();
     if (UI.applyAutomationConfig) UI.applyAutomationConfig();

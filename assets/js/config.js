@@ -37,6 +37,7 @@ const CONFIG = {
       branchCode: 'ALL',
       role: 'ADMIN HEAD / DISTRICT MANAGER',
       systemRole: 'Admin',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -48,6 +49,7 @@ const CONFIG = {
       branchCode: 'D660',
       role: 'SECURITY',
       systemRole: 'User',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -59,6 +61,7 @@ const CONFIG = {
       branchCode: 'D661',
       role: 'SECURITY',
       systemRole: 'User',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -70,6 +73,7 @@ const CONFIG = {
       branchCode: 'D662',
       role: 'SECURITY',
       systemRole: 'User',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -81,6 +85,7 @@ const CONFIG = {
       branchCode: 'D663',
       role: 'SECURITY',
       systemRole: 'User',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -92,6 +97,7 @@ const CONFIG = {
       branchCode: 'D664',
       role: 'SECURITY',
       systemRole: 'User',
+      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     }
@@ -142,6 +148,7 @@ const CONFIG = {
 
   // LocalStorage Cache Key (v8 - Sinkronisasi UserPIC & Target Email Per-Cabang)
   CACHE_KEYS: {
+    AUTH_SESSION: 'daihatsu_auth_session_v8',
     INVENTORY: 'daihatsu_inventory_cache_v8',
     HISTORY: 'daihatsu_history_cache_v8',
     KPI: 'daihatsu_kpi_cache_v8',

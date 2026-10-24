@@ -4311,7 +4311,250 @@ const UI = {
   /**
    * Beralih peran instan antara Admin (akses 5 cabang) dan User (khusus cabangnya saja)
    */
+
+  // ========================================================
+  // ENTERPRISE LOGIN PORTAL & ACCOUNT SWITCHER CONTROLLER
+  // ========================================================
+
+  currentLoginMode: 'branch', // 'branch' or 'manual'
+  selectedLoginUsername: 'DSO LAMPUNG',
+
+  renderLoginBranchCards() {
+    const grid = document.getElementById('loginBranchCardsGrid');
+    if (!grid) return;
+    const accounts = (typeof CONFIG !== 'undefined' && CONFIG.USER_ACCOUNTS) ? CONFIG.USER_ACCOUNTS : [];
+    
+    grid.innerHTML = accounts.map(acc => {
+      const isSelected = acc.username.toLowerCase() === (this.selectedLoginUsername || '').toLowerCase();
+      const isAdmin = acc.systemRole === 'Admin' || acc.role.includes('ADMIN');
+      const roleBadge = isAdmin ? '🛡️ ADMIN' : '🏢 ' + (acc.branchCode || 'CABANG');
+      const roleBg = isAdmin ? 'bg-red-50 text-[#ED1B24] border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200';
+      const branchDesc = acc.username === 'DSO LAMPUNG' ? 'Semua Cabang' : (acc.branch.split(' - ')[1] || acc.branch);
+
+      return `
+        <button type="button" onclick="UI.selectLoginAccount('${acc.username}')" class="p-2 sm:p-2.5 rounded-2xl border text-left transition active:scale-95 cursor-pointer relative ${
+          isSelected 
+            ? 'bg-blue-50/90 border-blue-600 shadow-sm ring-2 ring-blue-500/20' 
+            : 'bg-white hover:bg-slate-50 border-slate-200'
+        }">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md border ${roleBg}">
+              ${roleBadge}
+            </span>
+            ${isSelected ? '<span class="w-2 h-2 rounded-full bg-blue-600"></span>' : ''}
+          </div>
+          <div class="font-extrabold text-xs text-slate-900 truncate">${acc.username}</div>
+          <div class="text-[10px] text-slate-500 truncate mt-0.5">${branchDesc}</div>
+        </button>
+      `;
+    }).join('');
+  },
+
+  selectLoginAccount(username) {
+    this.selectedLoginUsername = username;
+    const accounts = (typeof CONFIG !== 'undefined' && CONFIG.USER_ACCOUNTS) ? CONFIG.USER_ACCOUNTS : [];
+    const acc = accounts.find(a => a.username.toLowerCase() === username.toLowerCase()) || accounts[0];
+    if (!acc) return;
+
+    const userInput = document.getElementById('loginUsernameInput');
+    if (userInput) userInput.value = acc.username;
+
+    const nameEl = document.getElementById('loginSelectedName');
+    const branchEl = document.getElementById('loginSelectedBranch');
+    const roleBadgeEl = document.getElementById('loginSelectedRoleBadge');
+    const avatarEl = document.getElementById('loginSelectedAvatar');
+    const btnTextEl = document.getElementById('loginSubmitBtnText');
+
+    if (nameEl) nameEl.innerText = acc.name;
+    if (branchEl) branchEl.innerText = acc.branch;
+    if (roleBadgeEl) {
+      const isAdmin = acc.systemRole === 'Admin';
+      roleBadgeEl.innerText = isAdmin ? 'ADMIN' : (acc.branchCode || 'SECURITY');
+      roleBadgeEl.className = isAdmin 
+        ? 'px-1.5 py-0.5 rounded text-[9px] font-black bg-[#ED1B24] text-white flex-shrink-0'
+        : 'px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-600 text-white flex-shrink-0';
+    }
+    if (avatarEl && acc.avatar) avatarEl.src = acc.avatar;
+    if (btnTextEl) btnTextEl.innerText = 'MASUK SEBAGAI ' + acc.username;
+
+    this.renderLoginBranchCards();
+  },
+
+  switchLoginMode(mode) {
+    this.currentLoginMode = mode;
+    const branchWrap = document.getElementById('loginBranchPickerWrap');
+    const manualWrap = document.getElementById('loginManualUserWrap');
+    const tabBranchBtn = document.getElementById('loginTabBranchBtn');
+    const tabManualBtn = document.getElementById('loginTabManualBtn');
+
+    if (mode === 'branch') {
+      if (branchWrap) branchWrap.classList.remove('hidden');
+      if (manualWrap) manualWrap.classList.add('hidden');
+      if (tabBranchBtn) {
+        tabBranchBtn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer bg-white text-slate-900 shadow-sm';
+      }
+      if (tabManualBtn) {
+        tabManualBtn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer text-slate-500 hover:text-slate-800';
+      }
+    } else {
+      if (branchWrap) branchWrap.classList.add('hidden');
+      if (manualWrap) manualWrap.classList.remove('hidden');
+      if (tabBranchBtn) {
+        tabBranchBtn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer text-slate-500 hover:text-slate-800';
+      }
+      if (tabManualBtn) {
+        tabManualBtn.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer bg-white text-slate-900 shadow-sm';
+      }
+      const uInput = document.getElementById('loginUsernameInput');
+      if (uInput) {
+        uInput.value = this.selectedLoginUsername || 'DSO LAMPUNG';
+        uInput.focus();
+      }
+    }
+  },
+
+  showLoginScreen(prefillUsername = null) {
+    const portal = document.getElementById('enterpriseLoginPortal');
+    if (!portal) return;
+
+    portal.classList.remove('hidden');
+
+    const closeBtn = document.getElementById('loginPortalCloseBtn');
+    if (closeBtn) {
+      if (AppState.isAuthenticated) {
+        closeBtn.classList.remove('hidden');
+      } else {
+        closeBtn.classList.add('hidden');
+      }
+    }
+
+    const errBox = document.getElementById('loginErrorAlert');
+    const succBox = document.getElementById('loginSuccessAlert');
+    if (errBox) errBox.classList.add('hidden');
+    if (succBox) succBox.classList.add('hidden');
+
+    const targetUser = prefillUsername || (AppState.userProfile && AppState.userProfile.username) || 'DSO LAMPUNG';
+    this.selectLoginAccount(targetUser);
+    this.switchLoginMode('branch');
+
+    const passInput = document.getElementById('loginPasswordInput');
+    if (passInput) {
+      passInput.value = 'daihatsu2026';
+    }
+  },
+
+  hideLoginScreen() {
+    if (!AppState.isAuthenticated) {
+      this.showToast('⚠️ Silakan masukkan kredensial resmi untuk mengakses sistem.');
+      return;
+    }
+    const portal = document.getElementById('enterpriseLoginPortal');
+    if (portal) portal.classList.add('hidden');
+  },
+
+  toggleLoginPasswordVisibility() {
+    const passInput = document.getElementById('loginPasswordInput');
+    const eyeOpen = document.getElementById('loginEyeIconOpen');
+    const eyeClosed = document.getElementById('loginEyeIconClosed');
+    if (!passInput) return;
+
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (eyeOpen) eyeOpen.classList.add('hidden');
+      if (eyeClosed) eyeClosed.classList.remove('hidden');
+    } else {
+      passInput.type = 'password';
+      if (eyeOpen) eyeOpen.classList.remove('hidden');
+      if (eyeClosed) eyeClosed.classList.add('hidden');
+    }
+  },
+
+  async handleEnterpriseLogin(event) {
+    if (event) event.preventDefault();
+
+    const userInput = document.getElementById('loginUsernameInput');
+    const passInput = document.getElementById('loginPasswordInput');
+    const rememberCheckbox = document.getElementById('loginRememberMeCheckbox');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    const spinner = document.getElementById('loginSubmitSpinner');
+    const arrow = document.getElementById('loginSubmitArrow');
+    const errBox = document.getElementById('loginErrorAlert');
+    const errMsg = document.getElementById('loginErrorMsg');
+    const succBox = document.getElementById('loginSuccessAlert');
+    const succMsg = document.getElementById('loginSuccessMsg');
+
+    const username = (this.currentLoginMode === 'branch') 
+      ? this.selectedLoginUsername 
+      : (userInput ? userInput.value.trim() : this.selectedLoginUsername);
+    const password = passInput ? passInput.value.trim() : '';
+    const remember = rememberCheckbox ? rememberCheckbox.checked : true;
+
+    if (!username) {
+      if (errBox) {
+        if (errMsg) errMsg.innerText = 'Pilih cabang atau masukkan username resmi Anda.';
+        errBox.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (!password) {
+      if (errBox) {
+        if (errMsg) errMsg.innerText = 'Harap masukkan kata sandi / PIN petugas.';
+        errBox.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (errBox) errBox.classList.add('hidden');
+    if (succBox) succBox.classList.add('hidden');
+    if (submitBtn) submitBtn.disabled = true;
+    if (spinner) spinner.classList.remove('hidden');
+    if (arrow) arrow.classList.add('hidden');
+
+    try {
+      const res = await ApiService.login(username, password);
+
+      if (res && res.success && res.user) {
+        if (succBox) {
+          if (succMsg) succMsg.innerText = 'Autentikasi berhasil! Selamat datang, ' + res.user.name + '.';
+          succBox.classList.remove('hidden');
+        }
+
+        AppState.setAuthSession(res.user, remember);
+        this.applyUserProfile();
+        AppState.updateKpiCounts();
+        this.applyDashboardDateFilter();
+        this.renderInventoryList();
+        this.renderHistoryList();
+
+        setTimeout(() => {
+          this.hideLoginScreen();
+          this.showToast('🎉 Berhasil masuk sebagai ' + res.user.name + ' (' + res.user.branch + ')!');
+        }, 600);
+      } else {
+        if (errBox) {
+          if (errMsg) errMsg.innerText = (res && res.message) ? res.message : 'Kredensial tidak valid. Silakan periksa kembali kata sandi Anda.';
+          errBox.classList.remove('hidden');
+        }
+      }
+    } catch (err) {
+      console.error('[UI] Login error:', err);
+      if (errBox) {
+        if (errMsg) errMsg.innerText = 'Gagal menghubungi server autentikasi: ' + err.message;
+        errBox.classList.remove('hidden');
+      }
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+      if (spinner) spinner.classList.add('hidden');
+      if (arrow) arrow.classList.remove('hidden');
+    }
+  },
+
   quickToggleRole() {
+    this.showLoginScreen();
+  },
+
+  _legacyQuickToggleRole() {
     const wasAdmin = AppState.isAdmin();
     if (wasAdmin) {
       // Beralih ke Akun User Cabang D660
@@ -5329,22 +5572,9 @@ const UI = {
    */
   confirmLogout() {
     this.closeLogoutModal();
-    try {
-      localStorage.removeItem('daihatsu_auth_user');
-      localStorage.removeItem('daihatsu_cached_user_profile');
-    } catch (e) {}
-
+    AppState.clearAuthSession();
+    this.showLoginScreen();
     this.showToast('ℹ️ Sesi petugas berhasil diakhiri.');
-
-    // Kembali ke tab beranda (dashboard)
-    this.switchTab('dashboard');
-
-    // Re-sync profil dari database secara fresh
-    if (typeof ApiService !== 'undefined' && ApiService.fetchInitialData) {
-      ApiService.fetchInitialData().then(() => {
-        this.renderDashboard();
-      });
-    }
   },
   /**
    * Toggle Default Camera Setting (Rear / Front Camera)
@@ -6769,6 +6999,12 @@ window.triggerFileInput = (id) => UI.triggerFileInput(id);
 window.handleFileSelected = (e, type) => UI.handleFileSelected(e, type);
 window.captureFromScanner = (type) => UI.captureFromScanner(type);
 window.removeImagePreview = (type) => UI.removeImagePreview(type);
+window.showLoginScreen = (u) => UI.showLoginScreen(u);
+window.hideLoginScreen = () => UI.hideLoginScreen();
+window.handleEnterpriseLogin = (e) => UI.handleEnterpriseLogin(e);
+window.selectLoginAccount = (u) => UI.selectLoginAccount(u);
+window.switchLoginMode = (m) => UI.switchLoginMode(m);
+window.toggleLoginPasswordVisibility = () => UI.toggleLoginPasswordVisibility();
 window.exportHistoryPDF = () => UI.exportHistoryPDF();
 window.exportHistoryExcel = () => UI.exportHistoryExcel();
 window.nextHeroSlide = () => UI.nextHeroSlide ? UI.nextHeroSlide() : null;

@@ -27,6 +27,10 @@ const AppState = {
   isLoading: false,
   isOnline: navigator.onLine,
 
+  // Status Autentikasi & Sesi Enterprise Login
+  isAuthenticated: false,
+  authSession: null,
+
   // Profil Petugas Operator & Otomatisasi Sesuai Sheet UserPIC
   userProfile: {
     id: CONFIG.OPERATOR_NPK || 'USR-001',
@@ -385,6 +389,18 @@ const AppState = {
         this.updateKpiCounts();
       }
 
+      const cachedAuth = localStorage.getItem(CONFIG.CACHE_KEYS.AUTH_SESSION);
+      if (cachedAuth) {
+        try {
+          const parsedAuth = JSON.parse(cachedAuth);
+          if (parsedAuth && parsedAuth.user) {
+            this.isAuthenticated = true;
+            this.authSession = parsedAuth;
+            this.userProfile = Object.assign({}, this.userProfile, parsedAuth.user);
+          }
+        } catch (e) {}
+      }
+
       const cachedProfile = localStorage.getItem(CONFIG.CACHE_KEYS.PROFILE);
       if (cachedProfile) {
         this.userProfile = Object.assign({}, this.userProfile, JSON.parse(cachedProfile));
@@ -402,6 +418,35 @@ const AppState = {
     } catch (e) {
       console.warn('[AppState] Gagal membaca cache local storage:', e);
     }
+  },
+
+  /**
+   * Menetapkan sesi autentikasi pengguna enterprise aktif
+   */
+  setAuthSession(user, remember = true) {
+    this.isAuthenticated = true;
+    this.userProfile = Object.assign({}, this.userProfile, user);
+    this.authSession = {
+      user: Object.assign({}, this.userProfile),
+      loginTime: new Date().toISOString()
+    };
+    if (remember) {
+      try {
+        localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(this.authSession));
+      } catch (e) {}
+    }
+    this.saveToCache();
+  },
+
+  /**
+   * Menghapus sesi autentikasi (Logout Petugas)
+   */
+  clearAuthSession() {
+    this.isAuthenticated = false;
+    this.authSession = null;
+    try {
+      localStorage.removeItem(CONFIG.CACHE_KEYS.AUTH_SESSION);
+    } catch (e) {}
   },
 
   // Simpan State ke LocalStorage
