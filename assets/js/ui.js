@@ -4452,6 +4452,19 @@ const UI = {
     if (portal) portal.classList.add('hidden');
   },
 
+  fillLoginUsername(username) {
+    const userInput = document.getElementById('loginUsernameInput');
+    const passInput = document.getElementById('loginPasswordInput');
+    if (userInput) {
+      userInput.value = username;
+    }
+    if (passInput) {
+      if (!passInput.value) passInput.value = 'daihatsu2026';
+      passInput.focus();
+    }
+    this.showToast('ℹ️ Akun dipilih: ' + username);
+  },
+
   toggleLoginPasswordVisibility() {
     const passInput = document.getElementById('loginPasswordInput');
     const eyeOpen = document.getElementById('loginEyeIconOpen');
@@ -4483,9 +4496,9 @@ const UI = {
     const succBox = document.getElementById('loginSuccessAlert');
     const succMsg = document.getElementById('loginSuccessMsg');
 
-    const username = (this.currentLoginMode === 'branch') 
-      ? this.selectedLoginUsername 
-      : (userInput ? userInput.value.trim() : this.selectedLoginUsername);
+    const username = (userInput && userInput.value.trim()) 
+      ? userInput.value.trim() 
+      : (this.selectedLoginUsername || '');
     const password = passInput ? passInput.value.trim() : '';
     const remember = rememberCheckbox ? rememberCheckbox.checked : true;
 
@@ -7002,6 +7015,7 @@ window.removeImagePreview = (type) => UI.removeImagePreview(type);
 window.showLoginScreen = (u) => UI.showLoginScreen(u);
 window.hideLoginScreen = () => UI.hideLoginScreen();
 window.handleEnterpriseLogin = (e) => UI.handleEnterpriseLogin(e);
+window.fillLoginUsername = (u) => UI.fillLoginUsername(u);
 window.selectLoginAccount = (u) => UI.selectLoginAccount(u);
 window.switchLoginMode = (m) => UI.switchLoginMode(m);
 window.toggleLoginPasswordVisibility = () => UI.toggleLoginPasswordVisibility();
