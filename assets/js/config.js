@@ -32,10 +32,10 @@ const CONFIG = {
     {
       id: 'USR-001',
       username: 'DSO LAMPUNG',
-      name: 'ADMIN HEAD / DISTRICT MANAGER',
+      name: 'ADMIN HEAD / BRANCH MANAGER',
       branch: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
       branchCode: 'ALL',
-      role: 'ADMIN HEAD / DISTRICT MANAGER',
+      role: 'ADMIN HEAD / BRANCH MANAGER',
       systemRole: 'Admin',
       password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
@@ -128,7 +128,7 @@ const CONFIG = {
     return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
   },
 
-  OPERATOR_NAME: 'ADMIN HEAD / DISTRICT MANAGER',
+  OPERATOR_NAME: 'ADMIN HEAD / BRANCH MANAGER',
   OPERATOR_NPK: 'USR-001',
   OPERATOR_NIP: '19870215201001123',
   OPERATOR_ROLE: 'Admin',

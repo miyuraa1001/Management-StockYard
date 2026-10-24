@@ -1468,7 +1468,7 @@ const UI = {
     const headerRow = worksheet.addRow([
       'No', 'ID Mutasi', 'Waktu', 'Tanggal', 'Model Kendaraan', 
       'Cabang Resmi', 'No. Rangka (VIN)', 'No. Mesin', 'Jenis Mutasi', 
-      'Petugas Security', 'Catatan Audit', 'Foto Fisik Unit', 'Dokumen (SPP DC / BSTKB / OKK)'
+      'Petugas Security', 'Catatan Audit', 'Foto Fisik Unit', 'SPP DC / BSTKB / OKK'
     ]);
     headerRow.height = 28;
     headerRow.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -1570,12 +1570,15 @@ const UI = {
             extension: 'jpeg'
           });
           worksheet.addImage(unitImgId, {
-            tl: { col: 11.15, row: rowIndex - 1 + 0.08 },
-            ext: { width: 95, height: 60 },
+            tl: { col: 11.15, row: rowIndex - 1 + 0.05 },
+            ext: { width: 95, height: 46 },
             editAs: 'oneCell'
           });
+          row.getCell(12).value = 'Foto Fisik Unit';
+          row.getCell(12).alignment = { vertical: 'bottom', horizontal: 'center' };
+          row.getCell(12).font = { name: 'Arial', size: 7.5, bold: true, color: { argb: 'FF475569' } };
         } catch (imgErr) {
-          row.getCell(12).value = 'Foto Tersimpan';
+          row.getCell(12).value = 'Foto Fisik Unit';
           row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
         }
       } else {
@@ -1585,6 +1588,7 @@ const UI = {
       }
 
       // Muat dan sematkan Foto Dokumen (SPP DC / BSTKB / OKK) ke dalam cell (Kolom 13)
+      const docLabel = String(item.docType || 'SPP DC').toUpperCase();
       const docB64 = await this.loadImageAsBase64(item.docPhoto);
       if (docB64 && docB64.startsWith('data:image')) {
         try {
@@ -1593,13 +1597,15 @@ const UI = {
             extension: 'jpeg'
           });
           worksheet.addImage(docImgId, {
-            tl: { col: 12.15, row: rowIndex - 1 + 0.08 },
-            ext: { width: 95, height: 60 },
+            tl: { col: 12.15, row: rowIndex - 1 + 0.05 },
+            ext: { width: 95, height: 46 },
             editAs: 'oneCell'
           });
+          row.getCell(13).value = docLabel;
+          row.getCell(13).alignment = { vertical: 'bottom', horizontal: 'center' };
+          row.getCell(13).font = { name: 'Arial', size: 7.5, bold: true, color: { argb: 'FF00205B' } };
         } catch (imgErr) {
-          const docLbl = (item.docType || 'Dokumen').toUpperCase();
-          row.getCell(13).value = `${docLbl} Tersimpan`;
+          row.getCell(13).value = docLabel;
           row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
         }
       } else {
@@ -1651,7 +1657,7 @@ const UI = {
     worksheet.addRow([]);
 
     const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
-    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'ADH / DM (ADMIN HEAD / DISTRICT MANAGER)']);
+    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'ADH / BM (ADMIN HEAD / BRANCH MANAGER)']);
     const ttd3 = worksheet.addRow(['', branchFilter, '', '', '', '', '', 'ASTRA DAIHATSU DSO LAMPUNG']);
     const ttdRow = ttd1.number;
 
@@ -1676,7 +1682,7 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / District Manager )']);
+    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / Branch Manager )']);
     const ttdSignSub = worksheet.addRow(['', 'Reg. Security Guard • Astra Daihatsu Lampung', '', '', '', '', '', 'Astra Daihatsu DSO Lampung']);
     const ttdSignRow = ttdSign.number;
 
@@ -1865,14 +1871,19 @@ const UI = {
       };
 
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+        .catch(() => loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'))
         .then(() => {
           const loadedCls = getJsPdfClass();
           if (loadedCls && !window.jsPDF) window.jsPDF = loadedCls;
-          return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+          return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js')
+            .catch(() => loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'));
         })
         .then(() => {
           const finalCls = getJsPdfClass();
           if (finalCls && !window.jsPDF) window.jsPDF = finalCls;
+          if (window.jspdfAutotable && typeof window.jspdfAutotable.applyPlugin === 'function' && finalCls) {
+            try { window.jspdfAutotable.applyPlugin(finalCls); } catch (e) {}
+          }
           resolve(true);
         })
         .catch(() => resolve(false));
@@ -1889,6 +1900,10 @@ const UI = {
       throw new Error('Pustaka jsPDF tidak dapat dimuat di browser.');
     }
 
+    if (window.jspdfAutotable && typeof window.jspdfAutotable.applyPlugin === 'function') {
+      try { window.jspdfAutotable.applyPlugin(JsPDFClass); } catch (e) {}
+    }
+
     const doc = new JsPDFClass({
       orientation: 'landscape',
       unit: 'mm',
@@ -1896,22 +1911,21 @@ const UI = {
     });
 
     if (typeof doc.autoTable !== 'function') {
-      if (window.jspdfAutotable && typeof window.jspdfAutotable.applyPlugin === 'function') {
-        try { window.jspdfAutotable.applyPlugin(JsPDFClass); } catch (e) {}
-      }
-      if (typeof doc.autoTable !== 'function') {
-        const at = (window.jspdf && typeof window.jspdf.autoTable === 'function')
-          ? ((opts) => window.jspdf.autoTable(doc, opts))
-          : (typeof window.autoTable === 'function')
-            ? ((opts) => window.autoTable(doc, opts))
-            : (window.jspdfAutotable && typeof window.jspdfAutotable.default === 'function')
-              ? ((opts) => window.jspdfAutotable.default(doc, opts))
-              : null;
-        if (at) {
-          doc.autoTable = at;
-        } else {
-          throw new Error('Plugin jsPDF-AutoTable belum terpasang dengan baik.');
-        }
+      const at = (window.jspdf && typeof window.jspdf.autoTable === 'function')
+        ? ((opts) => window.jspdf.autoTable(doc, opts))
+        : (typeof window.autoTable === 'function')
+          ? ((opts) => window.autoTable(doc, opts))
+          : (window.jspdfAutotable && typeof window.jspdfAutotable.default === 'function')
+            ? ((opts) => window.jspdfAutotable.default(doc, opts))
+            : (typeof window.jspdfAutotable === 'function')
+              ? ((opts) => window.jspdfAutotable(doc, opts))
+              : (window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API && typeof window.jspdf.jsPDF.API.autoTable === 'function')
+                ? ((opts) => window.jspdf.jsPDF.API.autoTable.call(doc, opts))
+                : null;
+      if (at) {
+        doc.autoTable = at;
+      } else {
+        throw new Error('Plugin jsPDF-AutoTable belum terpasang dengan baik.');
       }
     }
 
@@ -2016,7 +2030,7 @@ const UI = {
       { header: 'Petugas Security', dataKey: 'pic' },
       { header: 'Catatan Audit', dataKey: 'catatan' },
       { header: 'Foto Fisik Unit', dataKey: 'foto_unit' },
-      { header: 'Dokumen', dataKey: 'foto_doc' }
+      { header: 'SPP DC / BSTKB / OKK', dataKey: 'foto_doc' }
     ];
 
     let masukCount = 0;
@@ -2237,7 +2251,7 @@ const UI = {
     doc.setTextColor(100, 116, 139);
     doc.text('Reg. Security Guard • Astra Daihatsu Lampung', margin + (colW / 2), finalY + 29, { align: 'center' });
 
-    // TTD 2: ADH / DM (KANAN)
+    // TTD 2: ADH / BM (KANAN)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
@@ -2245,7 +2259,7 @@ const UI = {
 
     doc.setFontSize(9.5);
     doc.setTextColor(0, 32, 91);
-    doc.text('ADH / DM (ADMIN HEAD / DISTRICT MANAGER)', margin + colW + (colW / 2), finalY + 4, { align: 'center' });
+    doc.text('ADH / BM (ADMIN HEAD / BRANCH MANAGER)', margin + colW + (colW / 2), finalY + 4, { align: 'center' });
 
     doc.setFontSize(7.5);
     doc.setTextColor(0, 32, 91);
@@ -2259,7 +2273,7 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(15, 23, 42);
-    doc.text('( Admin Head / District Manager )', margin + colW + (colW / 2), finalY + 25.5, { align: 'center' });
+    doc.text('( Admin Head / Branch Manager )', margin + colW + (colW / 2), finalY + 25.5, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
@@ -4168,7 +4182,7 @@ const UI = {
     const isAdmin = AppState.isAdmin();
     const userBranch = AppState.getUserBranch();
     const userBranchCode = AppState.getUserBranchCode();
-    if (roleEl) roleEl.innerText = profile.position || (isAdmin ? 'ADMIN HEAD / DISTRICT MANAGER' : `SECURITY (${userBranchCode})`);
+    if (roleEl) roleEl.innerText = profile.position || (isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : `SECURITY (${userBranchCode})`);
     const toggleTextEl = document.getElementById('profileCardToggleText');
     if (toggleTextEl) toggleTextEl.innerText = isAdmin ? 'Ganti ke User (D660)' : 'Ganti ke Admin';
     if (npkEl) npkEl.innerText = profile.npk || '-';
@@ -4591,9 +4605,9 @@ const UI = {
       const adminAcc = (CONFIG.USER_ACCOUNTS && CONFIG.USER_ACCOUNTS.find(u => u.username === 'DSO LAMPUNG')) || {
         id: 'USR-001',
         username: 'DSO LAMPUNG',
-        name: 'ADMIN HEAD / DISTRICT MANAGER',
+        name: 'ADMIN HEAD / BRANCH MANAGER',
         branch: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
-        role: 'ADMIN HEAD / DISTRICT MANAGER',
+        role: 'ADMIN HEAD / BRANCH MANAGER',
         systemRole: 'Admin'
       };
       AppState.userProfile.id = adminAcc.id;
@@ -4614,7 +4628,7 @@ const UI = {
     if (wasAdmin) {
       this.showToast(`👤 Mode User Aktif (${AppState.userProfile.name}): Akses dibatasi untuk cabang ${AppState.getUserBranch()}!`, 4000);
     } else {
-      this.showToast('🛡️ Mode Admin Aktif (ADMIN HEAD / DISTRICT MANAGER): Akses penuh ke seluruh cabang!', 4000);
+      this.showToast('🛡️ Mode Admin Aktif (ADMIN HEAD / BRANCH MANAGER): Akses penuh ke seluruh cabang!', 4000);
     }
   },
 
