@@ -2011,8 +2011,9 @@ const UI = {
       { header: 'Model Kendaraan', dataKey: 'model' },
       { header: 'No. Rangka & Mesin', dataKey: 'vin' },
       { header: 'Jenis', dataKey: 'type' },
+      { header: 'Dokumen', dataKey: 'doc_badge' },
       { header: 'Foto Unit', dataKey: 'foto_unit' },
-      { header: 'SPP DC / BSTKB / OKK', dataKey: 'foto_doc' },
+      { header: 'Foto DO', dataKey: 'foto_doc' },
       { header: 'Petugas Security', dataKey: 'pic' },
       { header: 'Catatan Kondisi', dataKey: 'notes' }
     ];
@@ -2039,6 +2040,7 @@ const UI = {
 
       const bName = this.formatBranchName(item.noBa || item.branch);
       const bShort = (bName.split(' - ')[0] || bName).trim();
+      const docTypeStr = String(item.docType || 'SPP DC').toUpperCase();
 
       return {
         no: String(idx + 1),
@@ -2047,13 +2049,14 @@ const UI = {
         model: item.model || '-',
         vin: `${item.vin || '-'}\nENG: ${item.engine || '-'}\n${bShort}`,
         type: item.type === 'Unit Masuk' ? '↓ MASUK' : '↑ KELUAR',
+        doc_badge: docTypeStr,
         foto_unit: ' ',
         foto_doc: ' ',
         pic: `${item.pic || 'Security Yard'}\nNPK: ${item.npk || '-'}`,
         notes: item.notes || '-',
         unitBase64: media.unitB64,
         docBase64: media.docB64,
-        docType: item.docType || 'SPP DC'
+        docType: docTypeStr
       };
     });
 
@@ -2066,7 +2069,7 @@ const UI = {
       headStyles: {
         fillColor: [0, 32, 91], // Navy #00205B
         textColor: [255, 255, 255],
-        fontSize: 7.5,
+        fontSize: 7.2,
         fontStyle: 'bold',
         halign: 'center',
         valign: 'middle',
@@ -2075,10 +2078,10 @@ const UI = {
         lineWidth: 0.2
       },
       bodyStyles: {
-        fontSize: 7,
+        fontSize: 6.8,
         textColor: [15, 23, 42],
         valign: 'middle',
-        minCellHeight: 20, // Ruang lapang untuk foto
+        minCellHeight: 19, // Ruang proporsional untuk foto
         cellPadding: 1.5,
         lineColor: [148, 163, 184],
         lineWidth: 0.2
@@ -2087,24 +2090,25 @@ const UI = {
         fillColor: [248, 250, 252]
       },
       columnStyles: {
-        no: { halign: 'center', cellWidth: 10, fontStyle: 'bold' },
-        id: { halign: 'center', cellWidth: 24, font: 'courier', fontStyle: 'bold' },
-        waktu: { halign: 'center', cellWidth: 23, font: 'courier' },
-        model: { cellWidth: 33, fontStyle: 'bold' },
-        vin: { cellWidth: 38, font: 'courier' },
-        type: { halign: 'center', cellWidth: 18, fontStyle: 'bold' },
-        foto_unit: { halign: 'center', cellWidth: 28 },
-        foto_doc: { halign: 'center', cellWidth: 28 },
-        pic: { cellWidth: 26 },
-        notes: { cellWidth: 44 }
+        no: { halign: 'center', cellWidth: 8, fontStyle: 'bold' },
+        id: { halign: 'center', cellWidth: 22, font: 'courier', fontStyle: 'bold' },
+        waktu: { halign: 'center', cellWidth: 20, font: 'courier' },
+        model: { cellWidth: 29, fontStyle: 'bold' },
+        vin: { cellWidth: 35, font: 'courier' },
+        type: { halign: 'center', cellWidth: 16, fontStyle: 'bold' },
+        doc_badge: { halign: 'center', cellWidth: 18, fontStyle: 'bold' },
+        foto_unit: { halign: 'center', cellWidth: 26 },
+        foto_doc: { halign: 'center', cellWidth: 26 },
+        pic: { cellWidth: 24 },
+        notes: { cellWidth: 49 }
       },
       foot: [[
         { content: `TOTAL JUMLAH KENDARAAN:`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [15, 23, 42] } },
         { content: `${records.length} Unit`, styles: { halign: 'center', fontStyle: 'bold', fillColor: [203, 213, 225], textColor: [0, 32, 91] } },
-        { content: `MASUK: ${masukCount} UNIT   |   KELUAR: ${keluarCount} UNIT`, colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [21, 128, 61] } }
+        { content: `MASUK: ${masukCount} UNIT   |   KELUAR: ${keluarCount} UNIT`, colSpan: 5, styles: { halign: 'center', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [21, 128, 61] } }
       ]],
       footStyles: {
-        fontSize: 7.5,
+        fontSize: 7.2,
         cellPadding: 2.2,
         lineColor: [0, 0, 0],
         lineWidth: 0.3
@@ -2118,6 +2122,12 @@ const UI = {
               data.cell.styles.textColor = [185, 28, 28];
             }
           }
+          if (data.column.dataKey === 'doc_badge') {
+            const rawVal = String(data.cell.raw || '');
+            if (rawVal.includes('OKK')) data.cell.styles.textColor = [5, 150, 105];
+            else if (rawVal.includes('BSTKB')) data.cell.styles.textColor = [217, 119, 6];
+            else data.cell.styles.textColor = [37, 99, 235];
+          }
           if (data.column.dataKey === 'id') {
             data.cell.styles.textColor = [2, 132, 199];
           }
@@ -2125,34 +2135,34 @@ const UI = {
       },
       didDrawCell: function(data) {
         if (data.section === 'body') {
-          // Kolom 7: Gambar Foto Fisik Unit
+          // Kolom Foto Fisik Unit
           if (data.column.dataKey === 'foto_unit') {
             const raw = data.row.raw;
-            const imgW = 20;
-            const imgH = 13.5;
+            const imgW = 18;
+            const imgH = 12.5;
             const imgX = data.cell.x + (data.cell.width - imgW) / 2;
             const imgY = data.cell.y + 1.8;
 
             if (raw.unitBase64) {
               try {
                 doc.addImage(raw.unitBase64, 'JPEG', imgX, imgY, imgW, imgH);
-                doc.setFontSize(5.5);
+                doc.setFontSize(5.2);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(71, 85, 105);
-                doc.text('Foto Unit', data.cell.x + data.cell.width / 2, imgY + imgH + 2.6, { align: 'center' });
+                doc.text('Foto Unit', data.cell.x + data.cell.width / 2, imgY + imgH + 2.4, { align: 'center' });
               } catch (e) {}
             } else {
-              doc.setFontSize(6.5);
+              doc.setFontSize(6);
               doc.setTextColor(148, 163, 184);
               doc.text('Tidak Ada Foto', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { align: 'center' });
             }
           }
 
-          // Kolom 8: Gambar Dokumen (SPP DC / BSTKB / OKK)
+          // Kolom Foto DO / Dokumen
           if (data.column.dataKey === 'foto_doc') {
             const raw = data.row.raw;
-            const imgW = 20;
-            const imgH = 13.5;
+            const imgW = 18;
+            const imgH = 12.5;
             const imgX = data.cell.x + (data.cell.width - imgW) / 2;
             const imgY = data.cell.y + 1.8;
 
@@ -2160,15 +2170,15 @@ const UI = {
               try {
                 doc.addImage(raw.docBase64, 'JPEG', imgX, imgY, imgW, imgH);
                 const dLabel = String(raw.docType || 'SPP DC').toUpperCase();
-                doc.setFontSize(5.5);
+                doc.setFontSize(5.2);
                 doc.setFont('helvetica', 'bold');
                 if (dLabel.includes('OKK')) doc.setTextColor(5, 150, 105);
                 else if (dLabel.includes('BSTKB')) doc.setTextColor(217, 119, 6);
                 else doc.setTextColor(37, 99, 235);
-                doc.text(dLabel, data.cell.x + data.cell.width / 2, imgY + imgH + 2.6, { align: 'center' });
+                doc.text(dLabel, data.cell.x + data.cell.width / 2, imgY + imgH + 2.4, { align: 'center' });
               } catch (e) {}
             } else {
-              doc.setFontSize(6.5);
+              doc.setFontSize(6);
               doc.setTextColor(148, 163, 184);
               doc.text('Tidak Ada Foto', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { align: 'center' });
             }
@@ -2177,7 +2187,7 @@ const UI = {
       }
     });
 
-    // ==========================================
+        // ==========================================
     // 5. 2 TANDA TANGAN RESMI (TTD) PERSIS BACKEND EMAIL
     // ==========================================
     let finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 110) + 8;
@@ -4467,11 +4477,14 @@ const UI = {
     try {
       this.showToast('⏳ Menyinkronkan profil ke database Google Sheets...');
       const payload = {
+        id: AppState.userProfile.id || oldNpk,
+        username: AppState.userProfile.username || '',
         oldNpk: oldNpk,
         npk: npk,
         name: name,
         branch: branch,
         role: role,
+        position: role,
         photo: newPhoto || AppState.userProfile.photo
       };
 

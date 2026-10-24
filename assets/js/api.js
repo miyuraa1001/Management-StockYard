@@ -376,10 +376,27 @@ const ApiService = {
           }
         }
 
+        // Sinkronisasi data Target Email Per-Cabang (Tab UserPIC Kolom G)
+        if (payload.branchEmails && typeof payload.branchEmails === 'object') {
+          AppState.branchEmails = { ...AppState.branchEmails, ...payload.branchEmails };
+        }
+
+        // Sinkronisasi data User Akun dari database jika tersedia
+        if (Array.isArray(payload.users) && payload.users.length > 0) {
+          payload.users.forEach(u => {
+            if (u.username && u.targetEmail) {
+              AppState.branchEmails[u.username] = u.targetEmail;
+            }
+          });
+        }
+
         if (typeof AppState.updateKpiCounts === 'function') {
           AppState.updateKpiCounts();
         }
         AppState.saveToCache();
+        if (typeof UI !== 'undefined' && UI.updateNotificationTargetEmailDisplay) {
+          UI.updateNotificationTargetEmailDisplay();
+        }
         return true;
       }
     } catch (e) {
