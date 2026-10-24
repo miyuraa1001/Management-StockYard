@@ -2657,33 +2657,38 @@
     <!-- ======================================================== -->
     <!-- ENTERPRISE LOGIN PORTAL (ASTRA DAIHATSU DSO LAMPUNG) -->
     <!-- ======================================================== -->
-    <div id="enterpriseLoginPortal" class="fixed inset-0 z-[120] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-y-auto hidden">
-      <div class="max-w-md w-full bg-white rounded-[32px] shadow-2xl border border-slate-200/90 overflow-hidden my-auto animate-fade-in relative">
+    <!-- Enterprise Login Portal (Single Sign-On / Official Logistics Gateway) -->
+    <div id="enterpriseLoginPortal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-y-auto hidden">
+      <div class="max-w-md w-full bg-white rounded-[28px] shadow-2xl border border-slate-200/90 overflow-hidden my-auto animate-fade-in relative">
         
-        <!-- Red Top Accent Bar -->
-        <div class="h-2 w-full bg-[#ED1B24]"></div>
+        <!-- Corporate Accent Top Band (Astra Red & Astra Navy) -->
+        <div class="h-2 w-full flex">
+          <div class="h-full w-3/5 bg-[#ED1B24]"></div>
+          <div class="h-full w-2/5 bg-[#00205B]"></div>
+        </div>
 
         <!-- Close Button (Hanya jika user sudah login dan sedang ganti akun) -->
         <button type="button" id="loginPortalCloseBtn" onclick="UI.hideLoginScreen()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer hidden" title="Tutup Portal">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
-        <div class="p-6 sm:p-8">
+        <div class="p-7 sm:p-8">
           
           <!-- Corporate Header & Logo -->
           <div class="text-center space-y-3 mb-6">
-            <div class="inline-flex items-center justify-center p-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs mx-auto">
+            <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-2xs mx-auto">
               <img src="assets/images/daihatsu-logo.png" alt="Daihatsu Logo" class="h-9 w-auto object-contain">
             </div>
             <div>
-              <span class="text-[10px] font-black tracking-widest text-[#00205B] uppercase block">
-                PT ASTRA DAIHATSU MOTOR &bull; DSO LAMPUNG
-              </span>
-              <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[#00205B] text-[10px] font-black tracking-wider uppercase">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#ED1B24]"></span>
+                Astra Daihatsu &bull; Enterprise Portal
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-2">
                 Management StockYard
               </h2>
               <p class="text-xs text-slate-500 mt-1">
-                Silakan masukkan Username dan Password resmi Anda.
+                Portal Otentikasi & Pengawasan Mutasi Fisik Kendaraan
               </p>
             </div>
           </div>
@@ -2697,17 +2702,16 @@
           <!-- Success Alert Banner -->
           <div id="loginSuccessAlert" class="hidden mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center space-x-2.5">
             <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-            <span id="loginSuccessMsg">Login berhasil! Menyiapkan sistem...</span>
+            <span id="loginSuccessMsg">Otentikasi berhasil! Mengalihkan ke sistem...</span>
           </div>
 
-          <!-- Classic Login Form (Username & Password) -->
+          <!-- Enterprise Login Form (Username & Password) -->
           <form id="enterpriseLoginForm" onsubmit="UI.handleEnterpriseLogin(event)" class="space-y-4">
             
             <!-- 1. USERNAME FIELD -->
             <div class="space-y-1.5 text-left">
               <label for="loginUsernameInput" class="text-xs font-bold text-slate-800 flex items-center justify-between">
-                <span>Username / ID Petugas</span>
-                <span class="text-[10px] text-slate-400 font-normal">Contoh: DSO LAMPUNG, D660</span>
+                <span>Username / ID Akun Petugas</span>
               </label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -2717,8 +2721,8 @@
                   type="text" 
                   id="loginUsernameInput" 
                   autocomplete="username" 
-                  placeholder="Masukkan Username atau Kode Cabang..." 
-                  class="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition placeholder:text-slate-400 placeholder:font-normal"
+                  placeholder="Masukkan Username atau ID Cabang..." 
+                  class="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:border-[#00205B] focus:ring-2 focus:ring-slate-200 outline-none transition placeholder:text-slate-400 placeholder:font-normal"
                   required
                 >
               </div>
@@ -2726,10 +2730,9 @@
 
             <!-- 2. PASSWORD FIELD -->
             <div class="space-y-1.5 text-left">
-              <div class="flex items-center justify-between">
-                <label for="loginPasswordInput" class="text-xs font-bold text-slate-800">Password / Kata Sandi</label>
-                <span class="text-[10px] text-slate-400 font-medium">Default: <code class="text-blue-600 font-bold bg-blue-50 px-1 py-0.5 rounded">daihatsu2026</code></span>
-              </div>
+              <label for="loginPasswordInput" class="text-xs font-bold text-slate-800 block">
+                Kata Sandi (Password)
+              </label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -2738,11 +2741,11 @@
                   type="password" 
                   id="loginPasswordInput" 
                   autocomplete="current-password" 
-                  placeholder="Masukkan Password..." 
-                  class="w-full pl-10 pr-11 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition placeholder:text-slate-400 placeholder:font-normal"
+                  placeholder="••••••••••••" 
+                  class="w-full pl-10 pr-11 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:bg-white focus:border-[#00205B] focus:ring-2 focus:ring-slate-200 outline-none transition placeholder:text-slate-400 placeholder:font-normal"
                   required
                 >
-                <button type="button" onclick="UI.toggleLoginPasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer" title="Lihat/Sembunyikan Password">
+                <button type="button" onclick="UI.toggleLoginPasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer" title="Lihat/Sembunyikan Kata Sandi">
                   <svg id="loginEyeIconOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                   <svg id="loginEyeIconClosed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
                 </button>
@@ -2753,10 +2756,10 @@
             <div class="flex items-center justify-between text-xs pt-1">
               <label class="flex items-center space-x-2 text-slate-600 font-semibold cursor-pointer select-none">
                 <input type="checkbox" id="loginRememberMeCheckbox" checked class="w-4 h-4 rounded text-[#ED1B24] border-slate-300 focus:ring-red-500 cursor-pointer">
-                <span>Ingat Sesi Saya</span>
+                <span>Ingat Sesi di Perangkat Ini</span>
               </label>
-              <button type="button" onclick="UI.showToast('ℹ️ Hubungi IT / Admin Head jika membutuhkan bantuan atau lupa password.')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold cursor-pointer">
-                Lupa Password?
+              <button type="button" onclick="UI.showToast('ℹ️ Hubungi IT / Admin Head Astra Daihatsu untuk verifikasi atau reset kata sandi.')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold cursor-pointer">
+                Lupa Kata Sandi?
               </button>
             </div>
 
@@ -2765,47 +2768,31 @@
               <button 
                 type="submit" 
                 id="loginSubmitBtn" 
-                class="w-full py-3.5 px-5 rounded-2xl bg-[#ED1B24] hover:bg-[#D0171F] active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-red-600/25 transition flex items-center justify-center space-x-2 cursor-pointer"
+                class="w-full py-3.5 px-5 rounded-2xl bg-[#00205B] hover:bg-[#001744] active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-blue-950/20 transition flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <span id="loginSubmitSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                <span id="loginSubmitBtnText">MASUK KE SISTEM</span>
+                <span id="loginSubmitBtnText">MASUK KE PORTAL LOGISTIK</span>
                 <svg id="loginSubmitArrow" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
               </button>
             </div>
 
           </form>
 
-          <!-- 5. QUICK ACCOUNT SHORTCUT PILLS (MEMUDAHKAN PETUGAS LAPANGAN) -->
-          <div class="mt-6 pt-5 border-t border-slate-100 text-center">
-            <span class="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block mb-2.5">
-              Pilih Cepat Akun Cabang (UserPIC):
-            </span>
-            <div class="flex flex-wrap items-center justify-center gap-1.5" id="loginShortcutPills">
-              <button type="button" onclick="UI.fillLoginUsername('DSO LAMPUNG')" class="px-2.5 py-1 rounded-xl text-[10px] font-black bg-red-50 hover:bg-red-100 text-[#ED1B24] border border-red-200/80 transition cursor-pointer active:scale-95" title="Admin Head / Branch Manager (Semua Cabang)">
-                🛡️ DSO LAMPUNG (Admin)
-              </button>
-              <button type="button" onclick="UI.fillLoginUsername('D660')" class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-700 border border-slate-200 transition cursor-pointer active:scale-95">
-                D660 (Ahmad Yani)
-              </button>
-              <button type="button" onclick="UI.fillLoginUsername('D661')" class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-700 border border-slate-200 transition cursor-pointer active:scale-95">
-                D661 (Soekarno Hatta)
-              </button>
-              <button type="button" onclick="UI.fillLoginUsername('D662')" class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-700 border border-slate-200 transition cursor-pointer active:scale-95">
-                D662 (Bandar Jaya)
-              </button>
-              <button type="button" onclick="UI.fillLoginUsername('D663')" class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-700 border border-slate-200 transition cursor-pointer active:scale-95">
-                D663 (Lampung Utara)
-              </button>
-              <button type="button" onclick="UI.fillLoginUsername('D664')" class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-700 border border-slate-200 transition cursor-pointer active:scale-95">
-                D664 (Lampung Timur)
-              </button>
+          <!-- Bottom Enterprise Security Notice -->
+          <div class="mt-6 pt-5 border-t border-slate-100 text-center space-y-1">
+            <div class="flex items-center justify-center gap-1.5 text-[10.5px] font-semibold text-slate-500">
+              <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Otentikasi Terenkripsi & Sinkron Database UserPIC</span>
+            </div>
+            <div class="text-[9.5px] text-slate-400">
+              PT Astra International Tbk &bull; Daihatsu Sales Operation Lampung
             </div>
           </div>
 
-          <!-- Bottom Enterprise Footer -->
-          <div class="mt-5 text-[10px] text-slate-400 text-center font-medium">
-            Terhubung & Sinkron Database UserPIC &bull; Astra Daihatsu DSO Lampung
-          </div>
+        </div>
+
+      </div>
+    </div>
 
         </div>
 

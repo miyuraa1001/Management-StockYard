@@ -4537,13 +4537,14 @@ const UI = {
     if (errBox) errBox.classList.add('hidden');
     if (succBox) succBox.classList.add('hidden');
 
-    const targetUser = prefillUsername || (AppState.userProfile && AppState.userProfile.username) || 'DSO LAMPUNG';
-    this.selectLoginAccount(targetUser);
-    this.switchLoginMode('branch');
+    const userInput = document.getElementById('loginUsernameInput');
+    if (userInput) {
+      userInput.value = prefillUsername || '';
+    }
 
     const passInput = document.getElementById('loginPasswordInput');
     if (passInput) {
-      passInput.value = 'daihatsu2026';
+      passInput.value = '';
     }
   },
 
@@ -4560,13 +4561,12 @@ const UI = {
     const userInput = document.getElementById('loginUsernameInput');
     const passInput = document.getElementById('loginPasswordInput');
     if (userInput) {
-      userInput.value = username;
+      userInput.value = username || '';
     }
     if (passInput) {
-      if (!passInput.value) passInput.value = 'daihatsu2026';
+      passInput.value = '';
       passInput.focus();
     }
-    this.showToast('ℹ️ Akun dipilih: ' + username);
   },
 
   toggleLoginPasswordVisibility() {
