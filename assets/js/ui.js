@@ -1868,7 +1868,7 @@ const UI = {
         .then(() => {
           const loadedCls = getJsPdfClass();
           if (loadedCls && !window.jsPDF) window.jsPDF = loadedCls;
-          return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.autotable.min.js');
+          return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
         })
         .then(() => {
           const finalCls = getJsPdfClass();
