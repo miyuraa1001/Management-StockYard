@@ -1910,118 +1910,61 @@ const UI = {
       }
     }
 
-    
-
     const pageWidth = doc.internal.pageSize.getWidth(); // 297 mm
     const pageHeight = doc.internal.pageSize.getHeight(); // 210 mm
-    const margin = 12;
+    const margin = 8; // Memberikan lebar 281 mm untuk 13 kolom presisi seperti Excel
 
     const branchFilter = filterInfo.fBa && filterInfo.fBa !== 'all' 
       ? this.formatBranchName(filterInfo.fBa) 
       : 'Semua Cabang (Astra Daihatsu DSO Lampung)';
 
-    const profile = AppState.userProfile || {};
-    const operatorName = profile.name || CONFIG.OPERATOR_NAME || 'Andi Pratama';
-    const operatorNpk = profile.npk || CONFIG.OPERATOR_NPK || '21040889';
-
     const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     let periodText = 'Seluruh Waktu';
     if (filterInfo.fDate !== 'all' || filterInfo.fMonth !== 'all' || filterInfo.fYear !== 'all') {
-      const dStr = (filterInfo.fDate && filterInfo.fDate !== 'all') ? `Tgl ${filterInfo.fDate} ` : '';
-      const mStr = (filterInfo.fMonth && filterInfo.fMonth !== 'all') ? `${monthNames[filterInfo.fMonth] || filterInfo.fMonth} ` : '';
-      const yStr = (filterInfo.fYear && filterInfo.fYear !== 'all') ? `${filterInfo.fYear}` : '';
-      periodText = `${dStr}${mStr}${yStr}`.trim() || 'Seluruh Waktu';
+      const dStr = (filterInfo.fDate && filterInfo.fDate !== 'all') ? 'Tgl ' + filterInfo.fDate + ' ' : '';
+      const mStr = (filterInfo.fMonth && filterInfo.fMonth !== 'all') ? (monthNames[filterInfo.fMonth] || filterInfo.fMonth) + ' ' : '';
+      const yStr = (filterInfo.fYear && filterInfo.fYear !== 'all') ? String(filterInfo.fYear) : '';
+      periodText = (dStr + mStr + yStr).trim() || 'Seluruh Waktu';
     }
-
-    let typeFilterText = 'Semua Mutasi (Masuk & Keluar)';
-    if (filterInfo.tabFilter === 'in') typeFilterText = 'Hanya Unit Masuk';
-    if (filterInfo.tabFilter === 'out') typeFilterText = 'Hanya Unit Keluar';
 
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
-    const dateFormatted = `${day}-${month}-${year}`;
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const printDateStr = `${day}/${month}/${year} ${timeStr} WIB`;
+    const dateFormatted = day + '-' + month + '-' + year;
+    const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const printDateStr = day + '/' + month + '/' + year + ' ' + timeStr + ' WIB';
 
     // ==========================================
-    // 1. KOP SURAT RESMI IDENTIK DENGAN BACKEND EMAIL
+    // 1. KOP SURAT RESMI IDENTIK 100% DENGAN FORMAT EXCEL
     // ==========================================
+    // Baris 1: Nama Perusahaan
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(0, 32, 91); // Daihatsu Navy #00205B
-    doc.text('ASTRA DAIHATSU DSO LAMPUNG • DSO SENTRA LAMPUNG', margin, 12.5);
+    doc.text('ASTRA DAIHATSU DSO LAMPUNG', margin, 11);
 
-    doc.setFontSize(9.5);
-    doc.setTextColor(230, 0, 18); // Daihatsu Red #E60012
-    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', margin, 17.5);
-
-    // Badge Kode & Nama Cabang Resmi
-    doc.setFillColor(254, 243, 199); // amber-100
-    doc.setDrawColor(245, 158, 11);  // amber-500
-    doc.roundedRect(margin, 19.5, 130, 5.5, 1.2, 1.2, 'FD');
-    doc.setFontSize(8);
-    doc.setTextColor(146, 64, 14); // amber-800
-    doc.text(`KODE & NAMA CABANG: ${branchFilter.toUpperCase()}`, margin + 3, 23.3);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.8);
-    doc.setTextColor(100, 116, 139); // slate-500
-    doc.text('Sentra Yard & Logistics Hub • Jl. Raya Soekarno Hatta No. 88, Bandar Lampung', margin, 28.5);
-
-    // Keterangan Kode Form & Waktu Cetak di Sudut Kanan Atas
-    doc.setFont('helvetica', 'bold');
+    // Kode Dokumen di Kanan Atas
     doc.setFontSize(7.5);
     doc.setTextColor(0, 32, 91);
-    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 13, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(71, 85, 105);
-    doc.text(`Waktu Cetak: ${printDateStr}`, pageWidth - margin, 17, { align: 'right' });
+    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 11, { align: 'right' });
 
-    // Garis Kop Ganda (Navy 0.6mm + Red 0.3mm)
-    doc.setDrawColor(0, 32, 91);
-    doc.setLineWidth(0.6);
-    doc.line(margin, 30.5, pageWidth - margin, 30.5);
+    // Baris 2: Judul Dokumen (Merah Daihatsu #E60012)
+    doc.setFontSize(10.5);
+    doc.setTextColor(230, 0, 18);
+    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', margin, 16);
 
-    doc.setDrawColor(230, 0, 18);
-    doc.setLineWidth(0.3);
-    doc.line(margin, 31.5, pageWidth - margin, 31.5);
-
-    // ==========================================
-    // 2. METADATA DOKUMEN & RINGKASAN REKAPITULASI
-    // ==========================================
-    const masukCount = records.filter(r => r.type === 'Unit Masuk').length;
-    const keluarCount = records.filter(r => r.type === 'Unit Keluar').length;
-
-    doc.setFillColor(248, 250, 252);
-    doc.setDrawColor(203, 213, 225);
-    doc.roundedRect(margin, 33.5, pageWidth - (margin * 2), 12, 1.5, 1.5, 'FD');
-
-    doc.setFontSize(7.2);
+    // Baris 3: Badge Info Cabang Resmi & Waktu (Kotak Kuning/Amber persis Row 3 Excel)
+    doc.setFillColor(254, 243, 199); // #FEF3C7
+    doc.setDrawColor(245, 158, 11);  // #F59E0B
+    doc.roundedRect(margin, 18.5, pageWidth - (margin * 2), 6.5, 1, 1, 'FD');
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
-    doc.text('Cabang Operasional', margin + 3, 37.5);
-    doc.text('Periode Rekapitulasi', margin + 3, 41.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`:  ${branchFilter}`, margin + 30, 37.5);
-    doc.text(`:  ${periodText} (${typeFilterText})`, margin + 30, 41.5);
-
-    // Ringkasan Rekapitulasi Kanan
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 32, 91);
-    doc.text('RINGKASAN REKAPITULASI CABANG:', pageWidth - margin - 85, 37.5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`Total Terdata : ${records.length} Unit Fisik  |  Masuk: ${masukCount} Unit  |  Keluar: ${keluarCount} Unit`, pageWidth - margin - 85, 41.5);
+    doc.setTextColor(146, 64, 14); // #92400E
+    doc.text('CABANG RESMI: ' + branchFilter.toUpperCase() + ' | Periode: ' + periodText + ' | Dicetak: ' + printDateStr, margin + 3, 22.8);
 
     // ==========================================
-    // 3. PRE-LOAD FOTO (FISIK UNIT & DOKUMEN BUKTI)
+    // 2. PRE-LOAD FOTO DENGAN SAFE TIMEOUT
     // ==========================================
     const imgCache = new Map();
     const loadCached = async (u) => {
@@ -2053,88 +1996,100 @@ const UI = {
     const preloadedMedia = await Promise.all(preloadPromises);
 
     // ==========================================
-    // 4. SUSUN TABEL AUTOTABLE (10 KOLOM IDENTIK EMAIL)
+    // 3. SUSUN 13 KOLOM TABEL PERSIS SEPERTI EXCEL
     // ==========================================
     const tableColumns = [
       { header: 'No', dataKey: 'no' },
-      { header: 'No. Mutasi ID', dataKey: 'id' },
+      { header: 'ID Mutasi', dataKey: 'id' },
       { header: 'Waktu', dataKey: 'waktu' },
-      { header: 'Model Kendaraan', dataKey: 'model' },
-      { header: 'No. Rangka & Mesin', dataKey: 'vin' },
-      { header: 'Jenis', dataKey: 'type' },
-      { header: 'Dokumen', dataKey: 'doc_badge' },
-      { header: 'Foto Unit', dataKey: 'foto_unit' },
-      { header: 'Foto DO', dataKey: 'foto_doc' },
+      { header: 'Tanggal', dataKey: 'tanggal' },
+      { header: 'Model Kendaraan', dataKey: 'kendaraan' },
+      { header: 'Cabang Resmi', dataKey: 'cabang' },
+      { header: 'No. Rangka (VIN)', dataKey: 'vin' },
+      { header: 'No. Mesin', dataKey: 'mesin' },
+      { header: 'Jenis Mutasi', dataKey: 'jenis' },
       { header: 'Petugas Security', dataKey: 'pic' },
-      { header: 'Catatan Kondisi', dataKey: 'notes' }
+      { header: 'Catatan Audit', dataKey: 'catatan' },
+      { header: 'Foto Fisik Unit', dataKey: 'foto_unit' },
+      { header: 'Dokumen', dataKey: 'foto_doc' }
     ];
+
+    let masukCount = 0;
+    let keluarCount = 0;
 
     const tableRows = records.map((item, idx) => {
       const media = preloadedMedia[idx] || {};
+      const isMasuk = item.type === 'Unit Masuk';
+      if (isMasuk) masukCount++; else keluarCount++;
+
+      const branchName = this.formatBranchName(item.noBa || item.branch);
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
 
       let dateFormattedRow = '';
       if (item.date && item.month && item.year) {
-        dateFormattedRow = `${String(item.date).padStart(2, '0')}/${String(item.month).padStart(2, '0')}/${item.year}`;
+        dateFormattedRow = String(item.date).padStart(2, '0') + '/' + String(item.month).padStart(2, '0') + '/' + item.year;
       } else if (item.timestamp) {
         const dObj = new Date(item.timestamp);
         if (!isNaN(dObj.getTime())) {
-          dateFormattedRow = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth() + 1).padStart(2, '0')}/${dObj.getFullYear()}`;
+          dateFormattedRow = String(dObj.getDate()).padStart(2, '0') + '/' + String(dObj.getMonth() + 1).padStart(2, '0') + '/' + dObj.getFullYear();
           const hh = String(dObj.getHours()).padStart(2, '0');
           const mm = String(dObj.getMinutes()).padStart(2, '0');
-          timeFormatted = `${hh}:${mm}`;
+          timeFormatted = hh + ':' + mm;
         }
       }
-      if (!dateFormattedRow) dateFormattedRow = `${day}/${month}/${year}`;
+      if (!dateFormattedRow) dateFormattedRow = day + '/' + month + '/' + year;
 
-      const bName = this.formatBranchName(item.noBa || item.branch);
-      const bShort = (bName.split(' - ')[0] || bName).trim();
       const docTypeStr = String(item.docType || 'SPP DC').toUpperCase();
 
       return {
         no: String(idx + 1),
         id: item.id || '-',
-        waktu: `${timeFormatted}\n${dateFormattedRow}`,
-        model: item.model || '-',
-        vin: `${item.vin || '-'}\nENG: ${item.engine || '-'}\n${bShort}`,
-        type: item.type === 'Unit Masuk' ? '↓ MASUK' : '↑ KELUAR',
-        doc_badge: docTypeStr,
+        waktu: timeFormatted,
+        tanggal: dateFormattedRow,
+        kendaraan: item.model || '-',
+        cabang: branchName,
+        vin: item.vin || '-',
+        mesin: item.engine || '-',
+        jenis: isMasuk ? '↓ MASUK' : '↑ KELUAR',
+        pic: item.pic ? (item.pic + (item.npk ? '\n(NPK: ' + item.npk + ')' : '')) : 'Security Yard',
+        catatan: item.notes || 'Pemeriksaan standar unit.',
         foto_unit: ' ',
         foto_doc: ' ',
-        pic: `${item.pic || 'Security Yard'}\nNPK: ${item.npk || '-'}`,
-        notes: item.notes || '-',
         unitBase64: media.unitB64,
         docBase64: media.docB64,
         docType: docTypeStr
       };
     });
 
+    // ==========================================
+    // 4. AUTOTABLE DENGAN GAYA EXCEL (BORDER HITAM TEGAS & HEADER NAVY)
+    // ==========================================
     doc.autoTable({
       columns: tableColumns,
       body: tableRows,
-      startY: 47.5,
+      startY: 27.5,
       margin: { left: margin, right: margin, bottom: 22 },
       theme: 'grid',
       headStyles: {
         fillColor: [0, 32, 91], // Navy #00205B
         textColor: [255, 255, 255],
-        fontSize: 7.2,
+        fontSize: 6.8,
         fontStyle: 'bold',
         halign: 'center',
         valign: 'middle',
         cellPadding: 2,
-        lineColor: [0, 32, 91],
-        lineWidth: 0.2
+        lineColor: [0, 0, 0],
+        lineWidth: 0.3
       },
       bodyStyles: {
-        fontSize: 6.8,
+        fontSize: 6.5,
         textColor: [15, 23, 42],
         valign: 'middle',
-        minCellHeight: 19, // Ruang proporsional untuk foto
-        cellPadding: 1.5,
-        lineColor: [148, 163, 184],
+        minCellHeight: 18,
+        cellPadding: 1.2,
+        lineColor: [0, 0, 0],
         lineWidth: 0.2
       },
       alternateRowStyles: {
@@ -2142,42 +2097,41 @@ const UI = {
       },
       columnStyles: {
         no: { halign: 'center', cellWidth: 8, fontStyle: 'bold' },
-        id: { halign: 'center', cellWidth: 22, font: 'courier', fontStyle: 'bold' },
-        waktu: { halign: 'center', cellWidth: 20, font: 'courier' },
-        model: { cellWidth: 29, fontStyle: 'bold' },
-        vin: { cellWidth: 35, font: 'courier' },
-        type: { halign: 'center', cellWidth: 16, fontStyle: 'bold' },
-        doc_badge: { halign: 'center', cellWidth: 18, fontStyle: 'bold' },
-        foto_unit: { halign: 'center', cellWidth: 26 },
-        foto_doc: { halign: 'center', cellWidth: 26 },
-        pic: { cellWidth: 24 },
-        notes: { cellWidth: 49 }
+        id: { halign: 'center', cellWidth: 20, font: 'courier', fontStyle: 'bold' },
+        waktu: { halign: 'center', cellWidth: 12, font: 'courier' },
+        tanggal: { halign: 'center', cellWidth: 15 },
+        kendaraan: { cellWidth: 25, fontStyle: 'bold' },
+        cabang: { cellWidth: 26, fontStyle: 'bold' },
+        vin: { cellWidth: 29, font: 'courier', fontStyle: 'bold' },
+        mesin: { cellWidth: 20, font: 'courier' },
+        jenis: { halign: 'center', cellWidth: 17, fontStyle: 'bold' },
+        pic: { cellWidth: 23 },
+        catatan: { cellWidth: 30 },
+        foto_unit: { halign: 'center', cellWidth: 28 },
+        foto_doc: { halign: 'center', cellWidth: 28 }
       },
       foot: [[
-        { content: `TOTAL JUMLAH KENDARAAN:`, colSpan: 5, styles: { halign: 'right', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [15, 23, 42] } },
-        { content: `${records.length} Unit`, styles: { halign: 'center', fontStyle: 'bold', fillColor: [203, 213, 225], textColor: [0, 32, 91] } },
-        { content: `MASUK: ${masukCount} UNIT   |   KELUAR: ${keluarCount} UNIT`, colSpan: 5, styles: { halign: 'center', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [21, 128, 61] } }
+        { content: 'TOTAL REKAPITULASI MUTASI KENDARAAN:', colSpan: 8, styles: { halign: 'right', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [15, 23, 42] } },
+        { content: String(records.length) + ' Unit', styles: { halign: 'center', fontStyle: 'bold', fillColor: [203, 213, 225], textColor: [0, 32, 91] } },
+        { content: 'MASUK: ' + masukCount + ' Unit   |   KELUAR: ' + keluarCount + ' Unit', colSpan: 4, styles: { halign: 'center', fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [21, 128, 61] } }
       ]],
       footStyles: {
-        fontSize: 7.2,
-        cellPadding: 2.2,
+        fontSize: 7,
+        cellPadding: 2,
         lineColor: [0, 0, 0],
         lineWidth: 0.3
       },
       didParseCell: function(data) {
         if (data.section === 'body') {
-          if (data.column.dataKey === 'type') {
+          if (data.column.dataKey === 'jenis') {
             if (data.cell.raw && data.cell.raw.includes('MASUK')) {
               data.cell.styles.textColor = [21, 128, 61];
             } else {
-              data.cell.styles.textColor = [185, 28, 28];
+              data.cell.styles.textColor = [29, 78, 216];
             }
           }
-          if (data.column.dataKey === 'doc_badge') {
-            const rawVal = String(data.cell.raw || '');
-            if (rawVal.includes('OKK')) data.cell.styles.textColor = [5, 150, 105];
-            else if (rawVal.includes('BSTKB')) data.cell.styles.textColor = [217, 119, 6];
-            else data.cell.styles.textColor = [37, 99, 235];
+          if (data.column.dataKey === 'cabang') {
+            data.cell.styles.textColor = [146, 64, 14];
           }
           if (data.column.dataKey === 'id') {
             data.cell.styles.textColor = [2, 132, 199];
@@ -2189,18 +2143,18 @@ const UI = {
           // Kolom Foto Fisik Unit
           if (data.column.dataKey === 'foto_unit') {
             const raw = data.row.raw;
-            const imgW = 18;
-            const imgH = 12.5;
+            const imgW = 20;
+            const imgH = 13;
             const imgX = data.cell.x + (data.cell.width - imgW) / 2;
-            const imgY = data.cell.y + 1.8;
+            const imgY = data.cell.y + 1.2;
 
             if (raw.unitBase64) {
               try {
                 doc.addImage(raw.unitBase64, 'JPEG', imgX, imgY, imgW, imgH);
-                doc.setFontSize(5.2);
+                doc.setFontSize(5);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(71, 85, 105);
-                doc.text('Foto Unit', data.cell.x + data.cell.width / 2, imgY + imgH + 2.4, { align: 'center' });
+                doc.text('Foto Fisik Unit', data.cell.x + data.cell.width / 2, imgY + imgH + 2.4, { align: 'center' });
               } catch (e) {}
             } else {
               doc.setFontSize(6);
@@ -2209,19 +2163,19 @@ const UI = {
             }
           }
 
-          // Kolom Foto DO / Dokumen
+          // Kolom Foto Dokumen
           if (data.column.dataKey === 'foto_doc') {
             const raw = data.row.raw;
-            const imgW = 18;
-            const imgH = 12.5;
+            const imgW = 20;
+            const imgH = 13;
             const imgX = data.cell.x + (data.cell.width - imgW) / 2;
-            const imgY = data.cell.y + 1.8;
+            const imgY = data.cell.y + 1.2;
 
             if (raw.docBase64) {
               try {
                 doc.addImage(raw.docBase64, 'JPEG', imgX, imgY, imgW, imgH);
                 const dLabel = String(raw.docType || 'SPP DC').toUpperCase();
-                doc.setFontSize(5.2);
+                doc.setFontSize(5);
                 doc.setFont('helvetica', 'bold');
                 if (dLabel.includes('OKK')) doc.setTextColor(5, 150, 105);
                 else if (dLabel.includes('BSTKB')) doc.setTextColor(217, 119, 6);
@@ -2238,8 +2192,8 @@ const UI = {
       }
     });
 
-        // ==========================================
-    // 5. 2 TANDA TANGAN RESMI (TTD) PERSIS BACKEND EMAIL
+    // ==========================================
+    // 5. 2 TANDA TANGAN RESMI (TTD) PERSIS FORMAT EXCEL
     // ==========================================
     let finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 110) + 8;
     if (finalY > pageHeight - 34) {
@@ -2266,7 +2220,7 @@ const UI = {
     // Garis TTD Kiri
     doc.setDrawColor(15, 23, 42);
     doc.setLineWidth(0.3);
-    doc.line(margin + 20, finalY + 22, margin + colW - 20, finalY + 22);
+    doc.line(margin + 25, finalY + 22, margin + colW - 25, finalY + 22);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
@@ -2295,7 +2249,7 @@ const UI = {
     // Garis TTD Kanan
     doc.setDrawColor(15, 23, 42);
     doc.setLineWidth(0.3);
-    doc.line(margin + colW + 20, finalY + 22, pageWidth - margin - 20, finalY + 22);
+    doc.line(margin + colW + 25, finalY + 22, pageWidth - margin - 25, finalY + 22);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
@@ -2308,7 +2262,7 @@ const UI = {
     doc.text('Astra Daihatsu DSO Lampung', margin + colW + (colW / 2), finalY + 29, { align: 'center' });
 
     // ==========================================
-    // 6. FOOTER & NOMOR HALAMAN PADA SEMUA HALAMAN
+    // 6. FOOTER & NOMOR HALAMAN
     // ==========================================
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
@@ -2316,16 +2270,16 @@ const UI = {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6.5);
       doc.setTextColor(148, 163, 184);
-      doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      doc.text('Dokumen Resmi Sistem Management StockYard • Astra Daihatsu DSO Lampung • Dicetak via Management StockYard Enterprise', margin, pageHeight - 5);
+      doc.text('Halaman ' + i + ' dari ' + totalPages, pageWidth - margin, pageHeight - 5, { align: 'right' });
+      doc.text('Dokumen Resmi Sistem Management StockYard • Astra Daihatsu DSO Lampung • Format Selaras Microsoft Excel', margin, pageHeight - 5);
     }
 
     // ==========================================
     // 7. SIMPAN DAN DOWNLOAD FILE PDF KE PERANGKAT
     // ==========================================
-    const fileName = `Laporan_Mutasi_Stockyard_Daihatsu_Lampung_${dateFormatted}.pdf`;
+    const fileName = 'Laporan_Mutasi_Stockyard_Daihatsu_Lampung_' + dateFormatted + '.pdf';
     doc.save(fileName);
-    this.showToast(`✅ Berhasil mengunduh ${fileName}`);
+    this.showToast('✅ Berhasil mengunduh ' + fileName);
   },
 
 
