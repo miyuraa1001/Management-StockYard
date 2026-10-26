@@ -2019,26 +2019,27 @@ const UI = {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
-    doc.setTextColor(0, 32, 91);
-    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 10.5, { align: 'right' });
+    doc.setTextColor(71, 85, 105);
+    doc.text('KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', pageWidth - margin, 10.5, { align: 'right' });
 
     // Baris 2: Sub-Kop Sentra Wilayah
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
     doc.text('Sentra Distribusi & Manajemen Stockyard Area Lampung', margin, 14);
 
-    doc.setFontSize(6.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('KLASIFIKASI: DOKUMEN AUDIT RESMI', pageWidth - margin, 14, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Astra Daihatsu DSO Lampung', pageWidth - margin, 14, { align: 'right' });
 
     // Garis Aksen Korporat Astra (Merah & Navy)
     const contentW = pageWidth - margin * 2;
     doc.setDrawColor(237, 27, 36); // #ED1B24
     doc.setLineWidth(0.6);
-    doc.line(margin, 16, margin + contentW * 0.55, 16);
+    doc.line(margin, 16, margin + contentW * 0.54, 16);
     doc.setDrawColor(0, 32, 91); // #00205B
-    doc.line(margin + contentW * 0.55, 16, pageWidth - margin, 16);
+    doc.line(margin + contentW * 0.54, 16, pageWidth - margin, 16);
 
     // Baris 3: Judul Dokumen Utama
     doc.setFont('helvetica', 'bold');
