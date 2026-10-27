@@ -17,9 +17,8 @@ const CONFIG = {
   APP_SUBTITLE: 'Astra Daihatsu DSO Lampung',
   BRANCH_NAME: 'Sentra Lampung • Astra Daihatsu DSO Lampung',
 
-  // Daftar Cabang Resmi Astra Daihatsu Lampung (Kode BA & Nama Cabang)
+  // 5 Cabang Resmi Operasional Stockyard Astra Daihatsu Lampung (D660 s/d D664)
   BRANCH_LIST: [
-    { code: 'ALL',  name: 'Sentra Lampung', label: 'Sentra Lampung • Astra Daihatsu DSO Lampung' },
     { code: 'D660', name: 'Ahmad Yani', label: 'D660 - Ahmad Yani' },
     { code: 'D661', name: 'Soekarno Hatta', label: 'D661 - Soekarno Hatta' },
     { code: 'D662', name: 'Bandar Jaya', label: 'D662 - Bandar Jaya' },

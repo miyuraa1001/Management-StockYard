@@ -4423,20 +4423,18 @@ const UI = {
           inputNoBaHint.innerHTML = `Mode User: Mutasi otomatis tercatat khusus cabang penugasan <strong>${userBranch}</strong>.`;
         }
       } else {
-        // Mode Admin: Bebas memilih SEMUA CABANG (D660 s/d D664)
-        const branches = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.BRANCH_LIST))
-          ? CONFIG.BRANCH_LIST
-          : [
-              { code: 'D660', label: 'D660 - Ahmad Yani' },
-              { code: 'D661', label: 'D661 - Soekarno Hatta' },
-              { code: 'D662', label: 'D662 - Bandar Jaya' },
-              { code: 'D663', label: 'D663 - Lampung Utara' },
-              { code: 'D664', label: 'D664 - Lampung Timur' }
-            ];
+        // Mode Admin: Hanya 5 Cabang Resmi Operasional Stockyard (D660 s/d D664)
+        const branches = [
+          { code: 'D660', label: 'D660 - Ahmad Yani' },
+          { code: 'D661', label: 'D661 - Soekarno Hatta' },
+          { code: 'D662', label: 'D662 - Bandar Jaya' },
+          { code: 'D663', label: 'D663 - Lampung Utara' },
+          { code: 'D664', label: 'D664 - Lampung Timur' }
+        ];
         const validLabels = branches.map(b => b.label);
         let selectedVal = inputNoBa.value;
         if (!validLabels.includes(selectedVal)) {
-          selectedVal = validLabels.includes(userBranch) ? userBranch : 'D660 - Ahmad Yani';
+          selectedVal = 'D660 - Ahmad Yani';
         }
 
         inputNoBa.innerHTML = branches.map(b => 
@@ -4445,11 +4443,11 @@ const UI = {
         inputNoBa.value = selectedVal;
         inputNoBa.disabled = false;
         inputNoBa.className = 'w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer';
-        inputNoBa.title = 'Akses Admin: Bebas memilih semua cabang untuk pencatatan unit';
+        inputNoBa.title = 'Akses Admin: Bebas memilih 5 cabang operasional (D660 s/d D664) untuk pencatatan unit';
 
         if (inputNoBaBadge) {
           inputNoBaBadge.className = 'text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
-          inputNoBaBadge.textContent = 'ADMIN: PILIH CABANG';
+          inputNoBaBadge.textContent = 'ADMIN: PILIH CABANG (D66)';
         }
         if (inputNoBaHint) {
           inputNoBaHint.innerHTML = 'Akses Admin: Silakan pilih cabang penyerahan/penerimaan unit (<strong>D660 s/d D664</strong>).';
