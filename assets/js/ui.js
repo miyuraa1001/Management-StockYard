@@ -1586,7 +1586,7 @@ const UI = {
         item.vin || '-',
         item.engine || '-',
         item.type || 'Unit Masuk',
-        item.pic ? `${item.pic}${item.npk ? ` (NPK: ${item.npk})` : ''}` : 'Security Yard',
+        item.pic || 'Security Yard',
         item.notes || 'Pemeriksaan standar unit.',
         '', // Foto Fisik Unit (Col 12)
         ''  // Foto Dokumen (Col 13)
@@ -2192,7 +2192,7 @@ const UI = {
         vin: item.vin || '-',
         mesin: item.engine || '-',
         jenis: isMasuk ? '↓ MASUK' : '↑ KELUAR',
-        pic: item.pic ? (item.pic + (item.npk ? '\n(NPK: ' + item.npk + ')' : '')) : 'Security Yard',
+        pic: item.pic || 'Security Yard',
         catatan: item.notes || 'Pemeriksaan standar unit.',
         foto_unit: ' ',
         foto_doc: ' ',
@@ -2441,7 +2441,6 @@ const UI = {
   generatePrintablePdfReport(records, filterInfo = {}, existingWindow = null) {
     const profile = AppState.userProfile || {};
     const operatorName = profile.name || CONFIG.OPERATOR_NAME || 'Andi Pratama';
-    const operatorNpk = profile.npk || CONFIG.OPERATOR_NPK || '21040889';
     const operatorBranch = profile.branch || CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung';
 
     const now = new Date();
@@ -2836,7 +2835,7 @@ const UI = {
               <strong>Pencarian:</strong> <span style="font-weight: 700; color: #0f172a;">${searchFilterText}</span>
             </div>
             <div>
-              <strong>Petugas PIC:</strong> ${operatorName} (NPK: ${operatorNpk})<br>
+              <strong>Petugas PIC:</strong> ${operatorName}<br>
               <strong>Cabang Penugasan:</strong> ${operatorBranch}<br>
               <strong>Status Logistik:</strong> <span style="color: #059669; font-weight: 800;">✓ Verifikasi Lapangan Lengkap</span>
             </div>
@@ -2891,7 +2890,7 @@ const UI = {
               <div>Diterima & Diperiksa oleh:</div>
               <div class="sig-space"></div>
               <div><strong>( ${operatorName} )</strong></div>
-              <div style="color: #64748b; font-size: 7.5px;">Staff Operasional Yard • NPK: ${operatorNpk}</div>
+              <div style="color: #64748b; font-size: 7.5px;">Petugas Security On-Duty</div>
             </div>
             <div class="sig-col">
               <div>Mengetahui / Menyetujui:</div>
@@ -4299,7 +4298,6 @@ const UI = {
   applyUserProfile() {
     const profile = AppState.userProfile || {
       name: CONFIG.OPERATOR_NAME,
-      npk: CONFIG.OPERATOR_NPK,
       branch: CONFIG.OPERATOR_BRANCH,
       role: CONFIG.OPERATOR_ROLE,
       photo: CONFIG.OPERATOR_PHOTO
@@ -4309,7 +4307,6 @@ const UI = {
     const avatarEl = document.getElementById('profileCardAvatar');
     const nameEl = document.getElementById('profileCardName');
     const roleEl = document.getElementById('profileCardRole');
-    const npkEl = document.getElementById('profileCardNpk');
     const branchEl = document.getElementById('profileCardBranch');
 
     const validPhotoUrl = this.formatDriveImageUrl(profile.photo || CONFIG.OPERATOR_PHOTO);
@@ -4337,7 +4334,6 @@ const UI = {
     cleanJabatan = String(cleanJabatan).replace(/DISTRICT/gi, 'BRANCH');
 
     if (roleEl) roleEl.innerText = cleanJabatan;
-    if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
       branchEl.title = profile.branch;
@@ -4374,20 +4370,17 @@ const UI = {
 
     // Update Sub-Page Edit Form
     const inputName = document.getElementById('inputProfileName');
-    const inputNpk = document.getElementById('inputProfileNpk');
     const inputBranch = document.getElementById('inputProfileBranch');
     const inputRole = document.getElementById('inputProfileRole');
     const editPreview = document.getElementById('editProfileAvatarPreview');
 
     if (inputName) inputName.value = profile.name;
-    if (inputNpk) inputNpk.value = profile.npk || profile.id || 'USR-001';
     if (inputBranch) inputBranch.value = userBranch;
     if (inputRole) inputRole.value = isAdmin ? 'Admin' : 'User';
     if (editPreview && validPhotoUrl) editPreview.src = validPhotoUrl;
 
     // Sync CONFIG operator name for recording PIC
     if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
-    if (profile.npk) CONFIG.OPERATOR_NPK = profile.npk;
     this.syncRoleBranchUI();
   },
 
@@ -4747,7 +4740,6 @@ const UI = {
       AppState.userProfile.id = userAcc.id;
       AppState.userProfile.username = userAcc.username;
       AppState.userProfile.name = userAcc.name;
-      AppState.userProfile.npk = userAcc.id;
       AppState.userProfile.branch = userAcc.branch;
       AppState.userProfile.role = 'User';
       AppState.userProfile.position = userAcc.role;
@@ -4764,7 +4756,6 @@ const UI = {
       AppState.userProfile.id = adminAcc.id;
       AppState.userProfile.username = adminAcc.username;
       AppState.userProfile.name = adminAcc.name;
-      AppState.userProfile.npk = adminAcc.id;
       AppState.userProfile.branch = adminAcc.branch;
       AppState.userProfile.role = 'Admin';
       AppState.userProfile.position = adminAcc.role;
@@ -4926,12 +4917,11 @@ const UI = {
   },
 
   /**
-   * Simpan perubahan profil operator (nama, NPK, cabang, jabatan, foto) ke database Google Sheets
+   * Simpan perubahan profil operator (nama, cabang, jabatan, foto) ke database Google Sheets
    * Foto lama otomatis terhapus dari Google Drive saat foto baru diunggah
    */
   async saveProfileData() {
     const name = (document.getElementById('inputProfileName')?.value || '').trim();
-    const npk = (document.getElementById('inputProfileNpk')?.value || '').trim() || AppState.userProfile.id || AppState.userProfile.npk || 'USR-001';
     const branch = (document.getElementById('inputProfileBranch')?.value || '').trim();
     const role = (document.getElementById('inputProfileRole')?.value || '').trim();
 
@@ -4951,7 +4941,6 @@ const UI = {
     }
 
     const oldPhotoUrl = AppState.userProfile.photo || '';
-    const oldNpk = AppState.userProfile.npk || AppState.userProfile.id;
     const newPhoto = AppState._tempProfilePhoto || null;
     const isAdmin = AppState.isAdmin() || (AppState.userProfile.username && AppState.userProfile.username.toUpperCase().includes('DSO'));
     const officialPosition = isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY';
@@ -4959,7 +4948,6 @@ const UI = {
 
     // Terapkan ke state lokal terlebih dahulu agar UI merespons seketika
     AppState.userProfile.name = cleanName;
-    AppState.userProfile.npk = npk;
     AppState.userProfile.position = officialPosition;
     if (branch) AppState.userProfile.branch = branch;
     if (role) AppState.userProfile.role = role;
@@ -4981,10 +4969,8 @@ const UI = {
     try {
       this.showToast('⏳ Menyinkronkan foto & profil ke database Google Sheets...');
       const payload = {
-        id: AppState.userProfile.id || oldNpk,
+        id: AppState.userProfile.id || AppState.userProfile.username,
         username: AppState.userProfile.username || '',
-        oldNpk: oldNpk,
-        npk: npk,
         name: cleanName,
         branch: branch,
         role: role,

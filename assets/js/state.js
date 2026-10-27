@@ -33,10 +33,9 @@ const AppState = {
 
   // Profil Petugas Operator & Otomatisasi Sesuai Sheet UserPIC (Kolom F: Jabatan)
   userProfile: {
-    id: CONFIG.OPERATOR_NPK || 'USR-001',
+    id: 'USR-001',
     username: CONFIG.OPERATOR_USERNAME || 'DSO LAMPUNG',
     name: CONFIG.OPERATOR_NAME || 'ADMIN HEAD / BRANCH MANAGER',
-    npk: CONFIG.OPERATOR_NPK || 'USR-001',
     branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
     role: CONFIG.OPERATOR_ROLE || 'Admin',
     position: 'ADMIN HEAD / BRANCH MANAGER',
@@ -519,10 +518,9 @@ const AppState = {
 
     // Kembalikan profil ke default aman
     this.userProfile = {
-      id: CONFIG.OPERATOR_NPK || 'USR-001',
+      id: 'USR-001',
       username: CONFIG.OPERATOR_USERNAME || 'DSO LAMPUNG',
       name: CONFIG.OPERATOR_NAME || 'ADMIN HEAD / BRANCH MANAGER',
-      npk: CONFIG.OPERATOR_NPK || 'USR-001',
       branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
       role: CONFIG.OPERATOR_ROLE || 'Admin',
       position: 'ADMIN HEAD / BRANCH MANAGER',

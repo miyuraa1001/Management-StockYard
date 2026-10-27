@@ -380,7 +380,6 @@ const ApiService = {
           AppState.userProfile.id = u.id || AppState.userProfile.id;
           AppState.userProfile.username = u.username || AppState.userProfile.username;
           if (u.name) AppState.userProfile.name = String(u.name).replace(/DISTRICT/gi, 'BRANCH');
-          if (u.npk) AppState.userProfile.npk = u.npk;
           if (u.branch) {
             AppState.userProfile.branch = (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function')
               ? CONFIG.formatBranch(u.branch)
@@ -571,7 +570,6 @@ const ApiService = {
           id: matched.id || 'USR-001',
           username: matched.username,
           name: String(matched.name || '').replace(/DISTRICT/gi, 'BRANCH'),
-          npk: matched.id,
           branch: matched.branch,
           role: isAdm ? 'Admin' : 'User',
           position: isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : (matched.role || 'SECURITY'),

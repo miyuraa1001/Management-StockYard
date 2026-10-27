@@ -188,7 +188,6 @@ const App = {
       engine: cleanEngine,
       noBa: noBa,
       pic: AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Andi Pratama',
-      picNpk: AppState.userProfile?.npk || CONFIG.OPERATOR_NPK || '-',
       location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
       notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
       unitPhoto: unitImg,
