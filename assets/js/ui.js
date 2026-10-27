@@ -4358,6 +4358,7 @@ const UI = {
     const roleBadgeText = document.getElementById('headerRoleBadgeText');
 
     if (roleBadgeBtn) {
+      roleBadgeBtn.onclick = () => this.showLoginScreen();
       if (isAdmin) {
         roleBadgeBtn.className = 'h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0';
         if (roleBadgeIcon) roleBadgeIcon.innerText = '🛡️';

@@ -87,7 +87,14 @@ const AppState = {
    * Cek apakah role petugas saat ini adalah Admin (akses semua cabang)
    */
   isAdmin() {
-    const r = String(this.userProfile?.role || CONFIG.OPERATOR_ROLE || 'Admin').trim().toLowerCase();
+    const u = String(this.userProfile?.username || '').trim().toUpperCase();
+    if (u && (u.startsWith('D66') || u.match(/^D66[0-4]/))) {
+      return false;
+    }
+    if (u.includes('DSO')) {
+      return true;
+    }
+    const r = String(this.userProfile?.role || this.userProfile?.systemRole || CONFIG.OPERATOR_ROLE || 'Admin').trim().toLowerCase();
     return r === 'admin' || r.includes('administrator') || r.includes('head') || r.includes('manager');
   },
 
@@ -390,11 +397,23 @@ const AppState = {
         this.updateKpiCounts();
       }
 
+      // 1. Baca cache profil umum jika ada
+      const cachedProfile = localStorage.getItem(CONFIG.CACHE_KEYS.PROFILE);
+      if (cachedProfile) {
+        try {
+          const parsedProfile = JSON.parse(cachedProfile);
+          if (parsedProfile && typeof parsedProfile === 'object') {
+            this.userProfile = Object.assign({}, this.userProfile, parsedProfile);
+          }
+        } catch (e) {}
+      }
+
+      // 2. Baca sesi autentikasi enterprise aktif (PRIORITAS TERTINGGI: Sesi login aktif mengesampingkan profil umum)
       const cachedAuth = localStorage.getItem(CONFIG.CACHE_KEYS.AUTH_SESSION);
       if (cachedAuth) {
         try {
           const parsedAuth = JSON.parse(cachedAuth);
-          if (parsedAuth && parsedAuth.user) {
+          if (parsedAuth && parsedAuth.user && parsedAuth.user.username) {
             this.isAuthenticated = true;
             this.authSession = parsedAuth;
             this.userProfile = Object.assign({}, this.userProfile, parsedAuth.user);
@@ -402,24 +421,21 @@ const AppState = {
         } catch (e) {}
       }
 
-      const cachedProfile = localStorage.getItem(CONFIG.CACHE_KEYS.PROFILE);
-      if (cachedProfile) {
-        this.userProfile = Object.assign({}, this.userProfile, JSON.parse(cachedProfile));
-      }
-
-      // Normalisasi Sesuai Database Tab UserPIC (Kolom F: Jabatan & Kolom D: Nama)
+      // 3. Normalisasi Sesuai Database Tab UserPIC (Kolom F: Jabatan & Kolom D: Nama)
       if (this.userProfile) {
         if (this.userProfile.name) {
           this.userProfile.name = String(this.userProfile.name).replace(/DISTRICT/gi, 'BRANCH');
         }
-        const isAdm = this.isAdmin() || (this.userProfile.username && this.userProfile.username.toUpperCase().includes('DSO'));
-        if (isAdm) {
-          if (!this.userProfile.position || this.userProfile.position === 'SECURITY' || this.userProfile.position.toUpperCase().includes('DISTRICT')) {
-            this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
-          }
+        const uName = String(this.userProfile.username || '').trim().toUpperCase();
+        const isBranch = uName.startsWith('D66') || !!uName.match(/^D66[0-4]/);
+        if (isBranch) {
+          this.userProfile.role = 'User';
+          this.userProfile.position = 'SECURITY';
         } else {
-          if (!this.userProfile.position || this.userProfile.position.toUpperCase().includes('ADMIN') || this.userProfile.position.toUpperCase().includes('MANAGER')) {
-            this.userProfile.position = 'SECURITY';
+          const isAdm = this.isAdmin() || uName.includes('DSO');
+          if (isAdm) {
+            this.userProfile.role = 'Admin';
+            this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
           }
         }
         if (this.userProfile.position) {
@@ -445,22 +461,23 @@ const AppState = {
    * Menetapkan sesi autentikasi pengguna enterprise aktif
    */
   setAuthSession(user, remember = true) {
+    if (!user) return;
     this.isAuthenticated = true;
     this.userProfile = Object.assign({}, this.userProfile, user);
 
-    // Sinkronisasi Resmi Kolom F Database UserPIC (Jabatan) & Normalisasi BM Branch Manager
+    const uName = String(this.userProfile.username || '').trim().toUpperCase();
+    const isBranch = uName.startsWith('D66') || !!uName.match(/^D66[0-4]/);
+
+    if (isBranch) {
+      this.userProfile.role = 'User';
+      this.userProfile.position = 'SECURITY';
+    } else {
+      this.userProfile.role = 'Admin';
+      this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
+    }
+
     if (this.userProfile.name) {
       this.userProfile.name = String(this.userProfile.name).replace(/DISTRICT/gi, 'BRANCH');
-    }
-    const isAdm = this.isAdmin() || (this.userProfile.username && this.userProfile.username.toUpperCase().includes('DSO'));
-    if (isAdm) {
-      if (!this.userProfile.position || this.userProfile.position === 'SECURITY' || this.userProfile.position.toUpperCase().includes('DISTRICT')) {
-        this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
-      }
-    } else {
-      if (!this.userProfile.position || this.userProfile.position.toUpperCase().includes('ADMIN') || this.userProfile.position.toUpperCase().includes('MANAGER')) {
-        this.userProfile.position = 'SECURITY';
-      }
     }
     if (this.userProfile.position) {
       this.userProfile.position = String(this.userProfile.position).replace(/DISTRICT/gi, 'BRANCH');
@@ -486,7 +503,20 @@ const AppState = {
     this.authSession = null;
     try {
       localStorage.removeItem(CONFIG.CACHE_KEYS.AUTH_SESSION);
+      localStorage.removeItem(CONFIG.CACHE_KEYS.PROFILE);
     } catch (e) {}
+
+    // Kembalikan profil ke default aman
+    this.userProfile = {
+      id: CONFIG.OPERATOR_NPK || 'USR-001',
+      username: CONFIG.OPERATOR_USERNAME || 'DSO LAMPUNG',
+      name: CONFIG.OPERATOR_NAME || 'ADMIN HEAD / BRANCH MANAGER',
+      npk: CONFIG.OPERATOR_NPK || 'USR-001',
+      branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
+      role: CONFIG.OPERATOR_ROLE || 'Admin',
+      position: 'ADMIN HEAD / BRANCH MANAGER',
+      photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
+    };
   },
 
   // Simpan State ke LocalStorage

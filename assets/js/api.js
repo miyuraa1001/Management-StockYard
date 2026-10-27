@@ -355,18 +355,30 @@ const ApiService = {
         }
 
         // Sinkronisasi data User PIC aktif yang sedang login
-        const currentActiveUsername = (AppState.userProfile && AppState.userProfile.username) || '';
+        const currentActiveUsername = (AppState.authSession?.user?.username || AppState.userProfile?.username || '').trim();
         let u = null;
         if (Array.isArray(payload.users) && payload.users.length > 0) {
           if (currentActiveUsername) {
-            u = payload.users.find(usr => usr.username.toLowerCase() === currentActiveUsername.toLowerCase());
+            const targetLower = currentActiveUsername.toLowerCase();
+            u = payload.users.find(usr => {
+              const uName = String(usr.username || '').trim().toLowerCase();
+              const uId = String(usr.id || '').trim().toLowerCase();
+              const uBranch = String(usr.branch || '').trim().toLowerCase();
+              return uName === targetLower || uId === targetLower || (targetLower.length >= 4 && uBranch.includes(targetLower));
+            });
           }
-          if (!u) u = payload.users[0];
-        } else if (payload.user) {
+          // PENTING: Hanya fallback ke users[0] jika pengguna BELUM login sama sekali!
+          // Jika pengguna sedang login (misal D660), JANGAN PERNAH menimpa dengan users[0] (Admin DSO)!
+          if (!u && !AppState.isAuthenticated && !currentActiveUsername) {
+            u = payload.users[0];
+          }
+        } else if (payload.user && !AppState.isAuthenticated && !currentActiveUsername) {
           u = payload.user;
         }
 
         if (u) {
+          AppState.userProfile.id = u.id || AppState.userProfile.id;
+          AppState.userProfile.username = u.username || AppState.userProfile.username;
           if (u.name) AppState.userProfile.name = String(u.name).replace(/DISTRICT/gi, 'BRANCH');
           if (u.npk) AppState.userProfile.npk = u.npk;
           if (u.branch) {
@@ -374,25 +386,35 @@ const ApiService = {
               ? CONFIG.formatBranch(u.branch)
               : u.branch;
           }
-          if (u.role) AppState.userProfile.role = u.role;
           
-          // Sinkronisasi Resmi Kolom F Database UserPIC (Jabatan Petugas)
-          const isAdm = AppState.isAdmin() || (u.username && u.username.toUpperCase().includes('DSO'));
-          let pos = u.position || u.jabatan || AppState.userProfile.position;
-          if (isAdm) {
-            if (!pos || pos === 'SECURITY' || pos.toUpperCase().includes('DISTRICT')) {
-              pos = 'ADMIN HEAD / BRANCH MANAGER';
-            }
+          const uName = String(AppState.userProfile.username || '').trim().toUpperCase();
+          const isBranch = uName.startsWith('D66') || !!uName.match(/^D66[0-4]/);
+          if (isBranch) {
+            AppState.userProfile.role = 'User';
+            AppState.userProfile.position = 'SECURITY';
           } else {
-            if (!pos || pos.toUpperCase().includes('ADMIN') || pos.toUpperCase().includes('MANAGER')) {
-              pos = 'SECURITY';
-            }
+            const isAdm = (u.role === 'Admin') || 
+                          (u.position && (u.position.toUpperCase().includes('ADMIN') || u.position.toUpperCase().includes('MANAGER'))) || 
+                          uName.includes('DSO');
+            AppState.userProfile.role = isAdm ? 'Admin' : 'User';
+            AppState.userProfile.position = isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY';
           }
-          AppState.userProfile.position = String(pos || (isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY')).replace(/DISTRICT/gi, 'BRANCH');
 
           if (u.photo || u.avatar) {
             AppState.userProfile.photo = (u.photo || u.avatar);
           }
+          if (u.email || u.targetEmail) {
+            AppState.userProfile.email = u.email || u.targetEmail;
+          }
+
+          // Sinkronkan ke authSession aktif jika sedang login
+          if (AppState.authSession && AppState.isAuthenticated) {
+            AppState.authSession.user = Object.assign({}, AppState.authSession.user, AppState.userProfile);
+            try {
+              localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(AppState.authSession));
+            } catch (e) {}
+          }
+
           AppState.saveToCache();
           if (typeof UI !== 'undefined' && UI.applyUserProfile) {
             UI.applyUserProfile();

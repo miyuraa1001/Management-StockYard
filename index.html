@@ -112,7 +112,7 @@
           </button>
 
           <!-- Role Indicator Pill Badge (Admin vs User Cabang) -->
-          <div id="headerRoleBadgeBtn" class="h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0 select-none cursor-default" title="Status Peran Akun Masuk">
+          <div id="headerRoleBadgeBtn" onclick="UI.showLoginScreen()" class="h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0 select-none cursor-pointer hover:opacity-90 active:scale-95 transition" title="Status Peran Akun Masuk (Klik untuk ganti akun)">
             <span id="headerRoleBadgeIcon">🛡️</span>
             <span id="headerRoleBadgeText"><span class="font-bold">Admin</span><span class="hidden sm:inline font-semibold"> (Semua)</span></span>
           </div>
