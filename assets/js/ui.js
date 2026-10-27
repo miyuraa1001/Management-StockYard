@@ -4950,6 +4950,7 @@ const UI = {
       `;
     }
 
+    const oldPhotoUrl = AppState.userProfile.photo || '';
     const oldNpk = AppState.userProfile.npk || AppState.userProfile.id;
     const newPhoto = AppState._tempProfilePhoto || null;
     const isAdmin = AppState.isAdmin() || (AppState.userProfile.username && AppState.userProfile.username.toUpperCase().includes('DSO'));
@@ -4967,6 +4968,13 @@ const UI = {
       AppState.userProfile.avatar = newPhoto;
     }
 
+    if (AppState.authSession && AppState.authSession.user) {
+      AppState.authSession.user = Object.assign({}, AppState.authSession.user, AppState.userProfile);
+      try {
+        localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(AppState.authSession));
+      } catch (e) {}
+    }
+
     AppState.saveToCache();
     this.applyUserProfile();
 
@@ -4981,20 +4989,33 @@ const UI = {
         branch: branch,
         role: role,
         position: officialPosition,
-        photo: newPhoto || AppState.userProfile.photo
+        photo: newPhoto || AppState.userProfile.photo,
+        avatar: newPhoto || AppState.userProfile.photo
       };
 
       const res = await ApiService.updateProfile(payload);
       if (res && res.success) {
-        const serverPhoto = res.avatarUrl || (res.user && res.user.photo);
-        if (serverPhoto) {
+        const serverPhoto = res.avatarUrl || (res.user && (res.user.photo || res.user.avatar));
+        // Hanya ganti foto jika server mengembalikan URL baru yang valid dari Google Drive
+        if (serverPhoto && serverPhoto !== oldPhotoUrl && !serverPhoto.includes('unsplash.com')) {
           AppState.userProfile.photo = serverPhoto;
           AppState.userProfile.avatar = serverPhoto;
+        } else if (newPhoto) {
+          // Tetap pertahankan foto baru lokal yang dipilih pengguna, JANGAN revert ke foto lama!
+          AppState.userProfile.photo = newPhoto;
+          AppState.userProfile.avatar = newPhoto;
         }
+
         if (res.user && res.user.position) {
           AppState.userProfile.position = res.user.position;
         }
         AppState._tempProfilePhoto = null;
+        if (AppState.authSession && AppState.authSession.user) {
+          AppState.authSession.user = Object.assign({}, AppState.authSession.user, AppState.userProfile);
+          try {
+            localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(AppState.authSession));
+          } catch (e) {}
+        }
         AppState.saveToCache();
         this.applyUserProfile();
         AppState.updateKpiCounts();
@@ -5004,7 +5025,17 @@ const UI = {
         this.closeEditProfilePage();
         this.showToast('✅ Berhasil! Foto profil diperbarui & foto lama dihapus dari Google Drive.');
       } else {
+        if (newPhoto) {
+          AppState.userProfile.photo = newPhoto;
+          AppState.userProfile.avatar = newPhoto;
+        }
         AppState._tempProfilePhoto = null;
+        if (AppState.authSession && AppState.authSession.user) {
+          AppState.authSession.user = Object.assign({}, AppState.authSession.user, AppState.userProfile);
+          try {
+            localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(AppState.authSession));
+          } catch (e) {}
+        }
         AppState.saveToCache();
         this.applyUserProfile();
         this.closeEditProfilePage();
@@ -5012,7 +5043,17 @@ const UI = {
       }
     } catch (err) {
       console.error('[UI] Gagal simpan profil ke backend:', err);
+      if (newPhoto) {
+        AppState.userProfile.photo = newPhoto;
+        AppState.userProfile.avatar = newPhoto;
+      }
       AppState._tempProfilePhoto = null;
+      if (AppState.authSession && AppState.authSession.user) {
+        AppState.authSession.user = Object.assign({}, AppState.authSession.user, AppState.userProfile);
+        try {
+          localStorage.setItem(CONFIG.CACHE_KEYS.AUTH_SESSION, JSON.stringify(AppState.authSession));
+        } catch (e) {}
+      }
       AppState.saveToCache();
       this.applyUserProfile();
       this.closeEditProfilePage();

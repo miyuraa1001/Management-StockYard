@@ -401,7 +401,13 @@ const ApiService = {
           }
 
           if (u.photo || u.avatar) {
-            AppState.userProfile.photo = (u.photo || u.avatar);
+            const incomingPhoto = u.photo || u.avatar;
+            const currentPhoto = AppState.userProfile.photo || '';
+            const isLocalDataUrl = currentPhoto.startsWith('data:image');
+            // Jika foto di perangkat adalah foto baru yang baru diunggah, hanya timpa jika server mengembalikan link Google Drive yang sah
+            if (!isLocalDataUrl || (incomingPhoto && incomingPhoto.includes('drive.google.com'))) {
+              AppState.userProfile.photo = incomingPhoto;
+            }
           }
           if (u.email || u.targetEmail) {
             AppState.userProfile.email = u.email || u.targetEmail;
