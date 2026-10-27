@@ -1385,6 +1385,11 @@ const UI = {
   },
 
   /**
+   * Logo Resmi Daihatsu Base64 PNG untuk Header Berkas PDF & Excel
+   */
+  DAIHATSU_LOGO_BASE64: "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",
+
+  /**
    * Pembuatan file Excel (.xlsx) murni di browser menggunakan ExcelJS dengan Foto Nyata di Sel
    * Format & Desain Selaras 100% dengan Berkas Lampiran Email Backend
    */
@@ -1436,29 +1441,42 @@ const UI = {
       periodText = `${dStr}${mStr}${yStr}`.trim() || 'Seluruh Waktu';
     }
 
-    // Row 1: KOP RESMI PERUSAHAAN (Kiri: PT Astra International Tbk - DSO Lampung, Kanan: Form ID & Klasifikasi)
+    // Sisipkan Logo Daihatsu di Sel A1:B2 jika ExcelJS mendukung
+    try {
+      const logoId = workbook.addImage({
+        base64: this.DAIHATSU_LOGO_BASE64,
+        extension: 'png',
+      });
+      worksheet.addImage(logoId, {
+        tl: { col: 0.1, row: 0.1 },
+        ext: { width: 115, height: 40 }
+      });
+    } catch (eLogo) {}
+
+    // Row 1: KOP RESMI PERUSAHAAN (Kiri: Logo di A1:B2, C-H: Nama Perusahaan, I-M: Form ID & Klasifikasi)
     const r1 = worksheet.addRow([
-      'PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', '', '', '', '', '', '', '',
+      '', '', 'PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', '', '', '', '', '',
       'KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', '', '', '', ''
     ]);
-    worksheet.mergeCells('A1:H1');
+    worksheet.mergeCells('A1:B2'); // Tempat logo
+    worksheet.mergeCells('C1:H1');
     worksheet.mergeCells('I1:M1');
-    r1.height = 22;
-    r1.getCell(1).font = { name: 'Arial', size: 11.5, bold: true, color: { argb: 'FF00205B' } };
-    r1.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+    r1.height = 23;
+    r1.getCell(3).font = { name: 'Arial', size: 11.5, bold: true, color: { argb: 'FF00205B' } };
+    r1.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
     r1.getCell(9).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF475569' } };
     r1.getCell(9).alignment = { vertical: 'middle', horizontal: 'right' };
 
     // Row 2: Sub-Kop Sentra Wilayah
     const r2 = worksheet.addRow([
-      'Sentra Distribusi & Manajemen Stockyard Area Lampung', '', '', '', '', '', '', '',
+      '', '', 'Sentra Distribusi & Manajemen Stockyard Area Lampung', '', '', '', '', '',
       'Astra Daihatsu DSO Lampung', '', '', '', ''
     ]);
-    worksheet.mergeCells('A2:H2');
+    worksheet.mergeCells('C2:H2');
     worksheet.mergeCells('I2:M2');
-    r2.height = 16;
-    r2.getCell(1).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF64748B' } };
-    r2.getCell(1).alignment = { vertical: 'top', horizontal: 'left' };
+    r2.height = 18;
+    r2.getCell(3).font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF64748B' } };
+    r2.getCell(3).alignment = { vertical: 'top', horizontal: 'left' };
     r2.getCell(9).font = { name: 'Arial', size: 8, color: { argb: 'FF94A3B8' } };
     r2.getCell(9).alignment = { vertical: 'top', horizontal: 'right' };
 
@@ -2011,67 +2029,78 @@ const UI = {
     // ==========================================
     // 1. KOP SURAT RESMI IDENTIK 100% DENGAN FORMAT EXCEL (ASTRA CORPORATE STANDARD)
     // ==========================================
+    // Sisipkan Logo Resmi Daihatsu di Sisi Kiri Atas
+    try {
+      doc.addImage(this.DAIHATSU_LOGO_BASE64, 'PNG', margin, 7.5, 23, 9.8);
+      // Garis pemisah vertikal merah
+      doc.setDrawColor(237, 27, 36); // #ED1B24
+      doc.setLineWidth(0.5);
+      doc.line(margin + 25.5, 7.5, margin + 25.5, 17.5);
+    } catch (eImg) {}
+
+    const textLeft = margin + 28.5;
+
     // Baris 1: Nama Resmi Perusahaan (Kiri) & Kode Form (Kanan)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10.5);
     doc.setTextColor(0, 32, 91); // Daihatsu Navy #00205B
-    doc.text('PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', margin, 10.5);
+    doc.text('PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', textLeft, 11);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
-    doc.text('KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', pageWidth - margin, 10.5, { align: 'right' });
+    doc.text('KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', pageWidth - margin, 11, { align: 'right' });
 
     // Baris 2: Sub-Kop Sentra Wilayah
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('Sentra Distribusi & Manajemen Stockyard Area Lampung', margin, 14);
+    doc.text('Sentra Distribusi & Manajemen Stockyard Area Lampung', textLeft, 15);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(148, 163, 184);
-    doc.text('Astra Daihatsu DSO Lampung', pageWidth - margin, 14, { align: 'right' });
+    doc.text('Astra Daihatsu DSO Lampung', pageWidth - margin, 15, { align: 'right' });
 
     // Garis Aksen Korporat Astra (Merah & Navy)
     const contentW = pageWidth - margin * 2;
     doc.setDrawColor(237, 27, 36); // #ED1B24
-    doc.setLineWidth(0.6);
-    doc.line(margin, 16, margin + contentW * 0.54, 16);
+    doc.setLineWidth(0.7);
+    doc.line(margin, 19, margin + contentW * 0.54, 19);
     doc.setDrawColor(0, 32, 91); // #00205B
-    doc.line(margin + contentW * 0.54, 16, pageWidth - margin, 16);
+    doc.line(margin + contentW * 0.54, 19, pageWidth - margin, 19);
 
     // Baris 3: Judul Dokumen Utama
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+    doc.setFontSize(10.5);
     doc.setTextColor(15, 23, 42); // #0F172A
-    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', pageWidth / 2, 20.5, { align: 'center' });
+    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', pageWidth / 2, 24, { align: 'center' });
 
-    // Baris 4: Metadata Info Card (Elegan Abu-abu Slate #F1F5F9 dengan Border #CBD5E1)
-    const cardY = 22.5;
-    const cardH = 5.8;
-    doc.setFillColor(241, 245, 249); // #F1F5F9
+    // Baris 4: Metadata Info Card (Elegan Abu-abu Slate #F8FAFC dengan Border #CBD5E1)
+    const cardY = 26.5;
+    const cardH = 6.2;
+    doc.setFillColor(248, 250, 252); // #F8FAFC
     doc.setDrawColor(203, 213, 225); // #CBD5E1
     doc.setLineWidth(0.2);
     doc.roundedRect(margin, cardY, contentW, cardH, 1, 1, 'FD');
 
     const segW = contentW / 4;
-    doc.setFontSize(6.8);
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 32, 91);
-    doc.text('CABANG: ' + branchFilter.toUpperCase(), margin + 3, cardY + 4);
+    doc.text('CABANG: ' + branchFilter.toUpperCase(), margin + 3, cardY + 4.3);
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('PERIODE: ' + periodText, margin + segW + 3, cardY + 4);
+    doc.text('PERIODE: ' + periodText, margin + segW + 3, cardY + 4.3);
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(71, 85, 105);
-    doc.text('CETAK: ' + printDateStr, margin + segW * 2 + 3, cardY + 4);
+    doc.text('CETAK: ' + printDateStr, margin + segW * 2 + 3, cardY + 4.3);
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(21, 128, 61);
-    doc.text('STATUS: TERVERIFIKASI', margin + segW * 3 + 3, cardY + 4);
+    doc.text('STATUS: TERVERIFIKASI', margin + segW * 3 + 3, cardY + 4.3);
 
     // ==========================================
     // 2. PRE-LOAD FOTO DENGAN SAFE TIMEOUT
@@ -2179,7 +2208,7 @@ const UI = {
     doc.autoTable({
       columns: tableColumns,
       body: tableRows,
-      startY: 30.5,
+      startY: 34.8,
       margin: { left: margin, right: margin, bottom: 22 },
       theme: 'grid',
       headStyles: {
