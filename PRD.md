@@ -2,53 +2,82 @@
 ## Sistem Management StockYard Kendaraan (Astra Daihatsu DSO Lampung)
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk, Arsitektur Sistem, Katalog Fitur Menyeluruh & Operasional Bisnis  
-> **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Operasional Pool, Supervisor Logistik, Klien Bisnis, Tim Lapangan, & Tim Pengembang  
-> **Status Dokumen:** Siap Operasional (*Production-Ready - Versi 2.5 Terverifikasi*)  
-> **Lokasi Implementasi:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
+> **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Wilayah (DSO Lampung), Admin Head / Branch Manager (ADH/BM), Supervisor Logistik, Tim Security On-Duty Cabang (D660–D664), & Tim Pengembang  
+> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.8 Terverifikasi*)  
+> **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664)  
 
 ---
 
 ## 1. Ringkasan Eksekutif (Executive Summary)
 
 ### 1.1 Latar Belakang & Tujuan Transformasi
-Operasional pengelolaan dan penataan unit kendaraan di area pool logistik dan StockYard Astra Daihatsu DSO Lampung membutuhkan kecepatan pemrosesan, akurasi data mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan (*audit-ready*). 
+Operasional pengelolaan, pengawasan, dan mutasi unit kendaraan di area pool logistik dan StockYard Astra Daihatsu DSO Lampung membutuhkan kecepatan pemrosesan, akurasi data mutlak, dan pencatatan fisik yang dapat dipertanggungjawabkan secara transparan (*audit-ready*). 
 
-Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk mengubah proses operasional manual berbasis kertas dan spreadsheet mandiri yang rentan kesalahan menjadi **ekosistem aplikasi web terpadu (Mobile & Desktop PWA)** yang terhubung secara aman dengan teknologi komputasi awan (*cloud*) Google Workspace dan serverless proxy.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk mentransformasi operasional manual berbasis kertas dan spreadsheet konvensional menjadi **ekosistem aplikasi web enterprise terpadu (Mobile & Desktop PWA)** yang terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi.
 
-### 1.2 Nilai Manfaat Utama bagi Manajemen & Klien
-* **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem memblokir pemindaian berulang untuk unit yang sama melalui validasi multi-sensor seketika di lapangan.
-* **Kecepatan Masuk/Keluar Unit (< 20 Detik per Mobil)**: Petugas lapangan memindai stiker kaca mobil secara otomatis tanpa mengetik manual 17 digit nomor rangka yang rawan salah.
-* **Bukti Fisik Wajib & Terarsip Otomatis**: Setiap pergerakan mobil wajib menyertakan foto fisik unit dan foto surat jalan (DO) yang langsung tersimpan rapi di Google Drive perusahaan.
-* **Otomasi Laporan Harian Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format PDF resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen setiap pagi tanpa perlu kerja lembur admin.
-* **Kemudahan Akses Universal**: Dapat diakses langsung melalui browser di smartphone Android, iPhone, tablet, maupun komputer laptop kantor tanpa memerlukan instalasi aplikasi yang membebani memori perangkat.
+### 1.2 Nilai Manfaat Utama bagi Manajemen & Operasional Cabang
+* **Arsitektur Multi-Cabang Resmi (DSO Lampung & 5 Cabang D660–D664)**: Mendukung pengawasan sentral oleh Admin DSO Lampung sekaligus membatasi akses User Cabang secara independen (*data isolation*) sesuai lokasi penugasan.
+* **Akun Security Universal per Cabang (Bebas NPK)**: Kredensial login cabang bersifat universal untuk setiap regu *Security on-duty*, sehingga pergantian giliran jaga berjalan lancar tanpa birokrasi input NPK perorangan.
+* **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem memblokir pemindaian berulang untuk unit yang sama melalui validasi multi-sensor seketika di lapangan (audio 1760Hz, haptik, dan kunci visual).
+* **Kecepatan Mutasi (< 20 Detik per Unit)**: Petugas lapangan memindai stiker barcode kaca kendaraan secara otomatis tanpa mengetik manual 17 digit nomor rangka (VIN) yang rawan keliru.
+* **Bukti Fisik & Dokumen Wajib Terarsip ke Google Drive**: Setiap pergerakan mobil wajib menyertakan foto fisik unit dan foto dokumen resmi (SPP DC / BSTKB / OKK) yang langsung tersimpan rapi di Google Drive perusahaan dengan pembersihan otomatis file lama (*Drive lifecycle cleanup*).
+* **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
+* **Sinkronisasi Tab Cloud `ReportLogs` Realtime**: Setiap aktivitas pengiriman laporan harian (otomatis maupun manual via tombol "Kirim Laporan") tercatat ke tab `ReportLogs` dan tersinkronisasi 100% ke modal notifikasi aplikasi.
 
 ---
 
 ## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru
 
-| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard |
+| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard (v2.8) |
 | :--- | :--- | :--- |
-| **Pencatatan Nomor Rangka (VIN)** | Dicatat manual di kertas surat jalan atau diketik di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Sistem mengekstrak nomor rangka 17 digit dan nomor mesin dengan normalisasi standar ISO otomotif. |
-| **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis**. Kamera pintar langsung menyaring dan memilih nomor rangka berawalan `MHK` serta mengabaikan kode pabrik yang tidak relevan. |
-| **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi langsung berbunyi peringatan, bergetar panjang, dan layar mengunci tombol simpan. |
-| **Arsip Bukti Foto Fisik & Surat Jalan** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau tercecer. | **Terunggah Otomatis ke Google Drive Resmi**. Foto langsung terhubung dengan nomor rangka kendaraan dan dapat dibuka kapan saja melalui link di laporan. |
-| **Laporan Harian ke Pihak Manajemen** | Admin pool harus mengetik rekap manual setiap sore atau pagi hari, rentan terlambat. | **Otomatis Kirim PDF ke Email Jam 08:00 WIB**. Sistem bekerja mandiri merekap mutasi 24 jam terakhir dan melampirkannya dalam format PDF siap cetak. |
+| **Pencatatan Nomor Rangka (VIN)** | Dicatat manual di kertas surat jalan atau diketik di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Dual-engine (Barcode + Tesseract OCR) mengekstrak 17 digit VIN dan nomor mesin dengan normalisasi ISO. |
+| **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis (`smartFilterBarcodes`)**. Kamera langsung mengunci VIN berawalan `MHK...` serta membuang kode pabrik yang tidak relevan. |
+| **Identitas Petugas Security** | Diikat ke NPK perorangan sehingga sulit saat ganti shift atau petugas piket berganti. | **Universal Branch Account Login**. Login fleksibel per cabang untuk seluruh security bertugas tanpa perlu input NPK perorangan. |
+| **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi seketika mengunci layar merah, menyalakan alarm nada rendah, dan menolak penyimpanan. |
+| **Arsip Bukti Foto Fisik & Dokumen** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau membebani memori ponsel. | **Terunggah Otomatis ke Google Drive Resmi**. Foto unit & dokumen (SPP DC / BSTKB / OKK) terhubung langsung dengan nomor rangka kendaraan dan dapat diakses dari laporan. |
+| **Pengelolaan Foto Profil User** | Foto lama menumpuk di cloud storage hingga menghabiskan kuota Google Drive. | **Lifecycle Cleanup Otomatis**. Saat foto profil diperbarui, sistem mengunggah foto baru dan otomatis menghapus foto lama dari Google Drive. |
+| **Format Laporan Harian Eksekutif** | Format Excel dan PDF sering kali berbeda susunan kolom, tanpa logo resmi, dan tanpa foto visual. | **100% Identik Berlogo Daihatsu**: PDF dan Excel memiliki 13 kolom seragam, kop Astra resmi, status terverifikasi, dan visual thumbnail tersemat rapi di sel. |
+| **Distribusi Laporan Harian ke Cabang** | Satu file rekap dikirim masal; cabang melihat data unit cabang lain yang bukan wewenangnya. | **Distribusi Partisi Eksklusif**: Admin DSO menerima rekap 5 cabang (master), sedangkan tiap cabang (D660–D664) hanya menerima file mutasi eksklusif cabangnya. |
 
 ---
 
-## 3. Rincian Lengkap Seluruh Fitur Website (Tanpa Terkecuali)
+## 3. Struktur Organisasi Cabang & Hak Akses Berjenjang
 
-Sistem Management StockYard dirancang dengan antarmuka yang sangat kaya fitur, mencakup 5 tampilan utama, 6 modal kerja khusus, dan puluhan fungsi interaktif yang memudahkan tim lapangan hingga direksi:
+Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang disesuaikan dengan hierarki operasional Astra Daihatsu Area Lampung:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│             STRUKTUR HAK AKSES SISTEM MANAGEMENT STOCKYARD ASTRA DAIHATSU              │
+├──────────────────────────────────────────┬─────────────────────────────────────────────┤
+│ 1. ADMIN HEAD / BRANCH MANAGER (ADH/BM)  │ • Pengawas sentral seluruh cabang           │
+│    (Sentra Lampung • Astra Daihatsu DSO) │ • Akses penuh 5 cabang (D660 s/d D664)      │
+│                                          │ • Melihat, memfilter, & ekspor seluruh data │
+│                                          │ • Menerima email laporan master 5 cabang    │
+├──────────────────────────────────────────┼─────────────────────────────────────────────┤
+│ 2. USER CABANG SECURITY (D660 s/d D664)  │ • D660 - Ahmad Yani                         │
+│    (Petugas Security On-Duty per Cabang) │ • D661 - Soekarno Hatta                     │
+│                                          │ • D662 - Bandar Jaya                        │
+│                                          │ • D663 - Lampung Utara                      │
+│                                          │ • D664 - Lampung Timur                      │
+│                                          │ • Terbatas HANYA pada data cabang sendiri   │
+│                                          │ • Universal login tanpa NPK perorangan      │
+│                                          │ • Menerima rekap email eksklusif cabangnya  │
+└──────────────────────────────────────────┴─────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Rincian Lengkap Seluruh Fitur Website
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   PETA FITUR SISTEM MANAGEMENT STOCKYARD                         │
+│                   PETA FITUR SISTEM MANAGEMENT STOCKYARD (v2.8)                  │
 ├───────────────────────────────┬──────────────────────────────────────────────────┤
-│ 1. NAVIGASI & HEADER GLOBAL   │ • Status Pool, Dot Notifikasi, Profil PIC,       │
-│                               │   Pull-to-Refresh Mobile, Navigasi Tab, FAB Scan │
+│ 1. NAVIGASI & HEADER GLOBAL   │ • Status Pool Cabang, Pill Role Switcher,        │
+│                               │   Dot Notifikasi, Pull-to-Refresh Mobile, FAB    │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 2. DASHBOARD & ANALITIK       │ • Carousel 13 Model Mobil, Filter Tanggal/Bulan, │
-│                               │   4 Kartu KPI, Donut Chart Interaktif, Live Feed │
+│                               │   4 Kartu KPI Dinamis, Donut Chart, Live Feed    │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 3. MANAJEMEN INVENTARIS STOK  │ • Ringkasan Status, Grid 13 Model, Filter Cepat, │
 │                               │   Pencarian Real-Time, Tombol Drill-down         │
@@ -57,263 +86,133 @@ Sistem Management StockYard dirancang dengan antarmuka yang sangat kaya fitur, m
 │                               │   Filter Tanggal, Tabel Rincian Unit per Model   │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 5. RIWAYAT MUTASI & EKSPOR    │ • Log Mutasi Komprehensif, Filter Kalender,      │
-│                               │   Unduh PDF Berkop Resmi, Cetak, Ekspor Excel    │
+│                               │   Ekspor PDF Berkop Resmi, Ekspor Excel Berfoto  │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 6. SCANNER 2-TAHAP & FORM     │ • Dual Engine (Barcode + OCR), Senter, Reticle,  │
-│                               │   Alarm Anti-Duplikat, Form Foto Unit & DO       │
+│                               │   Alarm Anti-Duplikat, Form Foto Unit & Dokumen  │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
-│ 7. PUSAT NOTIFIKASI REAL-TIME │ • Indikator Live Sync, Ping Server, Kirim Email  │
-│                               │   Manual On-Demand, Filter Riwayat Pengiriman    │
+│ 7. PUSAT NOTIFIKASI REAL-TIME │ • Indikator Live Sync, Ping Server, Tombol Kirim │
+│                               │   Laporan, Sinkronisasi Cloud Tab ReportLogs     │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 8. PENGATURAN OTOMASI LAPORAN │ • Jam Analog "Jam Bulet", Frekuensi Kirim,       │
 │                               │   Multi-Email Chips Manager (> 5 Email Tujuan)   │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
-│ 9. PENGATURAN & PREFERENSI    │ • Edit Profil PIC, Preferensi Kamera & Senter,   │
-│                               │   Toggle Audio/Getar, Bersihkan Cache, Logout    │
+│ 9. PENGATURAN & AKUN UNIVERSAL│ • Edit Profil (Nama, Jabatan, Cabang, Foto Drive)│
+│                               │   Pembersihan Otomatis Foto Lama, Logout Sesi    │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 10. LIGHTBOX & TOAST ALERT    │ • Penampil Foto Resolusi Penuh, Zoom & Unduh,    │
-│                               │   Floating Toast Notifications (Sukses/Peringatan│
+│                               │   Floating Toast Notifications (Sukses/Error)    │
 └───────────────────────────────┴──────────────────────────────────────────────────┘
 ```
 
----
-
-### 3.1 Navigasi Global, Header, & Gestur Mobile
+### 4.1 Navigasi Global, Header, & Gestur Mobile
 1. **Lencana Status Pool Aktif (*Yard Badge*)**:
-   - Menampilkan penanda lokasi resmi pool yang sedang aktif: `Sentra Lampung Pool (Astra Daihatsu DSO)`.
-2. **Indikator Lonceng Notifikasi & Pulse Dot**:
-   - Ikon lonceng di bagian atas dengan titik merah berdenyut (*pulse dot*) yang menyala otomatis jika terdapat mutasi baru atau update status laporan. Mengeklik ikon ini akan membuka **Modal Notifikasi & Sinkronisasi Real-Time**.
-3. **Profil Operator / PIC Header**:
-   - Menampilkan foto avatar petugas yang sedang bertugas, nama lengkap PIC (contoh: *Andi Pratama* / *Syafira Fira*), dan peran jabatan (*Staff Operasional* / *Supervisor*).
-4. **Navigasi Tab Utama (Desktop & Mobile)**:
-   - **Desktop Navigation Bar**: Tab navigasi di bagian atas untuk berpindah seketika antara menu **Dashboard**, **Inventaris**, **Riwayat**, dan **Pengaturan**.
-   - **Mobile Floating Bottom Navigation**: Bilah navigasi melayang khusus layar smartphone yang ergonomis dijangkau satu tangan.
-5. **Tombol Aksi Cepat Scan (Floating Action Button / FAB)**:
-   - Tombol bulat berukuran besar di bagian tengah navigasi bawah dengan animasi berpendar (*glowing pulse*). Menekan tombol ini seketika membuka kamera pemindai unit dari menu manapun.
-6. **Gestur Tarik Layar ke Bawah (*Pull-to-Refresh*)**:
-   - Khusus pengguna smartphone: petugas cukup menarik layar dari atas ke bawah untuk menyegarkan dan mengambil data stok terbaru dari server. Dilengkapi indikator panah dinamis, teks panduan, dan animasi spinner putar.
+   - Menampilkan identitas cabang penugasan resmi: `D660 - Ahmad Yani` hingga `Sentra Lampung • Astra Daihatsu DSO Lampung`.
+2. **Pill Role Switcher Interaktif**:
+   - Menampilkan status akun saat ini (`Admin (Semua)` warna biru safir atau `User D66X` warna kuning amber).
+   - Mengetuk tombol ini membuka modal autentikasi cepat untuk berpindah akun operasional secara aman.
+3. **Indikator Lonceng Notifikasi & Pulse Dot**:
+   - Ikon lonceng di bagian atas dengan titik merah berdenyut (*pulse dot*) yang menyala otomatis jika terdapat mutasi baru atau update status laporan.
+4. **Profil Petugas di Header**:
+   - Menampilkan foto avatar petugas yang tersinkronisasi dari Google Drive, nama petugas, dan jabatan resmi (`ADMIN HEAD / BRANCH MANAGER` atau `SECURITY`).
+5. **Navigasi Tab Utama (Desktop & Mobile)**:
+   - **Desktop Bar**: Tab navigasi atas untuk berpindah seketika antara **Dashboard**, **Inventaris**, **Riwayat**, dan **Pengaturan**.
+   - **Mobile Bottom Navigation**: Bilah navigasi melayang ergonomis di bagian bawah layar smartphone.
+6. **Tombol FAB Scan Melayang**:
+   - Tombol bulat besar dengan animasi berpendar (*glowing pulse*) di bagian tengah bilah navigasi bawah untuk memicu kamera pemindai dari menu mana saja.
+7. **Gestur Tarik Layar ke Bawah (*Pull-to-Refresh*)**:
+   - Tarik layar dari atas ke bawah untuk menyegarkan dan mengambil data mutasi terbaru langsung dari Google Spreadsheet.
 
----
+### 4.2 Dashboard & Analitik Real-Time
+1. **Carousel Geser 13 Model Mobil**: Menampilkan visual 13 model Daihatsu, status ketersediaan *In-Yard* dan *In-Transit*, serta shortcut pemindaian.
+2. **Filter Periode Terintegrasi**: Tiga dropdown (Tanggal, Bulan, Tahun) serta tombol pintas "Hari Ini" dan "Reset".
+3. **Empat Kartu Ringkasan KPI Dinamis**: Total Unit Terdaftar, Unit In-Yard, Unit In-Transit, dan Mutasi Periode Terpilih.
+4. **Diagram Donat Distribusi Model**: Visual interaktif persentase komposisi unit per model dengan tooltip informasi stok.
+5. **Umpan Aktivitas Terkini (Live Feed)**: Menampilkan 5 transaksi mutasi mutakhir secara realtime dengan badge status masuk/keluar, VIN, model, dan waktu.
 
-### 3.2 Tampilan 1: Dashboard & Analitik Real-Time (`viewDashboard`)
-1. **Banner Carousel Geser Otomatis (*Hero Carousel 13 Model*)**:
-   - Menampilkan visual resmi 13 model kendaraan Daihatsu dalam format tayangan geser (*auto-sliding banner*).
-   - Setiap slide memuat nama model, statistik stok unit yang tersedia di pool (*In-Yard*), dan unit dalam perjalanan (*In-Transit*).
-   - Dilengkapi tombol navigasi manual (Panah Kiri / Kanan) dan tombol aksi cepat **"Buka Scanner untuk Model Ini"**.
-2. **Filter Periode & Rentang Tanggal Dashboard**:
-   - Tiga dropdown terintegrasi: Pemilih Tanggal (1–31), Pemilih Bulan (Januari–Desember), dan Pemilih Tahun.
-   - Tombol Pintas **"Hari Ini"**: Langsung menyaring data untuk melihat aktivitas pada hari berjalan.
-   - Tombol **"Reset / Tampilkan Semua"**: Mengembalikan tampilan untuk melihat ringkasan seluruh data tanpa batasan waktu.
-3. **Empat Kartu Ringkasan Kinerja Utama (KPI Cards)**:
-   - **Total Unit**: Akumulasi seluruh kendaraan yang terdata di sistem.
-   - **Unit In-Yard (Tersedia)**: Jumlah mobil yang berada di dalam area parkir pool Sentra Lampung.
-   - **Unit In-Transit (Keluar)**: Jumlah mobil yang sedang dalam proses pengiriman ke dealer/cabang.
-   - **Mutasi Periode Terpilih**: Perbandingan langsung jumlah *Unit Masuk* vs *Unit Keluar* pada rentang tanggal yang dipilih.
-4. **Diagram Donat Distribusi Model Kendaraan (Interactive Donut Chart)**:
-   - Menampilkan diagram lingkaran komposisi persentase jumlah unit per model mobil secara visual.
-   - **Interaksi Sentuh/Klik Segmen**: Memilih irisan diagram akan memunculkan kapsul informasi mengambang (*hover capsule*) yang memuat nama mobil, persentase stok, dan jumlah unit fisik.
-   - **Kartu Preview Model Terpilih**: Panel samping yang otomatis memperbarui foto model dan detail unit sesuai irisan donat yang sedang diklik.
-5. **Umpan Aktivitas Terkini (Live Recent Activity Feed)**:
-   - Menampilkan log 5 transaksi mutasi paling mutakhir secara *real-time*.
-   - Memuat foto avatar petugas, label status berwarna (*Hijau untuk Unit Masuk*, *Biru untuk Unit Keluar*), nomor rangka VIN, nama model kendaraan, dan stempel waktu transaksi.
-   - Dilengkapi tombol cepat untuk membuka riwayat lengkap.
+### 4.3 Manajemen Inventaris & Drill-Down Model
+1. **Header Statistik Kategori**: Ringkasan armada keluarga/LCGC, SUV/Crossover, dan armada niaga komersial.
+2. **Grid 13 Model Kendaraan**: Kartu visual beresolusi tinggi dengan indikator unit *In-Yard*, *In-Transit*, dan kapasitas maksimum.
+3. **Filter Tab Status Ketersediaan**: Filter cepat *Semua Unit*, *Hanya In-Yard*, dan *Hanya In-Transit*.
+4. **Pencarian Cepat Inventaris**: Menyaring kartu mobil seketika berdasarkan nomor rangka, nomor mesin, atau model.
+5. **Halaman Khusus Rincian Model (*Drill-Down*)**: Banner spesifikasi kendaraan, kartu ringkasan stok model, filter tanggal khusus tipe tersebut, dan tabel unit terdaftar.
 
----
+### 4.4 Riwayat Mutasi & Ekspor Laporan Komprehensif
+1. **Tabel Log Mutasi Terintegrasi**: Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, Cabang Resmi, Jenis Dokumen (SPP DC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
+2. **Filter Rentang Kalender & Pencarian Global**: Menyesuaikan audit harian, mingguan, bulanan, serta pencarian instan nomor rangka, nomor mesin, atau model.
+3. **Empat Metode Ekspor Resmi**:
+   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel 13 kolom seragam, dan 2 pengesahan tanda tangan: `SECURITY POOL / YARD` dan `ADH / BM`.
+   - **Ekspor Excel (.xlsx Murni) Berfoto**: Dihasilkan via `ExcelJS` langsung di browser, menyematkan visual foto unit & dokumen ke dalam sel tabel secara proporsional, border rapi, dan tanda tangan resmi.
+   - **Cetak Langsung (*Print-Ready*)**: Tata letak ramah cetak A4 tanpa elemen UI browser.
+   - **Email Rekapitulasi Terjadwal & On-Demand (Backend v2.19)**: Pengiriman otomatis pukul 08:00 WIB dan manual via tombol "Kirim Laporan" dengan lampiran PDF & Excel yang dipartisi eksklusif per cabang.
 
-### 3.3 Tampilan 2: Manajemen Inventaris Stok (`viewInventory`)
-1. **Header Statistik Kategori Stok**:
-   - Menampilkan total armada aktif yang dibagi menurut peruntukan (Keluarga/LCGC, SUV/Crossover, Niaga Komersial).
-2. **Grid Kartu 13 Model Kendaraan Daihatsu**:
-   - Menampilkan kartu visual beresolusi tinggi untuk masing-masing dari 13 model mobil.
-   - Setiap kartu menampilkan: nama model resmi, lencana ketersediaan stok, jumlah unit *In-Yard*, jumlah unit *In-Transit*, dan kapasitas maksimum yard.
-3. **Filter Tab Status Ketersediaan**:
-   - Tiga tombol tab cepat: **Semua Unit**, **Hanya In-Yard (Ada di Pool)**, dan **Hanya In-Transit (Sedang Dikirim)**.
-4. **Pencarian Cepat Inventaris Real-Time**:
-   - Kolom pencarian teks responsif yang langsung menyaring kartu unit berdasarkan nomor rangka, nomor mesin, atau nama model saat petugas mengetik.
-   - Dilengkapi tombol bersihkan pencarian (*clear button*) satu klik.
-5. **Tombol Akses Rincian (*Drill-Down Button*)**:
-   - Setiap kartu model memiliki tombol **"Lihat Rincian Unit"** yang langsung membuka halaman khusus untuk model tersebut.
-
----
-
-### 3.4 Tampilan 3: Rincian Model Kendaraan Drill-Down (`viewModelDetail`)
-1. **Hero Banner Spesifikasi Model**:
-   - Menampilkan visual besar kendaraan terpilih, kategori segmen (misal: *Niaga Komersial Ringan*), kapasitas mesin, dan deskripsi singkat peruntukan unit.
-2. **Kartu Ringkasan Model Spesifik**:
-   - Jumlah total stok fisik mobil tipe tersebut di Sentra Lampung, perbandingan unit masuk dan keluar khusus tipe tersebut.
-3. **Filter Jenis Mutasi Khusus Model**:
-   - Tab pemfilteran: Semua Unit, Unit Masuk Saja, Unit Keluar Saja.
-4. **Filter Rentang Tanggal Model**:
-   - Memungkinkan supervisor memfilter pergerakan model tersebut pada kurun waktu tertentu.
-5. **Tabel Rincian Unit Terdaftar**:
-   - Menampilkan seluruh nomor sasis (VIN), nomor mesin, tanggal kedatangan/pengiriman, nama petugas penanggung jawab, serta status lokasi unit.
-   - Dilengkapi tombol aksi untuk melihat foto unit langsung.
-6. **Tombol Navigasi Kembali**:
-   - Tombol kembali untuk kembali ke halaman katalog inventaris dengan posisi gulir yang terjaga.
-
----
-
-### 3.5 Tampilan 4: Riwayat Mutasi & Ekspor Laporan (`viewHistory`)
-1. **Tabel Log Mutasi Terintegrasi**:
-   - Menampilkan seluruh catatan mutasi keluar-masuk kendaraan secara berurutan (*chronological audit trail*).
-   - Kolom tabel mencakup: Waktu Mutasi, Nomor Transaksi, Nomor Rangka (VIN), Nomor Mesin, Model Mobil, Tipe Mutasi, Nama Petugas PIC, Nomor Surat Jalan (DO), Bukti Foto Fisik, dan Catatan Kondisi.
-2. **Filter Rentang Kalender Fleksibel**:
-   - Input tanggal **Dari Tanggal** dan **Sampai Tanggal** yang memungkinkan audit harian, mingguan, atau bulanan. Dilengkapi tombol reset filter.
-3. **Filter Tab Jenis Mutasi**:
-   - Tombol cepat: **Semua Mutasi**, **Unit Masuk**, dan **Unit Keluar**.
-4. **Pencarian Global Riwayat**:
-   - Kotak pencarian yang mampu mencari kecocokan nomor DO, nomor rangka, nomor mesin, model, maupun nama petugas penginput.
-5. **Empat Metode Ekspor & Laporan Resmi Lengkap**:
-   - **Download PDF Berkop Resmi Astra Daihatsu**: Dihasilkan secara instan di browser (*client-side vector PDF via jsPDF/AutoTable*). Menghasilkan berkas PDF landscape berlogo resmi Astra Daihatsu, nomor dokumen, tanggal cetak, tabel 9 kolom dengan foto fisik unit & foto dokumen DO, baris total jumlah unit, serta 2 tanda tangan resmi: **SECURITY POOL / YARD** dan **HDA / DM (HEAD DEPT / DISTRICT MANAGER)**.
-   - **Unduh Excel Murni (.xlsx) Berfoto Langsung di Frontend**: Tombol **Export Excel** di samping Export PDF yang mengekspor file `.xlsx` secara instan menggunakan ExcelJS langsung di browser. Menyematkan foto fisik unit dan foto dokumen DO nyata di dalam sel tabel, kolom Cabang resmi terpisah, baris total mutasi, dan 2 tanda tangan resmi.
-   - **Cetak Langsung (*Print-Ready*)**: Memformat tabel mutasi ke tata letak cetak ramah kertas A4/Folio tanpa elemen antarmuka website.
-   - **Otomatisasi Email Rekapitulasi Terjadwal & Manual (Backend PRO V2.11)**: Mengirimkan email ringkasan eksekutif dengan lampiran dokumen resmi **PDF** dan **Excel (.xlsx murni anti-gagal)** yang dipisahkan tersendiri per cabang resmi (D660 s/d D664), memuat foto visual fisik unit & DO, baris total unit, serta 2 pengesahan tanda tangan: **SECURITY POOL / YARD** dan **HDA / DM**. Dilengkapi validasi biner ZIP 'PK' dan penanganan redirect 302 agar berkas Excel tidak pernah hilang atau diblokir filter email.
-6. **Aksi Pembuka Foto Bukti Fisik**:
-   - Tombol thumbnail foto mobil dan foto dokumen DO pada setiap baris tabel. Mengeklik tombol ini akan membuka foto dalam ukuran penuh di modal penampil gambar.
-
----
-
-### 3.6 Tampilan 5: Pengaturan Sistem & Profil Operator (`viewSettings`)
-1. **Manajemen Profil Operator / PIC**:
-   - Menampilkan foto profil petugas, nama lengkap, NIK/ID petugas, peran akses, dan tanggal mulai bertugas.
-   - Tombol **"Edit Profil"** untuk mengubah nama atau memperbarui foto profil petugas.
-2. **Pengaturan Konfigurasi Server & Koneksi Cloud**:
-   - Pemilih mode koneksi: **Mode Aman Serverless (Vercel Reverse Proxy)** atau **Mode Langsung (Direct Google Apps Script)**.
-   - Kolom penyesuaian URL Google Apps Script untuk kemudahan pengujian.
-   - Tombol **"Uji Koneksi Server (Ping Cloud)"** untuk memastikan komunikasi ke database Google berjalan normal.
-3. **Pengaturan Pemindai Kamera & Perangkat Keras**:
-   - **Kamera Utama**: Pilihan kamera belakang (*environment/wide*) atau kamera depan.
-   - **Auto-Torch / Senter Otomatis**: Menyalakan lampu kilat smartphone secara otomatis saat memindai di area parkir yang gelap atau malam hari (pada ponsel yang mendukung).
-4. **Preferensi Suara & Getaran (Haptik)**:
-   - Toggle aktif/nonaktif suara bip audio validasi.
-   - Toggle aktif/nonaktif getaran haptik smartphone.
-5. **Manajemen Penyimpanan & Memori Lokal**:
-   - Tombol **"Sinkronisasi Paksa (*Force Sync*)"**: Menarik ulang seluruh data mutasi dari cloud sheet ke memori smartphone.
-   - Tombol **"Bersihkan Cache Lokal (*Clear Storage*)"**: Mengosongkan data sementara jika terjadi kendala pada browser.
-6. **Tombol Keluar Sesi (*Logout*)**:
-   - Membuka dialog konfirmasi aman sebelum petugas mengakhiri sesi kerja.
-
----
-
-### 3.7 Modal Kerja 1: Pemindai Kamera 2-Tahap (`#scannerModalOverlay`)
-Merupakan fitur inti operasional petugas di lapangan:
+### 4.5 Pemindai Kamera 2-Tahap & Verifikasi Mutasi
 * **Tahap 1: Viewport Kamera & Deteksi Cerdas**:
-  - Viewport kamera langsung layar penuh dengan bingkai laser merah/hijau 4 sudut.
-  - **Tombol Sakelar 2-Mode**:
-    - *Mode 1: [║▌║ Barcode Auto]*: Membaca barcode secara otomatis menggunakan akselerasi perangkat keras ponsel.
-    - *Mode 2: [🔤 Baca Teks Stiker (OCR)]*: Tombol snapshot darurat jika barcode silau matahari atau rusak; sistem langsung membaca teks nomor rangka di bawah barcode.
-  - **Tombol Unggah Foto Stiker dari Galeri**: Petugas dapat memotret stiker dengan aplikasi kamera bawaan ponsel terlebih dahulu, lalu mengunggah fotonya untuk dibaca otomatis oleh OCR Tesseract.
-  - **Penyaring Cerdas Multi-Barcode (`smartFilterBarcodes`)**: Otomatis mengenali pola 17 digit VIN `MHK...`, nomor mesin, nomor DO, dan membuang kode pabrik `11...` dan `632...` yang tidak diperlukan.
-  - **Pill Ringkasan Ekstraksi**: Menampilkan chip data yang berhasil dikenali (Nomor Rangka, Mesin, DO, Model).
-  - **Kolom Input Manual**: Opsi darurat untuk mengetik nomor sasis dan mesin jika stiker kendaraan rusak parah atau tidak ada.
-  - **Sistem Alarm Anti-Duplikasi Multi-Sensory**:
-    - *Jika Duplikat*: Alarm audio nada rendah (440Hz -> 330Hz), getaran panjang di ponsel, bingkai kamera menyala **MERAH**, dan navigasi ke formulir diblokir.
-    - *Jika Baru / Valid*: Bunyi bip nada tinggi (1760Hz), getaran pendek, bingkai terkunci **HIJAU**, chip berubah status menjadi **"TERVERIFIKASI"**, dan tombol lanjut ke tahap 2 aktif.
+  - Bingkai laser 4 sudut dengan sakelar mode: Barcode Otomatis, OCR Teks Stiker, dan Unggah Foto dari Galeri.
+  - Penyaring cerdas multi-barcode (`smartFilterBarcodes`): otomatis mengunci VIN 17 digit `MHK...` dan nomor mesin.
+  - Alarm anti-duplikat multi-sensori: Jika unit terdaftar, layar menyala **MERAH**, alarm nada rendah berbunyi, ponsel bergetar panjang, dan tombol lanjut diblokir. Jika valid, layar menyala **HIJAU**, bunyi bip 1760Hz, dan tombol lanjut aktif.
 * **Tahap 2: Formulir Serah Terima Mutasi Unit**:
-  - Banner identitas nomor sasis dan mesin yang telah terkunci (mencegah salah input).
-  - Pilihan radio button: **Unit Masuk** atau **Unit Keluar**.
-  - Dropdown pilihan **13 Model Resmi Kendaraan Daihatsu**.
-  - **Dropdown Cabang / Kode Berita Acara (No. BA)**: Menu dropdown terstandar untuk memilih cabang & kode BA resmi:
-    - **D660 - Ahmad Yani** (Default)
-    - **D661 - Soekarno Hatta**
-    - **D662 - Bandar Jaya**
-    - **D663 - Lampung Utara**
-    - **D664 - Lampung Timur**
-  - **Dua Slot Unggahan Foto Wajib**:
-    - *Slot 1: Foto Fisik Mobil* (langsung memicu kamera smartphone).
-    - *Slot 2: Foto Dokumen Surat Jalan DO* (langsung memicu kamera smartphone).
-    - Dilengkapi preview thumbnail foto dan tombol ganti foto.
-  - Kolom teks catatan kondisi fisik kendaraan.
-  - Tombol **"Simpan & Verifikasi Mutasi"** yang dilengkapi indikator putar saat proses kompresi dan pengiriman data berlangsung.
+  - Banner identitas nomor sasis dan mesin terkunci.
+  - Pilihan radio: **Unit Masuk** atau **Unit Keluar**.
+  - Dropdown 13 Model Resmi Kendaraan Daihatsu.
+  - Dropdown 5 Cabang Resmi: D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur.
+  - Dropdown Dokumen Resmi: **SPP DC**, **BSTKB**, atau **OKK**.
+  - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPP DC / BSTKB / OKK).
+  - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar.
+
+### 4.6 Pusat Notifikasi & Sinkronisasi Cloud (`ReportLogs`)
+* **Live Status Koneksi**: Indikator koneksi realtime ke backend Google Apps Script.
+* **Tombol Kirim Laporan On-Demand**: Memicu pengiriman laporan harian ke email manajemen seketika.
+* **Filter Riwayat Notifikasi**:
+  - `Semua (N)`: Menggabungkan seluruh mutasi unit dan riwayat pengiriman laporan.
+  - `Masuk (N)`: Mutasi unit masuk.
+  - `Keluar (N)`: Mutasi unit keluar.
+  - `Laporan (N)`: Catatan resmi berkas laporan rekapitulasi harian yang berhasil dikirimkan ke email target, tersinkronisasi langsung dari tab spreadsheet **`ReportLogs`**.
+* **Kartu Laporan Harian Modern**: Memuat badge `📄 Laporan Rekap Harian`, tanggal periode laporan, jumlah unit (masuk/keluar), status `Spreadsheet Sync ✓` / `Email Terkirim ✓`, serta rincian chip email penerima.
+
+### 4.7 Pengaturan Akun Universal & Manajemen Profil
+* **Akun Universal Cabang Bebas NPK**: Petugas tidak dibebani input NPK, hanya nama lengkap petugas bertugas, cabang penugasan, dan jabatan.
+* **Penggantian Foto Profil & Otomasi Google Drive**:
+  - Mengunggah foto profil baru langsung menyimpan file ke Google Drive perusahaan.
+  - Sistem secara cerdas menghapus foto lama dari Google Drive saat foto baru berhasil tersimpan (*Drive storage optimization*).
+* **Persistensi Sesi Autentikasi**: Status login tersimpan aman di `localStorage` (`daihatsu_auth_session_v8`), sehingga saat halaman di-reload aplikasi tidak kembali ke akun lama.
 
 ---
 
-### 3.8 Modal Kerja 2: Penampil Foto Resolusi Penuh (`#imagePreviewModal`)
-* Komponen *lightbox popup* yang menampilkan foto fisik mobil atau dokumen surat jalan dalam resolusi tajam.
-* Dilengkapi judul foto, nomor rangka kendaraan terkait, tombol perbesar/perkecil (*zoom*), tombol unduh berkas ke memori HP, dan tombol tutup.
-
----
-
-### 3.9 Modal Kerja 3: Pusat Notifikasi & Sinkronisasi Database (`#emailNotificationModal`)
-Dapat diakses kapan saja dari ikon lonceng pada bilah atas:
-1. **Indikator Live Sync Database**: Titik lampu hijau berkedip (*pulsing dot*) yang mengindikasikan koneksi data antara web app dan Google Sheets berjalan mulus.
-2. **Pengecekan Mode Koneksi**: Menampilkan label mode yang sedang aktif (*PROXY SECURE* vs *DIRECT APPS SCRIPT*).
-3. **Tombol Uji Koneksi Cepat (*Ping Server*)**: Menguji respon server backend secara instan dalam 1 detik.
-4. **Pengaturan Direct Connection Box**: Panel lipat untuk memasukkan URL Apps Script kustom bagi keperluan teknis.
-5. **Daftar Target Email Penerima**: Menampilkan alamat email manajemen yang akan menerima laporan.
-6. **Tombol Kirim Laporan Manual (*On-Demand Dispatch*)**:
-   - Memungkinkan supervisor memicu pengiriman rekapitulasi laporan PDF ke email saat itu juga tanpa perlu menunggu jadwal otomatis jam 08:00 WIB.
-7. **Filter Riwayat Notifikasi Email**:
-   - Empat tab filter: **Semua**, **Unit Masuk**, **Unit Keluar**, dan **Laporan Harian**.
-8. **Daftar Log Riwayat Email Real-Time**:
-   - Menampilkan catatan riwayat setiap email yang berhasil dikirimkan ke manajemen beserta stempel waktu dan status pengiriman.
-
----
-
-### 3.10 Modal Kerja 4: Pengaturan Jadwal Laporan Otomatis (`#editScheduleModal`)
-* **Antarmuka Jam Analog Interaktif ("Jam Bulet" Clock Face)**:
-  - Antarmuka visual jam dinding analog interaktif yang memudahkan supervisor memilih jam dan menit pengiriman cukup dengan menyentuh/mengeklik jarum jam.
-  - Format 24 jam dengan waktu default standar korporat: **08:00 WIB**.
-* **Pilihan Frekuensi Pengiriman**:
-  - Tiga opsi frekuensi: **Harian (Setiap Hari)**, **Hari Kerja Saja (Senin–Jumat)**, atau **Mingguan (Setiap Hari Senin)**.
-* **Tombol Simpan Jadwal**: Menyimpan konfigurasi jadwal ke server backend.
-
----
-
-### 3.11 Modal Kerja 5: Manajemen Multi-Email Penerima Laporan (`#editTargetEmailModal`)
-* **Sistem Multi-Email Chips**:
-  - Memungkinkan penambahan lebih dari 5 alamat email penerima sekaligus (misalnya: Kepala Cabang, Supervisor Pool, Admin Logistik, dan Divisi Audit).
-  - Setiap email ditampilkan dalam bentuk kapsul (*chips*) interaktif berikon surat.
-  - Dilengkapi tombol silang (✕) pada setiap kapsul untuk menghapus email dengan cepat.
-* **Validasi Format Email Otomatis**: Memastikan alamat email yang diketik memiliki format yang valid sebelum ditambahkan.
-
----
-
-### 3.12 Modal Kerja 6: Dialog Konfirmasi Keluar Akun (`#logoutModal`)
-* Dialog konfirmasi pop-up yang elegan dan aman saat tombol keluar ditekan.
-* Menyajikan dua opsi tegas: **"Batal"** (kembali ke aplikasi) atau **"Ya, Keluar"** (mengakhiri sesi kerja petugas dan membersihkan status sesi).
-
----
-
-### 3.13 Komponen Pesan Melayang (*Floating Toast Notifications*)
-* Komponen notifikasi pop-up yang muncul di sudut atas layar untuk memberi tahu hasil setiap tindakan pengguna secara non-intrusif:
-  - **Toast Sukses (Hijau Emerald)**: Saat data mutasi berhasil disimpan, foto terunggah, atau email laporan berhasil dikirim.
-  - **Toast Peringatan / Duplikat (Merah Ruby)**: Saat nomor sasis sudah pernah ada di database, formulir belum lengkap, atau jaringan bermasalah.
-  - **Toast Informasi (Biru Safir)**: Saat filter diterapkan, pencarian diperbarui, atau sinkronisasi data sedang berjalan.
-  - **Toast Loading (Animasi Spinner)**: Saat sistem sedang mengompresi gambar atau menunggu respon dari Google Cloud.
-
----
-
-## 4. Arsitektur Tiga Lapis (Frontend, Backend, & Database)
+## 5. Arsitektur Tiga Lapis (Frontend, Backend, & Database)
 
 ```mermaid
 flowchart TD
-    subgraph Frontend["1. LAPISAN TAMPILAN (FRONTEND CLIENT - MOBILE & DESKTOP)"]
+    subgraph Frontend["1. LAPISAN TAMPILAN (FRONTEND CLIENT - MOBILE & DESKTOP PWA)"]
         UI["Antarmuka Modern (Tailwind CSS, Glassmorphism)"]
         Scanner["Dual Scanner Engine (Native BarcodeDetector + Tesseract.js OCR)"]
         Compress["Kompresor Foto Otomatis di Browser (< 400 KB)"]
         Sensor["Proteksi Anti-Duplikat (Lampu Merah/Hijau, Audio 1760Hz, Haptik)"]
-        ClientPDF["Pembuat Laporan PDF Client-Side (jsPDF & AutoTable)"]
+        ClientExport["Pembuat Laporan PDF & Excel Client-Side (jsPDF & ExcelJS)"]
+        AuthPersist["Manajer Sesi Autentikasi (Local Storage v8)"]
     end
 
     subgraph Backend["2. LAPISAN PENGOLAH & PENGAMAN (BACKEND SERVERLESS)"]
         Proxy["Gerbang Aman Vercel (/api/proxy Reverse Proxy)"]
         Secret["Proteksi Kredensial (Token Rahasia X-API-SECRET)"]
-        GAS["Mesin Google Apps Script (Web App Transaction Engine)"]
+        GAS["Mesin Google Apps Script (Backend v2.19)"]
         Cron["Robot Penjadwal Otomatis (Time-driven Trigger Jam 08:00 WIB)"]
+        Partition["Mesin Partisi Laporan Eksklusif per Cabang (D660 - D664)"]
     end
 
-    subgraph Database["3. LAPISAN BASIS DATA & PENYIMPANAN (DATABASE & STORAGE)"]
-        Sheet1[("Sheet: Mutasi_Logistik\n(Audit Trail Seluruh Transaksi)")]
-        Sheet2[("Sheet: Inventory_Stok\n(Status In-Yard / In-Transit per Unit)")]
-        Sheet3[("Sheet: Master_PIC\n(Daftar Akun Petugas Berwenang)")]
-        Drive[("Google Drive Khusus\n(Arsip Foto Kendaraan & Dokumen DO)")]
+    subgraph Database["3. LAPISAN BASIS DATA & PENYIMPANAN (GOOGLE SPREADSHEET & DRIVE)"]
+        Sheet1[("Sheet: HistoryMutasi\n(14 Kolom Rekam Jejak Audit)")]
+        Sheet2[("Sheet: Inventory\n(Stok 13 Model Mobil)")]
+        Sheet3[("Sheet: UserPIC\n(Akun Universal DSO & Cabang)")]
+        Sheet4[("Sheet: SystemConfig\n(Konfigurasi Jadwal & Email)")]
+        Sheet5[("Sheet: ReportLogs\n(Log Pengiriman Laporan Harian)")]
+        Drive[("Google Drive Khusus\n(Arsip Foto Unit, Dokumen, Avatar)")]
     end
 
-    subgraph Output["4. DISTRIBUSI LAPORAN OTOMATIS"]
+    subgraph Output["4. DISTRIBUSI LAPORAN MULTI-CABANG"]
         Gmail["Layanan Email Gmail API Korporat"]
-        PDF["Lampiran PDF Rekap Harian Resmi"]
-        Audience["Email Jajaran Manajemen & Supervisor"]
+        MasterRep["Email Admin DSO Lampung (Master 5 Cabang)"]
+        BranchRep["Email Cabang D660 - D664 (Eksklusif Cabang)"]
     end
 
     UI --> Scanner
@@ -325,98 +224,165 @@ flowchart TD
     GAS --> Sheet1
     GAS --> Sheet2
     GAS --> Sheet3
+    GAS --> Sheet4
+    GAS --> Sheet5
     GAS --> Drive
-    Cron -->|Eksekusi Otomatis 08:00 WIB| GAS
+    Cron -->|Eksekusi Otomatis 08:00 WIB| Partition
+    Partition --> GAS
     GAS --> Gmail
-    Gmail --> PDF
-    PDF --> Audience
-    UI --> ClientPDF
+    Gmail --> MasterRep
+    Gmail --> BranchRep
+    UI --> ClientExport
+    UI --> AuthPersist
 ```
 
 ---
 
-## 5. Spesifikasi Lengkap Basis Data (Google Sheets & Drive)
+## 6. Spesifikasi Lengkap Basis Data (Google Sheets & Drive)
 
-Seluruh data transaksi dan inventaris disimpan dalam format tabel Google Spreadsheet yang sangat transparan dan dapat dibuka langsung layaknya dokumen Microsoft Excel oleh pihak manajemen:
+Struktur tabel di Google Spreadsheet dirancang rapi, mudah dibaca langsung oleh manajemen, dan sinkron dengan sistem:
 
-### 5.1 Lembar Kerja 1: `Mutasi_Logistik` (Buku Besar Rekam Jejak)
+### 6.1 Lembar Kerja 1: `HistoryMutasi` (Buku Besar Rekam Jejak — 14 Kolom Resmi)
 | Kolom | Nama Kolom Spreadsheet | Tipe Data | Contoh Isi Data | Penjelasan Fungsi Data |
 | :---: | :--- | :--- | :--- | :--- |
-| **A** | `timestamp` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu persis saat mutasi dicatat di pool |
-| **B** | `mutation_id` | Teks Unik | `MUT-20261021-0012` | Nomor urut kode transaksi mutasi |
-| **C** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka resmi kendaraan (Kunci Utama) |
-| **D** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
-| **E** | `car_model` | Teks Pilihan | `Gran Max Pick Up` | Varian model dari 13 katalog resmi Daihatsu |
-| **F** | `mutation_type` | Teks Pilihan | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan kendaraan di area pool |
-| **G** | `pic_name` | Teks | `Syafira Fira` | Nama petugas resmi yang melakukan serah terima |
-| **H** | `no_ba` / `cabang` | Teks (Dropdown) | `D660 - Ahmad Yani` | Kode BA & Cabang (D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur) |
-| **I** | `do_number` | Teks Angka | `2260411667` | Nomor Surat Jalan / Delivery Order resmi |
-| **J** | `unit_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto fisik mobil |
-| **K** | `doc_photo_url` | Tautan URL | `https://drive.google.com/uc?id=...` | Tautan langsung untuk membuka foto surat jalan DO |
-| **L** | `keterangan` | Teks Catatan | `Kondisi mulus, spion lengkap, baret halus bemper` | Catatan kondisi fisik kendaraan saat serah terima |
+| **A** | `ID Mutasi` | Teks Unik | `MUT-20261027-083015` | Nomor urut kode transaksi mutasi |
+| **B** | `Timestamp ISO` | ISO String | `2026-10-27T01:30:15.000Z` | Stempel waktu standar sistem |
+| **C** | `Tanggal` | Tanggal | `27/10/2026` | Tanggal mutasi di lapangan |
+| **D** | `Jam` | Waktu | `08:30 WIB` | Jam serah terima unit di pool |
+| **E** | `Model` | Teks Pilihan | `Gran Max Pick Up` | Varian model dari 13 katalog Daihatsu |
+| **F** | `No. Rangka (VIN)` | Teks (17 Digit) | `MHKP3FA1JTK137533` | Nomor rangka resmi (Kunci Utama) |
+| **G** | `No. Mesin` | Teks | `2NR4F82393` | Nomor mesin kendaraan |
+| **H** | `Jenis Mutasi` | Teks | `Unit Masuk` / `Unit Keluar` | Jenis pergerakan kendaraan |
+| **I** | `Petugas PIC` | Teks | `SECURITY - D660` | Identitas petugas security bertugas |
+| **J** | `Cabang / Kode BA` | Teks | `D660 - Ahmad Yani` | Cabang resmi penugasan (D660–D664) |
+| **K** | `Catatan` | Teks Catatan | `Kondisi mulus, spion lengkap` | Catatan kondisi fisik unit |
+| **L** | `SPP DC / BSTKB / OKK` | Teks | `SPP DC` | Jenis dokumen serah terima |
+| **M** | `Foto Unit` | Tautan URL Drive | `https://drive.google.com/file/d/...` | Foto fisik unit kendaraan |
+| **N** | `Foto Dokumen` | Tautan URL Drive | `https://drive.google.com/file/d/...` | Foto fisik dokumen surat jalan |
 
-### 5.2 Lembar Kerja 2: `Inventory_Stok` (Status Posisi Terkini Unit)
-| Kolom | Nama Kolom Spreadsheet | Tipe Data | Contoh Isi Data | Penjelasan Fungsi Data |
+> [!NOTE]
+> Kolom **NPK** telah dihapus secara resmi dari `HistoryMutasi`. Backend dilengkapi deteksi dinamis header: jika kolom NPK masih ada di spreadsheet lama, backend mengisi `-`; jika kolom NPK sudah dihapus, backend langsung mengisi 14 kolom secara presisi tanpa pergeseran kolom.
+
+### 6.2 Lembar Kerja 2: `Inventory` (Status Stok per Model)
+| Kolom | Nama Kolom | Tipe Data | Contoh Isi Data | Penjelasan |
 | :---: | :--- | :--- | :--- | :--- |
-| **A** | `vin_number` | Teks (17 Karakter) | `MHKP3FA1JTK137533` | Nomor Rangka kendaraan |
-| **B** | `engine_number` | Teks | `2NR4F82393` | Nomor Mesin kendaraan |
-| **C** | `no_ba` / `cabang` | Teks (Dropdown) | `D660 - Ahmad Yani` | Kode BA & Cabang Resmi Astra Daihatsu Lampung |
-| **D** | `car_model` | Teks | `Gran Max Pick Up` | Model kendaraan |
-| **E** | `current_status` | Status | `IN_YARD` / `IN_TRANSIT` | **IN_YARD** (Ada di pool) atau **IN_TRANSIT** (Keluar/Jalan) |
-| **F** | `last_mutation_type` | Teks | `Unit Masuk` | Jenis mutasi terakhir yang dialami unit |
-| **G** | `last_updated` | Tanggal & Jam | `2026-10-21 08:30:15` | Waktu pembaruan status terakhir |
-| **H** | `pic_in_charge` | Teks | `Syafira Fira` | Petugas penanggung jawab terakhir |
+| **A** | `ID Model` | Teks | `MOD-001` | Kode model kendaraan |
+| **B** | `Model Kendaraan` | Teks | `Rocky e-Smart Hybrid` | Nama varian resmi |
+| **C** | `Kategori` | Teks | `Smart Hybrid SUV` | Segmen pasar armada |
+| **D** | `Stok In-Yard` | Angka | `14` | Jumlah mobil yang ada di pool |
+| **E** | `Kapasitas Maks` | Angka | `25` | Kapasitas parkir model tersebut |
 
-### 5.3 Lembar Kerja 3: `Master_PIC` (Daftar Identitas Petugas)
+### 6.3 Lembar Kerja 3: `UserPIC` (Akun Pengguna Universal)
 | Kolom | Nama Kolom | Tipe Data | Contoh Isi | Penjelasan |
 | :---: | :--- | :--- | :--- | :--- |
-| **A** | `pic_id` | Teks | `PIC-001` | Kode identitas petugas |
-| **B** | `username` | Teks | `syafira` | Nama akun login petugas |
-| **C** | `full_name` | Teks | `Syafira Fira` | Nama lengkap resmi petugas lapangan |
-| **D** | `email` | Teks | `admin.logistics@daihatsu.co.id` | Email koordinasi resmi |
-| **E** | `role` | Pilihan | `YARD_OFFICER` / `SUPERVISOR` | Tingkat hak akses petugas |
+| **A** | `ID User` | Teks | `USR-001` / `SEC-D660` | Kode identitas sistem |
+| **B** | `Username` | Teks | `DSO LAMPUNG` / `D660` | Username login universal |
+| **C** | `Password` | Teks | `daihatsu2026` | Kredensial autentikasi |
+| **D** | `Nama Lengkap` | Teks | `ADMIN HEAD / BRANCH MANAGER` | Nama tampilan pejabat/regu |
+| **E** | `Cabang` | Teks | `Sentra Lampung` / `D660 - Ahmad Yani` | Wilayah wewenang kerja |
+| **F** | `Jabatan` | Teks | `ADMIN HEAD / BRANCH MANAGER` / `SECURITY` | Peran operasional |
+| **G** | `Target Email` | Teks | `syafirafira08162@gmail.com` | Email koordinasi cabang |
+| **H** | `Foto Profil` | Tautan URL | `https://drive.google.com/...` | URL foto profil aktif di Drive |
+| **I** | `Status` | Teks | `Aktif` | Status keaktifan akun |
+| **J** | `Terakhir Login` | Waktu | `27/10/2026 08:15:20 WIB` | Stempel waktu login terakhir |
 
-### 5.4 Brankas Google Drive (Penyimpanan Foto Bukti Fisik)
-* Disimpan di dalam folder terpusat Google Drive resmi perusahaan.
-* Standar penamaan file otomatis:
-  - Foto Mobil: `UNIT_[NomorRangka]_[Waktu].jpg`
-  - Foto Surat Jalan DO: `DO_[NomorRangka]_[Waktu].jpg`
-* Foto dapat langsung dibuka melalui tautan pada tabel spreadsheet maupun laporan PDF.
+### 6.4 Lembar Kerja 4: `ReportLogs` (Riwayat Pengiriman Laporan Harian)
+| Kolom | Nama Kolom | Tipe Data | Contoh Isi Data | Penjelasan |
+| :---: | :--- | :--- | :--- | :--- |
+| **A** | `ID Laporan` | Teks | `REP-20261027-080005` | Nomor transaksi pengiriman laporan |
+| **B** | `Timestamp ISO` | ISO String | `2026-10-27T01:00:05.000Z` | Waktu eksekusi laporan |
+| **C** | `Waktu Kirim` | Teks | `27/10/2026 08:00 WIB` | Jam pengiriman laporan resmi |
+| **D** | `Periode Laporan` | Teks | `26/10/2026` | Tanggal mutasi yang direkap |
+| **E** | `Target Email Penerima` | Teks | `syafirafira08162@gmail.com, ...` | Seluruh email yang menerima laporan |
+| **F** | `Total Unit` | Angka | `13` | Total mutasi yang dilaporkan |
+| **G** | `Unit Masuk` | Angka | `12` | Jumlah unit masuk |
+| **H** | `Unit Keluar` | Angka | `1` | Jumlah unit keluar |
+| **I** | `Lampiran Berkas` | Angka | `2` | Jumlah berkas (PDF & Excel) |
+| **J** | `Status` | Teks | `SUCCESS` | Status pengiriman email Gmail API |
+| **K** | `Keterangan` | Teks | `Laporan rekapitulasi mutasi berhasil...` | Catatan eksekusi sistem |
+| **L** | `Cabang Terkait` | Teks | `ALL` / `D660` | Sasaran cabang laporan |
 
 ---
 
-## 6. Katalog 13 Model Resmi Kendaraan Daihatsu
+## 7. Format Dokumen Laporan Resmi (PDF & Excel 100% Identik)
 
-Sistem telah diprogram mengenali dan mengelompokkan 13 varian model resmi kendaraan Daihatsu yang beredar di pasar:
+Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur data yang **100% konsisten**:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  [LOGO DAIHATSU]   PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION               │
+│  (Base64 Resmi)    Sentra Distribusi & Manajemen StockYard Area Lampung                │
+│                    KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI • Astra Daihatsu DSO      │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  ══════════════════════ [Garis Aksen: Merah 54% & Navy 46%] ═════════════════════════  │
+│                                                                                        │
+│               BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)            │
+│                                                                                        │
+│  [🏢 CABANG: D660 - AHMAD YANI]   [📅 PERIODE: 26/10/2026]   [🕒 CETAK: 08:00 WIB]    │
+├────┬──────────┬───────┬─────────┬──────────┬────────┬──────────┬────────┬───────┬──────┤
+│ No │ID Mutasi │ Waktu │ Tanggal │  Model   │ Cabang │No Rangka │No Mesin│ Jenis │Petugas│
+│    │          │       │         │Kendaraan │ Resmi  │  (VIN)   │        │Mutasi │Secur. │
+├────┼──────────┼───────┼─────────┼──────────┼────────┼──────────┼────────┼───────┼──────┤
+│ 1  │MUT-001   │08:15  │26/10/26 │Terios SE │D660    │MHKP3...  │2NR...  │ MASUK │Sec D0│
+├────┴──────────┴───────┴─────────┴──────────┴────────┴──────────┴────────┴───────┴──────┤
+│ TOTAL REKAPITULASI MUTASI KENDARAAN: 13 Unit  |  MASUK: 12 Unit  |  KELUAR: 1 Unit     │
+├────────────────────────────────────────────────────┬───────────────────────────────────┤
+│           Petugas Pemeriksa & Pemindai:            │      Mengetahui & Menyetujui:     │
+│               SECURITY POOL / YARD                 │ ADH / BM (ADMIN HEAD / BRANCH MGR)│
+│                                                    │                                   │
+│           ( Petugas Security On-Duty )             │   ( Admin Head / Branch Manager ) │
+│        Reg. Security Guard • Astra Daihatsu        │     Astra Daihatsu DSO Lampung    │
+└────────────────────────────────────────────────────┴───────────────────────────────────┘
+```
+
+### 13 Kolom Seragam Tabel PDF & Excel:
+1. `No` — Nomor Urut
+2. `ID Mutasi` — Nomor Registrasi Transaksi
+3. `Waktu` — Jam Mutasi di Lapangan (WIB)
+4. `Tanggal` — Tanggal Transaksi Mutasi
+5. `Model Kendaraan` — Varian Resmi dari 13 Model Daihatsu
+6. `Cabang Resmi` — Kode & Nama Cabang (D660 s/d D664)
+7. `No. Rangka (VIN)` — 17 Digit Nomor Sasis (Font Monospace)
+8. `No. Mesin` — Nomor Mesin Kendaraan
+9. `Jenis Mutasi` — Lencana Hijau (`Unit Masuk`) atau Biru (`Unit Keluar`)
+10. `Petugas Security` — Identitas Petugas On-Duty Cabang
+11. `Catatan Audit` — Catatan Kondisi Fisik Lapangan
+12. `Foto Fisik Unit` — Visual Gambar / Tautan Langsung Google Drive
+13. `SPP DC / BSTKB / OKK` — Visual Dokumen / Tautan Langsung Google Drive
+
+---
+
+## 8. Katalog 13 Model Resmi Kendaraan Daihatsu
 
 | No | Nama Model Kendaraan | Kategori Segmen | Karakteristik Penggunaan Lapangan |
 | :-: | :--- | :--- | :--- |
-| **1** | **All New Ayla** | Hatchback / LCGC | Penempatan di area parkir city car / compact yard |
-| **2** | **New Sigra** | MPV 7-Seater / LCGC | Unit volume tinggi, fast-moving distribusi keluarga |
+| **1** | **All New Ayla** | Hatchback / LCGC | Area parkir *city car* / *compact yard* |
+| **2** | **New Sigra** | MPV 7-Seater / LCGC | Unit volume tinggi, distribusi keluarga |
 | **3** | **All New Xenia** | MPV Keluarga | Mobil keluarga multifungsi, perputaran unit tinggi |
 | **4** | **New Terios** | Compact SUV | Unit petualang / medium ground clearance |
 | **5** | **Terios Special Edition (SE)**| Compact SUV Khusus | Unit edisi terbatas dengan aksesoris khusus |
 | **6** | **New Rocky** | Compact Crossover | Unit SUV turbo compact modern |
-| **7** | **Rocky ADS** | Crossover Sporty | Edisi sporty dengan paket bodykit Astra Daihatsu Styling |
-| **8** | **Rocky Hybrid** | Crossover Elektrik/Hybrid | Penanganan khusus unit berteknologi baterai/hybrid |
+| **7** | **Rocky ADS** | Crossover Sporty | Edisi sporty paket bodi Astra Daihatsu Styling |
+| **8** | **Rocky e-Smart Hybrid** | Crossover Elektrik/Hybrid | Penanganan khusus unit berteknologi baterai/hybrid |
 | **9** | **New Sirion** | City Car Premium | Hatchback premium perkotaan |
 | **10**| **Gran Max Pick Up** | Niaga Komersial Ringan | Armada angkutan barang terbuka, frekuensi mutasi tinggi |
-| **11**| **Gran Max Blind Van** | Niaga Kargo Tertutup | Armada tertutup untuk ekspedisi dan kargo logistik |
+| **11**| **Gran Max Blind Van** | Niaga Kargo Tertutup | Armada kargo tertutup untuk ekspedisi dan logistik |
 | **12**| **Gran Max Minibus** | Niaga Penumpang / Travel | Armada angkutan penumpang umum / travel |
 | **13**| **Daihatsu Luxio** | Minibus Eksekutif | Kendaraan komersial premium berkapasitas lega |
 
 ---
 
-## 7. Alur Kerja Operasional Petugas Lapangan (SOP Ringkas)
+## 9. Alur Kerja Operasional Petugas Lapangan (SOP Ringkas)
 
 ```mermaid
 flowchart TD
     Start([Petugas Tiba di Depan Mobil]) --> OpenApp[Buka Aplikasi di Smartphone]
-    OpenApp --> ClickScan[Tekan Tombol FAB 'Scan Barcode Unit']
+    OpenApp --> LoginUniversal[Login Akun Universal Cabang: D660 - D664]
+    LoginUniversal --> ClickScan[Tekan Tombol FAB 'Scan Barcode Unit']
     ClickScan --> ChooseMode{Pilih Metode Scan}
     
     ChooseMode -->|Barcode Terbaca Jelas| ModeBarcode[Arahkan Kamera ke Barcode Kaca Depan]
-    ChooseMode -->|Barcode Silau / Rusak| ModeOCR[Tekan 'Foto & Baca Teks Stiker' / Unggah Galeri]
+    ChooseMode -->|Barcode Silau / Rusak| ModeOCR[Tekan 'Foto & Baca Teks Stiker' / Galeri]
     
     ModeBarcode --> CheckDupe{Pengecekan Otomatis Anti-Duplikat}
     ModeOCR --> CheckDupe
@@ -427,64 +393,39 @@ flowchart TD
     CheckDupe -->|Unit Baru & Valid| Verified[Layar Hijau, Bip 1760Hz: Data Valid & Terverifikasi]
     Verified --> Step2[Klik 'Lanjut ke Formulir Mutasi']
     
-    Step2 --> FillForm[Pilih Jenis: Unit Masuk / Keluar & Model Kendaraan]
-    FillForm --> SnapPhotos[Ambil Foto Fisik Mobil & Foto Surat Jalan DO]
+    Step2 --> FillForm[Pilih Jenis: Unit Masuk/Keluar, Model, Cabang, & Dokumen]
+    FillForm --> SnapPhotos[Ambil Foto Fisik Mobil & Dokumen SPP DC/BSTKB/OKK]
     SnapPhotos --> Submit[Tekan 'Simpan & Verifikasi Mutasi']
     
     Submit --> CompressImg[Kompresi Otomatis di HP < 400 KB]
-    CompressImg --> CloudSync[Data Tersimpan di Google Spreadsheet & Foto di Drive]
-    CloudSync --> AutoReport[Otomatis Masuk Rekap Harian Pukul 08:00 WIB via PDF & Excel Lengkap TTD Security & HDA/DM]
-    AutoReport --> Done([Selesai - Dashboard & Log Terupdate])
+    CompressImg --> CloudSync[Data Tersimpan di HistoryMutasi 14 Kolom & Foto di Drive]
+    CloudSync --> AutoReport[Otomatis Masuk Rekap Harian 08:00 WIB via PDF & Excel Serta Tab ReportLogs]
+    AutoReport --> Done([Selesai - Dashboard & Riwayat Terupdate])
 ```
 
 ---
 
-## 8. Keamanan Sistem, Privasi Data, & Kepatuhan Korporat
+## 10. Keamanan Sistem, Privasi Data, & Kepatuhan Korporat
 
-1. **Pencegahan Kebocoran Kode & Data (Zero Public Secrets)**:
-   - Tidak ada berkas kode Google Apps Script (`.gs`) yang disimpan di dalam repositori publik.
-   - Kredensial URL database, folder ID Drive, dan secret token terlindungi di balik Reverse Proxy Vercel (`/api/proxy`).
+1. **Pencegahan Kebocoran Kredensial (Zero Public Secrets)**:
+   - Tidak ada berkas Google Apps Script (`.gs`) yang terbuka di repositori publik.
+   - Variabel lingkungan rahasia (`APPSCRIPT_URL`, `API_SECRET_TOKEN`) dilindungi di balik reverse proxy Vercel (`/api/proxy`).
 2. **Koneksi Terenkripsi Penuh (SSL/TLS 256-Bit)**:
-   - Seluruh komunikasi dari smartphone petugas ke server cloud menggunakan protokol HTTPS yang aman dari penyadapan data.
-3. **Pembagian Hak Akses Berjenjang (Role-Based Access Control)**:
-   - Petugas lapangan hanya memiliki hak memasukkan dan memverifikasi unit mutasi.
-   - Pihak manajemen, kepala pool, dan supervisor memiliki hak administratif penuh untuk memeriksa spreadsheet, folder Google Drive, serta mengatur jadwal pengiriman laporan.
-
----
-
-## 9. Indikator Kinerja Utama (Key Performance Indicators)
-
-| Indikator Kinerja (KPI) | Target Standar | Dampak Nyata bagi Bisnis |
-| :--- | :---: | :--- |
-| **Tingkat Kesalahan Data Ganda (*Duplicate Rate*)** | **0% (Nol Kesalahan)** | Menghilangkan selisih stok antara catatan sistem dan stok fisik mobil di pool. |
-| **Kecepatan Input per Mobil** | **< 20 Detik** | Efisiensi tinggi: petugas dapat memproses puluhan mobil yang baru tiba dalam hitungan menit. |
-| **Akurasi Pemindaian Nomor Sasis** | **> 98%** | Mencegah kesalahan manusia (*human error*) dalam membaca nomor rangka 17 digit. |
-| **Kelengkapan Bukti Foto Fisik** | **100% Wajib** | Setiap transaksi memiliki bukti foto fisik mobil dan foto surat jalan DO yang valid. |
-| **Ketepatan Pengiriman Laporan Harian** | **Tepat Jam 08:00 WIB** | Manajemen selalu menerima laporan rekapitulasi setiap pagi secara konsisten. |
-
----
-
-## 10. Pertanyaan yang Sering Diajukan (FAQ) untuk Tim Lapangan
-
-> [!NOTE]
-> **T: Bagaimana jika stiker kaca mobil terkena pantulan sinar matahari yang silau atau sobek?**  
-> **J:** Petugas cukup menekan tombol **"🔤 Baca Teks Stiker (OCR)"**. Kamera akan mengambil gambar beresolusi tinggi, meningkatkan kontras secara otomatis, dan membaca deretan teks nomor rangka di bawah barcode. Petugas juga bisa memotret stiker dari aplikasi kamera bawaan lalu mengunggahnya dari galeri ponsel.
-
-> [!TIP]
-> **T: Apakah supervisor bisa mengirimkan laporan rekap PDF ke email manajemen sewaktu-waktu tanpa menunggu jam 08:00 WIB?**  
-> **J:** Sangat bisa. Cukup klik ikon lonceng notifikasi di bagian atas, lalu tekan tombol **"Kirim Laporan"**. Sistem akan langsung merekap data saat itu juga dan mengirimkannya ke email tujuan dalam hitungan detik.
-
-> [!IMPORTANT]
-> **T: Apa yang terjadi jika sinyal internet di area parkir pool tiba-tiba hilang saat memotret unit?**  
-> **J:** Aplikasi dilengkapi memori cadangan lokal (*Local Storage*). Jika koneksi gagal, sistem akan menampilkan notifikasi peringatan agar petugas dapat menekan kembali tombol kirim saat sinyal kembali normal tanpa harus memotret atau memindai ulang dari awal.
+   - Seluruh komunikasi dari perangkat lapangan ke cloud dijamin oleh protokol HTTPS.
+3. **Pemisahan Hak Akses & Isolasi Data Cabang**:
+   - Cabang D660 hingga D664 hanya dapat mengakses dan menerima data cabangnya sendiri.
+   - Admin DSO Lampung memegang hak pengawasan menyeluruh terhadap 5 cabang.
+4. **Manajemen Penyimpanan Google Drive Otomatis**:
+   - Mengunggah foto profil baru memicu penghapusan foto profil lama secara otomatis untuk mencegah penumpukan sampah digital dan menjaga kuota penyimpanan cloud perusahaan.
 
 ---
 
 ## 11. Pengesahan & Kontak Dukungan Layanan
 
-Dokumen spesifikasi produk dan cetak biru sistem ini merupakan acuan operasional dan teknis resmi bagi seluruh pemangku kepentingan Astra Daihatsu DSO Lampung:
+Dokumen spesifikasi produk dan cetak biru sistem ini merupakan panduan operasional dan teknis resmi bagi seluruh pemangku kepentingan Astra Daihatsu DSO Lampung:
 
 * **Penanggung Jawab Sistem:** Tim Sistem Informasi & Manajemen StockYard Astra Daihatsu DSO Lampung  
-* **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
 * **Pusat Operasional:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
-* **Status Dokumen:** Disetujui untuk Operasional Penuh (Versi 2.5 - Terverifikasi)  
+* **Cabang Terdaftar:** D660 (Ahmad Yani), D661 (Soekarno Hatta), D662 (Bandar Jaya), D663 (Lampung Utara), D664 (Lampung Timur)  
+* **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
+* **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.8 Enterprise Edition — Terverifikasi*)  
