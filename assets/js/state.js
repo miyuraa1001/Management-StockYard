@@ -128,6 +128,7 @@ const AppState = {
 
   // Riwayat Pengiriman Notifikasi Laporan Email (Tersinkronisasi Nyata)
   emailNotificationLogs: [],
+  reportLogs: [],
 
   // KPI Metrics (Mulai dari 0 - Dihitung Realtime dari Riwayat & Stok)
   kpi: {
@@ -452,6 +453,16 @@ const AppState = {
       if (cachedBranchEmails) {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
       }
+
+      const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');
+      if (cachedReportLogs) {
+        try {
+          const parsedReports = JSON.parse(cachedReportLogs);
+          if (Array.isArray(parsedReports)) {
+            this.reportLogs = parsedReports;
+          }
+        } catch (e) {}
+      }
     } catch (e) {
       console.warn('[AppState] Gagal membaca cache local storage:', e);
     }
@@ -528,6 +539,9 @@ const AppState = {
       localStorage.setItem(CONFIG.CACHE_KEYS.PROFILE, JSON.stringify(this.userProfile));
       localStorage.setItem(CONFIG.CACHE_KEYS.AUTOMATION, JSON.stringify(this.automationConfig));
       localStorage.setItem(CONFIG.CACHE_KEYS.BRANCH_EMAILS, JSON.stringify(this.branchEmails));
+      if (Array.isArray(this.reportLogs)) {
+        localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(this.reportLogs));
+      }
     } catch (e) {
       console.warn('[AppState] Gagal menyimpan ke cache local storage:', e);
     }

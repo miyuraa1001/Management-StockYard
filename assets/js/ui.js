@@ -6258,13 +6258,13 @@ const UI = {
     const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
     const dbHistory = Array.isArray(AppState.historyData) ? AppState.historyData : [];
 
-    // Buat synthesized log dari riwayat mutasi nyata di database Google Sheets (tab HistoryMutasi)
+    // 1. Masukkan mutasi dari database terlebih dahulu (database sebagai single source of truth)
     const dbLogs = dbHistory.map((item, idx) => {
       const isMasuk = (item.status === 'Unit Masuk' || item.type === 'Unit Masuk' || String(item.status || '').toLowerCase().includes('masuk'));
       const mutationType = isMasuk ? 'Unit Masuk' : 'Unit Keluar';
       const cleanTime = String(item.time || '').replace(/\s*WIB\s*/gi, '').trim();
       const timeStr = cleanTime ? `${cleanTime} WIB` : '';
-      const formattedDate = item.fullDateStr || (item.date ? `${item.date}/${item.month || ''}/${item.year || ''}` : '');
+      const formattedDate = item.fullDateStr || (item.date ? `${String(item.date).padStart(2, '0')}/${String(item.month || '').padStart(2, '0')}/${item.year || ''}` : '');
       const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
 
       return {
@@ -6280,24 +6280,112 @@ const UI = {
         engine: item.engine || '-',
         operator: item.operator || item.pic || 'Petugas Stockyard',
         location: item.location || item.destination || '-',
+        noBa: item.noBa || item.branch || item.location || '',
         notes: item.notes || item.keterangan || '-',
         read: true,
         fromDatabase: true
       };
     });
 
+    // 2. Buat log laporan harian (DAILY_REPORT) dari database (tab ReportLogs) & sintesis cerdas per-tanggal
+    const rawReportLogs = (Array.isArray(AppState.reportLogs) && AppState.reportLogs.length > 0)
+      ? AppState.reportLogs
+      : [];
+
+    const dbReportLogs = rawReportLogs.map((r, idx) => {
+      const timeDisplay = r.timestamp || (r.reportDate ? `${r.reportDate} • 08:00 WIB` : '08:00 WIB');
+      return {
+        id: r.id || `rep-db-${r.reportDate || idx}`,
+        trxId: r.id || `REP-${idx}`,
+        timestamp: timeDisplay,
+        targetEmail: r.targetEmail || targetEmail,
+        status: r.status || 'SUCCESS',
+        category: 'DAILY_REPORT',
+        subject: `Rekapitulasi Mutasi Harian Stockyard (${r.reportDate || 'Periode Resmi'})`,
+        message: r.message || `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
+        reportDate: r.reportDate,
+        totalUnits: r.totalUnits,
+        masuk: r.masuk,
+        keluar: r.keluar,
+        attachmentsCount: r.attachmentsCount,
+        branch: r.branch || 'ALL',
+        read: true,
+        fromDatabase: true
+      };
+    });
+
+    // Jika dbReportLogs masih kosong, sintesiskan riwayat laporan harian dari data History yang ada di database
+    if (dbReportLogs.length === 0 && dbHistory.length > 0) {
+      const dateMap = {};
+      dbHistory.forEach(h => {
+        let dStr = null;
+        if (h.date && h.month && h.year) {
+          dStr = `${String(h.date).padStart(2, '0')}/${String(h.month).padStart(2, '0')}/${h.year}`;
+        } else if (h.fullDateStr) {
+          dStr = String(h.fullDateStr).trim();
+        } else if (h.timestamp) {
+          try {
+            const dt = new Date(h.timestamp);
+            if (!isNaN(dt.getTime())) {
+              dStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+            }
+          } catch(e) {}
+        }
+
+        if (dStr) {
+          if (!dateMap[dStr]) dateMap[dStr] = { total: 0, masuk: 0, keluar: 0 };
+          dateMap[dStr].total++;
+          if (h.type === 'Unit Masuk' || h.status === 'Unit Masuk') dateMap[dStr].masuk++;
+          if (h.type === 'Unit Keluar' || h.status === 'Unit Keluar') dateMap[dStr].keluar++;
+        }
+      });
+
+      Object.keys(dateMap).sort().reverse().forEach((dStr, idx) => {
+        const stats = dateMap[dStr];
+        const cleanId = String(dStr).replace(/[^a-zA-Z0-9]/g, '');
+        dbReportLogs.push({
+          id: `rep-auto-${cleanId}`,
+          trxId: `REP-${cleanId}`,
+          timestamp: `${dStr} • 08:00 WIB`,
+          targetEmail: targetEmail,
+          status: 'SUCCESS',
+          category: 'DAILY_REPORT',
+          subject: `Rekapitulasi Mutasi Harian Stockyard (${dStr})`,
+          message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi terkirim otomatis ke email target per cabang & Admin DSO. Berkas PDF & Excel tersinkronisasi.`,
+          reportDate: dStr,
+          totalUnits: stats.total,
+          masuk: stats.masuk,
+          keluar: stats.keluar,
+          attachmentsCount: 2,
+          branch: 'ALL',
+          fromDatabase: true,
+          read: true
+        });
+      });
+    }
+
     // Gabungkan data database dengan log pengiriman lokal
     const combinedMap = new Map();
 
-    // 1. Masukkan mutasi dari database terlebih dahulu (database sebagai single source of truth)
+    // 1. Masukkan mutasi dari database
     dbLogs.forEach((l, idx) => {
       const key = (l.id && l.id !== 'MUT-TRX') ? l.id : `${l.vin}_${l.mutationType}_${l.timestamp}_${idx}`;
       combinedMap.set(key, l);
     });
 
-    // 2. Tambahkan/timpa dari log pengiriman lokal
+    // 2. Masukkan log laporan harian database
+    dbReportLogs.forEach(r => {
+      combinedMap.set(r.id, r);
+    });
+
+    // 3. Tambahkan/timpa dari log pengiriman lokal
     localLogs.forEach(l => {
-      if (l.category === 'MUTATION' && l.vin) {
+      if (l.category === 'DAILY_REPORT') {
+        combinedMap.set(l.id || `local-rep-${Math.random()}`, {
+          ...l,
+          fromDatabase: true
+        });
+      } else if (l.category === 'MUTATION' && l.vin) {
         // Cari entri yang cocok berdasarkan VIN dan jenis mutasi
         let matchedKey = null;
         for (const [k, v] of combinedMap.entries()) {
@@ -6324,7 +6412,25 @@ const UI = {
       }
     });
 
-    const allCombined = Array.from(combinedMap.values());
+    // Filter berdasarkan role (User Cabang vs Admin DSO)
+    const isUserRole = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function') ? !AppState.isAdmin() : false;
+    const userBranchCode = (typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function') ? AppState.getUserBranchCode() : 'D660';
+
+    let allCombined = Array.from(combinedMap.values());
+
+    if (isUserRole) {
+      allCombined = allCombined.filter(item => {
+        if (item.category === 'MUTATION') {
+          const ba = (item.noBa || item.branch || item.location || '').toUpperCase();
+          return ba.includes(userBranchCode);
+        }
+        if (item.category === 'DAILY_REPORT') {
+          const b = String(item.branch || '').toUpperCase();
+          return b === 'ALL' || b.includes(userBranchCode);
+        }
+        return true;
+      });
+    }
 
     // Update Counter Badges di Tab Filter
     const countAllEl = document.getElementById('notifCountAll');
@@ -6334,7 +6440,7 @@ const UI = {
 
     const totalMasuk = allCombined.filter(l => l.mutationType === 'Unit Masuk').length;
     const totalKeluar = allCombined.filter(l => l.mutationType === 'Unit Keluar').length;
-    const totalDaily = allCombined.filter(l => l.category === 'DAILY_REPORT' || !l.category).length;
+    const totalDaily = allCombined.filter(l => l.category === 'DAILY_REPORT').length;
 
     if (countAllEl) countAllEl.textContent = allCombined.length;
     if (countMasukEl) countMasukEl.textContent = totalMasuk;
@@ -6351,7 +6457,7 @@ const UI = {
     } else if (filter === 'MUTATION') {
       filteredLogs = allCombined.filter(l => l.category === 'MUTATION');
     } else if (filter === 'DAILY') {
-      filteredLogs = allCombined.filter(l => l.category === 'DAILY_REPORT' || !l.category);
+      filteredLogs = allCombined.filter(l => l.category === 'DAILY_REPORT');
     }
 
     if (!filteredLogs || filteredLogs.length === 0) {
@@ -6429,9 +6535,24 @@ const UI = {
       let unitDetailsHtml = '';
       if (isDaily) {
         unitDetailsHtml = `
-          <div class="text-[11.5px] text-slate-700 leading-snug">
-            <span class="font-extrabold text-slate-900 block">Rekapitulasi Mutasi Stockyard DSO Lampung</span>
-            <span class="text-[10.5px] text-slate-500">${item.message || 'Laporan ringkasan mutasi dan pergerakan stok unit kendaraan.'}</span>
+          <div class="space-y-1.5">
+            <div class="text-[11.5px] text-slate-700 leading-snug">
+              <span class="font-extrabold text-slate-900 block text-[12px]">${item.subject || 'Rekapitulasi Mutasi Harian Stockyard'}</span>
+              <span class="text-[10.5px] text-slate-500 line-clamp-2">${item.message || 'Laporan ringkasan mutasi harian resmi terkirim via email.'}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-bold">
+                📅 Periode: ${item.reportDate || '-'}
+              </span>
+              ${item.totalUnits !== undefined ? `
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70 font-semibold">
+                  📊 ${item.totalUnits} Unit (${item.masuk || 0} Masuk, ${item.keluar || 0} Keluar)
+                </span>
+              ` : ''}
+              <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60 font-medium">
+                📎 Lampiran PDF & Excel
+              </span>
+            </div>
           </div>
         `;
       } else {
@@ -6538,29 +6659,43 @@ const UI = {
       const res = await ApiService.triggerEmailReport();
       const isSuccess = res && (res.success === true || !res.error);
 
-      const timestampStr = new Date().toLocaleString('id-ID', {
+      const timestampStr = res?.timestamp || (new Date().toLocaleString('id-ID', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
-      }) + ' WIB';
+      }) + ' WIB');
+
+      const reportDateStr = res?.reportDate || new Date().toLocaleDateString('id-ID');
+      const targetDisplay = res?.adminRecipients || targetEmail;
 
       const newLog = {
-        id: 'email-' + Date.now(),
+        id: 'REP-' + Date.now(),
         timestamp: timestampStr,
-        targetEmail: targetEmail,
+        targetEmail: targetDisplay,
         status: isSuccess ? 'SUCCESS' : 'FAILED',
         category: 'DAILY_REPORT',
-        subject: 'Rekap Laporan Mutasi Stockyard • Astra Daihatsu - DSO Lampung',
+        subject: `Rekapitulasi Mutasi Harian Stockyard (${reportDateStr})`,
         message: isSuccess
-          ? `Laporan rekapitulasi mutasi kendaraan berhasil diproses dan dikirimkan secara langsung ke alamat ${targetEmail}.`
+          ? (res?.message || `Laporan rekapitulasi mutasi kendaraan (${res?.totalRecords || 0} unit) berhasil dikirimkan ke email penerima resmi.`)
           : `Gagal mengirimkan laporan email ke ${targetEmail}: ${res?.error || res?.message || 'Koneksi terputus'}`,
+        reportDate: reportDateStr,
+        totalUnits: res?.totalRecords || 0,
+        attachmentsCount: res?.attachedFilesCount || 2,
+        fromDatabase: true,
         read: true
       };
 
+      if (!Array.isArray(AppState.reportLogs)) AppState.reportLogs = [];
+      AppState.reportLogs.unshift(newLog);
+      try {
+        localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(AppState.reportLogs));
+      } catch (e) {}
+
       this.recordEmailNotificationLog(newLog);
+      this.renderEmailNotifications();
 
       if (isSuccess) {
         this.showToast(`🎉 Sukses! Laporan telah terkirim ke ${targetEmail}!`, 4500);

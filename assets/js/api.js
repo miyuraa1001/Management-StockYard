@@ -470,12 +470,21 @@ const ApiService = {
           });
         }
 
+        // Sinkronisasi Riwayat Pengiriman Laporan Harian Terjadwal (Tab ReportLogs)
+        if (Array.isArray(payload.reportLogs)) {
+          AppState.reportLogs = payload.reportLogs;
+          try {
+            localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(payload.reportLogs));
+          } catch (e) {}
+        }
+
         if (typeof AppState.updateKpiCounts === 'function') {
           AppState.updateKpiCounts();
         }
         AppState.saveToCache();
-        if (typeof UI !== 'undefined' && UI.updateNotificationTargetEmailDisplay) {
-          UI.updateNotificationTargetEmailDisplay();
+        if (typeof UI !== 'undefined') {
+          if (UI.updateNotificationTargetEmailDisplay) UI.updateNotificationTargetEmailDisplay();
+          if (UI.renderEmailNotifications) UI.renderEmailNotifications();
         }
         return true;
       }
