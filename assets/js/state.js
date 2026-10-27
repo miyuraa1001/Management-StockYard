@@ -21,7 +21,7 @@ const AppState = {
   // Dual Image Upload Cache & Document Type
   uploadedUnitPhotoUrl: null,
   uploadedDocPhotoUrl: null,
-  selectedDocType: 'SPP DC',
+  selectedDocType: 'SPPDC',
 
   // Network & Sync Indicators
   isLoading: false,

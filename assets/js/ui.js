@@ -974,14 +974,14 @@ const UI = {
       `;
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
-        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPP DC'})">
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPPDC'})">
              <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
-             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPPDC'}</div>
+             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPPDC'}</span>
            </div>`
-        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPPDC'}</div>`;
 
       return `
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">
@@ -1055,7 +1055,7 @@ const UI = {
             </p>
           </td>
 
-          <!-- Kolom 8: Bukti Fisik & Dokumen (SPP DC / BSTKB / OKK) -->
+          <!-- Kolom 8: Foto Dokumen (SPPDC / BSTKB / OKK) -->
           <td class="py-2.5 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
             <div class="flex items-center justify-center space-x-2">
               ${unitThumbnailHtml}
@@ -1540,7 +1540,7 @@ const UI = {
     const headerRow = worksheet.addRow([
       'No', 'ID Mutasi', 'Waktu', 'Tanggal', 'Model Kendaraan', 
       'Cabang Resmi', 'No. Rangka (VIN)', 'No. Mesin', 'Jenis Mutasi', 
-      'Petugas Security', 'Catatan Audit', 'Foto Fisik Unit', 'SPP DC / BSTKB / OKK'
+      'Petugas Security', 'Catatan Audit', 'Foto Fisik Unit', 'Foto Dokumen'
     ]);
     headerRow.height = 28;
     headerRow.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -1659,8 +1659,12 @@ const UI = {
         row.getCell(12).font = { size: 8, color: { argb: 'FF94A3B8' } };
       }
 
-      // Muat dan sematkan Foto Dokumen (SPP DC / BSTKB / OKK) ke dalam cell (Kolom 13)
-      const docLabel = String(item.docType || 'SPP DC').toUpperCase();
+      // Muat dan sematkan Foto Dokumen (SPPDC / BSTKB / OKK) ke dalam cell (Kolom 13)
+      let docLabel = String(item.docType || 'SPPDC').toUpperCase().trim();
+      if (docLabel.includes('SPP') || docLabel.includes('SSP')) docLabel = 'SPPDC';
+      else if (docLabel.includes('BSTKB')) docLabel = 'BSTKB';
+      else if (docLabel.includes('OKK')) docLabel = 'OKK';
+      else docLabel = docLabel.replace(/\s+/g, '');
       const docB64 = await this.loadImageAsBase64(item.docPhoto);
       if (docB64 && docB64.startsWith('data:image')) {
         try {
@@ -1722,29 +1726,26 @@ const UI = {
       };
     }
 
-    // 2 Tanda Tangan Resmi (TTD): Ruang Lapang Turun ke Bawah (Persis Lampiran Backend Email)
+    // 1 Tanda Tangan Otorisasi Resmi (ADH / BM DSO Lampung): Ruang Lapang Turun ke Bawah (Persis Lampiran Backend Email)
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
-    const ttd2 = worksheet.addRow(['', 'SECURITY POOL / YARD', '', '', '', '', '', 'ADH / BM (ADMIN HEAD / BRANCH MANAGER)']);
-    const ttd3 = worksheet.addRow(['', branchFilter, '', '', '', '', '', 'ASTRA DAIHATSU DSO LAMPUNG']);
+    const ttd1 = worksheet.addRow(['', '', '', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
+    const ttd2 = worksheet.addRow(['', '', '', '', '', '', '', '', 'ADH / BM (ADMIN HEAD / BRANCH MANAGER)']);
+    const ttd3 = worksheet.addRow(['', '', '', '', '', '', '', '', 'ASTRA DAIHATSU DSO LAMPUNG']);
     const ttdRow = ttd1.number;
 
-    worksheet.mergeCells(`B${ttdRow}:E${ttdRow}`);
-    worksheet.mergeCells(`H${ttdRow}:L${ttdRow}`);
-    worksheet.mergeCells(`B${ttdRow + 1}:E${ttdRow + 1}`);
-    worksheet.mergeCells(`H${ttdRow + 1}:L${ttdRow + 1}`);
-    worksheet.mergeCells(`B${ttdRow + 2}:E${ttdRow + 2}`);
-    worksheet.mergeCells(`H${ttdRow + 2}:L${ttdRow + 2}`);
+    worksheet.mergeCells(`I${ttdRow}:M${ttdRow}`);
+    worksheet.mergeCells(`I${ttdRow + 1}:M${ttdRow + 1}`);
+    worksheet.mergeCells(`I${ttdRow + 2}:M${ttdRow + 2}`);
 
     ttd1.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF475569' } };
     ttd1.alignment = { vertical: 'middle', horizontal: 'center' };
     ttd2.font = { name: 'Arial', size: 10.5, bold: true, color: { argb: 'FF00205B' } };
     ttd2.alignment = { vertical: 'middle', horizontal: 'center' };
-    ttd3.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FFB45309' } };
+    ttd3.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FF00205B' } };
     ttd3.alignment = { vertical: 'middle', horizontal: 'center' };
 
     // Ruang Tanda Tangan: 5 baris kosong
@@ -1754,19 +1755,16 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / Branch Manager )']);
-    const ttdSignSub = worksheet.addRow(['', 'Reg. Security Guard • Astra Daihatsu Lampung', '', '', '', '', '', 'Astra Daihatsu DSO Lampung']);
+    const ttdSign = worksheet.addRow(['', '', '', '', '', '', '', '', '( Admin Head / Branch Manager )']);
+    const ttdSignSub = worksheet.addRow(['', '', '', '', '', '', '', '', 'Astra Daihatsu DSO Lampung']);
     const ttdSignRow = ttdSign.number;
 
-    worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
-    worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
-    worksheet.mergeCells(`B${ttdSignRow + 1}:E${ttdSignRow + 1}`);
-    worksheet.mergeCells(`H${ttdSignRow + 1}:L${ttdSignRow + 1}`);
+    worksheet.mergeCells(`I${ttdSignRow}:M${ttdSignRow}`);
+    worksheet.mergeCells(`I${ttdSignRow + 1}:M${ttdSignRow + 1}`);
 
     ttdSign.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
     ttdSign.alignment = { vertical: 'middle', horizontal: 'center' };
-    ttdSign.getCell(2).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
-    ttdSign.getCell(8).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
+    ttdSign.getCell(9).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
 
     ttdSignSub.font = { name: 'Arial', size: 8, color: { argb: 'FF64748B' } };
     ttdSignSub.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -2150,7 +2148,7 @@ const UI = {
       { header: 'Petugas Security', dataKey: 'pic' },
       { header: 'Catatan Audit', dataKey: 'catatan' },
       { header: 'Foto Fisik Unit', dataKey: 'foto_unit' },
-      { header: 'SPP DC / BSTKB / OKK', dataKey: 'foto_doc' }
+      { header: 'Foto Dokumen', dataKey: 'foto_doc' }
     ];
 
     let masukCount = 0;
@@ -2180,7 +2178,11 @@ const UI = {
       }
       if (!dateFormattedRow) dateFormattedRow = day + '/' + month + '/' + year;
 
-      const docTypeStr = String(item.docType || 'SPP DC').toUpperCase();
+      let docTypeStr = String(item.docType || 'SPPDC').toUpperCase().trim();
+      if (docTypeStr.includes('SPP') || docTypeStr.includes('SSP')) docTypeStr = 'SPPDC';
+      else if (docTypeStr.includes('BSTKB')) docTypeStr = 'BSTKB';
+      else if (docTypeStr.includes('OKK')) docTypeStr = 'OKK';
+      else docTypeStr = docTypeStr.replace(/\s+/g, '');
 
       return {
         no: String(idx + 1),
@@ -2313,7 +2315,11 @@ const UI = {
             if (raw.docBase64) {
               try {
                 doc.addImage(raw.docBase64, 'JPEG', imgX, imgY, imgW, imgH);
-                const dLabel = String(raw.docType || 'SPP DC').toUpperCase();
+                let dLabel = String(raw.docType || 'SPPDC').toUpperCase().trim();
+                if (dLabel.includes('SPP') || dLabel.includes('SSP')) dLabel = 'SPPDC';
+                else if (dLabel.includes('BSTKB')) dLabel = 'BSTKB';
+                else if (dLabel.includes('OKK')) dLabel = 'OKK';
+                else dLabel = dLabel.replace(/\s+/g, '');
                 doc.setFontSize(5);
                 doc.setFont('helvetica', 'bold');
                 if (dLabel.includes('OKK')) doc.setTextColor(5, 150, 105);
@@ -2342,36 +2348,7 @@ const UI = {
 
     const colW = (pageWidth - (margin * 2)) / 2;
 
-    // TTD 1: PETUGAS SECURITY CABANG (KIRI)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(71, 85, 105);
-    doc.text('Petugas Pemeriksa & Pemindai:', margin + (colW / 2), finalY, { align: 'center' });
-
-    doc.setFontSize(9.5);
-    doc.setTextColor(0, 32, 91);
-    doc.text('SECURITY POOL / YARD', margin + (colW / 2), finalY + 4, { align: 'center' });
-
-    doc.setFontSize(7.5);
-    doc.setTextColor(180, 83, 9);
-    doc.text(branchFilter, margin + (colW / 2), finalY + 8, { align: 'center' });
-
-    // Garis TTD Kiri
-    doc.setDrawColor(15, 23, 42);
-    doc.setLineWidth(0.3);
-    doc.line(margin + 25, finalY + 22, margin + colW - 25, finalY + 22);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(15, 23, 42);
-    doc.text('( Petugas Security On-Duty )', margin + (colW / 2), finalY + 25.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Reg. Security Guard • Astra Daihatsu Lampung', margin + (colW / 2), finalY + 29, { align: 'center' });
-
-    // TTD 2: ADH / BM (KANAN)
+    // TTD TUNGGAL RESMI: ADH / BM (KANAN)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
@@ -2553,11 +2530,11 @@ const UI = {
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
         ? `<div style="display:inline-block; position:relative; width:44px; height:32px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1; background:#f1f5f9; vertical-align:middle;">
-             <img src="${docPhotoSrc}" alt="${item.docType || 'SPP DC'}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">${item.docType || 'SPP DC'}</span>
-             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">${item.docType || 'SPP DC'}</span>
+             <img src="${docPhotoSrc}" alt="${item.docType || 'SPPDC'}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+             <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:7px; color:#4338ca; font-weight:700; background:#e0e7ff;">${item.docType || 'SPPDC'}</span>
+             <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(30,58,138,0.85); color:#fff; font-size:6.5px; font-weight:700; text-align:center; padding:1px 0; line-height:1;">${item.docType || 'SPPDC'}</span>
            </div>`
-        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No ${item.docType || 'SPP DC'}</div>`;
+        : `<div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:32px; border-radius:4px; border:1px dashed #cbd5e1; background:#f8fafc; font-size:7px; color:#94a3b8; font-weight:700; vertical-align:middle;">No ${item.docType || 'SPPDC'}</div>`;
 
       return `
         <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8px;">
@@ -2878,25 +2855,15 @@ const UI = {
             </tfoot>
           </table>
 
-          <!-- LEMBAR PENGESAHAN LAPANGAN -->
-          <div class="signatures">
-            <div class="sig-col">
-              <div>Diserahkan oleh (Transporter):</div>
-              <div class="sig-space"></div>
-              <div>( ...................................................... )</div>
-              <div style="color: #64748b; font-size: 7.5px;">Pengemudi / Ekspedisi Car Carrier</div>
-            </div>
-            <div class="sig-col">
-              <div>Diterima & Diperiksa oleh:</div>
-              <div class="sig-space"></div>
-              <div><strong>( ${operatorName} )</strong></div>
-              <div style="color: #64748b; font-size: 7.5px;">Petugas Security On-Duty</div>
-            </div>
-            <div class="sig-col">
-              <div>Mengetahui / Menyetujui:</div>
-              <div class="sig-space"></div>
-              <div>( ...................................................... )</div>
-              <div style="color: #64748b; font-size: 7.5px;">Kepala Sentra Yard Lampung DSO</div>
+          <!-- LEMBAR PENGESAHAN RESMI (1 TTD OTORISASI: ADH / BM) -->
+          <div class="signatures" style="display: flex; justify-content: flex-end; margin-top: 24px;">
+            <div class="sig-col" style="text-align: center; min-width: 240px;">
+              <div style="font-size: 8.5px; font-weight: bold; color: #475569;">Mengetahui & Menyetujui:</div>
+              <div style="font-size: 10px; font-weight: bold; color: #00205B; margin-top: 2px;">ADH / BM (ADMIN HEAD / BRANCH MANAGER)</div>
+              <div style="font-size: 8px; font-weight: bold; color: #00205B; margin-top: 1px;">ASTRA DAIHATSU DSO LAMPUNG</div>
+              <div class="sig-space" style="height: 48px;"></div>
+              <div style="border-top: 1px solid #000000; width: 80%; margin: 0 auto; font-weight: bold; font-size: 9px; padding-top: 4px;">( Admin Head / Branch Manager )</div>
+              <div style="color: #64748b; font-size: 7.5px; margin-top: 2px;">Astra Daihatsu DSO Lampung</div>
             </div>
           </div>
 
@@ -7274,14 +7241,14 @@ const UI = {
       `;
 
       const docThumbnailHtml = (docPhotoSrc && !docPhotoSrc.includes('unsplash.com'))
-        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPP DC'})">
+        ? `<div onclick="openImagePreviewModal('${docPhotoSrc}')" class="group/thumb relative w-12 h-9 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 cursor-pointer shadow-2xs hover:border-indigo-500 hover:ring-2 hover:ring-indigo-400/40 transition" title="Klik untuk memperbesar Foto Dokumen (${item.docType || 'SPPDC'})">
              <img src="${docPhotoSrc}" alt="Foto Dokumen" loading="lazy" referrerpolicy="no-referrer"
                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                   class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
-             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPP DC'}</div>
-             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPP DC'}</span>
+             <div class="doc-fallback hidden w-full h-full items-center justify-center bg-indigo-50 text-[7.5px] text-indigo-700 font-bold text-center">${item.docType || 'SPPDC'}</div>
+             <span class="absolute bottom-0 inset-x-0 ${(item.docType==='OKK'?'bg-emerald-600':(item.docType==='BSTKB'?'bg-amber-600':'bg-blue-600'))}/90 text-white text-[7px] font-black text-center py-0.5 tracking-tight">${item.docType || 'SPPDC'}</span>
            </div>`
-        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPP DC'}</div>`;
+        : `<div class="w-12 h-9 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[7px] text-slate-400 font-semibold text-center leading-tight">No ${item.docType || 'SPPDC'}</div>`;
 
       return `
         <tr class="hover:bg-blue-50/40 transition-colors group border-b border-slate-200">

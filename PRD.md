@@ -1,9 +1,9 @@
-# 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem Lengkap
+﻿# 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem Lengkap
 ## Sistem Management StockYard Kendaraan (Astra Daihatsu DSO Lampung)
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk, Arsitektur Sistem, Katalog Fitur Menyeluruh & Operasional Bisnis  
 > **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Wilayah (DSO Lampung), Admin Head / Branch Manager (ADH/BM), Supervisor Logistik, Tim Security On-Duty Cabang (D660–D664), & Tim Pengembang  
-> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.8 Terverifikasi*)  
+> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.9 Terverifikasi*)  
 > **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664)  
 
 ---
@@ -20,7 +20,7 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk men
 * **Akun Security Universal per Cabang (Bebas NPK)**: Kredensial login cabang bersifat universal untuk setiap regu *Security on-duty*, sehingga pergantian giliran jaga berjalan lancar tanpa birokrasi input NPK perorangan.
 * **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem memblokir pemindaian berulang untuk unit yang sama melalui validasi multi-sensor seketika di lapangan (audio 1760Hz, haptik, dan kunci visual).
 * **Kecepatan Mutasi (< 20 Detik per Unit)**: Petugas lapangan memindai stiker barcode kaca kendaraan secara otomatis tanpa mengetik manual 17 digit nomor rangka (VIN) yang rawan keliru.
-* **Bukti Fisik & Dokumen Wajib Terarsip ke Google Drive**: Setiap pergerakan mobil wajib menyertakan foto fisik unit dan foto dokumen resmi (SPP DC / BSTKB / OKK) yang langsung tersimpan rapi di Google Drive perusahaan dengan pembersihan otomatis file lama (*Drive lifecycle cleanup*).
+* **Bukti Fisik & Dokumen Wajib Terarsip ke Google Drive**: Setiap pergerakan mobil wajib menyertakan foto fisik unit dan foto dokumen resmi (SPPDC / BSTKB / OKK) yang langsung tersimpan rapi di Google Drive perusahaan dengan pembersihan otomatis file lama (*Drive lifecycle cleanup*).
 * **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
 * **Sinkronisasi Tab Cloud `ReportLogs` Realtime**: Setiap aktivitas pengiriman laporan harian (otomatis maupun manual via tombol "Kirim Laporan") tercatat ke tab `ReportLogs` dan tersinkronisasi 100% ke modal notifikasi aplikasi.
 
@@ -34,7 +34,7 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk men
 | **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis (`smartFilterBarcodes`)**. Kamera langsung mengunci VIN berawalan `MHK...` serta membuang kode pabrik yang tidak relevan. |
 | **Identitas Petugas Security** | Diikat ke NPK perorangan sehingga sulit saat ganti shift atau petugas piket berganti. | **Universal Branch Account Login**. Login fleksibel per cabang untuk seluruh security bertugas tanpa perlu input NPK perorangan. |
 | **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi seketika mengunci layar merah, menyalakan alarm nada rendah, dan menolak penyimpanan. |
-| **Arsip Bukti Foto Fisik & Dokumen** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau membebani memori ponsel. | **Terunggah Otomatis ke Google Drive Resmi**. Foto unit & dokumen (SPP DC / BSTKB / OKK) terhubung langsung dengan nomor rangka kendaraan dan dapat diakses dari laporan. |
+| **Arsip Bukti Foto Fisik & Dokumen** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau membebani memori ponsel. | **Terunggah Otomatis ke Google Drive Resmi**. Foto unit & dokumen (SPPDC / BSTKB / OKK) terhubung langsung dengan nomor rangka kendaraan dan dapat diakses dari laporan. |
 | **Pengelolaan Foto Profil User** | Foto lama menumpuk di cloud storage hingga menghabiskan kuota Google Drive. | **Lifecycle Cleanup Otomatis**. Saat foto profil diperbarui, sistem mengunggah foto baru dan otomatis menghapus foto lama dari Google Drive. |
 | **Format Laporan Harian Eksekutif** | Format Excel dan PDF sering kali berbeda susunan kolom, tanpa logo resmi, dan tanpa foto visual. | **100% Identik Berlogo Daihatsu**: PDF dan Excel memiliki 13 kolom seragam, kop Astra resmi, status terverifikasi, dan visual thumbnail tersemat rapi di sel. |
 | **Distribusi Laporan Harian ke Cabang** | Satu file rekap dikirim masal; cabang melihat data unit cabang lain yang bukan wewenangnya. | **Distribusi Partisi Eksklusif**: Admin DSO menerima rekap 5 cabang (master), sedangkan tiap cabang (D660–D664) hanya menerima file mutasi eksklusif cabangnya. |
@@ -138,10 +138,10 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang d
 5. **Halaman Khusus Rincian Model (*Drill-Down*)**: Banner spesifikasi kendaraan, kartu ringkasan stok model, filter tanggal khusus tipe tersebut, dan tabel unit terdaftar.
 
 ### 4.4 Riwayat Mutasi & Ekspor Laporan Komprehensif
-1. **Tabel Log Mutasi Terintegrasi**: Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, Cabang Resmi, Jenis Dokumen (SPP DC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
+1. **Tabel Log Mutasi Terintegrasi**: Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, Cabang Resmi, Jenis Dokumen (SPPDC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
 2. **Filter Rentang Kalender & Pencarian Global**: Menyesuaikan audit harian, mingguan, bulanan, serta pencarian instan nomor rangka, nomor mesin, atau model.
 3. **Empat Metode Ekspor Resmi**:
-   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel 13 kolom seragam, dan 2 pengesahan tanda tangan: `SECURITY POOL / YARD` dan `ADH / BM`.
+   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel 13 kolom seragam, dan 1 pengesahan tanda tangan otorisasi tunggal resmi: `ADH / BM (ADMIN HEAD / BRANCH MANAGER)`.
    - **Ekspor Excel (.xlsx Murni) Berfoto**: Dihasilkan via `ExcelJS` langsung di browser, menyematkan visual foto unit & dokumen ke dalam sel tabel secara proporsional, border rapi, dan tanda tangan resmi.
    - **Cetak Langsung (*Print-Ready*)**: Tata letak ramah cetak A4 tanpa elemen UI browser.
    - **Email Rekapitulasi Terjadwal & On-Demand (Backend v2.19)**: Pengiriman otomatis pukul 08:00 WIB dan manual via tombol "Kirim Laporan" dengan lampiran PDF & Excel yang dipartisi eksklusif per cabang.
@@ -156,8 +156,8 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang d
   - Pilihan radio: **Unit Masuk** atau **Unit Keluar**.
   - Dropdown 13 Model Resmi Kendaraan Daihatsu.
   - Dropdown 5 Cabang Resmi: D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur.
-  - Dropdown Dokumen Resmi: **SPP DC**, **BSTKB**, atau **OKK**.
-  - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPP DC / BSTKB / OKK).
+  - Dropdown Dokumen Resmi: **SPPDC**, **BSTKB**, atau **OKK**.
+  - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPPDC / BSTKB / OKK).
   - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar.
 
 ### 4.6 Pusat Notifikasi & Sinkronisasi Cloud (`ReportLogs`)
@@ -256,7 +256,7 @@ Struktur tabel di Google Spreadsheet dirancang rapi, mudah dibaca langsung oleh 
 | **I** | `Petugas PIC` | Teks | `SECURITY - D660` | Identitas petugas security bertugas |
 | **J** | `Cabang / Kode BA` | Teks | `D660 - Ahmad Yani` | Cabang resmi penugasan (D660–D664) |
 | **K** | `Catatan` | Teks Catatan | `Kondisi mulus, spion lengkap` | Catatan kondisi fisik unit |
-| **L** | `SPP DC / BSTKB / OKK` | Teks | `SPP DC` | Jenis dokumen serah terima |
+| **L** | `SPPDC / BSTKB / OKK` | Teks | `SPPDC` | Jenis dokumen serah terima |
 | **M** | `Foto Unit` | Tautan URL Drive | `https://drive.google.com/file/d/...` | Foto fisik unit kendaraan |
 | **N** | `Foto Dokumen` | Tautan URL Drive | `https://drive.google.com/file/d/...` | Foto fisik dokumen surat jalan |
 
@@ -348,7 +348,7 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 10. `Petugas Security` — Identitas Petugas On-Duty Cabang
 11. `Catatan Audit` — Catatan Kondisi Fisik Lapangan
 12. `Foto Fisik Unit` — Visual Gambar / Tautan Langsung Google Drive
-13. `SPP DC / BSTKB / OKK` — Visual Dokumen / Tautan Langsung Google Drive
+13. `SPPDC / BSTKB / OKK` — Visual Dokumen / Tautan Langsung Google Drive
 
 ---
 
@@ -394,7 +394,7 @@ flowchart TD
     Verified --> Step2[Klik 'Lanjut ke Formulir Mutasi']
     
     Step2 --> FillForm[Pilih Jenis: Unit Masuk/Keluar, Model, Cabang, & Dokumen]
-    FillForm --> SnapPhotos[Ambil Foto Fisik Mobil & Dokumen SPP DC/BSTKB/OKK]
+    FillForm --> SnapPhotos[Ambil Foto Fisik Mobil & Dokumen SPPDC/BSTKB/OKK]
     SnapPhotos --> Submit[Tekan 'Simpan & Verifikasi Mutasi']
     
     Submit --> CompressImg[Kompresi Otomatis di HP < 400 KB]
@@ -428,4 +428,7 @@ Dokumen spesifikasi produk dan cetak biru sistem ini merupakan panduan operasion
 * **Pusat Operasional:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 * **Cabang Terdaftar:** D660 (Ahmad Yani), D661 (Soekarno Hatta), D662 (Bandar Jaya), D663 (Lampung Utara), D664 (Lampung Timur)  
 * **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
-* **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.8 Enterprise Edition — Terverifikasi*)  
+* **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.9 Enterprise Edition — Terverifikasi*)  
+
+
+

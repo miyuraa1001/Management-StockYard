@@ -271,15 +271,15 @@ const ApiService = {
 
             // Pemetaan sinkron langsung dengan data riil Google Sheets (tab HistoryMutasi Kolom M)
             const DB_DOC_TYPE_MAP = {
-              'MUT-20261023-113220': 'SPP DC',
-              'MUT-20261022-143642': 'SPP DC',
+              'MUT-20261023-113220': 'SPPDC',
+              'MUT-20261022-143642': 'SPPDC',
               'MUT-20261022-155750': 'OKK',
               'MUT-20261022-154824': 'OKK',
               'MUT-20261022-105737': 'BSTKB',
               'MUT-20261020-100833': 'BSTKB',
               'HIST-1792037630798': 'BSTKB',
-              'HIST-1792111863997': 'SPP DC',
-              'HIST-1792037630797': 'SPP DC'
+              'HIST-1792111863997': 'SPPDC',
+              'HIST-1792037630797': 'SPPDC'
             };
 
             let normDocType = '';
@@ -288,8 +288,8 @@ const ApiService = {
             if (backendDocType && !backendDocType.startsWith('HTTP') && backendDocType.length <= 15) {
               if (backendDocType.includes('BSTKB')) normDocType = 'BSTKB';
               else if (backendDocType.includes('OKK')) normDocType = 'OKK';
-              else if (backendDocType.includes('SPP')) normDocType = 'SPP DC';
-              else normDocType = backendDocType;
+              else if (backendDocType.includes('SPP') || backendDocType.includes('SSP')) normDocType = 'SPPDC';
+              else normDocType = backendDocType.replace(/\s+/g, '');
             }
 
             // 2. Sinkronkan dengan mapping database Google Sheets berdasarkan ID mutasi unik
@@ -302,7 +302,7 @@ const ApiService = {
               const notesUpper = String(item.notes || item.keterangan || '').toUpperCase();
               if (notesUpper.includes('BSTKB')) normDocType = 'BSTKB';
               else if (notesUpper.includes('OKK')) normDocType = 'OKK';
-              else normDocType = 'SPP DC';
+              else normDocType = 'SPPDC';
             }
 
             return {
@@ -596,8 +596,8 @@ const ApiService = {
       const defaultBranch = mutationRecord.noBa || 'D660 - Ahmad Yani';
       const payload = { 
         ...mutationRecord,
-        docType: mutationRecord.docType || 'SPP DC',
-        doc_type: mutationRecord.docType || 'SPP DC',
+        docType: mutationRecord.docType || 'SPPDC',
+        doc_type: mutationRecord.docType || 'SPPDC',
         noBa: defaultBranch,
         no_ba: defaultBranch,
         cabang: defaultBranch,

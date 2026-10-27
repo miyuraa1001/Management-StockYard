@@ -123,7 +123,7 @@ const App = {
     const vin = (document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '').trim();
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
-    const docType = (document.getElementById('inputMutationDocType')?.value || 'SPP DC').trim();
+    const docType = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
     const model = document.getElementById('inputCarModel')?.value;
     const noBaInput = (document.getElementById('inputNoBa')?.value || '').trim();
     const noBa = (!AppState.isAdmin() && AppState.getUserBranch) ? AppState.getUserBranch() : (noBaInput || 'D660 - Ahmad Yani');
@@ -237,7 +237,7 @@ const App = {
     const noBaEl = document.getElementById('inputNoBa');
     if (noBaEl) noBaEl.value = 'D660 - Ahmad Yani';
     const docTypeEl = document.getElementById('inputMutationDocType');
-    if (docTypeEl) docTypeEl.value = 'SPP DC';
+    if (docTypeEl) docTypeEl.value = 'SPPDC';
     if (typeof window.onMutationDocTypeChanged === 'function') {
       window.onMutationDocTypeChanged();
     }

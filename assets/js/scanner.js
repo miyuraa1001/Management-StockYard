@@ -1666,7 +1666,7 @@ const ScannerService = {
       window.validateMutationFormDuplication();
     }
 
-    // Selaraskan label & placeholder tipe dokumen (SPP DC / BSTKB / OKK)
+    // Selaraskan label & placeholder tipe dokumen (SPPDC / BSTKB / OKK)
     if (typeof window.onMutationDocTypeChanged === 'function') {
       window.onMutationDocTypeChanged();
     }
@@ -1914,7 +1914,7 @@ window.tapCameraFocus = (event) => ScannerService.tapToFocus(event);
 window.pasteVinFromClipboard = () => ScannerService.pasteToVin();
 window.pasteEngineFromClipboard = () => ScannerService.pasteToEngine();
 window.onMutationDocTypeChanged = function() {
-  const docType = (document.getElementById('inputMutationDocType')?.value || 'SPP DC').trim();
+  const docType = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
   if (typeof AppState !== 'undefined') AppState.selectedDocType = docType;
   const labelEl = document.getElementById('docPhotoCardLabel');
   if (labelEl) labelEl.textContent = `Foto Dokumen (${docType})`;
