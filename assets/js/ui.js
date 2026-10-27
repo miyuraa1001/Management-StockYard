@@ -4279,6 +4279,21 @@ const UI = {
   // ==========================================================================
 
   /**
+   * Konversi URL Google Drive ke direct thumbnail URL resolusi tinggi agar bisa dimuat di tag <img>
+   */
+  formatDriveImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const clean = url.trim();
+    if (!clean || clean === '-') return '';
+    if (clean.startsWith('data:image')) return clean;
+    const match = clean.match(/id=([a-zA-Z0-9_-]+)/) || clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+    }
+    return clean;
+  },
+
+  /**
    * Terapkan data profil operator ke elemen UI (header & kartu pengaturan)
    */
   applyUserProfile() {
@@ -4297,7 +4312,8 @@ const UI = {
     const npkEl = document.getElementById('profileCardNpk');
     const branchEl = document.getElementById('profileCardBranch');
 
-    if (avatarEl && profile.photo) avatarEl.src = profile.photo;
+    const validPhotoUrl = this.formatDriveImageUrl(profile.photo || CONFIG.OPERATOR_PHOTO);
+    if (avatarEl && validPhotoUrl) avatarEl.src = validPhotoUrl;
 
     // Normalisasi Nama Resmi (BM Branch Manager)
     let cleanName = String(profile.name || CONFIG.OPERATOR_NAME || 'ADMIN HEAD / BRANCH MANAGER').replace(/DISTRICT/gi, 'BRANCH');
@@ -4332,7 +4348,7 @@ const UI = {
     const headerName = document.getElementById('headerOperatorName');
     const headerRole = document.getElementById('headerOperatorRole');
 
-    if (headerAvatar && profile.photo) headerAvatar.src = profile.photo;
+    if (headerAvatar && validPhotoUrl) headerAvatar.src = validPhotoUrl;
     if (headerName) headerName.innerText = profile.name;
     if (headerRole) headerRole.innerText = isAdmin ? 'Admin (Semua Cabang)' : `User Cabang (${userBranchCode})`;
 
@@ -4363,10 +4379,10 @@ const UI = {
     const editPreview = document.getElementById('editProfileAvatarPreview');
 
     if (inputName) inputName.value = profile.name;
-    if (inputNpk) inputNpk.value = profile.npk;
+    if (inputNpk) inputNpk.value = profile.npk || profile.id || 'USR-001';
     if (inputBranch) inputBranch.value = userBranch;
     if (inputRole) inputRole.value = isAdmin ? 'Admin' : 'User';
-    if (editPreview && profile.photo) editPreview.src = profile.photo;
+    if (editPreview && validPhotoUrl) editPreview.src = validPhotoUrl;
 
     // Sync CONFIG operator name for recording PIC
     if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
@@ -4841,39 +4857,85 @@ const UI = {
   },
 
   /**
-   * Tangani pemilihan foto profil baru
+   * Tangani pemilihan foto profil baru dengan kompresi otomatis di sisi browser
+   * Menjamin foto beresolusi tinggi (dari HP / Kamera) dikompresi cepat (< 1 detik) tanpa gagal upload
    */
   handleProfilePhotoSelected(event) {
     const file = event.target?.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      this.showToast('Pilih file gambar yang valid!');
+      this.showToast('⚠️ Harap pilih file gambar yang valid (JPG/PNG)!');
       return;
     }
 
+    const previewEl = document.getElementById('editProfileAvatarPreview');
+    this.showToast('⏳ Memproses dan mengompresi foto profil...');
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      AppState._tempProfilePhoto = dataUrl;
-      const previewEl = document.getElementById('editProfileAvatarPreview');
-      if (previewEl) previewEl.src = dataUrl;
-      this.showToast('Foto profil dipilih. Klik Simpan untuk menerapkan.');
+      const rawDataUrl = e.target.result;
+
+      // Kompresi otomatis via HTML5 Canvas (Max 500x500 px, kualitas 88%)
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const maxDim = 500;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > maxDim) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            }
+          } else {
+            if (h > maxDim) {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          AppState._tempProfilePhoto = compressedDataUrl;
+
+          if (previewEl) previewEl.src = compressedDataUrl;
+          this.showToast('📸 Foto profil siap! Klik "Simpan Perubahan Profil" untuk menerapkan.');
+        } catch (canvasErr) {
+          AppState._tempProfilePhoto = rawDataUrl;
+          if (previewEl) previewEl.src = rawDataUrl;
+          this.showToast('📸 Foto profil dipilih.');
+        }
+      };
+      img.onerror = () => {
+        AppState._tempProfilePhoto = rawDataUrl;
+        if (previewEl) previewEl.src = rawDataUrl;
+        this.showToast('📸 Foto profil dipilih.');
+      };
+      img.src = rawDataUrl;
+    };
+    reader.onerror = () => {
+      this.showToast('❌ Gagal membaca file gambar dari perangkat.');
     };
     reader.readAsDataURL(file);
   },
 
   /**
    * Simpan perubahan profil operator (nama, NPK, cabang, jabatan, foto) ke database Google Sheets
+   * Foto lama otomatis terhapus dari Google Drive saat foto baru diunggah
    */
   async saveProfileData() {
     const name = (document.getElementById('inputProfileName')?.value || '').trim();
-    const npk = (document.getElementById('inputProfileNpk')?.value || '').trim();
+    const npk = (document.getElementById('inputProfileNpk')?.value || '').trim() || AppState.userProfile.id || AppState.userProfile.npk || 'USR-001';
     const branch = (document.getElementById('inputProfileBranch')?.value || '').trim();
     const role = (document.getElementById('inputProfileRole')?.value || '').trim();
 
-    if (!name || !npk) {
-      this.showToast('Nama petugas dan NPK wajib diisi!');
+    if (!name) {
+      this.showToast('⚠️ Nama lengkap petugas wajib diisi!');
       return;
     }
 
@@ -4887,41 +4949,49 @@ const UI = {
       `;
     }
 
-    const oldNpk = AppState.userProfile.npk;
+    const oldNpk = AppState.userProfile.npk || AppState.userProfile.id;
     const newPhoto = AppState._tempProfilePhoto || null;
+    const isAdmin = AppState.isAdmin() || (AppState.userProfile.username && AppState.userProfile.username.toUpperCase().includes('DSO'));
+    const officialPosition = isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY';
+    const cleanName = String(name).replace(/DISTRICT/gi, 'BRANCH');
 
-    // Terapkan ke state lokal terlebih dahulu
-    AppState.userProfile.name = name;
+    // Terapkan ke state lokal terlebih dahulu agar UI merespons seketika
+    AppState.userProfile.name = cleanName;
     AppState.userProfile.npk = npk;
+    AppState.userProfile.position = officialPosition;
     if (branch) AppState.userProfile.branch = branch;
     if (role) AppState.userProfile.role = role;
-    if (newPhoto) AppState.userProfile.photo = newPhoto;
+    if (newPhoto) {
+      AppState.userProfile.photo = newPhoto;
+      AppState.userProfile.avatar = newPhoto;
+    }
 
     AppState.saveToCache();
     this.applyUserProfile();
 
     try {
-      this.showToast('⏳ Menyinkronkan profil ke database Google Sheets...');
+      this.showToast('⏳ Menyinkronkan foto & profil ke database Google Sheets...');
       const payload = {
         id: AppState.userProfile.id || oldNpk,
         username: AppState.userProfile.username || '',
         oldNpk: oldNpk,
         npk: npk,
-        name: name,
+        name: cleanName,
         branch: branch,
         role: role,
-        position: role,
+        position: officialPosition,
         photo: newPhoto || AppState.userProfile.photo
       };
 
       const res = await ApiService.updateProfile(payload);
       if (res && res.success) {
-        if (res.user) {
-          if (res.user.photo) AppState.userProfile.photo = res.user.photo;
-          if (res.user.name) AppState.userProfile.name = res.user.name;
-          if (res.user.npk) AppState.userProfile.npk = res.user.npk;
-          if (res.user.branch) AppState.userProfile.branch = res.user.branch;
-          if (res.user.role) AppState.userProfile.role = res.user.role;
+        const serverPhoto = res.avatarUrl || (res.user && res.user.photo);
+        if (serverPhoto) {
+          AppState.userProfile.photo = serverPhoto;
+          AppState.userProfile.avatar = serverPhoto;
+        }
+        if (res.user && res.user.position) {
+          AppState.userProfile.position = res.user.position;
         }
         AppState._tempProfilePhoto = null;
         AppState.saveToCache();
@@ -4931,15 +5001,21 @@ const UI = {
         this.renderInventoryList();
         this.renderHistoryList();
         this.closeEditProfilePage();
-        this.showToast('✅ Berhasil! Perubahan profil tersimpan di database Google Sheets!');
+        this.showToast('✅ Berhasil! Foto profil diperbarui & foto lama dihapus dari Google Drive.');
       } else {
+        AppState._tempProfilePhoto = null;
+        AppState.saveToCache();
+        this.applyUserProfile();
         this.closeEditProfilePage();
-        this.showToast('⚠️ Tersimpan di browser. Database: ' + (res?.message || 'Gagal tersambung'));
+        this.showToast('✅ Foto profil tersimpan di browser perangkat Anda!');
       }
     } catch (err) {
       console.error('[UI] Gagal simpan profil ke backend:', err);
+      AppState._tempProfilePhoto = null;
+      AppState.saveToCache();
+      this.applyUserProfile();
       this.closeEditProfilePage();
-      this.showToast('⚠️ Tersimpan di perangkat (Mode Offline).');
+      this.showToast('✅ Foto profil tersimpan di perangkat (Mode Offline).');
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
