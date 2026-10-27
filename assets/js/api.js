@@ -367,7 +367,7 @@ const ApiService = {
         }
 
         if (u) {
-          if (u.name) AppState.userProfile.name = u.name;
+          if (u.name) AppState.userProfile.name = String(u.name).replace(/DISTRICT/gi, 'BRANCH');
           if (u.npk) AppState.userProfile.npk = u.npk;
           if (u.branch) {
             AppState.userProfile.branch = (typeof CONFIG !== 'undefined' && typeof CONFIG.formatBranch === 'function')
@@ -375,9 +375,25 @@ const ApiService = {
               : u.branch;
           }
           if (u.role) AppState.userProfile.role = u.role;
+          
+          // Sinkronisasi Resmi Kolom F Database UserPIC (Jabatan Petugas)
+          const isAdm = AppState.isAdmin() || (u.username && u.username.toUpperCase().includes('DSO'));
+          let pos = u.position || u.jabatan || AppState.userProfile.position;
+          if (isAdm) {
+            if (!pos || pos === 'SECURITY' || pos.toUpperCase().includes('DISTRICT')) {
+              pos = 'ADMIN HEAD / BRANCH MANAGER';
+            }
+          } else {
+            if (!pos || pos.toUpperCase().includes('ADMIN') || pos.toUpperCase().includes('MANAGER')) {
+              pos = 'SECURITY';
+            }
+          }
+          AppState.userProfile.position = String(pos || (isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY')).replace(/DISTRICT/gi, 'BRANCH');
+
           if (u.photo || u.avatar) {
             AppState.userProfile.photo = (u.photo || u.avatar);
           }
+          AppState.saveToCache();
           if (typeof UI !== 'undefined' && UI.applyUserProfile) {
             UI.applyUserProfile();
           }
@@ -517,11 +533,11 @@ const ApiService = {
         user: {
           id: matched.id || 'USR-001',
           username: matched.username,
-          name: matched.name,
+          name: String(matched.name || '').replace(/DISTRICT/gi, 'BRANCH'),
           npk: matched.id,
           branch: matched.branch,
           role: isAdm ? 'Admin' : 'User',
-          position: matched.role,
+          position: isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : (matched.role || 'SECURITY'),
           targetEmail: matched.email,
           email: matched.email,
           avatar: matched.avatar,

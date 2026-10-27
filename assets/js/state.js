@@ -31,7 +31,7 @@ const AppState = {
   isAuthenticated: false,
   authSession: null,
 
-  // Profil Petugas Operator & Otomatisasi Sesuai Sheet UserPIC
+  // Profil Petugas Operator & Otomatisasi Sesuai Sheet UserPIC (Kolom F: Jabatan)
   userProfile: {
     id: CONFIG.OPERATOR_NPK || 'USR-001',
     username: CONFIG.OPERATOR_USERNAME || 'DSO LAMPUNG',
@@ -39,6 +39,7 @@ const AppState = {
     npk: CONFIG.OPERATOR_NPK || 'USR-001',
     branch: CONFIG.OPERATOR_BRANCH || 'Sentra Lampung • Astra Daihatsu DSO Lampung',
     role: CONFIG.OPERATOR_ROLE || 'Admin',
+    position: 'ADMIN HEAD / BRANCH MANAGER',
     photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
   },
 
@@ -406,6 +407,26 @@ const AppState = {
         this.userProfile = Object.assign({}, this.userProfile, JSON.parse(cachedProfile));
       }
 
+      // Normalisasi Sesuai Database Tab UserPIC (Kolom F: Jabatan & Kolom D: Nama)
+      if (this.userProfile) {
+        if (this.userProfile.name) {
+          this.userProfile.name = String(this.userProfile.name).replace(/DISTRICT/gi, 'BRANCH');
+        }
+        const isAdm = this.isAdmin() || (this.userProfile.username && this.userProfile.username.toUpperCase().includes('DSO'));
+        if (isAdm) {
+          if (!this.userProfile.position || this.userProfile.position === 'SECURITY' || this.userProfile.position.toUpperCase().includes('DISTRICT')) {
+            this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
+          }
+        } else {
+          if (!this.userProfile.position || this.userProfile.position.toUpperCase().includes('ADMIN') || this.userProfile.position.toUpperCase().includes('MANAGER')) {
+            this.userProfile.position = 'SECURITY';
+          }
+        }
+        if (this.userProfile.position) {
+          this.userProfile.position = String(this.userProfile.position).replace(/DISTRICT/gi, 'BRANCH');
+        }
+      }
+
       const cachedAutomation = localStorage.getItem(CONFIG.CACHE_KEYS.AUTOMATION);
       if (cachedAutomation) {
         this.automationConfig = Object.assign({}, this.automationConfig, JSON.parse(cachedAutomation));
@@ -426,6 +447,25 @@ const AppState = {
   setAuthSession(user, remember = true) {
     this.isAuthenticated = true;
     this.userProfile = Object.assign({}, this.userProfile, user);
+
+    // Sinkronisasi Resmi Kolom F Database UserPIC (Jabatan) & Normalisasi BM Branch Manager
+    if (this.userProfile.name) {
+      this.userProfile.name = String(this.userProfile.name).replace(/DISTRICT/gi, 'BRANCH');
+    }
+    const isAdm = this.isAdmin() || (this.userProfile.username && this.userProfile.username.toUpperCase().includes('DSO'));
+    if (isAdm) {
+      if (!this.userProfile.position || this.userProfile.position === 'SECURITY' || this.userProfile.position.toUpperCase().includes('DISTRICT')) {
+        this.userProfile.position = 'ADMIN HEAD / BRANCH MANAGER';
+      }
+    } else {
+      if (!this.userProfile.position || this.userProfile.position.toUpperCase().includes('ADMIN') || this.userProfile.position.toUpperCase().includes('MANAGER')) {
+        this.userProfile.position = 'SECURITY';
+      }
+    }
+    if (this.userProfile.position) {
+      this.userProfile.position = String(this.userProfile.position).replace(/DISTRICT/gi, 'BRANCH');
+    }
+
     this.authSession = {
       user: Object.assign({}, this.userProfile),
       loginTime: new Date().toISOString()

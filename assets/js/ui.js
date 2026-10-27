@@ -4298,11 +4298,29 @@ const UI = {
     const branchEl = document.getElementById('profileCardBranch');
 
     if (avatarEl && profile.photo) avatarEl.src = profile.photo;
-    if (nameEl) nameEl.innerText = profile.name;
+
+    // Normalisasi Nama Resmi (BM Branch Manager)
+    let cleanName = String(profile.name || CONFIG.OPERATOR_NAME || 'ADMIN HEAD / BRANCH MANAGER').replace(/DISTRICT/gi, 'BRANCH');
+    if (nameEl) nameEl.innerText = cleanName;
+
     const isAdmin = AppState.isAdmin();
     const userBranch = AppState.getUserBranch();
     const userBranchCode = AppState.getUserBranchCode();
-    if (roleEl) roleEl.innerText = profile.position || (isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : `SECURITY (${userBranchCode})`);
+
+    // SINKRONISASI 100% RESMI TAB UserPIC KOLOM F (JABATAN PETUGAS)
+    let cleanJabatan = profile.position || profile.jabatan;
+    if (isAdmin || (profile.username && String(profile.username).toUpperCase().includes('DSO'))) {
+      if (!cleanJabatan || cleanJabatan === 'SECURITY' || cleanJabatan.toUpperCase().includes('DISTRICT')) {
+        cleanJabatan = 'ADMIN HEAD / BRANCH MANAGER';
+      }
+    } else {
+      if (!cleanJabatan || cleanJabatan.toUpperCase().includes('ADMIN') || cleanJabatan.toUpperCase().includes('MANAGER')) {
+        cleanJabatan = 'SECURITY';
+      }
+    }
+    cleanJabatan = String(cleanJabatan).replace(/DISTRICT/gi, 'BRANCH');
+
+    if (roleEl) roleEl.innerText = cleanJabatan;
     if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
