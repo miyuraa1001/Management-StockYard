@@ -111,11 +111,11 @@
             <span id="headerNotifBadgeDot" class="w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white absolute -top-0.5 -right-0.5 animate-pulse hidden"></span>
           </button>
 
-          <!-- Role Quick Toggle Pill Badge (Admin vs User Cabang) -->
-          <button type="button" onclick="UI.quickToggleRole()" id="headerRoleBadgeBtn" class="h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0" title="Klik untuk beralih mode: Admin (Semua Cabang) vs User (Khusus Cabang)">
+          <!-- Role Indicator Pill Badge (Admin vs User Cabang) -->
+          <div id="headerRoleBadgeBtn" class="h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0 select-none cursor-default" title="Status Peran Akun Masuk">
             <span id="headerRoleBadgeIcon">🛡️</span>
             <span id="headerRoleBadgeText"><span class="font-bold">Admin</span><span class="hidden sm:inline font-semibold"> (Semua)</span></span>
-          </button>
+          </div>
 
           <!-- Profile Avatar & Dropdown Chevron -->
           <button onclick="switchTab('settings')" class="h-8 relative flex items-center p-0.5 sm:pl-0.5 sm:pr-2 bg-slate-50/90 hover:bg-slate-100 rounded-full border border-slate-200/80 transition active:scale-95 cursor-pointer flex-shrink-0" aria-label="Pengaturan Profil">
@@ -1499,12 +1499,8 @@
                   </div>
 
                   <!-- Edit Profile Action Button -->
-                  <div class="pt-1 grid grid-cols-2 gap-2">
-                    <button type="button" onclick="event.stopPropagation(); UI.quickToggleRole()" class="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-black transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98 shadow-sm" title="Beralih peran antara Admin dan User">
-                      <span id="profileCardToggleIcon">🔄</span>
-                      <span id="profileCardToggleText">Ganti ke User</span>
-                    </button>
-                    <button type="button" onclick="event.stopPropagation(); UI.openEditProfilePage()" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98">
+                  <div class="pt-1">
+                    <button type="button" onclick="event.stopPropagation(); UI.openEditProfilePage()" class="w-full py-2.5 px-4 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer active:scale-98 shadow-sm">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                       <span>Edit Profil</span>
                     </button>

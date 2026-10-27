@@ -4274,8 +4274,6 @@ const UI = {
     const userBranch = AppState.getUserBranch();
     const userBranchCode = AppState.getUserBranchCode();
     if (roleEl) roleEl.innerText = profile.position || (isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : `SECURITY (${userBranchCode})`);
-    const toggleTextEl = document.getElementById('profileCardToggleText');
-    if (toggleTextEl) toggleTextEl.innerText = isAdmin ? 'Ganti ke User (D660)' : 'Ganti ke Admin';
     if (npkEl) npkEl.innerText = profile.npk || '-';
     if (branchEl) {
       branchEl.innerText = profile.branch;
