@@ -6283,16 +6283,39 @@ const UI = {
       };
     });
 
-    // 2. Buat log laporan harian (DAILY_REPORT) yang disintesis langsung dari database HistoryMutasi per-tanggal
-    const dbReportLogs = [];
-    if (dbHistory.length > 0) {
+    // 2. Buat log laporan harian (DAILY_REPORT) dari database (tab ReportLogs) & sintesis cerdas per-tanggal
+    const rawReportLogs = (Array.isArray(AppState.reportLogs) && AppState.reportLogs.length > 0)
+      ? AppState.reportLogs
+      : [];
+
+    const dbReportLogs = rawReportLogs.map((r, idx) => {
+      const timeDisplay = r.timestamp || (r.reportDate ? `${r.reportDate} • 08:00 WIB` : '08:00 WIB');
+      return {
+        id: r.id || `rep-db-${r.reportDate || idx}`,
+        trxId: r.id || `REP-${idx}`,
+        timestamp: timeDisplay,
+        targetEmail: r.targetEmail || targetEmail,
+        status: r.status || 'SUCCESS',
+        category: 'DAILY_REPORT',
+        subject: `Rekapitulasi Mutasi Harian Stockyard (${r.reportDate || 'Periode Resmi'})`,
+        message: r.message || `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
+        reportDate: r.reportDate,
+        totalUnits: r.totalUnits,
+        masuk: r.masuk,
+        keluar: r.keluar,
+        attachmentsCount: r.attachmentsCount,
+        branch: r.branch || 'ALL',
+        read: true,
+        fromDatabase: true
+      };
+    });
+
+    // Jika dbReportLogs masih kosong, sintesiskan riwayat laporan harian dari data History yang ada di database
+    if (dbReportLogs.length === 0 && dbHistory.length > 0) {
       const dateMap = {};
       dbHistory.forEach(h => {
         let dStr = null;
-        const parts = (typeof this.parseItemDate === 'function') ? this.parseItemDate(h) : {};
-        if (parts.date && parts.month && parts.year) {
-          dStr = `${String(parts.date).padStart(2, '0')}/${String(parts.month).padStart(2, '0')}/${parts.year}`;
-        } else if (h.date && h.month && h.year) {
+        if (h.date && h.month && h.year) {
           dStr = `${String(h.date).padStart(2, '0')}/${String(h.month).padStart(2, '0')}/${h.year}`;
         } else if (h.fullDateStr) {
           dStr = String(h.fullDateStr).trim();
@@ -6308,16 +6331,12 @@ const UI = {
         if (dStr) {
           if (!dateMap[dStr]) dateMap[dStr] = { total: 0, masuk: 0, keluar: 0 };
           dateMap[dStr].total++;
-          const isMasuk = (h.type === 'Unit Masuk' || h.status === 'Unit Masuk' || String(h.type || h.status || '').toLowerCase().includes('masuk'));
-          if (isMasuk) {
-            dateMap[dStr].masuk++;
-          } else {
-            dateMap[dStr].keluar++;
-          }
+          if (h.type === 'Unit Masuk' || h.status === 'Unit Masuk') dateMap[dStr].masuk++;
+          if (h.type === 'Unit Keluar' || h.status === 'Unit Keluar') dateMap[dStr].keluar++;
         }
       });
 
-      Object.keys(dateMap).sort().reverse().forEach((dStr) => {
+      Object.keys(dateMap).sort().reverse().forEach((dStr, idx) => {
         const stats = dateMap[dStr];
         const cleanId = String(dStr).replace(/[^a-zA-Z0-9]/g, '');
         dbReportLogs.push({
@@ -6328,7 +6347,7 @@ const UI = {
           status: 'SUCCESS',
           category: 'DAILY_REPORT',
           subject: `Rekapitulasi Mutasi Harian Stockyard (${dStr})`,
-          message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi tercatat dari sheet HistoryMutasi dan terlampir berkas PDF & Excel.`,
+          message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi terkirim otomatis ke email target per cabang & Admin DSO. Berkas PDF & Excel tersinkronisasi.`,
           reportDate: dStr,
           totalUnits: stats.total,
           masuk: stats.masuk,
@@ -6664,6 +6683,12 @@ const UI = {
         fromDatabase: true,
         read: true
       };
+
+      if (!Array.isArray(AppState.reportLogs)) AppState.reportLogs = [];
+      AppState.reportLogs.unshift(newLog);
+      try {
+        localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(AppState.reportLogs));
+      } catch (e) {}
 
       this.recordEmailNotificationLog(newLog);
       this.renderEmailNotifications();

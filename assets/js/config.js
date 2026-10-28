@@ -152,6 +152,7 @@ const CONFIG = {
     PROFILE: 'daihatsu_profile_cache_v8',
     AUTOMATION: 'daihatsu_automation_cache_v8',
     BRANCH_EMAILS: 'daihatsu_branch_emails_v8',
+    REPORT_LOGS: 'daihatsu_report_logs_v8',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
     DIRECT_URL: 'daihatsu_direct_appscript_url'
