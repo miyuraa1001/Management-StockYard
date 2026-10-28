@@ -141,7 +141,7 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang d
 1. **Tabel Log Mutasi Terintegrasi**: Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, Cabang Resmi, Jenis Dokumen (SPPDC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
 2. **Filter Rentang Kalender & Pencarian Global**: Menyesuaikan audit harian, mingguan, bulanan, serta pencarian instan nomor rangka, nomor mesin, atau model.
 3. **Empat Metode Ekspor Resmi**:
-   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel 13 kolom seragam, dan 1 pengesahan tanda tangan resmi: `SECURITY (Petugas Security On-Duty)`.
+   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel 13 kolom seragam, dan 2 pengesahan tanda tangan resmi: `SECURITY (Petugas Security On-Duty)` dan `ADH / BM (Admin Head / Branch Manager)`.
    - **Ekspor Excel (.xlsx Murni) Berfoto**: Dihasilkan via `ExcelJS` langsung di browser, menyematkan visual foto unit & dokumen ke dalam sel tabel secara proporsional, border rapi, dan tanda tangan resmi.
    - **Cetak Langsung (*Print-Ready*)**: Tata letak ramah cetak A4 tanpa elemen UI browser.
    - **Email Rekapitulasi Terjadwal & On-Demand (Backend v2.19)**: Pengiriman otomatis pukul 08:00 WIB dan manual via tombol "Kirim Laporan" dengan lampiran PDF & Excel yang dipartisi eksklusif per cabang.
@@ -429,6 +429,7 @@ Dokumen spesifikasi produk dan cetak biru sistem ini merupakan panduan operasion
 * **Cabang Terdaftar:** D660 (Ahmad Yani), D661 (Soekarno Hatta), D662 (Bandar Jaya), D663 (Lampung Utara), D664 (Lampung Timur)  
 * **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
 * **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.9 Enterprise Edition — Terverifikasi*)  
+
 
 
 

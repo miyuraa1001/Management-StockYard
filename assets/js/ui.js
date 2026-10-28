@@ -1726,20 +1726,23 @@ const UI = {
       };
     }
 
-    // 1 Tanda Tangan Resmi: SECURITY (Ruang Lapang Turun ke Bawah)
+    // 2 Tanda Tangan Resmi (TTD): Ruang Lapang Turun ke Bawah (Persis Lampiran Backend Email)
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttd1 = worksheet.addRow(['', '', '', '', '', '', '', '', 'Petugas Pemeriksa & Pemindai:']);
-    const ttd2 = worksheet.addRow(['', '', '', '', '', '', '', '', 'SECURITY']);
-    const ttd3 = worksheet.addRow(['', '', '', '', '', '', '', '', branchFilter]);
+    const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
+    const ttd2 = worksheet.addRow(['', 'SECURITY', '', '', '', '', '', 'ADH / BM (ADMIN HEAD / BRANCH MANAGER)']);
+    const ttd3 = worksheet.addRow(['', branchFilter, '', '', '', '', '', 'ASTRA DAIHATSU DSO LAMPUNG']);
     const ttdRow = ttd1.number;
 
-    worksheet.mergeCells(`I${ttdRow}:M${ttdRow}`);
-    worksheet.mergeCells(`I${ttdRow + 1}:M${ttdRow + 1}`);
-    worksheet.mergeCells(`I${ttdRow + 2}:M${ttdRow + 2}`);
+    worksheet.mergeCells(`B${ttdRow}:E${ttdRow}`);
+    worksheet.mergeCells(`H${ttdRow}:L${ttdRow}`);
+    worksheet.mergeCells(`B${ttdRow + 1}:E${ttdRow + 1}`);
+    worksheet.mergeCells(`H${ttdRow + 1}:L${ttdRow + 1}`);
+    worksheet.mergeCells(`B${ttdRow + 2}:E${ttdRow + 2}`);
+    worksheet.mergeCells(`H${ttdRow + 2}:L${ttdRow + 2}`);
 
     ttd1.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF475569' } };
     ttd1.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1755,16 +1758,19 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttdSign = worksheet.addRow(['', '', '', '', '', '', '', '', '( Petugas Security On-Duty )']);
-    const ttdSignSub = worksheet.addRow(['', '', '', '', '', '', '', '', 'Reg. Security Guard • Astra Daihatsu Lampung']);
+    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / Branch Manager )']);
+    const ttdSignSub = worksheet.addRow(['', 'Reg. Security Guard • Astra Daihatsu Lampung', '', '', '', '', '', 'Astra Daihatsu DSO Lampung']);
     const ttdSignRow = ttdSign.number;
 
-    worksheet.mergeCells(`I${ttdSignRow}:M${ttdSignRow}`);
-    worksheet.mergeCells(`I${ttdSignRow + 1}:M${ttdSignRow + 1}`);
+    worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
+    worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
+    worksheet.mergeCells(`B${ttdSignRow + 1}:E${ttdSignRow + 1}`);
+    worksheet.mergeCells(`H${ttdSignRow + 1}:L${ttdSignRow + 1}`);
 
     ttdSign.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
     ttdSign.alignment = { vertical: 'middle', horizontal: 'center' };
-    ttdSign.getCell(9).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
+    ttdSign.getCell(2).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
+    ttdSign.getCell(8).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
 
     ttdSignSub.font = { name: 'Arial', size: 8, color: { argb: 'FF64748B' } };
     ttdSignSub.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -2348,19 +2354,48 @@ const UI = {
 
     const colW = (pageWidth - (margin * 2)) / 2;
 
-    // TTD TUNGGAL RESMI: SECURITY (KANAN)
+    // TTD 1: PETUGAS SECURITY CABANG (KIRI)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
-    doc.text('Petugas Pemeriksa & Pemindai:', margin + colW + (colW / 2), finalY, { align: 'center' });
+    doc.text('Petugas Pemeriksa & Pemindai:', margin + (colW / 2), finalY, { align: 'center' });
 
     doc.setFontSize(9.5);
     doc.setTextColor(0, 32, 91);
-    doc.text('SECURITY', margin + colW + (colW / 2), finalY + 4, { align: 'center' });
+    doc.text('SECURITY', margin + (colW / 2), finalY + 4, { align: 'center' });
 
     doc.setFontSize(7.5);
     doc.setTextColor(180, 83, 9);
-    doc.text(branchFilter, margin + colW + (colW / 2), finalY + 8, { align: 'center' });
+    doc.text(branchFilter, margin + (colW / 2), finalY + 8, { align: 'center' });
+
+    // Garis TTD Kiri
+    doc.setDrawColor(15, 23, 42);
+    doc.setLineWidth(0.3);
+    doc.line(margin + 25, finalY + 22, margin + colW - 25, finalY + 22);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(15, 23, 42);
+    doc.text('( Petugas Security On-Duty )', margin + (colW / 2), finalY + 25.5, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Reg. Security Guard • Astra Daihatsu Lampung', margin + (colW / 2), finalY + 29, { align: 'center' });
+
+    // TTD 2: ADH / BM (KANAN)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text('Mengetahui & Menyetujui:', margin + colW + (colW / 2), finalY, { align: 'center' });
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(0, 32, 91);
+    doc.text('ADH / BM (ADMIN HEAD / BRANCH MANAGER)', margin + colW + (colW / 2), finalY + 4, { align: 'center' });
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(0, 32, 91);
+    doc.text('ASTRA DAIHATSU DSO LAMPUNG', margin + colW + (colW / 2), finalY + 8, { align: 'center' });
 
     // Garis TTD Kanan
     doc.setDrawColor(15, 23, 42);
@@ -2370,12 +2405,12 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(15, 23, 42);
-    doc.text('( Petugas Security On-Duty )', margin + colW + (colW / 2), finalY + 25.5, { align: 'center' });
+    doc.text('( Admin Head / Branch Manager )', margin + colW + (colW / 2), finalY + 25.5, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(100, 116, 139);
-    doc.text('Reg. Security Guard • Astra Daihatsu Lampung', margin + colW + (colW / 2), finalY + 29, { align: 'center' });
+    doc.text('Astra Daihatsu DSO Lampung', margin + colW + (colW / 2), finalY + 29, { align: 'center' });
 
     // ==========================================
     // 6. FOOTER & NOMOR HALAMAN
@@ -2855,15 +2890,23 @@ const UI = {
             </tfoot>
           </table>
 
-          <!-- LEMBAR PENGESAHAN RESMI (1 TTD OTORISASI: SECURITY) -->
-          <div class="signatures" style="display: flex; justify-content: flex-end; margin-top: 24px;">
-            <div class="sig-col" style="text-align: center; min-width: 240px;">
-              <div style="font-size: 8.5px; font-weight: bold; color: #475569;">Petugas Pemeriksa & Pemindai:</div>
-              <div style="font-size: 10px; font-weight: bold; color: #00205B; margin-top: 2px;">SECURITY</div>
-              <div style="font-size: 8px; font-weight: bold; color: #b45309; margin-top: 1px;">${operatorName}</div>
-              <div class="sig-space" style="height: 48px;"></div>
-              <div style="border-top: 1px solid #000000; width: 80%; margin: 0 auto; font-weight: bold; font-size: 9px; padding-top: 4px;">( Petugas Security On-Duty )</div>
-              <div style="color: #64748b; font-size: 7.5px; margin-top: 2px;">Reg. Security Guard &bull; Astra Daihatsu Lampung</div>
+          <!-- LEMBAR PENGESAHAN LAPANGAN (2 TTD: SECURITY & ADH/BM) -->
+          <div class="signatures">
+            <div class="sig-col">
+              <div>Petugas Pemeriksa & Pemindai:</div>
+              <div style="font-weight: bold; color: #00205B; font-size: 10px; margin-top: 2px;">SECURITY</div>
+              <div style="color: #b45309; font-size: 8px;">${operatorName}</div>
+              <div class="sig-space"></div>
+              <div>( Petugas Security On-Duty )</div>
+              <div style="color: #64748b; font-size: 7.5px;">Reg. Security Guard &bull; Astra Daihatsu Lampung</div>
+            </div>
+            <div class="sig-col">
+              <div>Mengetahui & Menyetujui:</div>
+              <div style="font-weight: bold; color: #00205B; font-size: 10px; margin-top: 2px;">ADH / BM (ADMIN HEAD / BRANCH MANAGER)</div>
+              <div style="color: #00205B; font-size: 8px;">ASTRA DAIHATSU DSO LAMPUNG</div>
+              <div class="sig-space"></div>
+              <div>( Admin Head / Branch Manager )</div>
+              <div style="color: #64748b; font-size: 7.5px;">Astra Daihatsu DSO Lampung</div>
             </div>
           </div>
 
