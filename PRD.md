@@ -321,7 +321,7 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 │  [🏢 CABANG: D660 - AHMAD YANI]   [📅 PERIODE: 26/10/2026]   [🕒 CETAK: 08:00 WIB]    │
 ├────┬──────────┬───────┬─────────┬──────────┬────────┬──────────┬────────┬───────┬──────┤
 │ No │ID Mutasi │ Waktu │ Tanggal │  Model   │ Cabang │No Rangka │No Mesin│ Jenis │Petugas│
-│    │          │       │         │Kendaraan │ Resmi  │  (VIN)   │        │Mutasi │Secur. │
+│    │          │       │         │Kendaraan │        │  (VIN)   │        │Mutasi │Secur. │
 ├────┼──────────┼───────┼─────────┼──────────┼────────┼──────────┼────────┼───────┼──────┤
 │ 1  │MUT-001   │08:15  │26/10/26 │Terios SE │D660    │MHKP3...  │2NR...  │ MASUK │Sec D0│
 ├────┴──────────┴───────┴─────────┴──────────┴────────┴──────────┴────────┴───────┴──────┤
@@ -341,12 +341,12 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 3. `Waktu` — Jam Mutasi di Lapangan (WIB)
 4. `Tanggal` — Tanggal Transaksi Mutasi
 5. `Model Kendaraan` — Varian Resmi dari 13 Model Daihatsu
-6. `Cabang Resmi` — Kode & Nama Cabang (D660 s/d D664)
+6. `Cabang` — Kode & Nama Cabang (D660 s/d D664)
 7. `No. Rangka (VIN)` — 17 Digit Nomor Sasis (Font Monospace)
 8. `No. Mesin` — Nomor Mesin Kendaraan
 9. `Jenis Mutasi` — Lencana Hijau (`Unit Masuk`) atau Biru (`Unit Keluar`)
 10. `Petugas Security` — Identitas Petugas On-Duty Cabang
-11. `Catatan Audit` — Catatan Kondisi Fisik Lapangan
+11. `Catatan` — Catatan Kondisi Fisik Lapangan
 12. `Foto Fisik Unit` — Visual Gambar / Tautan Langsung Google Drive
 13. `Foto Dokumen` — Visual Berkas Dokumen (SPPDC / BSTKB / OKK) / Tautan Langsung Google Drive
 

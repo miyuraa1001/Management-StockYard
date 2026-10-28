@@ -1539,8 +1539,8 @@ const UI = {
     // Row 5: Table Header (Warna Biru Tua #00205B, Teks Putih Tebal, Border Hitam Tegas)
     const headerRow = worksheet.addRow([
       'No', 'ID Mutasi', 'Waktu', 'Tanggal', 'Model Kendaraan', 
-      'Cabang Resmi', 'No. Rangka (VIN)', 'No. Mesin', 'Jenis Mutasi', 
-      'Petugas Security', 'Catatan Audit', 'Foto Fisik Unit', 'Foto Dokumen'
+      'Cabang', 'No. Rangka (VIN)', 'No. Mesin', 'Jenis Mutasi', 
+      'Petugas Security', 'Catatan', 'Foto Fisik Unit', 'Foto Dokumen'
     ]);
     headerRow.height = 28;
     headerRow.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -2147,12 +2147,12 @@ const UI = {
       { header: 'Waktu', dataKey: 'waktu' },
       { header: 'Tanggal', dataKey: 'tanggal' },
       { header: 'Model Kendaraan', dataKey: 'kendaraan' },
-      { header: 'Cabang Resmi', dataKey: 'cabang' },
+      { header: 'Cabang', dataKey: 'cabang' },
       { header: 'No. Rangka (VIN)', dataKey: 'vin' },
       { header: 'No. Mesin', dataKey: 'mesin' },
       { header: 'Jenis Mutasi', dataKey: 'jenis' },
       { header: 'Petugas Security', dataKey: 'pic' },
-      { header: 'Catatan Audit', dataKey: 'catatan' },
+      { header: 'Catatan', dataKey: 'catatan' },
       { header: 'Foto Fisik Unit', dataKey: 'foto_unit' },
       { header: 'Foto Dokumen', dataKey: 'foto_doc' }
     ];
