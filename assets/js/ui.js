@@ -1456,7 +1456,7 @@ const UI = {
     // Row 1: KOP RESMI PERUSAHAAN (Kiri: Logo di A1:B2, C-H: Nama Perusahaan, I-M: Form ID & Klasifikasi)
     const r1 = worksheet.addRow([
       '', '', 'PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION', '', '', '', '', '',
-      'KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', '', '', '', ''
+      'KODE FORM: ADM-YARD-BA-01', '', '', '', ''
     ]);
     worksheet.mergeCells('A1:B2'); // Tempat logo
     worksheet.mergeCells('C1:H1');
@@ -1494,7 +1494,7 @@ const UI = {
     rSpacer1.height = 6;
 
     // Row 5: Judul Dokumen Utama
-    const r5 = worksheet.addRow(['BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)']);
+    const r5 = worksheet.addRow(['REPORT REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)']);
     worksheet.mergeCells('A5:M5');
     r5.height = 22;
     r5.getCell(1).font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF0F172A' } };
@@ -2053,7 +2053,7 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
-    doc.text('KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI', pageWidth - margin, 11, { align: 'right' });
+    doc.text('KODE FORM: ADM-YARD-BA-01', pageWidth - margin, 11, { align: 'right' });
 
     // Baris 2: Sub-Kop Sentra Wilayah
     doc.setFont('helvetica', 'bold');
@@ -2078,7 +2078,7 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10.5);
     doc.setTextColor(15, 23, 42); // #0F172A
-    doc.text('BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', pageWidth / 2, 24, { align: 'center' });
+    doc.text('REPORT REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)', pageWidth / 2, 24, { align: 'center' });
 
     // Baris 4: Metadata Info Card (Elegan Abu-abu Slate #F8FAFC dengan Border #CBD5E1)
     const cardY = 26.5;
@@ -2244,16 +2244,16 @@ const UI = {
       },
       columnStyles: {
         no: { halign: 'center', cellWidth: 8, fontStyle: 'bold' },
-        id: { halign: 'center', cellWidth: 20, font: 'courier', fontStyle: 'bold' },
-        waktu: { halign: 'center', cellWidth: 12, font: 'courier' },
+        id: { halign: 'center', cellWidth: 24, fontStyle: 'bold' },
+        waktu: { halign: 'center', cellWidth: 13 },
         tanggal: { halign: 'center', cellWidth: 15 },
         kendaraan: { cellWidth: 25, fontStyle: 'bold' },
         cabang: { cellWidth: 26, fontStyle: 'bold' },
-        vin: { cellWidth: 29, font: 'courier', fontStyle: 'bold' },
-        mesin: { cellWidth: 20, font: 'courier' },
-        jenis: { halign: 'center', cellWidth: 17, fontStyle: 'bold' },
-        pic: { cellWidth: 23 },
-        catatan: { cellWidth: 30 },
+        vin: { cellWidth: 28, font: 'courier', fontStyle: 'bold' },
+        mesin: { cellWidth: 19, font: 'courier' },
+        jenis: { halign: 'center', cellWidth: 16, fontStyle: 'bold' },
+        pic: { cellWidth: 22 },
+        catatan: { cellWidth: 28 },
         foto_unit: { halign: 'center', cellWidth: 28 },
         foto_doc: { halign: 'center', cellWidth: 28 }
       },
@@ -2825,7 +2825,7 @@ const UI = {
           <div class="header">
             <div>
               <div class="title">Astra Daihatsu DSO Lampung</div>
-              <div class="subtitle">Rekapitulasi Audit & Serah Terima Fisik Kendaraan (Stockyard Logistics)</div>
+              <div class="subtitle">Report Rekapitulasi Mutasi Harian Kendaraan (StockYard Logistics)</div>
               <div class="address">Jl. Raya Soekarno Hatta No. 88, Bandar Lampung • Sentra Yard & Logistics Operations Hub • Telp: (0721) 700-888</div>
             </div>
             <div style="text-align: right; font-size: 8px; color: #64748b;">

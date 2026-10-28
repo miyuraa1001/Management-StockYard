@@ -312,11 +312,11 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │  [LOGO DAIHATSU]   PT ASTRA INTERNATIONAL Tbk — DAIHATSU SALES OPERATION               │
 │  (Base64 Resmi)    Sentra Distribusi & Manajemen StockYard Area Lampung                │
-│                    KODE FORM: ADM-YARD-BA-01  |  AUDIT RESMI • Astra Daihatsu DSO      │
+│                    KODE FORM: ADM-YARD-BA-01 • Astra Daihatsu DSO Lampung               │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │  ══════════════════════ [Garis Aksen: Merah 54% & Navy 46%] ═════════════════════════  │
 │                                                                                        │
-│               BERITA ACARA REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)            │
+│               REPORT REKAPITULASI MUTASI HARIAN KENDARAAN (STOCKYARD)                  │
 │                                                                                        │
 │  [🏢 CABANG: D660 - AHMAD YANI]   [📅 PERIODE: 26/10/2026]   [🕒 CETAK: 08:00 WIB]    │
 ├────┬──────────┬───────┬─────────┬──────────┬────────┬──────────┬────────┬───────┬──────┤
