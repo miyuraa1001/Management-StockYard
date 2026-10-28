@@ -1,4 +1,4 @@
-﻿# 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem Lengkap
+# 🚗 Dokumen Spesifikasi Produk (PRD) & Panduan Sistem Lengkap
 ## Sistem Management StockYard Kendaraan (Astra Daihatsu DSO Lampung)
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk, Arsitektur Sistem, Katalog Fitur Menyeluruh & Operasional Bisnis  
@@ -22,7 +22,7 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk men
 * **Kecepatan Mutasi (< 20 Detik per Unit)**: Petugas lapangan memindai stiker barcode kaca kendaraan secara otomatis tanpa mengetik manual 17 digit nomor rangka (VIN) yang rawan keliru.
 * **Bukti Fisik & Dokumen Wajib Terarsip ke Google Drive**: Setiap pergerakan mobil wajib menyertakan foto fisik unit dan foto dokumen resmi (SPPDC / BSTKB / OKK) yang langsung tersimpan rapi di Google Drive perusahaan dengan pembersihan otomatis file lama (*Drive lifecycle cleanup*).
 * **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
-* **Sinkronisasi Tab Cloud `ReportLogs` Realtime**: Setiap aktivitas pengiriman laporan harian (otomatis maupun manual via tombol "Kirim Laporan") tercatat ke tab `ReportLogs` dan tersinkronisasi 100% ke modal notifikasi aplikasi.
+* **Konsolidasi Single Source of Truth (`HistoryMutasi`)**: Seluruh rekaman scan fisik di lapangan, mutasi harian, hingga indikator laporan rekapitulasi tersinkronisasi 100% dari sheet `HistoryMutasi` tanpa memerlukan tab tambahan, menjaga spreadsheet tetap bersih (hanya 4 lembar kerja utama).
 
 ---
 
@@ -92,7 +92,7 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang d
 │                               │   Alarm Anti-Duplikat, Form Foto Unit & Dokumen  │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 7. PUSAT NOTIFIKASI REAL-TIME │ • Indikator Live Sync, Ping Server, Tombol Kirim │
-│                               │   Laporan, Sinkronisasi Cloud Tab ReportLogs     │
+│                               │   Laporan, Sinkronisasi Riil dari HistoryMutasi  │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 8. PENGATURAN OTOMASI LAPORAN │ • Jam Analog "Jam Bulet", Frekuensi Kirim,       │
 │                               │   Multi-Email Chips Manager (> 5 Email Tujuan)   │
@@ -160,14 +160,14 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** terisolasi yang d
   - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPPDC / BSTKB / OKK).
   - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar.
 
-### 4.6 Pusat Notifikasi & Sinkronisasi Cloud (`ReportLogs`)
+### 4.6 Pusat Notifikasi & Rekap Laporan Realtime (`HistoryMutasi`)
 * **Live Status Koneksi**: Indikator koneksi realtime ke backend Google Apps Script.
 * **Tombol Kirim Laporan On-Demand**: Memicu pengiriman laporan harian ke email manajemen seketika.
 * **Filter Riwayat Notifikasi**:
-  - `Semua (N)`: Menggabungkan seluruh mutasi unit dan riwayat pengiriman laporan.
+  - `Semua (N)`: Menggabungkan seluruh mutasi unit dan rekap harian tersinkronisasi.
   - `Masuk (N)`: Mutasi unit masuk.
   - `Keluar (N)`: Mutasi unit keluar.
-  - `Laporan (N)`: Catatan resmi berkas laporan rekapitulasi harian yang berhasil dikirimkan ke email target, tersinkronisasi langsung dari tab spreadsheet **`ReportLogs`**.
+  - `Laporan (N)`: Rekapitulasi mutasi harian kendaraan terkirim per tanggal, tersintesis langsung dari database **`HistoryMutasi`**.
 * **Kartu Laporan Harian Modern**: Memuat badge `📄 Laporan Rekap Harian`, tanggal periode laporan, jumlah unit (masuk/keluar), status `Spreadsheet Sync ✓` / `Email Terkirim ✓`, serta rincian chip email penerima.
 
 ### 4.7 Pengaturan Akun Universal & Manajemen Profil
@@ -200,12 +200,11 @@ flowchart TD
         Partition["Mesin Partisi Laporan Eksklusif per Cabang (D660 - D664)"]
     end
 
-    subgraph Database["3. LAPISAN BASIS DATA & PENYIMPANAN (GOOGLE SPREADSHEET & DRIVE)"]
-        Sheet1[("Sheet: HistoryMutasi\n(14 Kolom Rekam Jejak Audit)")]
-        Sheet2[("Sheet: Inventory\n(Stok 13 Model Mobil)")]
-        Sheet3[("Sheet: UserPIC\n(Akun Universal DSO & Cabang)")]
-        Sheet4[("Sheet: SystemConfig\n(Konfigurasi Jadwal & Email)")]
-        Sheet5[("Sheet: ReportLogs\n(Log Pengiriman Laporan Harian)")]
+    subgraph Database["3. LAPISAN BASIS DATA & PENYIMPANAN (GOOGLE SPREADSHEET 4 SHEET & DRIVE)"]
+        Sheet1[("Sheet 1: HistoryMutasi\n(Rekam Jejak Audit & Mutasi Realtime)")]
+        Sheet2[("Sheet 2: Inventory\n(Stok 13 Model Mobil)")]
+        Sheet3[("Sheet 3: UserPIC\n(Akun Universal DSO & Cabang)")]
+        Sheet4[("Sheet 4: SystemConfig\n(Konfigurasi Jadwal & Email)")]
         Drive[("Google Drive Khusus\n(Arsip Foto Unit, Dokumen, Avatar)")]
     end
 
@@ -286,21 +285,15 @@ Struktur tabel di Google Spreadsheet dirancang rapi, mudah dibaca langsung oleh 
 | **I** | `Status` | Teks | `Aktif` | Status keaktifan akun |
 | **J** | `Terakhir Login` | Waktu | `27/10/2026 08:15:20 WIB` | Stempel waktu login terakhir |
 
-### 6.4 Lembar Kerja 4: `ReportLogs` (Riwayat Pengiriman Laporan Harian)
+### 6.4 Lembar Kerja 4: `SystemConfig` (Konfigurasi Sistem & Penjadwalan Laporan)
 | Kolom | Nama Kolom | Tipe Data | Contoh Isi Data | Penjelasan |
 | :---: | :--- | :--- | :--- | :--- |
-| **A** | `ID Laporan` | Teks | `REP-20261027-080005` | Nomor transaksi pengiriman laporan |
-| **B** | `Timestamp ISO` | ISO String | `2026-10-27T01:00:05.000Z` | Waktu eksekusi laporan |
-| **C** | `Waktu Kirim` | Teks | `27/10/2026 08:00 WIB` | Jam pengiriman laporan resmi |
-| **D** | `Periode Laporan` | Teks | `26/10/2026` | Tanggal mutasi yang direkap |
-| **E** | `Target Email Penerima` | Teks | `syafirafira08162@gmail.com, ...` | Seluruh email yang menerima laporan |
-| **F** | `Total Unit` | Angka | `13` | Total mutasi yang dilaporkan |
-| **G** | `Unit Masuk` | Angka | `12` | Jumlah unit masuk |
-| **H** | `Unit Keluar` | Angka | `1` | Jumlah unit keluar |
-| **I** | `Lampiran Berkas` | Angka | `2` | Jumlah berkas (PDF & Excel) |
-| **J** | `Status` | Teks | `SUCCESS` | Status pengiriman email Gmail API |
-| **K** | `Keterangan` | Teks | `Laporan rekapitulasi mutasi berhasil...` | Catatan eksekusi sistem |
-| **L** | `Cabang Terkait` | Teks | `ALL` / `D660` | Sasaran cabang laporan |
+| **A** | `Key` | Teks | `TARGET_EMAIL` / `REPORT_HOUR` | Kunci konfigurasi sistem |
+| **B** | `Value` | Teks | `syafirafira08162@gmail.com` / `8` | Nilai parameter sistem |
+| **C** | `Keterangan` | Teks | `Email penerima laporan resmi` | Deskripsi fungsi parameter |
+
+> [!NOTE]
+> Database Google Spreadsheet dipertahankan tetap ringkas dan optimal hanya dengan **4 sheet resmi**: `HistoryMutasi`, `Inventory`, `UserPIC`, dan `SystemConfig`. Seluruh pencatatan scan fisik dan rekapitulasi harian bersumber tunggal (*single source of truth*) dari sheet `HistoryMutasi`.
 
 ---
 
@@ -398,8 +391,8 @@ flowchart TD
     SnapPhotos --> Submit[Tekan 'Simpan & Verifikasi Mutasi']
     
     Submit --> CompressImg[Kompresi Otomatis di HP < 400 KB]
-    CompressImg --> CloudSync[Data Tersimpan di HistoryMutasi 14 Kolom & Foto di Drive]
-    CloudSync --> AutoReport[Otomatis Masuk Rekap Harian 08:00 WIB via PDF & Excel Serta Tab ReportLogs]
+    CompressImg --> CloudSync[Data Tersimpan di HistoryMutasi & Foto di Drive]
+    CloudSync --> AutoReport[Otomatis Masuk Rekap Harian 08:00 WIB via PDF & Excel]
     AutoReport --> Done([Selesai - Dashboard & Riwayat Terupdate])
 ```
 
