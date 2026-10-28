@@ -1056,7 +1056,7 @@
               <button type="button" onclick="closeModelDetail()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center flex-shrink-0 transition active:scale-95 cursor-pointer shadow-2xs" title="Kembali ke Inventaris">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
               </button>
-              <div class="w-12 h-10 sm:w-14 sm:h-11 rounded-xl bg-slate-50 border border-slate-200 p-0.5 flex-shrink-0 overflow-hidden flex items-center justify-center shadow-2xs">
+              <div onclick="if(document.getElementById('modelDetailPhoto')?.src) openImagePreviewModal(document.getElementById('modelDetailPhoto').src)" class="w-12 h-10 sm:w-14 sm:h-11 rounded-xl bg-slate-50 border border-slate-200 p-0.5 flex-shrink-0 overflow-hidden flex items-center justify-center shadow-2xs cursor-pointer hover:border-blue-400 transition" title="Perbesar Foto Model">
                 <img id="modelDetailPhoto" src="assets/images/Inventory_New Terios.jpeg" alt="Foto Model" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
@@ -1232,7 +1232,7 @@
                   <td colspan="2" class="py-3 px-3 text-xs text-slate-800 font-black border-r border-slate-200">
                     Sisa Total Stok: <span id="modelTableFootTotalStok" class="text-sm font-black text-white bg-slate-900 px-2.5 py-0.5 rounded-lg ml-1">0 Unit</span>
                   </td>
-                  <td colspan="3" class="py-3 pl-3 pr-4 text-right text-xs text-slate-500">
+                  <td colspan="4" class="py-3 pl-3 pr-4 text-right text-xs text-slate-500">
                     Total Baris: <strong id="modelTableFootRowCount" class="text-slate-800 font-black text-xs">0 Data</strong>
                   </td>
                 </tr>

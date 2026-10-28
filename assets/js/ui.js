@@ -472,7 +472,7 @@ const UI = {
           const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
           if (!matched || matched.catalogId !== cat.catalogId) return false;
         }
-        if (!this.isBranchMatch(u.noBa, fBa)) {
+        if (!this.isBranchMatch(u.noBa || u.branch || u.location, fBa)) {
           return false;
         }
         return true;
@@ -485,16 +485,16 @@ const UI = {
       // Cek mutasi masuk & keluar dari riwayat audit
       const matchingHistory = (AppState.historyData || []).filter(h => {
         if (!h || !h.model) return false;
-      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
-        const userCode = AppState.getUserBranchCode();
-        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
-      }
+        if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+          const userCode = AppState.getUserBranchCode();
+          if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+        }
         const hModel = String(h.model || '').toLowerCase();
         if (hModel !== cat.model.toLowerCase()) {
           const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
           if (!matched || matched.catalogId !== cat.catalogId) return false;
         }
-        if (!this.isBranchMatch(h.noBa, fBa)) {
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, fBa)) {
           return false;
         }
         return true;
@@ -503,15 +503,19 @@ const UI = {
       const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       const netFromHistory = Math.max(0, histMasuk - histKeluar);
-      const totalUnits = Math.max(sheetYardStock + unitInYard, netFromHistory);
+      const totalUnits = hasRealHistory ? netFromHistory : Math.max(sheetYardStock + unitInYard, netFromHistory);
+
+      const latestIn = matchingHistory.find(h => h.type === 'Unit Masuk');
+      const primaryUnit = units[0] || (latestIn ? { plate: latestIn.plate, vin: latestIn.vin, engine: latestIn.engine } : null);
 
       return {
         ...cat,
         units,
+        matchingHistory,
         totalUnits,
         histMasuk,
         histKeluar,
-        primaryUnit: units[0] || null
+        primaryUnit
       };
     });
 
@@ -568,7 +572,16 @@ const UI = {
         (u.noBa && u.noBa.toLowerCase().includes(searchVal))
       );
 
-      return matchesStatus && (matchesCatalog || matchesUnit);
+      const matchesHistory = (entry.matchingHistory || []).some(h =>
+        (h.vin && h.vin.toLowerCase().includes(searchVal)) ||
+        (h.plate && h.plate.toLowerCase().includes(searchVal)) ||
+        (h.engine && h.engine.toLowerCase().includes(searchVal)) ||
+        (h.noBa && h.noBa.toLowerCase().includes(searchVal)) ||
+        (h.branch && h.branch.toLowerCase().includes(searchVal)) ||
+        (h.id && h.id.toLowerCase().includes(searchVal))
+      );
+
+      return matchesStatus && (matchesCatalog || matchesUnit || matchesHistory);
     });
 
     if (filtered.length === 0) {
@@ -4405,7 +4418,8 @@ const UI = {
     const branchDropdowns = [
       document.getElementById('dashFilterBa'),
       document.getElementById('invFilterBa'),
-      document.getElementById('histFilterBa')
+      document.getElementById('histFilterBa'),
+      document.getElementById('modelFilterBa')
     ];
 
     branchDropdowns.forEach(dd => {
@@ -6989,6 +7003,18 @@ const UI = {
     if (sInput) sInput.value = '';
     if (sClearBtn) sClearBtn.classList.add('hidden');
 
+    // Sinkronkan filter cabang dari Menu Inventory ke Rincian Mutasi
+    const invFilterBa = document.getElementById('invFilterBa');
+    const modelFilterBa = document.getElementById('modelFilterBa');
+    if (modelFilterBa) {
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        modelFilterBa.value = AppState.getUserBranchCode();
+        modelFilterBa.disabled = true;
+      } else if (invFilterBa) {
+        modelFilterBa.value = invFilterBa.value || 'all';
+      }
+    }
+
     // Inisialisasi atau refresh custom popover dropdown untuk filter tanggal, bulan, tahun
     this.initCustomDropdowns();
 
@@ -7067,7 +7093,18 @@ const UI = {
     if (fDate) fDate.value = 'all';
     if (fMonth) fMonth.value = 'all';
     if (fYear) fYear.value = 'all';
-    if (fBa) fBa.value = 'all';
+    if (fBa) {
+      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+        fBa.value = AppState.getUserBranchCode();
+      } else {
+        const invBa = document.getElementById('invFilterBa');
+        fBa.value = invBa?.value || 'all';
+      }
+    }
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const sClearBtn = document.getElementById('modelDetailSearchClearBtn');
+    if (sInput) sInput.value = '';
+    if (sClearBtn) sClearBtn.classList.add('hidden');
     this.renderModelDetailTable();
   },
 
@@ -7093,7 +7130,7 @@ const UI = {
     const catalogItem = catalog.find(c => c.catalogId === AppState.selectedModelCatalogId) || catalog[0];
     if (!catalogItem) return;
 
-    // Ambil data mutasi yang cocok dari riwayat audit AppState.historyData
+    // Filter data mutasi model berdasarkan role (jika user cabang)
     let modelHistory = (AppState.historyData || []).filter(h => {
       if (!h || !h.model) return false;
       if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
@@ -7106,9 +7143,20 @@ const UI = {
       return m && m.catalogId === catalogItem.catalogId;
     });
 
-    // Hitung KPI model dari akumulasi mutasi murni database
-    const totalMasukAll = modelHistory.filter(i => i.type === 'Unit Masuk').length;
-    const totalKeluarAll = modelHistory.filter(i => i.type === 'Unit Keluar').length;
+    // Filter tanggal, bulan, tahun, kode BA & pencarian
+    const fDate = document.getElementById('modelFilterDate')?.value || 'all';
+    const fMonth = document.getElementById('modelFilterMonth')?.value || 'all';
+    const fYear = document.getElementById('modelFilterYear')?.value || 'all';
+    const fBa = document.getElementById('modelFilterBa')?.value || 'all';
+    const sInput = document.getElementById('modelDetailSearchInput');
+    const searchVal = (sInput?.value || '').toLowerCase().trim();
+
+    // Filter data mutasi model khusus cabang aktif agar KPI sinkron dengan kartu Inventory
+    const branchModelHistory = modelHistory.filter(h => this.isBranchMatch(h.noBa || h.branch || h.location, fBa));
+
+    // Hitung KPI model dari akumulasi mutasi murni database sesuai filter cabang
+    const totalMasukAll = branchModelHistory.filter(i => i.type === 'Unit Masuk').length;
+    const totalKeluarAll = branchModelHistory.filter(i => i.type === 'Unit Keluar').length;
     const totalStokCurrent = Math.max(0, totalMasukAll - totalKeluarAll);
 
     const kpiTotalEl = document.getElementById('modelKpiTotal');
@@ -7133,22 +7181,13 @@ const UI = {
       }
     }
 
-    // Filter tanggal, bulan, tahun, kode BA & pencarian
-    const fDate = document.getElementById('modelFilterDate')?.value || 'all';
-    const fMonth = document.getElementById('modelFilterMonth')?.value || 'all';
-    const fYear = document.getElementById('modelFilterYear')?.value || 'all';
-    const fBa = document.getElementById('modelFilterBa')?.value || 'all';
-    const sInput = document.getElementById('modelDetailSearchInput');
-    const searchVal = (sInput?.value || '').toLowerCase().trim();
-
-    const baseFiltered = modelHistory.filter(item => {
+    const baseFiltered = branchModelHistory.filter(item => {
       const parts = this.parseItemDate(item);
       const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
       const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
       const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = this.isBranchMatch(item.noBa, fBa);
 
-      if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
+      if (!dateMatch || !monthMatch || !yearMatch) return false;
 
       if (!searchVal) return true;
       return (
@@ -7156,6 +7195,7 @@ const UI = {
         (item.plate && item.plate.toLowerCase().includes(searchVal)) ||
         (item.engine && item.engine.toLowerCase().includes(searchVal)) ||
         (item.noBa && item.noBa.toLowerCase().includes(searchVal)) ||
+        (item.branch && item.branch.toLowerCase().includes(searchVal)) ||
         (item.pic && item.pic.toLowerCase().includes(searchVal)) ||
         (item.notes && item.notes.toLowerCase().includes(searchVal)) ||
         (item.id && item.id.toLowerCase().includes(searchVal))
@@ -7203,13 +7243,13 @@ const UI = {
 
     const footerSummary = document.getElementById('modelDetailFooterSummary');
     if (footerSummary) {
-      footerSummary.textContent = `Menampilkan ${filtered.length} dari ${modelHistory.length} total rekaman mutasi untuk model ${catalogItem.model}.`;
+      footerSummary.textContent = `Menampilkan ${filtered.length} dari ${branchModelHistory.length} total rekaman mutasi untuk model ${catalogItem.model}.`;
     }
 
     if (filtered.length === 0) {
       container.innerHTML = `
         <tr>
-          <td colspan="8" class="py-12 px-6 text-center">
+          <td colspan="9" class="py-12 px-6 text-center">
             <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
@@ -7299,20 +7339,22 @@ const UI = {
           <td class="py-3 pl-4 sm:pl-5 pr-2.5 align-middle whitespace-nowrap border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
               <span class="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">#${rowNum}</span>
-              <span class="font-mono font-extrabold text-slate-800 text-[11px] truncate" title="${item.id || '-'}">${item.id || '-'}</span>
+              <span class="text-[11px] font-mono font-bold text-slate-800 tracking-tight" title="${item.id || '-'}">${item.id || '-'}</span>
             </div>
           </td>
 
-          <!-- Kolom 2: Waktu -->
+          <!-- Kolom 2: Waktu (jam, DD/MM/YYYY) -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
-            <div class="font-mono text-xs font-bold text-slate-800">${fullTimeDisplay}</div>
-            <div class="text-[10px] text-slate-400 font-medium">WIB • Sentra Lampung</div>
+            <div class="inline-flex items-center space-x-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-200/80 font-mono text-[11px] font-extrabold text-slate-800">
+              <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>${fullTimeDisplay}</span>
+            </div>
           </td>
 
           <!-- Kolom 3: Jenis Mutasi -->
-          <td class="py-3 px-2.5 text-center align-middle whitespace-nowrap border-r border-slate-200">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border shadow-2xs ${typeBadge}">
-              <span class="mr-1 text-xs leading-none">${typeArrow}</span>
+          <td class="py-3 px-2.5 align-middle whitespace-nowrap text-center border-r border-slate-200">
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold border shadow-2xs ${typeBadge}">
+              <span class="font-black leading-none">${typeArrow}</span>
               <span>${item.type}</span>
             </span>
           </td>
@@ -7320,45 +7362,60 @@ const UI = {
           <!-- Kolom 4: Kendaraan -->
           <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-2.5 min-w-0">
-              <div class="w-10 h-7 rounded-md bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5">
-                <img src="${catalogPhotoSrc}" alt="${item.model}" class="w-full h-full object-contain mix-blend-multiply">
+              <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-10 h-7 rounded-md bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
+                <img src="${catalogPhotoSrc}" alt="${item.model}" loading="lazy" decoding="async" class="w-full h-full object-contain">
               </div>
               <div class="min-w-0">
-                <div class="font-black text-slate-900 text-xs truncate">${item.model}</div>
-                <div class="text-[10.5px] font-extrabold text-blue-600 truncate mt-0.5">${item.plate || '-'}</div>
+                <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
+                <div class="text-[10px] font-semibold text-slate-400 truncate mt-0.5">${item.plate || (catalogItem ? catalogItem.category : 'Unit Daihatsu')}</div>
               </div>
             </div>
           </td>
 
-          <!-- Kolom 5: No. Rangka, Mesin & No. BA -->
+          <!-- Kolom 5: Cabang -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
-            <div class="font-mono text-[11px] font-bold text-slate-900 truncate" title="VIN: ${item.vin || '-'}">${item.vin || '-'}</div>
-            <div class="font-mono text-[10px] text-slate-500 font-medium truncate mt-0.5" title="Mesin: ${item.engine || '-'}">No. Mesin: ${item.engine || '-'}</div>
-            <div class="inline-flex items-center space-x-1 font-mono text-[9px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded font-black mt-1" title="Cabang: ${this.formatBranchName(item.noBa)}">
-              <span class="text-[7.5px] text-amber-600 font-bold uppercase">Cabang:</span>
-              <span>${this.formatBranchName(item.noBa)}</span>
+            <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs" title="Cabang: ${this.formatBranchName(item.noBa || item.branch || item.location)}">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+              <span>${this.formatBranchName(item.noBa || item.branch || item.location)}</span>
             </div>
           </td>
 
-          <!-- Kolom 6: PIC & Catatan -->
-          <td class="py-3 px-3 align-middle border-r border-slate-200">
-            <div class="text-xs font-bold text-slate-800 truncate">${item.pic || 'Petugas Pool'}</div>
-            <div class="text-[10px] text-slate-500 truncate mt-0.5" title="${item.notes || '-'}">${item.notes || '-'}</div>
+          <!-- Kolom 6: No. Rangka & Mesin -->
+          <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+            <div class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-900" title="VIN: ${item.vin || '-'}">
+              ${item.vin || '-'}
+            </div>
+            <div class="text-[9.5px] font-mono text-slate-500 mt-0.5" title="Mesin: ${item.engine || '-'}">
+              ENG: <span class="font-bold text-slate-700">${item.engine || '-'}</span>
+            </div>
           </td>
 
-          <!-- Kolom 7: Bukti Fisik (Foto) -->
-          <td class="py-3 px-3 align-middle text-center whitespace-nowrap border-r border-slate-200">
+          <!-- Kolom 7: PIC & Catatan -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                ${(item.pic || 'A').charAt(0).toUpperCase()}
+              </span>
+              <span class="text-[11px] font-extrabold text-slate-800 truncate">${item.pic || 'Petugas'}</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-snug max-w-[200px]" title="${item.notes || '-'}">
+              ${item.notes || 'Pemeriksaan standar unit.'}
+            </p>
+          </td>
+
+          <!-- Kolom 8: Foto Dokumen -->
+          <td class="py-2.5 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
             <div class="flex items-center justify-center space-x-2">
               ${unitThumbnailHtml}
               ${docThumbnailHtml}
             </div>
           </td>
 
-          <!-- Kolom 8: Status -->
-          <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle text-right whitespace-nowrap">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-2xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-              <span>Terverifikasi</span>
+          <!-- Kolom 9: Status -->
+          <td class="py-3 pl-2.5 pr-4 sm:pr-5 align-middle whitespace-nowrap text-right">
+            <span class="inline-flex items-center space-x-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 shadow-2xs">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>Valid</span>
             </span>
           </td>
         </tr>
