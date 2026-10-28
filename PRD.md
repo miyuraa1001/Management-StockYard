@@ -28,7 +28,7 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** dirancang untuk men
 
 ## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru
 
-| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard (v2.8) |
+| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard (v2.9) |
 | :--- | :--- | :--- |
 | **Pencatatan Nomor Rangka (VIN)** | Dicatat manual di kertas surat jalan atau diketik di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Dual-engine (Barcode + Tesseract OCR) mengekstrak 17 digit VIN dan nomor mesin dengan normalisasi ISO. |
 | **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis (`smartFilterBarcodes`)**. Kamera langsung mengunci VIN berawalan `MHK...` serta membuang kode pabrik yang tidak relevan. |
@@ -328,7 +328,7 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 │ TOTAL REKAPITULASI MUTASI KENDARAAN: 13 Unit  |  MASUK: 12 Unit  |  KELUAR: 1 Unit     │
 ├────────────────────────────────────────────────────┬───────────────────────────────────┤
 │           Petugas Pemeriksa & Pemindai:            │      Mengetahui & Menyetujui:     │
-│               SECURITY POOL / YARD                 │ ADH / BM (ADMIN HEAD / BRANCH MGR)│
+│                     SECURITY                       │ ADH / BM (ADMIN HEAD / BRANCH MGR)│
 │                                                    │                                   │
 │           ( Petugas Security On-Duty )             │   ( Admin Head / Branch Manager ) │
 │        Reg. Security Guard • Astra Daihatsu        │     Astra Daihatsu DSO Lampung    │
@@ -348,7 +348,7 @@ Berkas laporan PDF dan Excel (.xlsx) dibuat dengan format kop surat dan struktur
 10. `Petugas Security` — Identitas Petugas On-Duty Cabang
 11. `Catatan Audit` — Catatan Kondisi Fisik Lapangan
 12. `Foto Fisik Unit` — Visual Gambar / Tautan Langsung Google Drive
-13. `SPPDC / BSTKB / OKK` — Visual Dokumen / Tautan Langsung Google Drive
+13. `Foto Dokumen` — Visual Berkas Dokumen (SPPDC / BSTKB / OKK) / Tautan Langsung Google Drive
 
 ---
 
