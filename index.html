@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Management StockYard (Astra Daihatsu DSO Lampung)</title>
   
+  <!-- Progressive Web App (PWA) Meta & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00205B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="StockYard DSO">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
+  
   <!-- External CDN Libraries & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -131,6 +142,30 @@
         </div>
       </div>
     </header>
+
+    <!-- Progressive Web App (PWA) Install Banner -->
+    <div id="pwaInstallBanner" class="hidden bg-gradient-to-r from-[#00205B] to-blue-900 text-white px-4 py-2.5 shadow-md border-b border-blue-700/60 sticky top-14 sm:top-16 z-30 transition-all duration-300">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        <div class="flex items-center space-x-3 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-white/10 p-1 flex items-center justify-center flex-shrink-0 border border-white/20">
+            <img src="assets/icons/icon-192.png" alt="StockYard Icon" class="w-6 h-6 rounded-md object-contain">
+          </div>
+          <div class="min-w-0 text-left">
+            <p class="text-xs font-bold leading-tight truncate">Pasang Aplikasi StockYard DSO</p>
+            <p class="text-[10px] text-blue-200 hidden sm:block">Akses cepat, stabil & layar penuh langsung dari layar utama perangkat</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2 flex-shrink-0">
+          <button type="button" onclick="window.triggerPWAInstall()" class="px-3.5 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-black shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Pasang</span>
+          </button>
+          <button type="button" onclick="window.dismissPWABanner()" class="w-7 h-7 rounded-lg hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition cursor-pointer" title="Tutup">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Native-Like Mobile Pull to Refresh Indicator -->
     <div id="pullToRefreshIndicator" class="fixed top-14 sm:top-16 inset-x-0 z-40 pointer-events-none flex justify-center items-center select-none" style="transform: translateY(-80px); opacity: 0; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;">
@@ -1541,6 +1576,26 @@
                 </div>
               </div>
 
+              <!-- Card PWA: Pasang Aplikasi & Status Offline -->
+              <div class="bg-gradient-to-br from-[#00205B] to-slate-900 rounded-[22px] p-4 text-white space-y-3 shadow-sm border border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                  <div class="w-9 h-9 rounded-xl bg-white/10 p-1 flex items-center justify-center flex-shrink-0 border border-white/20">
+                    <img src="assets/icons/icon-192.png" alt="PWA Icon" class="w-7 h-7 rounded-md object-contain">
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-black text-white leading-tight">Instalasi Aplikasi (PWA)</h4>
+                    <p class="text-[10px] text-blue-200 font-medium">Bekerja di Android, iOS, & Desktop</p>
+                  </div>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                  Pasang aplikasi ini ke layar beranda untuk akses instan satu ketukan tanpa repot membuka browser.
+                </p>
+                <button type="button" id="pwaSettingsInstallBtn" onclick="window.triggerPWAInstall()" class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black flex items-center justify-center space-x-2 transition cursor-pointer active:scale-95 shadow-sm">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  <span id="pwaSettingsInstallBtnText">Pasang ke Layar Utama</span>
+                </button>
+              </div>
+
             </div>
 
             <!-- RIGHT COLUMN: Automation & Cloud Sync (7 cols on Desktop) -->
@@ -2811,5 +2866,119 @@
   <script src="assets/js/scanner.js?v=20261019-01"></script>
   <script src="assets/js/ui.js?v=20261019-01"></script>
   <script src="assets/js/app.js?v=20261019-01"></script>
+
+  <!-- ======================================================== -->
+  <!-- Progressive Web App (PWA): Service Worker & Install Logic -->
+  <!-- ======================================================== -->
+  <script>
+    // 1. Registrasi Service Worker yang aman
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker aktif dengan scope:', registration.scope);
+            
+            // Cek jika ada versi baru yang siap di-update
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] Pembaruan aplikasi tersedia!');
+                    if (typeof UI !== 'undefined' && UI.showToast) {
+                      UI.showToast('🚀 Pembaruan StockYard DSO tersedia. Muat ulang aplikasi untuk versi terbaru.');
+                    }
+                  }
+                });
+              }
+            });
+          })
+          .catch((err) => {
+            console.warn('[PWA] Registrasi Service Worker gagal:', err);
+          });
+      });
+    }
+
+    // 2. Tangkap event 'beforeinstallprompt' untuk pemicu install kustom (Android Chrome / Edge / Desktop)
+    let deferredInstallPrompt = null;
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    // Sembunyikan tombol install di settings jika sudah berjalan di mode standalone (sudah terinstall)
+    if (isStandaloneMode) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const btnText = document.getElementById('pwaSettingsInstallBtnText');
+        const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
+        if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
+        if (settingsBtn) settingsBtn.classList.add('opacity-75', 'cursor-default');
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Cegah mini-infobar default browser agar bisa dikontrol via UI kita
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      console.log('[PWA] Event beforeinstallprompt siap.');
+
+      // Tampilkan banner atas jika pengguna belum pernah menutupnya dalam sesi ini
+      if (!isStandaloneMode && !sessionStorage.getItem('pwa_banner_dismissed')) {
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.classList.remove('hidden');
+      }
+    });
+
+    // 3. Fungsi memicu instalasi kustom
+    window.triggerPWAInstall = async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        console.log('[PWA] Pilihan instalasi pengguna:', outcome);
+        deferredInstallPrompt = null;
+        
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.classList.add('hidden');
+      } else if (isIOSDevice && !isStandaloneMode) {
+        // Panduan khusus perangkat iOS Safari
+        const iosMsg = '📲 Untuk menginstall di iOS: Ketuk tombol "Bagikan" (Share) di menu bawah Safari, lalu pilih "Tambah ke Layar Utama" (Add to Home Screen).';
+        if (typeof UI !== 'undefined' && UI.showToast) {
+          UI.showToast(iosMsg);
+        } else {
+          alert(iosMsg);
+        }
+      } else if (isStandaloneMode) {
+        if (typeof UI !== 'undefined' && UI.showToast) {
+          UI.showToast('✅ Aplikasi StockYard DSO sudah terpasang di perangkat Anda.');
+        }
+      } else {
+        const desktopMsg = 'ℹ️ Untuk menginstall: Klik ikon install di bilah alamat browser atau buka Menu Browser > "Install StockYard DSO"';
+        if (typeof UI !== 'undefined' && UI.showToast) {
+          UI.showToast(desktopMsg);
+        } else {
+          alert(desktopMsg);
+        }
+      }
+    };
+
+    // Fungsi tutup banner atas
+    window.dismissPWABanner = () => {
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.add('hidden');
+      sessionStorage.setItem('pwa_banner_dismissed', 'true');
+    };
+
+    // 4. Tangkap event appinstalled ketika selesai dipasang
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] Aplikasi berhasil dipasang di perangkat!');
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.add('hidden');
+      
+      const btnText = document.getElementById('pwaSettingsInstallBtnText');
+      if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
+
+      if (typeof UI !== 'undefined' && UI.showToast) {
+        UI.showToast('🎉 Aplikasi StockYard DSO berhasil dipasang di layar utama!');
+      }
+    });
+  </script>
 </body>
 </html>
