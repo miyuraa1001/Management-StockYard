@@ -1847,13 +1847,13 @@
           <input type="file" id="stickerGalleryInput" accept="image/*" class="hidden" onchange="ScannerService.handleStickerPhotoUploaded(event)" aria-label="Unggah Foto Stiker">
 
           <!-- Top Bar Controls -->
-          <div class="px-4 pt-3.5 pb-2 flex items-center justify-between text-white z-20 bg-gradient-to-b from-black/90 via-black/60 to-transparent flex-shrink-0">
-            <button type="button" onclick="closeScannerModal()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition border border-white/15 shadow-md cursor-pointer" aria-label="Tutup Scanner" title="Tutup Scanner">
+          <div class="px-4 pt-3.5 pb-2 flex items-center justify-between text-white z-20 bg-gradient-to-b from-black/95 via-black/75 to-transparent flex-shrink-0">
+            <button type="button" onclick="closeScannerModal()" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white active:scale-95 transition border border-white/20 shadow-md cursor-pointer" aria-label="Tutup Scanner" title="Tutup Scanner">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             
             <div class="text-center">
-              <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 shadow">
+              <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-black/80 border border-white/15 shadow">
                 <span id="scanStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 <span id="scanStatusText" class="text-[10px] font-black uppercase tracking-wider text-emerald-300">Live Camera Barcode & OCR</span>
               </div>
@@ -1862,11 +1862,11 @@
 
             <div class="flex items-center space-x-1.5">
               <!-- Flip Camera -->
-              <button type="button" onclick="toggleCameraFacing()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition border border-white/15 shadow-md cursor-pointer" title="Ganti Kamera Depan/Belakang" aria-label="Ganti Kamera">
+              <button type="button" onclick="toggleCameraFacing()" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white active:scale-95 transition border border-white/20 shadow-md cursor-pointer" title="Ganti Kamera Depan/Belakang" aria-label="Ganti Kamera">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               </button>
               <!-- Flashlight -->
-              <button type="button" onclick="toggleFlashlight()" id="torchBtn" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition border border-white/15 shadow-md cursor-pointer" title="Senter / Flash" aria-label="Senter">
+              <button type="button" onclick="toggleFlashlight()" id="torchBtn" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white active:scale-95 transition border border-white/20 shadow-md cursor-pointer" title="Senter / Flash" aria-label="Senter">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </button>
             </div>
@@ -1890,7 +1890,7 @@
             <div class="absolute inset-0 bg-black/25 pointer-events-none"></div>
 
             <!-- Floating Quick Zoom Pills (1x, 1.5x, 2x) -->
-            <div class="absolute top-2.5 right-2.5 z-30 flex items-center space-x-1 backdrop-blur-md bg-black/60 p-1 rounded-xl border border-white/20 shadow-lg" onclick="event.stopPropagation()">
+            <div class="absolute top-2.5 right-2.5 z-30 flex items-center space-x-1 bg-black/80 p-1 rounded-xl border border-white/20 shadow-lg" onclick="event.stopPropagation()">
               <button type="button" id="zoomBtn_1" onclick="ScannerService.setZoom(1.0)" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-blue-600 text-white border border-blue-400 shadow-sm transition active:scale-95 cursor-pointer">1x</button>
               <button type="button" id="zoomBtn_1_5" onclick="ScannerService.setZoom(1.5)" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-black/60 text-white/80 border border-white/20 hover:bg-white/10 transition active:scale-95 cursor-pointer">1.5x</button>
               <button type="button" id="zoomBtn_2" onclick="ScannerService.setZoom(2.0)" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-black/60 text-white/80 border border-white/20 hover:bg-white/10 transition active:scale-95 cursor-pointer">2x</button>
@@ -1900,7 +1900,7 @@
             <div id="focusRingIndicator" class="hidden absolute w-12 h-12 -ml-6 -mt-6 border-2 border-amber-400 rounded-full pointer-events-none z-30 shadow-[0_0_12px_#fbbf24]"></div>
 
             <!-- OCR Real-time Processing Overlay -->
-            <div id="ocrProcessingOverlay" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center pointer-events-none">
+            <div id="ocrProcessingOverlay" class="hidden absolute inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-4 text-center pointer-events-none">
               <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 animate-spin border border-emerald-500/40 shadow-lg">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
               </div>
@@ -1919,13 +1919,13 @@
               <div id="scannerLaser" class="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent laser-line shadow-[0_0_14px_#3b82f6]"></div>
 
               <!-- Top Zone Indicator: VIN -->
-              <div class="bg-black/70 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-blue-400/40 shadow pointer-events-none flex items-center justify-center space-x-1.5">
+              <div class="bg-black/85 rounded-lg py-0.5 px-2.5 text-center mx-auto border border-blue-400/40 shadow pointer-events-none flex items-center justify-center space-x-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="text-[8px] font-black text-white tracking-wider">AREA TARGET: VIN (VEHICLE IDENTIFICATION)</span>
               </div>
 
               <!-- Bottom Zone Indicator: ENGINE -->
-              <div class="bg-black/70 backdrop-blur-md rounded-lg py-0.5 px-2.5 text-center mx-auto border border-indigo-400/40 shadow pointer-events-none">
+              <div class="bg-black/85 rounded-lg py-0.5 px-2.5 text-center mx-auto border border-indigo-400/40 shadow pointer-events-none">
                 <span class="text-[7.5px] font-bold text-indigo-300 tracking-wider">AREA TARGET: NO. MESIN (ENGINE NUMBER)</span>
               </div>
             </div>

@@ -37,6 +37,8 @@ const ScannerService = {
     const guideText = document.getElementById('scanGuideSubtext');
 
     if (mode === 'ocr') {
+      // Lazy load OCR worker hanya saat user aktif memilih mode OCR
+      this.getOcrWorker().catch(() => {});
       if (btnBarcode) {
         btnBarcode.className = 'px-3 py-1 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 text-slate-300 border border-white/15';
       }
@@ -423,14 +425,14 @@ const ScannerService = {
       }
     }
 
-    // Resolusi kamera HD 720p seimbang: 60fps ultra smooth, hemat baterai, dan tajam membaca barcode Code 128 stiker
+    // Resolusi kamera optimal 720p 30fps: super ringan, hemat baterai & RAM, tajam untuk barcode Code 128
     const cameraConstraints = {
       audio: false,
       video: {
         facingMode: { ideal: AppState.facingMode || 'environment' },
-        width: { ideal: 1280, max: 1920 },
-        height: { ideal: 720, max: 1080 },
-        frameRate: { ideal: 30, max: 60 },
+        width: { ideal: 1280, max: 1280 },
+        height: { ideal: 720, max: 720 },
+        frameRate: { ideal: 24, max: 30 },
         advanced: [
           { focusMode: 'continuous' }
         ]
@@ -458,9 +460,6 @@ const ScannerService = {
       }
     }
 
-    // Pre-warm Tesseract OCR worker di background agar instan siap tanpa jeda
-    this.getOcrWorker().catch(() => {});
-
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         AppState.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
@@ -481,10 +480,10 @@ const ScannerService = {
 
   /**
    * Loop deteksi barcode cerdas berbasis Region Of Interest (ROI Kotak Bidik Reticle)
-   * Dilengkapi Dual-Engine real-time berkinerja tinggi (60fps ultra smooth):
-   * 1. Direct Video Native Hardware BarcodeDetector (interval ~120ms, zero-copy GPU ML Kit)
-   * 2. Lightweight Downscaled ZXing Decoder (interval ~120ms, canvas 640px ringan)
-   * 3. Intelligent Idle OCR Assist (hanya aktif jika barcode tidak terdeteksi setelah jeda 2.5 detik)
+   * Dioptimalkan dengan performa tinggi & zero-lag:
+   * 1. Direct Video Native Hardware BarcodeDetector (Zero-copy GPU di Android Chrome)
+   * 2. Lightweight Downscaled ZXing Decoder (Fallback interval ~700ms pada canvas 480px)
+   * 3. OCR diisolasi hanya saat pengguna aktif di Mode OCR atau tekan tombol Foto OCR
    */
   startNativeDetectorLoop() {
     const video = document.getElementById('scannerVideo');
@@ -494,26 +493,26 @@ const ScannerService = {
     let isProcessing = false;
     let lastScanTime = 0;
     let lastAutoOcrTime = 0;
+    let frameCycle = 0;
 
     const detectFrame = async (timestamp) => {
       if (!AppState.isScanningActive) return;
 
       // Jika dalam pending cooldown atau manual OCR snapshot sedang berjalan dengan overlay, lewati
-      if (this.scanCooldown) {
+      if (this.scanCooldown || this.isOcrRunning) {
         this.detectorAnimationId = requestAnimationFrame(detectFrame);
         return;
       }
 
-      // ----------------------------------------------------------------------
-      // ENGINE 1: Real-time Multi-Barcode Scanning (setiap ~120ms)
-      // ----------------------------------------------------------------------
-      if (timestamp - lastScanTime >= 120 && !isProcessing && video.readyState >= 2 && !video.paused) {
+      // Interval pemindaian optimal 180ms (~5.5 frame per detik): instan terbaca & hemat daya
+      if (timestamp - lastScanTime >= 180 && !isProcessing && video.readyState >= 2 && !video.paused) {
         isProcessing = true;
         lastScanTime = timestamp;
+        frameCycle++;
         try {
           let detectedRaw = [];
 
-          // Tahap 1: Coba deteksi via Hardware BarcodeDetector LANGSUNG dari elemen video (Zero-copy native GPU)
+          // Tahap 1: Fast-Path Hardware BarcodeDetector LANGSUNG dari elemen video (Zero-copy native GPU)
           if (this.nativeDetector) {
             try {
               const nativeResults = await this.nativeDetector.detect(video);
@@ -523,45 +522,39 @@ const ScannerService = {
             } catch (ne) {}
           }
 
-          // Tahap 2: Jika belum ada hasil atau salah satu kode belum ketemu, gunakan Canvas ROI teroptimasi
-          if (detectedRaw.length === 0 || (!this.detectedVin || !this.detectedEngine)) {
+          // Tahap 2: Fallback ZXing hanya jika browser TIDAK punya native BarcodeDetector (e.g. Safari iOS)
+          // ATAU jika kode belum terbaca lengkap setelah beberapa siklus (setiap ~700ms)
+          const needsZxingFallback = (!this.nativeDetector) || 
+            (detectedRaw.length === 0 && (!this.detectedVin || !this.detectedEngine) && (frameCycle % 4 === 0));
+
+          if (needsZxingFallback) {
             const vw = video.videoWidth;
             const vh = video.videoHeight;
 
             if (vw > 0 && vh > 0 && canvas) {
-              // Targetkan area kotak bidik tengah (ROI: 85% lebar, 65% tinggi)
-              const cropW = Math.floor(vw * 0.85);
-              const cropH = Math.floor(vh * 0.65);
+              // Targetkan area kotak bidik tengah (ROI: 80% lebar, 60% tinggi)
+              const cropW = Math.floor(vw * 0.80);
+              const cropH = Math.floor(vh * 0.60);
               const startX = Math.floor((vw - cropW) / 2);
               const startY = Math.floor((vh - cropH) / 2);
 
-              // Downscale canvas ke resolusi optimal 640px (menghemat 75% pemrosesan CPU/RAM)
-              const maxDecodeW = 640;
+              // Downscale canvas ke max 480px (sangat ringan, 55% lebih hemat CPU dibanding 640px)
+              const maxDecodeW = 480;
               const scale = Math.min(1, maxDecodeW / cropW);
               const decodeW = Math.round(cropW * scale);
               const decodeH = Math.round(cropH * scale);
 
-              canvas.width = decodeW;
-              canvas.height = decodeH;
-              const ctx = canvas.getContext('2d');
+              if (canvas.width !== decodeW || canvas.height !== decodeH) {
+                canvas.width = decodeW;
+                canvas.height = decodeH;
+              }
+              const ctx = canvas.getContext('2d', { willReadFrequently: true });
               ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, decodeW, decodeH);
 
-              // Jika nativeDetector belum dapat dari video utuh, coba pada canvas crop
-              if (detectedRaw.length === 0 && this.nativeDetector) {
-                try {
-                  const canvasResults = await this.nativeDetector.detect(canvas);
-                  if (canvasResults && canvasResults.length > 0) {
-                    detectedRaw = canvasResults.map(b => b.rawValue).filter(Boolean);
-                  }
-                } catch (ce) {}
-              }
-
-              // Gunakan ZXing MultiFormatReader multi-zona (Full ROI + Zona Atas/Bawah)
-              if (detectedRaw.length === 0 || (!this.detectedVin || !this.detectedEngine)) {
-                const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
-                if (zxResults && zxResults.length > 0) {
-                  detectedRaw.push(...zxResults);
-                }
+              // Gunakan ZXing MultiFormatReader multi-zona ringan
+              const zxResults = this.decodeAllBarcodesFromCanvas(canvas);
+              if (zxResults && zxResults.length > 0) {
+                detectedRaw.push(...zxResults);
               }
             }
           }
@@ -586,16 +579,14 @@ const ScannerService = {
         }
       }
 
-      // ----------------------------------------------------------------------
-      // ENGINE 2: Intelligent Idle OCR Assist (Jeda aman 2.5 detik)
-      // Hanya berjalan jika salah satu kode belum terbaca dan barcode terhalang silau/pantulan
-      // Menggunakan canvas mini 640px agar kamera tetap 60fps tanpa stutter sama sekali!
-      // ----------------------------------------------------------------------
-      const now = performance.now();
-      if (!this.detectedVin || !this.detectedEngine) {
-        if (!this.isLiveOcrRunning && !this.isOcrRunning && !this.scanCooldown && (now - lastAutoOcrTime >= 2500)) {
-          lastAutoOcrTime = now;
-          this.runLiveOcrPass(video);
+      // OCR Otomatis di background HANYA berjalan jika user sedang aktif di Tab 'Mode Baca Teks Stiker (OCR)'
+      if (this.scanMode === 'ocr' && !this.isLiveOcrRunning && !this.isOcrRunning && !this.scanCooldown) {
+        const now = performance.now();
+        if (!this.detectedVin || !this.detectedEngine) {
+          if (now - lastAutoOcrTime >= 3000) {
+            lastAutoOcrTime = now;
+            this.runLiveOcrPass(video);
+          }
         }
       }
 
@@ -609,9 +600,9 @@ const ScannerService = {
 
   /**
    * Mendekode barcode dari HTMLCanvasElement menggunakan ZXing MultiFormatReader
-   * Mendukung Code 128, Code 39, Code 93, QR Code dengan TryHarder = true
+   * Mendukung Code 128, Code 39, Code 93, QR Code dengan efisiensi tinggi
    */
-  decodeCanvasWithZXing(canvas) {
+  decodeCanvasWithZXing(canvas, allowInvert = false) {
     if (typeof ZXing === 'undefined' || !canvas || canvas.width === 0 || canvas.height === 0) return [];
     const results = [];
     try {
@@ -642,8 +633,8 @@ const ScannerService = {
         // Normal jika frame belum pas dengan barcode
       }
 
-      // Jika belum ketemu, coba dengan invert (jika ada pantulan cahaya / warna terbalik di kaca)
-      if (results.length === 0) {
+      // Coba invert hanya jika diizinkan
+      if (results.length === 0 && allowInvert) {
         try {
           const invBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lumSource.invert()));
           const invRes = this.zxingMultiReader.decode(invBitmap);
@@ -659,47 +650,45 @@ const ScannerService = {
   },
 
   /**
-   * Memindai multi-zona pada canvas untuk menangkap barcode VIN (zona atas) dan No. Mesin (zona bawah) sekaligus
+   * Memindai multi-zona pada canvas untuk menangkap barcode VIN (zona atas) dan No. Mesin (zona bawah)
+   * Dioptimalkan dengan alternating single pass agar kamera tetap 60fps tanpa lag
    */
   decodeAllBarcodesFromCanvas(canvas) {
     if (!canvas || canvas.width === 0 || canvas.height === 0) return [];
     const rawList = [];
 
     // 1. Scan area utama (seluruh canvas ROI)
-    const mainResults = this.decodeCanvasWithZXing(canvas);
+    const mainResults = this.decodeCanvasWithZXing(canvas, false);
     if (mainResults && mainResults.length > 0) {
       rawList.push(...mainResults);
     }
 
-    // 2. Jika tinggi canvas memadai (> 120px), pisahkan jadi zona atas (VIN) dan zona bawah (Engine)
-    // agar dalam satu frame video, KEDUA barcode dapat terbaca secara simultan!
-    if (canvas.height > 120) {
+    // 2. Jika salah satu kode belum lengkap dan canvas cukup tinggi, scan zona terpisah bergantian
+    if ((!this.detectedVin || !this.detectedEngine) && canvas.height > 100) {
       if (!this.subCropCanvas) {
         this.subCropCanvas = document.createElement('canvas');
       }
       const subCanvas = this.subCropCanvas;
-      const subCtx = subCanvas.getContext('2d');
+      const subCtx = subCanvas.getContext('2d', { willReadFrequently: true });
       const w = canvas.width;
       const h = canvas.height;
-      const halfH = Math.floor(h * 0.58);
+      const halfH = Math.floor(h * 0.55);
 
-      // A. Jika VIN belum dapat ATAU baru dapat Engine: scan separuh atas tempat barcode VIN berada
-      if (!this.detectedVin || (rawList.length > 0 && !this.smartFilterBarcodes(rawList).vin)) {
+      this._zxingToggle = !this._zxingToggle;
+
+      if (this._zxingToggle && !this.detectedVin) {
         subCanvas.width = w;
         subCanvas.height = halfH;
         subCtx.drawImage(canvas, 0, 0, w, halfH, 0, 0, w, halfH);
-        const topResults = this.decodeCanvasWithZXing(subCanvas);
+        const topResults = this.decodeCanvasWithZXing(subCanvas, false);
         if (topResults && topResults.length > 0) {
           rawList.push(...topResults);
         }
-      }
-
-      // B. Jika No. Mesin belum dapat ATAU baru dapat VIN: scan separuh bawah tempat barcode ENGINE berada
-      if (!this.detectedEngine || (rawList.length > 0 && !this.smartFilterBarcodes(rawList).engine)) {
+      } else if (!this.detectedEngine) {
         subCanvas.width = w;
         subCanvas.height = halfH;
         subCtx.drawImage(canvas, 0, h - halfH, w, halfH, 0, 0, w, halfH);
-        const botResults = this.decodeCanvasWithZXing(subCanvas);
+        const botResults = this.decodeCanvasWithZXing(subCanvas, false);
         if (botResults && botResults.length > 0) {
           rawList.push(...botResults);
         }
@@ -822,8 +811,18 @@ const ScannerService = {
     }
 
     if (AppState.cameraStream) {
-      AppState.cameraStream.getTracks().forEach(track => track.stop());
+      AppState.cameraStream.getTracks().forEach(track => {
+        try { track.stop(); } catch (e) {}
+      });
       AppState.cameraStream = null;
+    }
+
+    const videoEl = document.getElementById('scannerVideo');
+    if (videoEl) {
+      try {
+        videoEl.pause();
+        videoEl.srcObject = null;
+      } catch (e) {}
     }
   },
 
