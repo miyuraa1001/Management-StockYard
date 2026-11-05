@@ -9,7 +9,7 @@
  * 4. Otomatis membersihkan cache versi lama saat pembaruan dideploy
  */
 
-const CACHE_NAME = 'stockyard-pwa-v1.0.3';
+const CACHE_NAME = 'stockyard-pwa-v1.0.4';
 
 // Daftar aset inti App Shell untuk pre-caching
 const STATIC_ASSETS = [
@@ -26,7 +26,8 @@ const STATIC_ASSETS = [
   './assets/images/daihatsu-logo.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png'
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/icon-apk.png'
 ];
 
 // Domain / URL dinamis yang TIDAK BOLEH dicache (selalu real-time network)

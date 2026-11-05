@@ -45,6 +45,12 @@
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-apk.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
