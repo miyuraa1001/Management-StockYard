@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#00205B">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="StockYard DSO">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -1516,31 +1516,32 @@
                 </div>
               </div>
 
-              <!-- Card 2: Download & Pasang Aplikasi (PWA) -->
-              <div class="bg-white rounded-[26px] p-4 sm:p-5 shadow-sm border border-slate-100 space-y-3.5">
+              <!-- Card 2: Pasang Aplikasi ke Layar Utama -->
+              <div class="bg-white rounded-[26px] p-4 sm:p-5 shadow-sm border border-slate-100 hover:border-slate-200 transition space-y-3.5">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs border border-blue-100/80">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <div class="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-200/80 p-1.5 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      <img src="assets/icons/icon-192.png" alt="Icon StockYard" class="w-full h-full object-contain rounded-xl">
                     </div>
                     <div>
-                      <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Download & Pasang Aplikasi</h4>
-                      <p class="text-[11px] text-slate-400 font-medium">Instalasi PWA Layar Utama</p>
+                      <h4 class="text-sm font-extrabold text-slate-900 leading-tight">Pasang Aplikasi</h4>
+                      <p class="text-[11px] text-slate-400 font-semibold mt-0.5">Akses Cepat Layar Utama</p>
                     </div>
                   </div>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200">
-                    Aplikasi PWA
+                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200/80">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                    <span>Resmi DSO</span>
                   </span>
                 </div>
 
-                <p class="text-xs text-slate-500 leading-relaxed">
-                  Download dan pasang StockYard DSO ke layar utama HP (Android / iOS) atau Laptop untuk akses instan satu ketukan dan tampilan layar penuh.
+                <p class="text-xs text-slate-500 font-medium leading-relaxed">
+                  Pasang ke layar utama HP Anda untuk akses cepat satu ketukan dan tampilan layar penuh tanpa browser.
                 </p>
 
-                <!-- Tombol Download / Install -->
-                <button type="button" id="pwaSettingsInstallBtn" onclick="window.triggerPWAInstall()" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black flex items-center justify-center space-x-2 transition cursor-pointer active:scale-[0.99] shadow-md shadow-blue-600/25">
+                <!-- Tombol Pasang / Install -->
+                <button type="button" id="pwaSettingsInstallBtn" onclick="window.triggerPWAInstall()" class="w-full py-3 px-4 rounded-xl bg-[#00205B] hover:bg-blue-900 text-white text-xs font-black flex items-center justify-center space-x-2 transition cursor-pointer active:scale-[0.99] shadow-md shadow-[#00205B]/20">
                   <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                  <span id="pwaSettingsInstallBtnText">Download Aplikasi ke Layar Utama</span>
+                  <span id="pwaSettingsInstallBtnText">Pasang ke Layar Utama</span>
                 </button>
               </div>
 
@@ -2841,6 +2842,80 @@
       </div>
     </div>
 
+    <!-- Modal Panduan Instalasi Khusus iPhone (iOS Safari) -->
+    <div id="iosInstallModal" onclick="if(event.target === this) closeIOSInstallModal()" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300">
+      <div class="bg-white rounded-t-[32px] sm:rounded-[32px] max-w-sm sm:max-w-md w-full shadow-2xl border border-white/60 overflow-hidden p-6 space-y-4">
+        
+        <!-- Header with iOS Icon -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-slate-50 p-1 flex items-center justify-center border border-slate-200 shadow-2xs">
+              <img src="assets/icons/apple-touch-icon.png" alt="Daihatsu" class="w-7 h-7 rounded-xl object-contain">
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Pasang di iPhone / iPad</h3>
+              <p class="text-[11px] text-slate-400 font-semibold mt-0.5">Panduan 3 Langkah Mudah</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeIOSInstallModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- 3 Visual Steps -->
+        <div class="space-y-2.5 text-xs">
+          <!-- Step 1: Tap Share -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              1
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Ketuk tombol <span class="text-blue-600 font-extrabold inline-flex items-center gap-1">Bagikan (Share) <svg class="w-3.5 h-3.5 inline text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></span> di bilah menu bawah Safari.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2: Add to Home Screen -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              2
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Gulir ke bawah dan pilih menu <span class="text-slate-900 font-extrabold inline-flex items-center gap-1">"Tambah ke Layar Utama" <svg class="w-3.5 h-3.5 inline text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg></span>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3: Tap Add -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              3
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Ketuk tombol <span class="text-blue-600 font-extrabold">"Tambah"</span> di sudut kanan atas layar iPhone.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-amber-50/80 rounded-2xl p-2.5 border border-amber-200/60 text-[11px] text-amber-800 flex items-start space-x-2">
+          <span class="text-amber-500 font-bold">💡</span>
+          <p class="font-medium leading-relaxed">
+            Gunakan browser <strong class="font-bold">Safari</strong> bawaan iPhone agar opsi pemasangan ke layar utama tersedia.
+          </p>
+        </div>
+
+        <!-- Button Mengerti -->
+        <button type="button" onclick="closeIOSInstallModal()" class="w-full py-3 px-4 bg-[#00205B] hover:bg-blue-900 text-white text-xs font-black rounded-2xl active:scale-95 transition cursor-pointer shadow-md shadow-[#00205B]/20">
+          Saya Mengerti
+        </button>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Modular Scripts Architecture -->
@@ -2885,21 +2960,33 @@
 
     // 2. Tangkap event 'beforeinstallprompt' untuk pemicu install kustom (Android Chrome / Edge / Desktop)
     let deferredInstallPrompt = null;
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    // Tandai tombol download di settings jika sudah berjalan di mode standalone (sudah terinstall)
+    // Tandai tombol di settings jika sudah berjalan di mode standalone (sudah terinstall)
     if (isStandaloneMode) {
       document.addEventListener('DOMContentLoaded', () => {
         const btnText = document.getElementById('pwaSettingsInstallBtnText');
         const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
         if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
         if (settingsBtn) {
-          settingsBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-          settingsBtn.classList.add('bg-emerald-600', 'cursor-default', 'opacity-90');
+          settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
+          settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
         }
       });
     }
+
+    // Modal Panduan Khusus iPhone (iOS Safari)
+    window.openIOSInstallModal = () => {
+      const modal = document.getElementById('iosInstallModal');
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeIOSInstallModal = () => {
+      const modal = document.getElementById('iosInstallModal');
+      if (modal) modal.classList.add('hidden');
+    };
 
     window.addEventListener('beforeinstallprompt', (e) => {
       // Cegah mini-infobar default browser agar pemicuan murni via tombol di Pengaturan
@@ -2912,7 +2999,7 @@
     window.triggerPWAInstall = async () => {
       if (isStandaloneMode) {
         if (typeof UI !== 'undefined' && UI.showToast) {
-          UI.showToast('✅ Aplikasi StockYard DSO sudah terpasang di perangkat Anda.');
+          UI.showToast('✅ Aplikasi StockYard DSO sudah terpasang di layar utama Anda.');
         }
         return;
       }
@@ -2922,19 +3009,14 @@
         const { outcome } = await deferredInstallPrompt.userChoice;
         console.log('[PWA] Pilihan instalasi pengguna:', outcome);
         if (outcome === 'accepted') {
-          console.log('[PWA] Pengguna menyetujui instalasi PWA');
+          console.log('[PWA] Pengguna menyetujui instalasi aplikasi');
         }
         deferredInstallPrompt = null;
       } else if (isIOSDevice) {
-        // Panduan khusus perangkat iOS Safari
-        const iosMsg = '📲 Untuk mengunduh di iPhone/iPad: Ketuk ikon "Bagikan" (Share kotak panah ke atas) di Safari, lalu pilih "Tambah ke Layar Utama" (Add to Home Screen).';
-        if (typeof UI !== 'undefined' && UI.showToast) {
-          UI.showToast(iosMsg);
-        } else {
-          alert(iosMsg);
-        }
+        // Tampilkan modal panduan interaktif khusus iPhone / iPad
+        window.openIOSInstallModal();
       } else {
-        const desktopMsg = 'ℹ️ Untuk mengunduh aplikasi: Klik ikon instalasi (komputer panah ke bawah) di ujung kanan bilah alamat URL browser Anda, atau buka Menu Browser > "Install StockYard DSO".';
+        const desktopMsg = 'ℹ️ Untuk memasang aplikasi: Klik ikon pasang (komputer panah ke bawah) di ujung kanan bilah alamat browser, atau buka Menu Browser > "Install StockYard DSO".';
         if (typeof UI !== 'undefined' && UI.showToast) {
           UI.showToast(desktopMsg);
         } else {
@@ -2950,8 +3032,8 @@
       const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
       if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
       if (settingsBtn) {
-        settingsBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        settingsBtn.classList.add('bg-emerald-600', 'cursor-default', 'opacity-90');
+        settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
+        settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
       }
 
       if (typeof UI !== 'undefined' && UI.showToast) {

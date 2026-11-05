@@ -9,7 +9,7 @@
  * 4. Otomatis membersihkan cache versi lama saat pembaruan dideploy
  */
 
-const CACHE_NAME = 'stockyard-pwa-v1.0.0';
+const CACHE_NAME = 'stockyard-pwa-v1.0.1';
 
 // Daftar aset inti App Shell untuk pre-caching
 const STATIC_ASSETS = [
