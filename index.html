@@ -1897,7 +1897,7 @@
                 <span id="scanStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 <span id="scanStatusText" class="text-[10px] font-black uppercase tracking-wider text-emerald-300">Live Camera Barcode & OCR</span>
               </div>
-              <span id="scanGuideSubtext" class="text-[9px] text-white/80 block mt-0.5">Pas-kan VIN & No. Mesin di kotak bidik. Jika silau di kaca, gunakan tombol 📸 Foto & Baca Teks</span>
+              <span id="scanGuideSubtext" class="text-[9px] text-white/80 block mt-0.5">Pas-kan VIN & No. Mesin di kotak bidik. Jika silau di kaca, gunakan tombol Foto & Baca Teks</span>
             </div>
 
             <div class="flex items-center space-x-1.5">
@@ -1914,13 +1914,13 @@
 
           <!-- Dual Mode Selector Segmented Tabs -->
           <div class="px-4 pb-2 z-20 flex items-center justify-center space-x-2 flex-shrink-0">
-            <button type="button" id="scanModeBtn_Barcode" onclick="ScannerService.setScanMode('barcode')" class="px-3 py-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-blue-600 text-white shadow-sm border border-blue-400/40">
+            <button type="button" id="scanModeBtn_Barcode" onclick="ScannerService.setScanMode('barcode')" class="px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-blue-600 text-white shadow-sm border border-blue-400/40">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-              <span>║▌║ Barcode Auto</span>
+              <span>Barcode Auto</span>
             </button>
-            <button type="button" id="scanModeBtn_OCR" onclick="ScannerService.setScanMode('ocr')" class="px-3 py-1 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 text-slate-300 border border-white/15">
+            <button type="button" id="scanModeBtn_OCR" onclick="ScannerService.setScanMode('ocr')" class="px-3.5 py-1.5 rounded-xl text-[10.5px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 text-slate-300 border border-white/15">
               <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>🔤 Baca Teks (OCR)</span>
+              <span>Baca Teks (OCR)</span>
             </button>
           </div>
 
@@ -1976,7 +1976,7 @@
             <!-- Primary Snapshot OCR Action -->
             <button type="button" onclick="ScannerService.captureAndScanOCR()" class="flex-1 py-2 px-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[11px] font-black rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-1.5 cursor-pointer border border-emerald-400/40">
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
-              <span>📸 Foto & Baca Teks (OCR)</span>
+              <span>Foto & Baca Teks</span>
             </button>
             <!-- Gallery Button -->
             <button type="button" onclick="document.getElementById('stickerGalleryInput').click()" class="py-2 px-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[10.5px] font-bold rounded-xl border border-white/15 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0" title="Unggah Foto Stiker dari Galeri HP">
@@ -1986,7 +1986,7 @@
             <!-- Quick Test Sample Button -->
             <button type="button" onclick="quickScanCamera()" class="py-2 px-2.5 bg-gradient-to-r from-amber-500/80 to-amber-600/80 hover:from-amber-500 hover:to-amber-600 backdrop-blur-md text-white text-[10.5px] font-black rounded-xl border border-amber-400/40 flex items-center justify-center space-x-1 active:scale-95 transition cursor-pointer flex-shrink-0 shadow-sm" title="Scan Cepat Barcode & Teks dari Kamera">
               <svg class="w-3.5 h-3.5 text-amber-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <span>⚡ Scan Cepat</span>
+              <span>Scan Cepat</span>
             </button>
           </div>
 

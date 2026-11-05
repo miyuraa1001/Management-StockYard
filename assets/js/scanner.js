@@ -50,7 +50,7 @@ const ScannerService = {
         statusText.className = 'text-[10px] font-black uppercase tracking-wider text-emerald-300';
       }
       if (guideText) {
-        guideText.textContent = 'Tekan "📸 Foto & Baca Teks Stiker" atau "Pilih Galeri"';
+        guideText.textContent = 'Tekan "Foto & Baca Teks" atau "Pilih Galeri"';
       }
     } else {
       if (btnBarcode) {
