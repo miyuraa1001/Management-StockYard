@@ -408,9 +408,11 @@ const ApiService = {
               AppState.userProfile.photo = incomingPhoto;
             }
           }
-          if (u.email || u.targetEmail) {
-            AppState.userProfile.email = u.email || u.targetEmail;
-          }
+          const uEmail = (u.targetEmail !== undefined && u.targetEmail !== null) 
+            ? String(u.targetEmail).trim() 
+            : (u.email ? String(u.email).trim() : '');
+          AppState.userProfile.email = uEmail;
+          AppState.userProfile.targetEmail = uEmail;
 
           // Sinkronkan ke authSession aktif jika sedang login
           if (AppState.authSession && AppState.isAuthenticated) {
@@ -457,14 +459,23 @@ const ApiService = {
 
         // Sinkronisasi data Target Email Per-Cabang (Tab UserPIC Kolom G)
         if (payload.branchEmails && typeof payload.branchEmails === 'object') {
-          AppState.branchEmails = { ...AppState.branchEmails, ...payload.branchEmails };
+          Object.keys(payload.branchEmails).forEach(k => {
+            const val = payload.branchEmails[k];
+            AppState.branchEmails[k] = (val !== null && val !== undefined) ? String(val).trim() : '';
+          });
         }
 
         // Sinkronisasi data User Akun dari database jika tersedia
         if (Array.isArray(payload.users) && payload.users.length > 0) {
-          payload.users.forEach(u => {
-            if (u.username && u.targetEmail) {
-              AppState.branchEmails[u.username] = u.targetEmail;
+          payload.users.forEach(usr => {
+            if (usr.username) {
+              const bKey = (usr.username.match(/^D66[0-4]/i))
+                ? usr.username.match(/^D66[0-4]/i)[0].toUpperCase()
+                : usr.username.toUpperCase();
+              const mail = (usr.targetEmail !== undefined && usr.targetEmail !== null)
+                ? String(usr.targetEmail).trim()
+                : (usr.email ? String(usr.email).trim() : '');
+              AppState.branchEmails[bKey] = mail;
             }
           });
         }
@@ -849,7 +860,7 @@ const ApiService = {
   async checkEmailConnection() {
     try {
       const health = await this.checkHealth();
-      const targetEmail = health.targetEmail || AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const targetEmail = health.targetEmail || AppState.automationConfig?.email || '';
       const isOnline = health && health.success === true;
 
       return {
@@ -867,7 +878,7 @@ const ApiService = {
       return {
         success: false,
         error: e.message || 'Kesalahan memeriksa koneksi',
-        targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
+        targetEmail: AppState.automationConfig?.email || ''
       };
     }
   }

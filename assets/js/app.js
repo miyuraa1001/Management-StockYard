@@ -193,7 +193,7 @@ const App = {
       unitPhoto: unitImg,
       docPhoto: docImg,
       docType: docType,
-      targetEmail: AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id'
+      targetEmail: (AppState.getBranchTargetEmails(noBa) || []).join(', ')
     };
 
     // Optimistic UI Update: masukkan ke state lokal segera & amankan ke cache
@@ -264,7 +264,7 @@ const App = {
     // Background Async: Kirim data ke Google Spreadsheet backend & verifikasi pengiriman email realtime
     try {
       const response = await ApiService.saveMutation(newRecord);
-      const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const targetEmail = (AppState.getBranchTargetEmails(noBa) || []).join(', ') || AppState.automationConfig?.email || '';
       const nowFormatted = new Date().toLocaleString('id-ID', {
         day: '2-digit', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit'

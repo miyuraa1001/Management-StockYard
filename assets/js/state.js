@@ -42,18 +42,19 @@ const AppState = {
     photo: CONFIG.OPERATOR_PHOTO || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
   },
 
-  // Target Email Per-Cabang (Sesuai Tab UserPIC Kolom G)
+  // Target Email Per-Cabang (Sesuai Tab UserPIC Kolom G di Google Sheets)
   branchEmails: {
     'DSO LAMPUNG': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
     'D660': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
     'D661': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
-    'D662': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
-    'D663': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
-    'D664': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com'
+    'D662': '',
+    'D663': '',
+    'D664': ''
   },
 
   /**
-   * Mengambil daftar email target untuk cabang tertentu
+   * Mengambil daftar email target untuk cabang tertentu secara akurat
+   * (Tidak pernah fallback ke email cabang lain jika cabang tersebut belum memiliki target email di database)
    */
   getBranchTargetEmails(branchKey) {
     if (!branchKey) {
@@ -62,8 +63,22 @@ const AppState = {
     const cleanKey = String(branchKey).trim();
     const m = cleanKey.match(/D66[0-4]/i);
     const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') ? 'DSO LAMPUNG' : cleanKey);
-    const raw = this.branchEmails[key] || this.branchEmails['DSO LAMPUNG'] || this.automationConfig.email || '';
-    return String(raw).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    
+    // Ambil khusus data email cabang terkait
+    const raw = this.branchEmails[key];
+    if (raw && typeof raw === 'string' && raw.trim()) {
+      const parsed = raw.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+      if (parsed.length > 0) return parsed;
+    }
+
+    // Jika ini adalah DSO LAMPUNG / ALL (Admin), boleh fallback ke automationConfig
+    if (key === 'DSO LAMPUNG' || key === 'ALL') {
+      const autoRaw = this.automationConfig?.email || '';
+      return String(autoRaw).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+    }
+
+    // Cabang yang belum didaftarkan emailnya di database (misal D662, D663, D664) mengembalikan array kosong []
+    return [];
   },
 
   /**
@@ -73,9 +88,9 @@ const AppState = {
     const cleanKey = String(branchKey).trim();
     const m = cleanKey.match(/D66[0-4]/i);
     const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') ? 'DSO LAMPUNG' : cleanKey);
-    const str = Array.isArray(emailList) ? emailList.join(', ') : String(emailList);
+    const str = Array.isArray(emailList) ? emailList.join(', ') : String(emailList || '');
     this.branchEmails[key] = str;
-    if (key === 'DSO LAMPUNG' || !this.automationConfig.email) {
+    if (key === 'DSO LAMPUNG' || key === 'ALL') {
       this.automationConfig.email = str;
       this.automationConfig.emails = Array.isArray(emailList) ? emailList : str.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
     }
@@ -452,6 +467,13 @@ const AppState = {
       if (cachedBranchEmails) {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
       }
+
+      // Bersihkan email fiktif lama jika tersimpan di cache lokal untuk cabang D662, D663, D664
+      ['D662', 'D663', 'D664'].forEach(bCode => {
+        if (this.branchEmails[bCode] && this.branchEmails[bCode].includes('syafirafira08162')) {
+          this.branchEmails[bCode] = '';
+        }
+      });
 
       const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');
       if (cachedReportLogs) {

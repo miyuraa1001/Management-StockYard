@@ -4408,6 +4408,7 @@ const UI = {
     // Sync CONFIG operator name for recording PIC
     if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
     this.syncRoleBranchUI();
+    this.applyAutomationConfig();
   },
 
   /**
@@ -4807,7 +4808,7 @@ const UI = {
   applyAutomationConfig() {
     const auto = AppState.automationConfig || {
       schedule: 'Setiap Hari 08:00 WIB',
-      email: 'admin.logistics@daihatsu.co.id',
+      email: '',
       type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar'
     };
 
@@ -4815,22 +4816,23 @@ const UI = {
     const emailEl = document.getElementById('autoEmailDisplay');
     if (schedEl) schedEl.innerText = auto.schedule || 'Setiap Hari 08:00 WIB';
 
-    // Parse daftar email
-    let emailList = [];
-    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
-      emailList = auto.emails;
-    } else if (auto.email) {
-      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
-    }
-    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
+    // Parse daftar email sesuai cabang aktif yang sedang login
+    const activeBranch = AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode();
+    const emailList = AppState.getBranchTargetEmails(activeBranch);
 
     if (emailEl) {
       if (emailList.length > 1) {
         emailEl.innerText = `${emailList[0]} (+${emailList.length - 1} lainnya)`;
         emailEl.title = emailList.join(', ');
+        emailEl.className = 'text-[11px] text-slate-700 font-bold block mt-0.5 leading-tight truncate max-w-[200px] sm:max-w-[320px]';
+      } else if (emailList.length === 1) {
+        emailEl.innerText = emailList[0];
+        emailEl.title = emailList[0];
+        emailEl.className = 'text-[11px] text-slate-700 font-bold block mt-0.5 leading-tight truncate max-w-[200px] sm:max-w-[320px]';
       } else {
-        emailEl.innerText = emailList[0] || 'admin.logistics@daihatsu.co.id';
-        emailEl.title = emailList[0] || '';
+        emailEl.innerText = 'Belum diatur (Klik untuk atur)';
+        emailEl.title = `Belum ada target email di database untuk cabang ${activeBranch}`;
+        emailEl.className = 'text-[11px] text-amber-600 font-medium italic block mt-0.5 leading-tight truncate max-w-[200px] sm:max-w-[320px]';
       }
     }
 
@@ -5086,7 +5088,7 @@ const UI = {
     period: 'pagi', // 'pagi' | 'siang' | 'sore' | 'malam'
     hour12: 8,
     minute: 0,
-    emails: ['admin.logistics@daihatsu.co.id']
+    emails: []
   },
 
   /**
@@ -5144,14 +5146,11 @@ const UI = {
       this.automationState.hour12 = (h24 - 12);
     }
 
-    // 3. Ekstrak Daftar Target Email
-    let emailList = [];
-    if (Array.isArray(auto.emails) && auto.emails.length > 0) {
-      emailList = [...auto.emails];
-    } else if (auto.email) {
-      emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
-    }
-    if (emailList.length === 0) emailList = ['admin.logistics@daihatsu.co.id'];
+    // 3. Ekstrak Daftar Target Email Sesuai Cabang Aktif
+    const currentBranch = (this.automationState && this.automationState.selectedBranch) 
+      ? this.automationState.selectedBranch 
+      : (AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode());
+    const emailList = AppState.getBranchTargetEmails(currentBranch);
     this.automationState.emails = Array.from(new Set(emailList));
 
     // Update Tipe Dokumen
@@ -6019,40 +6018,44 @@ const UI = {
    */
   updateNotificationTargetEmailDisplay() {
     const activeBranch = AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode();
-    let emailList = AppState.getBranchTargetEmails(activeBranch);
-    if (!emailList || emailList.length === 0) {
-      const auto = AppState.automationConfig || {};
-      if (Array.isArray(auto.emails) && auto.emails.length > 0) {
-        emailList = auto.emails;
-      } else if (auto.email) {
-        emailList = String(auto.email).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
-      }
-    }
-    if (!emailList || emailList.length === 0) {
-      emailList = ['syafirafira08162@gmail.com', 'nabila38148@gmail.com', 'andikaintan4@gmail.com', 'nabilatria044@gmail.com'];
-    }
+    const emailList = AppState.getBranchTargetEmails(activeBranch);
 
     // Update Badge Jumlah Email
     const badgeEl = document.getElementById('notifModalEmailCountBadge');
     if (badgeEl) {
-      badgeEl.textContent = `${emailList.length} Email Terdaftar (${activeBranch})`;
+      if (emailList.length > 0) {
+        badgeEl.textContent = `${emailList.length} Email Terdaftar (${activeBranch})`;
+        badgeEl.className = 'text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 border border-blue-200';
+      } else {
+        badgeEl.textContent = `0 Email (${activeBranch})`;
+        badgeEl.className = 'text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 border border-amber-300';
+      }
     }
 
     // Update Chips Kontainer
     const chipsContainer = document.getElementById('notifModalEmailChips');
     if (chipsContainer) {
-      chipsContainer.innerHTML = emailList.map(email => `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
-          <span class="text-blue-500">@</span>
-          <span>${email}</span>
-        </span>
-      `).join('');
+      if (emailList.length > 0) {
+        chipsContainer.innerHTML = emailList.map(email => `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
+            <span class="text-blue-500">@</span>
+            <span>${email}</span>
+          </span>
+        `).join('');
+      } else {
+        chipsContainer.innerHTML = `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-semibold text-amber-800">
+            <span>⚠️</span>
+            <span>Belum ada email penerima untuk cabang ${activeBranch}. Silakan klik <strong>Kelola Email</strong> untuk menambahkan.</span>
+          </span>
+        `;
+      }
     }
 
     // Backward compatibility untuk elemen teks single
     const targetEmailEl = document.getElementById('notifModalTargetEmail');
     if (targetEmailEl) {
-      targetEmailEl.textContent = emailList.join(', ');
+      targetEmailEl.textContent = emailList.length > 0 ? emailList.join(', ') : '(Belum diatur)';
     }
   },
 
@@ -6213,7 +6216,7 @@ const UI = {
     try {
       const conn = await ApiService.checkEmailConnection();
       const isOk = conn && conn.success;
-      const targetEmail = conn?.targetEmail || AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+      const targetEmail = conn?.targetEmail || AppState.automationConfig?.email || 'Belum diatur';
       const modeText = conn?.mode === 'direct' ? 'DIRECT WEB APP' : (conn?.mode === 'proxy' ? 'VERCEL PROXY' : 'OFFLINE');
 
       if (modeBadge) modeBadge.textContent = modeText;
@@ -6268,7 +6271,7 @@ const UI = {
       if (stored) localLogs = JSON.parse(stored);
     } catch (e) {}
 
-    const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+    const defaultEmail = AppState.automationConfig?.email || '';
     const dbHistory = Array.isArray(AppState.historyData) ? AppState.historyData : [];
 
     // 1. Masukkan mutasi dari database terlebih dahulu (database sebagai single source of truth)
@@ -6280,11 +6283,15 @@ const UI = {
       const formattedDate = item.fullDateStr || (item.date ? `${String(item.date).padStart(2, '0')}/${String(item.month || '').padStart(2, '0')}/${item.year || ''}` : '');
       const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
 
+      const itemBranch = item.noBa || item.branch || item.location || '';
+      const bEmails = AppState.getBranchTargetEmails(itemBranch);
+      const computedTarget = item.targetEmail || (bEmails.length > 0 ? bEmails.join(', ') : defaultEmail);
+
       return {
         id: item.id || `db-${item.vin || idx}-${item.date || idx}`,
         trxId: item.id || `TRX-${idx}`,
         timestamp: timeDisplay,
-        targetEmail: item.targetEmail || targetEmail,
+        targetEmail: computedTarget,
         status: 'SUCCESS',
         category: 'MUTATION',
         mutationType: mutationType,
@@ -6293,7 +6300,7 @@ const UI = {
         engine: item.engine || '-',
         operator: item.operator || item.pic || 'Petugas Stockyard',
         location: item.location || item.destination || '-',
-        noBa: item.noBa || item.branch || item.location || '',
+        noBa: itemBranch,
         notes: item.notes || item.keterangan || '-',
         read: true,
         fromDatabase: true
@@ -6311,7 +6318,7 @@ const UI = {
         id: r.id || `rep-db-${r.reportDate || idx}`,
         trxId: r.id || `REP-${idx}`,
         timestamp: timeDisplay,
-        targetEmail: r.targetEmail || targetEmail,
+        targetEmail: r.targetEmail || defaultEmail,
         status: r.status || 'SUCCESS',
         category: 'DAILY_REPORT',
         subject: `Rekapitulasi Mutasi Harian Stockyard (${r.reportDate || 'Periode Resmi'})`,
@@ -6360,7 +6367,7 @@ const UI = {
           id: `rep-auto-${cleanId}`,
           trxId: `REP-${cleanId}`,
           timestamp: `${dStr} • 08:00 WIB`,
-          targetEmail: targetEmail,
+          targetEmail: defaultEmail,
           status: 'SUCCESS',
           category: 'DAILY_REPORT',
           subject: `Rekapitulasi Mutasi Harian Stockyard (${dStr})`,
@@ -6595,21 +6602,33 @@ const UI = {
       }
 
       // Render Daftar Target Email Penerima (Multi-Email Tags Responsive)
-      const rawTarget = item.targetEmail || targetEmail;
-      const recipientList = String(rawTarget)
-        .split(/[,;\n\s]+/)
-        .map(e => e.trim())
-        .filter(e => e.includes('@'));
+      let recipientList = [];
+      if (item.targetEmail && typeof item.targetEmail === 'string' && item.targetEmail.trim()) {
+        recipientList = item.targetEmail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+      }
+      if (recipientList.length === 0) {
+        const itemBranch = item.noBa || item.branch || (AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode());
+        recipientList = AppState.getBranchTargetEmails(itemBranch);
+      }
 
       let recipientsHtml = '';
-      if (recipientList.length <= 1) {
-        const singleEmail = recipientList[0] || 'admin.logistics@daihatsu.co.id';
+      if (recipientList.length === 0) {
+        recipientsHtml = `
+          <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
+            <span class="flex items-center gap-1.5 min-w-0 text-slate-400">
+              <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
+              <span class="italic text-slate-400">(Belum diatur di database)</span>
+            </span>
+          </div>
+        `;
+      } else if (recipientList.length === 1) {
         recipientsHtml = `
           <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
             <span class="flex items-center gap-1.5 min-w-0 text-slate-500">
               <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
               <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
-              <strong class="font-mono text-slate-700 truncate">${singleEmail}</strong>
+              <strong class="font-mono text-slate-700 truncate">${recipientList[0]}</strong>
             </span>
           </div>
         `;
@@ -6661,7 +6680,14 @@ const UI = {
   async triggerRealEmailReportNow() {
     const btn = document.getElementById('btnTestSendEmail');
     const textEl = document.getElementById('btnTestSendEmailText');
-    const targetEmail = AppState.automationConfig?.email || 'admin.logistics@daihatsu.co.id';
+    const activeBranch = AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode();
+    const branchEmails = AppState.getBranchTargetEmails(activeBranch);
+
+    if (!branchEmails || branchEmails.length === 0) {
+      this.showToast(`⚠️ Target email untuk cabang ${activeBranch} belum diatur di database! Silakan kelola email terlebih dahulu.`, 4500);
+      return;
+    }
+    const targetEmail = branchEmails.join(', ');
 
     if (btn) btn.disabled = true;
     if (textEl) textEl.textContent = 'Mengirim...';
@@ -6669,7 +6695,7 @@ const UI = {
     this.showToast(`⏳ Mengirimkan laporan email ke ${targetEmail}...`);
 
     try {
-      const res = await ApiService.triggerEmailReport();
+      const res = await ApiService.triggerEmailReport(targetEmail);
       const isSuccess = res && (res.success === true || !res.error);
 
       const timestampStr = res?.timestamp || (new Date().toLocaleString('id-ID', {
