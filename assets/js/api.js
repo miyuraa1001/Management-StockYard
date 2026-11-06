@@ -326,6 +326,30 @@ const ApiService = {
               docPhoto: formatDriveThumb(item.docPhoto)
             };
           });
+
+          // Deduplikasi riwayat mutasi: saring rekaman duplikat berdasarkan ID unik atau kesamaan VIN + tipe mutasi pada rentang menit yang sama
+          const seenHistoryKeys = new Set();
+          const cleanHistory = [];
+          for (const item of rawHistoryList) {
+            const rawVin = String(item.vin || '').trim().toUpperCase();
+            const rawType = String(item.type || '').trim();
+            const dateKey = item.fullDateStr || `${item.day}-${item.month}-${item.year}`;
+            const timeKey = String(item.time || '').trim().slice(0, 5);
+            const keyById = item.id ? `id:${item.id}` : null;
+            const keyByCombo = (rawVin && rawVin !== '-') ? `combo:${rawVin}|${rawType}|${dateKey}|${timeKey}` : null;
+
+            if (keyById && seenHistoryKeys.has(keyById)) {
+              continue;
+            }
+            if (keyByCombo && seenHistoryKeys.has(keyByCombo)) {
+              continue;
+            }
+
+            if (keyById) seenHistoryKeys.add(keyById);
+            if (keyByCombo) seenHistoryKeys.add(keyByCombo);
+            cleanHistory.push(item);
+          }
+          AppState.historyData = cleanHistory;
         }
 
         // Sinkronisasi seluruh daftar akun UserPIC ke CONFIG.USER_ACCOUNTS secara live
@@ -614,16 +638,8 @@ const ApiService = {
         cabang: defaultBranch,
         branch: defaultBranch
       };
-      let res = await this.request('recordMutation', 'POST', payload);
-      if (res && res.success) {
-        return res;
-      }
-      // Fallback jika backend Apps Script versi lama menggunakan action 'saveMutation' atau 'addMutation'
-      if (!res || !res.success) {
-        const fallbackRes = await this.request('saveMutation', 'POST', payload);
-        if (fallbackRes && fallbackRes.success) return fallbackRes;
-      }
-      return res;
+      // Kirim satu kali request resmi (mencegah duplikasi ganda di server Apps Script)
+      return await this.request('recordMutation', 'POST', payload);
     } catch (e) {
       console.error('[ApiService] Gagal menyimpan mutasi ke spreadsheet:', e);
       return { success: false, error: e.message };

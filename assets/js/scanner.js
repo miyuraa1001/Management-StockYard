@@ -371,6 +371,11 @@ const ScannerService = {
     const overlay = document.getElementById('ocrProcessingOverlay');
     if (overlay) overlay.classList.add('hidden');
 
+    // Reset status tombol submit mutasi
+    if (typeof App !== 'undefined' && typeof App.resetSubmitMutationButton === 'function') {
+      App.resetSubmitMutationButton();
+    }
+
     // Selalu reset ke Tahap 1 saat baru dibuka
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');
@@ -791,6 +796,11 @@ const ScannerService = {
 
     const modal = document.getElementById('scannerModalOverlay');
     if (modal) modal.classList.add('hidden');
+
+    // Reset status tombol submit mutasi
+    if (typeof App !== 'undefined' && typeof App.resetSubmitMutationButton === 'function') {
+      App.resetSubmitMutationButton();
+    }
 
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');
@@ -1691,6 +1701,11 @@ const ScannerService = {
    * Kembali dari Tahap 2 (Form Mutasi) ke Tahap 1 (Kamera Scanner)
    */
   backToStep1Scanner() {
+    // Reset status tombol submit mutasi
+    if (typeof App !== 'undefined' && typeof App.resetSubmitMutationButton === 'function') {
+      App.resetSubmitMutationButton();
+    }
+
     const step1 = document.getElementById('scanStep1_Camera');
     const step2 = document.getElementById('scanStep2_Form');
 

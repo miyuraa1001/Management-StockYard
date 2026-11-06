@@ -117,9 +117,36 @@ const App = {
   },
 
   /**
+   * Flag penguncian (mutex lock) untuk mencegah submit ganda saat tombol ditekan berulang kali
+   */
+  _isSavingMutation: false,
+
+  /**
+   * Mengembalikan tombol Simpan & Verifikasi ke status aktif semula
+   */
+  resetSubmitMutationButton() {
+    this._isSavingMutation = false;
+    const submitBtn = document.getElementById('btnSubmitMutation');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-60', 'pointer-events-none', 'cursor-not-allowed');
+      submitBtn.innerHTML = `
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <span id="btnSubmitMutationText">Simpan & Verifikasi</span>
+      `;
+    }
+  },
+
+  /**
    * Menyimpan dan memverifikasi data mutasi fisik kendaraan
    */
   async saveMutationData() {
+    // 1. Guard anti-klik ganda: jika sedang memproses simpan, cegah pemanggilan berulang
+    if (this._isSavingMutation) {
+      console.warn('[App] Proses simpan mutasi sedang berjalan, abaikan klik ganda.');
+      return;
+    }
+
     const vin = (document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '').trim();
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
     const mutationType = document.getElementById('inputMutationType')?.value;
@@ -131,6 +158,7 @@ const App = {
 
     if (!vin || !engine) {
       UI.showToast('Harap isi nomor VIN dan nomor mesin!');
+      this.resetSubmitMutationButton();
       return;
     }
 
@@ -153,7 +181,23 @@ const App = {
       if (alertContainer) {
         alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+      this.resetSubmitMutationButton();
       return;
+    }
+
+    // 2. Kunci submit dan ubah tampilan tombol menjadi disabled & loading spinner
+    this._isSavingMutation = true;
+    const submitBtn = document.getElementById('btnSubmitMutation');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-60', 'pointer-events-none', 'cursor-not-allowed');
+      submitBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span id="btnSubmitMutationText">Menyimpan & Memverifikasi...</span>
+      `;
     }
 
     const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(model) : null;
@@ -196,9 +240,15 @@ const App = {
       targetEmail: (AppState.getBranchTargetEmails(noBa) || []).join(', ')
     };
 
-    // Optimistic UI Update: masukkan ke state lokal segera & amankan ke cache
-    AppState.historyData.unshift(newRecord);
-    AppState.saveToCache();
+    // 3. Optimistic UI Update: masukkan ke state lokal jika belum ada entri yang sama
+    const isAlreadyInHistory = AppState.historyData.some(h => 
+      h.id === newRecord.id || 
+      (h.vin === cleanVin && h.type === mutationType && Math.abs(new Date(h.timestamp || 0) - now) < 20000)
+    );
+    if (!isAlreadyInHistory) {
+      AppState.historyData.unshift(newRecord);
+      AppState.saveToCache();
+    }
 
     // Update status di Inventory jika ada unit dengan VIN yang sama
     const existingInv = AppState.inventoryData.find(item => item.vin === cleanVin);
@@ -343,6 +393,11 @@ const App = {
     } catch (e) {
       console.warn('[App] Gagal mengirim mutasi ke server (tersimpan lokal):', e);
       UI.showToast('⚠️ Data tersimpan di HP/Lokal (Koneksi offline). Periksa jaringan Anda.', 5000);
+    } finally {
+      // Pastikan tombol dipulihkan setelah jeda singkat (mencegah klik ganda / touch bounce)
+      setTimeout(() => {
+        this.resetSubmitMutationButton();
+      }, 600);
     }
   }
 };
