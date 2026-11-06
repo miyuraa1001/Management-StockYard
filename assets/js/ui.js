@@ -4377,17 +4377,20 @@ const UI = {
     const roleBadgeText = document.getElementById('headerRoleBadgeText');
 
     if (roleBadgeBtn) {
-      roleBadgeBtn.onclick = () => this.showLoginScreen();
+      roleBadgeBtn.onclick = () => {
+        if (typeof switchTab === 'function') switchTab('settings');
+        else if (this.switchTab) this.switchTab('settings');
+      };
       if (isAdmin) {
         roleBadgeBtn.className = 'h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex-shrink-0';
         if (roleBadgeIcon) roleBadgeIcon.innerText = '🛡️';
         if (roleBadgeText) roleBadgeText.innerHTML = '<span class="font-bold">Admin</span><span class="hidden sm:inline font-semibold"> (Semua)</span>';
-        roleBadgeBtn.title = 'Mode Admin: Akses semua cabang. Klik untuk beralih ke Mode User Cabang.';
+        roleBadgeBtn.title = 'Akun Administrator: Akses semua cabang operasional. Klik untuk membuka Pengaturan.';
       } else {
         roleBadgeBtn.className = 'h-8 inline-flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-2xs border transition cursor-pointer active:scale-95 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 flex-shrink-0';
         if (roleBadgeIcon) roleBadgeIcon.innerText = '👤';
         if (roleBadgeText) roleBadgeText.innerHTML = `<span class="hidden sm:inline font-semibold">User </span><span class="font-bold">${userBranchCode}</span>`;
-        roleBadgeBtn.title = `Mode User: Terbatas hanya cabang ${userBranch}. Klik untuk beralih ke Mode Admin.`;
+        roleBadgeBtn.title = `Akun Cabang: ${userBranch}. Klik untuk membuka Pengaturan.`;
       }
     }
 
@@ -4746,7 +4749,7 @@ const UI = {
   },
 
   quickToggleRole() {
-    this.showLoginScreen();
+    this.switchTab('settings');
   },
 
   _legacyQuickToggleRole() {
