@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="StockYard DSO">
+  <meta name="apple-mobile-web-app-title" content="Stockyard">
   <link rel="apple-touch-icon" href="assets/icons/icon-apk.png">
   <link rel="icon" type="image/png" href="assets/icons/icon-apk.png">
   
@@ -2944,7 +2944,7 @@
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                     console.log('[PWA] Pembaruan aplikasi tersedia!');
                     if (typeof UI !== 'undefined' && UI.showToast) {
-                      UI.showToast('🚀 Pembaruan StockYard DSO tersedia. Muat ulang aplikasi untuk versi terbaru.');
+                      UI.showToast('🚀 Pembaruan Stockyard tersedia. Silakan muat ulang aplikasi untuk versi terbaru.');
                     }
                   }
                 });
@@ -2963,17 +2963,23 @@
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    // Tandai tombol di settings jika sudah berjalan di mode standalone (sudah terinstall)
-    if (isStandaloneMode) {
-      document.addEventListener('DOMContentLoaded', () => {
-        const btnText = document.getElementById('pwaSettingsInstallBtnText');
-        const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
-        if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
-        if (settingsBtn) {
-          settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
-          settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
-        }
-      });
+    // Helper untuk memperbarui status visual tombol saat aplikasi sudah terpasang
+    function markPWAInstalledUI() {
+      const btnText = document.getElementById('pwaSettingsInstallBtnText');
+      const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
+      if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
+      if (settingsBtn) {
+        settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
+        settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
+      }
+    }
+
+    // Tandai tombol di settings jika sudah berjalan di mode standalone atau sudah pernah dipasang
+    if (isStandaloneMode || localStorage.getItem('pwa_installed') === 'true') {
+      document.addEventListener('DOMContentLoaded', markPWAInstalledUI);
+      if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        markPWAInstalledUI();
+      }
     }
 
     // Modal Panduan Khusus iPhone (iOS Safari)
@@ -2994,28 +3000,41 @@
       console.log('[PWA] Event beforeinstallprompt siap (dipicu via menu Pengaturan).');
     });
 
-    // 3. Fungsi memicu instalasi kustom via tombol di Pengaturan
+    // 3. Fungsi memicu instalasi kustom via tombol di Pengaturan dengan notifikasi status yang jelas
     window.triggerPWAInstall = async () => {
-      if (isStandaloneMode) {
+      if (isStandaloneMode || localStorage.getItem('pwa_installed') === 'true') {
         if (typeof UI !== 'undefined' && UI.showToast) {
-          UI.showToast('✅ Aplikasi StockYard DSO sudah terpasang di layar utama Anda.');
+          UI.showToast('✅ Aplikasi Stockyard sudah terpasang di layar utama Anda. Silakan periksa beranda HP Anda.');
+        } else {
+          alert('✅ Aplikasi Stockyard sudah terpasang di layar utama Anda.');
         }
         return;
       }
 
       if (deferredInstallPrompt) {
+        const btnText = document.getElementById('pwaSettingsInstallBtnText');
         deferredInstallPrompt.prompt();
         const { outcome } = await deferredInstallPrompt.userChoice;
         console.log('[PWA] Pilihan instalasi pengguna:', outcome);
+        
         if (outcome === 'accepted') {
           console.log('[PWA] Pengguna menyetujui instalasi aplikasi');
+          if (btnText) btnText.textContent = 'Sedang Memasang... ⏳';
+          if (typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast('⏳ Sedang memasang aplikasi Stockyard... Ikon akan segera muncul di layar utama HP Anda.');
+          }
+        } else {
+          console.log('[PWA] Pengguna membatalkan instalasi');
+          if (typeof UI !== 'undefined' && UI.showToast) {
+            UI.showToast('ℹ️ Pemasangan dibatalkan. Anda dapat memasangnya kapan saja dari menu Pengaturan.');
+          }
         }
         deferredInstallPrompt = null;
       } else if (isIOSDevice) {
         // Tampilkan modal panduan interaktif khusus iPhone / iPad
         window.openIOSInstallModal();
       } else {
-        const desktopMsg = 'ℹ️ Untuk memasang aplikasi: Klik ikon pasang (komputer panah ke bawah) di ujung kanan bilah alamat browser, atau buka Menu Browser > "Install StockYard DSO".';
+        const desktopMsg = 'ℹ️ Untuk memasang aplikasi: Klik ikon pasang di ujung kanan bilah alamat browser, atau buka Menu Browser > "Install Stockyard".';
         if (typeof UI !== 'undefined' && UI.showToast) {
           UI.showToast(desktopMsg);
         } else {
@@ -3024,19 +3043,16 @@
       }
     };
 
-    // 4. Tangkap event appinstalled ketika selesai dipasang
+    // 4. Tangkap event appinstalled ketika selesai dipasang di Android / Desktop
     window.addEventListener('appinstalled', () => {
-      console.log('[PWA] Aplikasi berhasil dipasang di perangkat!');
-      const btnText = document.getElementById('pwaSettingsInstallBtnText');
-      const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
-      if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
-      if (settingsBtn) {
-        settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
-        settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
-      }
+      console.log('[PWA] Aplikasi Stockyard berhasil dipasang di perangkat!');
+      localStorage.setItem('pwa_installed', 'true');
+      markPWAInstalledUI();
 
       if (typeof UI !== 'undefined' && UI.showToast) {
-        UI.showToast('🎉 Aplikasi StockYard DSO berhasil dipasang di layar utama!');
+        UI.showToast('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda. Silakan periksa beranda HP Anda.');
+      } else {
+        alert('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda.');
       }
     });
   </script>

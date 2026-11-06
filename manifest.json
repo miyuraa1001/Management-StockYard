@@ -1,6 +1,6 @@
 {
-  "name": "Management StockYard - Astra Daihatsu DSO Lampung",
-  "short_name": "StockYard DSO",
+  "name": "Stockyard - Astra Daihatsu DSO Lampung",
+  "short_name": "Stockyard",
   "description": "Sistem Manajemen & Pelacakan Logistik Stockyard Kendaraan Astra Daihatsu DSO Lampung",
   "id": "management-stockyard-dso-lampung",
   "start_url": "./index.html",
