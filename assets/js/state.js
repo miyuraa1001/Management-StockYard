@@ -44,9 +44,9 @@ const AppState = {
 
   // Target Email Per-Cabang (Sesuai Tab UserPIC Kolom G di Google Sheets)
   branchEmails: {
-    'DSO LAMPUNG': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
-    'D660': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
-    'D661': 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    'DSO LAMPUNG': '',
+    'D660': '',
+    'D661': '',
     'D662': '',
     'D663': '',
     'D664': ''
@@ -135,7 +135,7 @@ const AppState = {
   },
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
-    email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+    email: '',
     type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar',
     enabled: true
   },
@@ -468,12 +468,42 @@ const AppState = {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
       }
 
-      // Bersihkan email fiktif lama jika tersimpan di cache lokal untuk cabang D662, D663, D664
-      ['D662', 'D663', 'D664'].forEach(bCode => {
-        if (this.branchEmails[bCode] && this.branchEmails[bCode].includes('syafirafira08162')) {
-          this.branchEmails[bCode] = '';
-        }
-      });
+      // Helper filter untuk mendeteksi email fiktif / dummy bawaan lama
+      const isFictitiousEmail = (str) => {
+        if (!str || typeof str !== 'string') return false;
+        const lower = str.toLowerCase();
+        return lower.includes('syafirafira08162') ||
+               lower.includes('nabila38148') ||
+               lower.includes('andikaintan4') ||
+               lower.includes('nabilatria044') ||
+               lower.includes('admin.logistics@daihatsu.co.id') ||
+               lower.includes('security.ayani@daihatsu.co.id');
+      };
+
+      // Bersihkan total seluruh email fiktif lama dari seluruh cabang di cache lokal
+      if (this.branchEmails && typeof this.branchEmails === 'object') {
+        Object.keys(this.branchEmails).forEach(bCode => {
+          if (isFictitiousEmail(this.branchEmails[bCode])) {
+            this.branchEmails[bCode] = '';
+          }
+        });
+      }
+
+      // Bersihkan juga email fiktif dari automationConfig
+      if (this.automationConfig && isFictitiousEmail(this.automationConfig.email)) {
+        this.automationConfig.email = '';
+        this.automationConfig.emails = [];
+      }
+
+      // Bersihkan juga profil user aktif jika masih membawa email fiktif
+      if (this.userProfile && isFictitiousEmail(this.userProfile.email)) {
+        this.userProfile.email = '';
+        this.userProfile.targetEmail = '';
+      }
+      if (this.authSession?.user && isFictitiousEmail(this.authSession.user.email)) {
+        this.authSession.user.email = '';
+        this.authSession.user.targetEmail = '';
+      }
 
       const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');
       if (cachedReportLogs) {

@@ -281,7 +281,7 @@ Struktur tabel di Google Spreadsheet dirancang rapi, mudah dibaca langsung oleh 
 | **D** | `Nama Lengkap` | Teks | `ADMIN HEAD / BRANCH MANAGER` | Nama tampilan pejabat/regu |
 | **E** | `Cabang` | Teks | `Sentra Lampung` / `D660 - Ahmad Yani` | Wilayah wewenang kerja |
 | **F** | `Jabatan` | Teks | `ADMIN HEAD / BRANCH MANAGER` / `SECURITY` | Peran operasional |
-| **G** | `Target Email` | Teks | `syafirafira08162@gmail.com` | Email koordinasi cabang |
+| **G** | `Target Email` | Teks | `email.resmi@cabang.daihatsu.co.id` | Email koordinasi cabang |
 | **H** | `Foto Profil` | Tautan URL | `https://drive.google.com/...` | URL foto profil aktif di Drive |
 | **I** | `Status` | Teks | `Aktif` | Status keaktifan akun |
 | **J** | `Terakhir Login` | Waktu | `27/10/2026 08:15:20 WIB` | Stempel waktu login terakhir |
@@ -293,7 +293,7 @@ Struktur tabel di Google Spreadsheet dirancang rapi, mudah dibaca langsung oleh 
 | **B** | `Timestamp ISO` | ISO String | `2026-10-27T01:00:05.000Z` | Waktu eksekusi laporan |
 | **C** | `Waktu Kirim` | Teks | `27/10/2026 08:00 WIB` | Jam pengiriman laporan resmi |
 | **D** | `Periode Laporan` | Teks | `26/10/2026` | Tanggal mutasi yang direkap |
-| **E** | `Target Email Penerima` | Teks | `syafirafira08162@gmail.com, ...` | Seluruh email yang menerima laporan |
+| **E** | `Target Email Penerima` | Teks | `email.resmi@cabang.daihatsu.co.id, ...` | Seluruh email yang menerima laporan |
 | **F** | `Total Unit` | Angka | `13` | Total mutasi yang dilaporkan |
 | **G** | `Unit Masuk` | Angka | `12` | Jumlah unit masuk |
 | **H** | `Unit Keluar` | Angka | `1` | Jumlah unit keluar |

@@ -5565,13 +5565,9 @@ const UI = {
   },
 
   /**
-   * Hapus Email Penerima dari chips
+   * Hapus Email Penerima dari chips (bisa menghapus seluruh email jika ingin dikosongkan)
    */
   removeEmailRecipient(idx) {
-    if (this.automationState.emails.length <= 1) {
-      this.showToast('Minimal harus ada 1 target email penerima laporan!');
-      return;
-    }
     this.automationState.emails.splice(idx, 1);
     this.renderEmailChips();
     this.syncHiddenEmailInput();
@@ -5716,11 +5712,6 @@ const UI = {
       : (document.getElementById('inputAutoEmail')?.value || '').split(/[,;\n\s]+/).filter(e => e.includes('@'));
     const emailStr = emailList.join(', ');
     const type = (document.getElementById('inputAutoType')?.value || '').trim() || 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar';
-
-    if (emailList.length === 0) {
-      this.showToast('Minimal harus ada 1 email penerima laporan!');
-      return;
-    }
 
     const selectedBranch = this.automationState.selectedBranch || (AppState.isAdmin() ? (document.getElementById('selectTargetEmailBranch')?.value || 'DSO LAMPUNG') : AppState.getUserBranchCode());
 

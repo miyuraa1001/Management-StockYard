@@ -37,7 +37,7 @@ const CONFIG = {
       role: 'ADMIN HEAD / BRANCH MANAGER',
       systemRole: 'Admin',
       password: 'daihatsu2026',
-      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {
@@ -49,7 +49,7 @@ const CONFIG = {
       role: 'SECURITY',
       systemRole: 'User',
       password: 'daihatsu2026',
-      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {
@@ -61,7 +61,7 @@ const CONFIG = {
       role: 'SECURITY',
       systemRole: 'User',
       password: 'daihatsu2026',
-      email: 'syafirafira08162@gmail.com, nabila38148@gmail.com, andikaintan4@gmail.com, nabilatria044@gmail.com',
+      email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {

@@ -352,12 +352,25 @@ const ApiService = {
           AppState.historyData = cleanHistory;
         }
 
+        // Helper filter untuk menyaring dan menolak email fiktif lama
+        const isFictitiousEmail = (str) => {
+          if (!str || typeof str !== 'string') return false;
+          const lower = str.toLowerCase();
+          return lower.includes('syafirafira08162') ||
+                 lower.includes('nabila38148') ||
+                 lower.includes('andikaintan4') ||
+                 lower.includes('nabilatria044') ||
+                 lower.includes('admin.logistics@daihatsu.co.id') ||
+                 lower.includes('security.ayani@daihatsu.co.id');
+        };
+
         // Sinkronisasi seluruh daftar akun UserPIC ke CONFIG.USER_ACCOUNTS secara live
         if (Array.isArray(payload.users) && payload.users.length > 0) {
           CONFIG.USER_ACCOUNTS = payload.users.map(dbUser => {
             const isAdm = (dbUser.role === 'Admin') || 
                           (dbUser.position && dbUser.position.toUpperCase().includes('ADMIN')) || 
                           (dbUser.username && dbUser.username.toUpperCase().includes('DSO'));
+            const rawUserEmail = dbUser.email || dbUser.targetEmail || '';
             return {
               id: dbUser.id || 'USR-001',
               username: dbUser.username || '',
@@ -368,7 +381,7 @@ const ApiService = {
                 : (dbUser.username.includes('DSO') ? 'ALL' : dbUser.username),
               role: dbUser.position || dbUser.role || 'SECURITY',
               systemRole: isAdm ? 'Admin' : 'User',
-              email: dbUser.email || dbUser.targetEmail || '',
+              email: isFictitiousEmail(rawUserEmail) ? '' : rawUserEmail,
               avatar: dbUser.photo || dbUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
               password: dbUser.password || 'daihatsu2026'
             };
@@ -432,9 +445,10 @@ const ApiService = {
               AppState.userProfile.photo = incomingPhoto;
             }
           }
-          const uEmail = (u.targetEmail !== undefined && u.targetEmail !== null) 
+          const uEmailRaw = (u.targetEmail !== undefined && u.targetEmail !== null) 
             ? String(u.targetEmail).trim() 
             : (u.email ? String(u.email).trim() : '');
+          const uEmail = isFictitiousEmail(uEmailRaw) ? '' : uEmailRaw;
           AppState.userProfile.email = uEmail;
           AppState.userProfile.targetEmail = uEmail;
 
@@ -455,12 +469,12 @@ const ApiService = {
         // Sinkronisasi data SystemConfig (Email & Jadwal) jika dikembalikan oleh database
         if (payload.config) {
           const c = payload.config;
-          if (c.TARGET_EMAIL) {
-            AppState.automationConfig.email = c.TARGET_EMAIL;
-            AppState.automationConfig.emails = String(c.TARGET_EMAIL)
-              .split(/[,;\n\s]+/)
-              .map(e => e.trim())
-              .filter(e => e.includes('@'));
+          if (c.TARGET_EMAIL !== undefined && c.TARGET_EMAIL !== null) {
+            const rawTargetEmail = isFictitiousEmail(c.TARGET_EMAIL) ? '' : String(c.TARGET_EMAIL).trim();
+            AppState.automationConfig.email = rawTargetEmail;
+            AppState.automationConfig.emails = rawTargetEmail
+              ? rawTargetEmail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'))
+              : [];
           }
           if (c.AUTO_SCHEDULE_TEXT) {
             AppState.automationConfig.schedule = c.AUTO_SCHEDULE_TEXT;
@@ -485,7 +499,8 @@ const ApiService = {
         if (payload.branchEmails && typeof payload.branchEmails === 'object') {
           Object.keys(payload.branchEmails).forEach(k => {
             const val = payload.branchEmails[k];
-            AppState.branchEmails[k] = (val !== null && val !== undefined) ? String(val).trim() : '';
+            const cleanVal = (val !== null && val !== undefined) ? String(val).trim() : '';
+            AppState.branchEmails[k] = isFictitiousEmail(cleanVal) ? '' : cleanVal;
           });
         }
 
@@ -499,7 +514,7 @@ const ApiService = {
               const mail = (usr.targetEmail !== undefined && usr.targetEmail !== null)
                 ? String(usr.targetEmail).trim()
                 : (usr.email ? String(usr.email).trim() : '');
-              AppState.branchEmails[bKey] = mail;
+              AppState.branchEmails[bKey] = isFictitiousEmail(mail) ? '' : mail;
             }
           });
         }
