@@ -352,25 +352,13 @@ const ApiService = {
           AppState.historyData = cleanHistory;
         }
 
-        // Helper filter untuk menyaring dan menolak email fiktif lama
-        const isFictitiousEmail = (str) => {
-          if (!str || typeof str !== 'string') return false;
-          const lower = str.toLowerCase();
-          return lower.includes('syafirafira08162') ||
-                 lower.includes('nabila38148') ||
-                 lower.includes('andikaintan4') ||
-                 lower.includes('nabilatria044') ||
-                 lower.includes('admin.logistics@daihatsu.co.id') ||
-                 lower.includes('security.ayani@daihatsu.co.id');
-        };
-
-        // Sinkronisasi seluruh daftar akun UserPIC ke CONFIG.USER_ACCOUNTS secara live
+        // Sinkronisasi seluruh daftar akun UserPIC ke CONFIG.USER_ACCOUNTS secara live dari database
         if (Array.isArray(payload.users) && payload.users.length > 0) {
           CONFIG.USER_ACCOUNTS = payload.users.map(dbUser => {
             const isAdm = (dbUser.role === 'Admin') || 
                           (dbUser.position && dbUser.position.toUpperCase().includes('ADMIN')) || 
                           (dbUser.username && dbUser.username.toUpperCase().includes('DSO'));
-            const rawUserEmail = dbUser.email || dbUser.targetEmail || '';
+            const userEmail = dbUser.email || dbUser.targetEmail || '';
             return {
               id: dbUser.id || 'USR-001',
               username: dbUser.username || '',
@@ -381,7 +369,7 @@ const ApiService = {
                 : (dbUser.username.includes('DSO') ? 'ALL' : dbUser.username),
               role: dbUser.position || dbUser.role || 'SECURITY',
               systemRole: isAdm ? 'Admin' : 'User',
-              email: isFictitiousEmail(rawUserEmail) ? '' : rawUserEmail,
+              email: userEmail,
               avatar: dbUser.photo || dbUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
               password: dbUser.password || 'daihatsu2026'
             };
@@ -445,10 +433,9 @@ const ApiService = {
               AppState.userProfile.photo = incomingPhoto;
             }
           }
-          const uEmailRaw = (u.targetEmail !== undefined && u.targetEmail !== null) 
+          const uEmail = (u.targetEmail !== undefined && u.targetEmail !== null) 
             ? String(u.targetEmail).trim() 
             : (u.email ? String(u.email).trim() : '');
-          const uEmail = isFictitiousEmail(uEmailRaw) ? '' : uEmailRaw;
           AppState.userProfile.email = uEmail;
           AppState.userProfile.targetEmail = uEmail;
 
@@ -466,11 +453,11 @@ const ApiService = {
           }
         }
 
-        // Sinkronisasi data SystemConfig (Email & Jadwal) jika dikembalikan oleh database
+        // Sinkronisasi data SystemConfig (Email & Jadwal) murni dari database Google Sheets
         if (payload.config) {
           const c = payload.config;
           if (c.TARGET_EMAIL !== undefined && c.TARGET_EMAIL !== null) {
-            const rawTargetEmail = isFictitiousEmail(c.TARGET_EMAIL) ? '' : String(c.TARGET_EMAIL).trim();
+            const rawTargetEmail = String(c.TARGET_EMAIL).trim();
             AppState.automationConfig.email = rawTargetEmail;
             AppState.automationConfig.emails = rawTargetEmail
               ? rawTargetEmail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'))
@@ -495,12 +482,11 @@ const ApiService = {
           }
         }
 
-        // Sinkronisasi data Target Email Per-Cabang (Tab UserPIC Kolom G)
+        // Sinkronisasi data Target Email Per-Cabang (Tab UserPIC Kolom G) murni dari database
         if (payload.branchEmails && typeof payload.branchEmails === 'object') {
           Object.keys(payload.branchEmails).forEach(k => {
             const val = payload.branchEmails[k];
-            const cleanVal = (val !== null && val !== undefined) ? String(val).trim() : '';
-            AppState.branchEmails[k] = isFictitiousEmail(cleanVal) ? '' : cleanVal;
+            AppState.branchEmails[k] = (val !== null && val !== undefined) ? String(val).trim() : '';
           });
         }
 
@@ -514,7 +500,7 @@ const ApiService = {
               const mail = (usr.targetEmail !== undefined && usr.targetEmail !== null)
                 ? String(usr.targetEmail).trim()
                 : (usr.email ? String(usr.email).trim() : '');
-              AppState.branchEmails[bKey] = isFictitiousEmail(mail) ? '' : mail;
+              AppState.branchEmails[bKey] = mail;
             }
           });
         }

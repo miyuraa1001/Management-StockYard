@@ -468,43 +468,6 @@ const AppState = {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
       }
 
-      // Helper filter untuk mendeteksi email fiktif / dummy bawaan lama
-      const isFictitiousEmail = (str) => {
-        if (!str || typeof str !== 'string') return false;
-        const lower = str.toLowerCase();
-        return lower.includes('syafirafira08162') ||
-               lower.includes('nabila38148') ||
-               lower.includes('andikaintan4') ||
-               lower.includes('nabilatria044') ||
-               lower.includes('admin.logistics@daihatsu.co.id') ||
-               lower.includes('security.ayani@daihatsu.co.id');
-      };
-
-      // Bersihkan total seluruh email fiktif lama dari seluruh cabang di cache lokal
-      if (this.branchEmails && typeof this.branchEmails === 'object') {
-        Object.keys(this.branchEmails).forEach(bCode => {
-          if (isFictitiousEmail(this.branchEmails[bCode])) {
-            this.branchEmails[bCode] = '';
-          }
-        });
-      }
-
-      // Bersihkan juga email fiktif dari automationConfig
-      if (this.automationConfig && isFictitiousEmail(this.automationConfig.email)) {
-        this.automationConfig.email = '';
-        this.automationConfig.emails = [];
-      }
-
-      // Bersihkan juga profil user aktif jika masih membawa email fiktif
-      if (this.userProfile && isFictitiousEmail(this.userProfile.email)) {
-        this.userProfile.email = '';
-        this.userProfile.targetEmail = '';
-      }
-      if (this.authSession?.user && isFictitiousEmail(this.authSession.user.email)) {
-        this.authSession.user.email = '';
-        this.authSession.user.targetEmail = '';
-      }
-
       const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');
       if (cachedReportLogs) {
         try {
