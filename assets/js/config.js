@@ -37,7 +37,7 @@ const CONFIG = {
       role: 'ADMIN HEAD / BRANCH MANAGER',
       systemRole: 'Admin',
       password: 'daihatsu2026',
-      email: '',
+      email: 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {
@@ -49,7 +49,7 @@ const CONFIG = {
       role: 'SECURITY',
       systemRole: 'User',
       password: 'daihatsu2026',
-      email: '',
+      email: 'syafirafira08162@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {
@@ -61,7 +61,7 @@ const CONFIG = {
       role: 'SECURITY',
       systemRole: 'User',
       password: 'daihatsu2026',
-      email: '',
+      email: 'syafirafira08162@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
     {
@@ -143,16 +143,16 @@ const CONFIG = {
   REQUEST_TIMEOUT: 20000,
   REALTIME_SYNC_INTERVAL: 15000,
 
-  // LocalStorage Cache Key (v10 - Sinkronisasi Murni Database UserPIC & Target Email Per-Cabang)
+  // LocalStorage Cache Key (v11 - Sinkronisasi Murni Database UserPIC & Target Email Per-Cabang)
   CACHE_KEYS: {
     AUTH_SESSION: 'daihatsu_auth_session_v10',
     INVENTORY: 'daihatsu_inventory_cache_v8',
     HISTORY: 'daihatsu_history_cache_v8',
     KPI: 'daihatsu_kpi_cache_v8',
-    PROFILE: 'daihatsu_profile_cache_v10',
-    AUTOMATION: 'daihatsu_automation_cache_v10',
-    BRANCH_EMAILS: 'daihatsu_branch_emails_v10',
-    REPORT_LOGS: 'daihatsu_report_logs_v10',
+    PROFILE: 'daihatsu_profile_cache_v11',
+    AUTOMATION: 'daihatsu_automation_cache_v11',
+    BRANCH_EMAILS: 'daihatsu_branch_emails_v11',
+    REPORT_LOGS: 'daihatsu_report_logs_v11',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
     DIRECT_URL: 'daihatsu_direct_appscript_url'

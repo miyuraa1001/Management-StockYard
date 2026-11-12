@@ -44,9 +44,9 @@ const AppState = {
 
   // Target Email Per-Cabang (Sesuai Tab UserPIC Kolom G di Google Sheets)
   branchEmails: {
-    'DSO LAMPUNG': '',
-    'D660': '',
-    'D661': '',
+    'DSO LAMPUNG': 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id',
+    'D660': 'syafirafira08162@gmail.com',
+    'D661': 'syafirafira08162@gmail.com',
     'D662': '',
     'D663': '',
     'D664': ''
@@ -62,19 +62,29 @@ const AppState = {
     }
     const cleanKey = String(branchKey).trim();
     const m = cleanKey.match(/D66[0-4]/i);
-    const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') ? 'DSO LAMPUNG' : cleanKey);
+    const key = m ? m[0].toUpperCase() : (cleanKey.toUpperCase().includes('DSO') || cleanKey.toUpperCase().includes('SENTRA') || cleanKey.toUpperCase() === 'ALL' ? 'DSO LAMPUNG' : cleanKey);
     
+    const filterValidEmails = (list) => {
+      return (list || []).filter(e => {
+        const em = String(e || '').trim().toLowerCase();
+        return em.includes('@') && 
+               !em.includes('nabila38148') && 
+               !em.includes('andikaintan4') && 
+               !em.includes('nabilatria044');
+      });
+    };
+
     // Ambil khusus data email cabang terkait
     const raw = this.branchEmails[key];
     if (raw && typeof raw === 'string' && raw.trim()) {
-      const parsed = raw.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+      const parsed = filterValidEmails(raw.split(/[,;\n\s]+/).map(e => e.trim()));
       if (parsed.length > 0) return parsed;
     }
 
     // Jika ini adalah DSO LAMPUNG / ALL (Admin), boleh fallback ke automationConfig
     if (key === 'DSO LAMPUNG' || key === 'ALL') {
       const autoRaw = this.automationConfig?.email || '';
-      return String(autoRaw).split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+      return filterValidEmails(String(autoRaw).split(/[,;\n\s]+/).map(e => e.trim()));
     }
 
     // Cabang yang belum didaftarkan emailnya di database (misal D662, D663, D664) mengembalikan array kosong []
@@ -135,7 +145,7 @@ const AppState = {
   },
   automationConfig: {
     schedule: 'Setiap Hari 08:00 WIB',
-    email: '',
+    email: 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id',
     type: 'Daily Digest PDF Rekap Mutasi Unit Masuk & Keluar',
     enabled: true
   },
@@ -383,10 +393,11 @@ const AppState = {
   // Inisialisasi Cache dari LocalStorage jika ada
   loadFromCache() {
     try {
-      // Bersihkan seluruh cache lama (v1 s/d v5) yang mungkin berisi data dummy/mock
-      ['v1', 'v2', 'v3', 'v4', 'v5'].forEach(v => {
-        ['inventory', 'history', 'kpi', 'profile', 'automation'].forEach(k => {
+      // Bersihkan seluruh cache lama (v1 s/d v10) yang mungkin berisi data dummy/mock
+      ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10'].forEach(v => {
+        ['inventory', 'history', 'kpi', 'profile', 'automation', 'branch_emails', 'report_logs'].forEach(k => {
           localStorage.removeItem(`daihatsu_${k}_cache_${v}`);
+          localStorage.removeItem(`daihatsu_${k}_${v}`);
         });
       });
 
@@ -466,6 +477,30 @@ const AppState = {
       const cachedBranchEmails = localStorage.getItem(CONFIG.CACHE_KEYS.BRANCH_EMAILS);
       if (cachedBranchEmails) {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
+      }
+
+      // Sanitasi ketat: Cegah data email fiktif lama mencemari state
+      const hasFakeEmail = (str) => {
+        const s = String(str || '').toLowerCase();
+        return s.includes('nabila38148') || s.includes('andikaintan4') || s.includes('nabilatria044');
+      };
+
+      if (hasFakeEmail(this.automationConfig.email)) {
+        this.automationConfig.email = 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id';
+      }
+
+      if (this.branchEmails) {
+        Object.keys(this.branchEmails).forEach(k => {
+          if (hasFakeEmail(this.branchEmails[k])) {
+            if (k === 'DSO LAMPUNG' || k === 'ALL') {
+              this.branchEmails[k] = 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id';
+            } else if (k === 'D660' || k === 'D661') {
+              this.branchEmails[k] = 'syafirafira08162@gmail.com';
+            } else {
+              this.branchEmails[k] = '';
+            }
+          }
+        });
       }
 
       const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');

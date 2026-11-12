@@ -475,32 +475,69 @@ const ApiService = {
           if (c.REPORT_DOCUMENT_TYPE) {
             AppState.automationConfig.type = c.REPORT_DOCUMENT_TYPE;
           }
-          if (typeof UI !== 'undefined') {
-            if (UI.applyAutomationConfig) UI.applyAutomationConfig();
-            if (UI.updateNotificationTargetEmailDisplay) UI.updateNotificationTargetEmailDisplay();
-            if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
+          // Hanya timpa email dari SystemConfig jika TARGET_EMAIL di SystemConfig tidak kosong
+          if (c.TARGET_EMAIL && String(c.TARGET_EMAIL).trim() !== '') {
+            const confMail = String(c.TARGET_EMAIL).trim();
+            AppState.automationConfig.email = confMail;
+            AppState.automationConfig.emails = confMail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+            if (!AppState.branchEmails['DSO LAMPUNG']) {
+              AppState.branchEmails['DSO LAMPUNG'] = confMail;
+            }
           }
         }
 
-        // Sinkronisasi data Target Email Per-Cabang (Tab UserPIC Kolom G) murni dari database
-        if (payload.branchEmails && typeof payload.branchEmails === 'object') {
-          Object.keys(payload.branchEmails).forEach(k => {
-            const val = payload.branchEmails[k];
-            AppState.branchEmails[k] = (val !== null && val !== undefined) ? String(val).trim() : '';
+        // 1. Sinkronisasi data User Akun & Target Email dari database (Tab UserPIC Kolom G)
+        if (Array.isArray(payload.users) && payload.users.length > 0) {
+          payload.users.forEach(usr => {
+            const mail = (usr.targetEmail !== undefined && usr.targetEmail !== null)
+              ? String(usr.targetEmail).trim()
+              : (usr.email ? String(usr.email).trim() : '');
+
+            const combinedStr = `${usr.branch || ''} ${usr.username || ''} ${usr.name || ''} ${usr.branchCode || ''} ${usr.position || ''}`.toUpperCase();
+            
+            // Cocokkan kode cabang resmi D660 s/d D664
+            const branchMatch = combinedStr.match(/D66[0-4]/i);
+            if (branchMatch) {
+              const code = branchMatch[0].toUpperCase();
+              AppState.branchEmails[code] = mail;
+            }
+
+            // Cocokkan Admin / DSO Lampung / Sentra
+            const isDsoOrAdmin = combinedStr.includes('DSO') || 
+                                 combinedStr.includes('SENTRA') || 
+                                 combinedStr.includes('ADMIN') || 
+                                 String(usr.role || '').toUpperCase() === 'ADMIN' ||
+                                 String(usr.position || '').toUpperCase().includes('ADMIN');
+
+            if (isDsoOrAdmin) {
+              AppState.branchEmails['DSO LAMPUNG'] = mail;
+              AppState.branchEmails['ALL'] = mail;
+              if (mail) {
+                AppState.automationConfig.email = mail;
+                AppState.automationConfig.emails = mail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+              }
+            }
           });
         }
 
-        // Sinkronisasi data User Akun dari database jika tersedia
-        if (Array.isArray(payload.users) && payload.users.length > 0) {
-          payload.users.forEach(usr => {
-            if (usr.username) {
-              const bKey = (usr.username.match(/^D66[0-4]/i))
-                ? usr.username.match(/^D66[0-4]/i)[0].toUpperCase()
-                : usr.username.toUpperCase();
-              const mail = (usr.targetEmail !== undefined && usr.targetEmail !== null)
-                ? String(usr.targetEmail).trim()
-                : (usr.email ? String(usr.email).trim() : '');
-              AppState.branchEmails[bKey] = mail;
+        // 2. Sinkronisasi payload.branchEmails murni dari server jika disertakan
+        if (payload.branchEmails && typeof payload.branchEmails === 'object') {
+          Object.keys(payload.branchEmails).forEach(k => {
+            const val = payload.branchEmails[k];
+            const cleanVal = (val !== null && val !== undefined) ? String(val).trim() : '';
+            const keyUpper = String(k).trim().toUpperCase();
+            const m = keyUpper.match(/D66[0-4]/i);
+            if (m) {
+              AppState.branchEmails[m[0].toUpperCase()] = cleanVal;
+            } else if (keyUpper.includes('DSO') || keyUpper.includes('SENTRA') || keyUpper === 'ALL') {
+              AppState.branchEmails['DSO LAMPUNG'] = cleanVal;
+              AppState.branchEmails['ALL'] = cleanVal;
+              if (cleanVal) {
+                AppState.automationConfig.email = cleanVal;
+                AppState.automationConfig.emails = cleanVal.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+              }
+            } else {
+              AppState.branchEmails[keyUpper] = cleanVal;
             }
           });
         }
@@ -509,7 +546,7 @@ const ApiService = {
         if (Array.isArray(payload.reportLogs)) {
           AppState.reportLogs = payload.reportLogs;
           try {
-            localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(payload.reportLogs));
+            localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v11', JSON.stringify(payload.reportLogs));
           } catch (e) {}
         }
 
@@ -518,8 +555,10 @@ const ApiService = {
         }
         AppState.saveToCache();
         if (typeof UI !== 'undefined') {
+          if (UI.applyAutomationConfig) UI.applyAutomationConfig();
           if (UI.updateNotificationTargetEmailDisplay) UI.updateNotificationTargetEmailDisplay();
           if (UI.renderEmailNotifications) UI.renderEmailNotifications();
+          if (UI.syncSettingsPreferences) UI.syncSettingsPreferences();
         }
         return true;
       }
