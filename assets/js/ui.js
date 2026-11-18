@@ -8026,7 +8026,7 @@ const UI = {
     if (filtered.length === 0) {
       container.innerHTML = `
         <tr>
-          <td colspan="9" class="py-12 px-6 text-center">
+          <td colspan="10" class="py-12 px-6 text-center">
             <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
@@ -8136,7 +8136,7 @@ const UI = {
             </span>
           </td>
 
-          <!-- Kolom 4: Kendaraan -->
+          <!-- Kolom 4: Kendaraan & Warna -->
           <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-2.5 min-w-0">
               <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-10 h-7 rounded-md bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Perbesar Foto Katalog ${item.model}">
@@ -8144,7 +8144,12 @@ const UI = {
               </div>
               <div class="min-w-0">
                 <div class="text-xs font-black text-slate-900 truncate">${item.model}</div>
-                <div class="text-[10px] font-semibold text-slate-400 truncate mt-0.5">${item.plate || (catalogItem ? catalogItem.category : 'Unit Daihatsu')}</div>
+                <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <span class="text-[10px] font-semibold text-slate-400 truncate">
+                    ${item.plate || (catalogItem ? catalogItem.category : 'Unit Daihatsu')}
+                  </span>
+                  ${item.color ? `<span class="inline-block px-1.5 py-0.2 rounded text-[8.5px] font-black bg-purple-50 text-purple-700 border border-purple-200" title="Warna Mobil: ${item.color}">${item.color}</span>` : ''}
+                </div>
               </div>
             </div>
           </td>
@@ -8167,20 +8172,31 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 7: PIC & Catatan -->
+          <!-- Kolom 7: PIC / Petugas Lapangan (TERPISAH) -->
           <td class="py-3 px-3 align-middle border-r border-slate-200">
             <div class="flex items-center space-x-1.5">
-              <span class="w-4 h-4 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
-                ${(item.pic || 'A').charAt(0).toUpperCase()}
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                ${((item.officerName || item.pic || 'P').charAt(0)).toUpperCase()}
               </span>
-              <span class="text-[11px] font-extrabold text-slate-800 truncate">${item.pic || 'Petugas'}</span>
+              <div class="min-w-0">
+                <div class="text-[11px] font-extrabold text-slate-800 truncate" title="${item.officerName || item.pic || 'Petugas'}">
+                  ${item.officerName || item.pic || 'Petugas Lapangan'}
+                </div>
+                <div class="text-[9.5px] font-semibold text-slate-400 truncate">
+                  Security — ${(String(item.noBa || item.branch || 'D660').match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase()}
+                </div>
+              </div>
             </div>
-            <p class="text-[10px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-snug max-w-[200px]" title="${item.notes || '-'}">
-              ${item.notes || 'Pemeriksaan standar unit.'}
-            </p>
           </td>
 
-          <!-- Kolom 8: Foto Dokumen -->
+          <!-- Kolom 8: Catatan Lapangan (TERPISAH) -->
+          <td class="py-3 px-3 align-middle border-r border-slate-200">
+            <div class="text-[10.5px] text-slate-700 font-medium leading-relaxed max-w-[240px] whitespace-normal break-words" title="${item.notes || ''}">
+              ${item.notes || 'Pemeriksaan standar serah terima unit di lapangan.'}
+            </div>
+          </td>
+
+          <!-- Kolom 9: Foto Dokumen -->
           <td class="py-2.5 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
             <div class="flex items-center justify-center space-x-2">
               ${unitThumbnailHtml}
