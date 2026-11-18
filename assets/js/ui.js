@@ -4427,7 +4427,7 @@ const UI = {
     if (type === 'noBa') {
       const currentVal = (document.getElementById('inputNoBa')?.value || 'D660 - Ahmad Yani').trim();
       return {
-        title: 'Pilih Cabang / Berita Acara (BA)',
+        title: 'Pilih Cabang / Business Area (BA)',
         subtitle: 'Lokasi cabang serah terima / mutasi unit',
         iconBg: 'bg-amber-50 text-amber-600',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>',
@@ -4447,9 +4447,13 @@ const UI = {
   },
 
   openOptionPicker(type) {
-    if (type === 'noBa' && typeof AppState !== 'undefined' && !AppState.isAdmin) {
-      this.showToast('🔒 Cabang penugasan Anda terkunci: ' + (AppState.userProfile?.branch || ''));
-      return;
+    if (type === 'noBa') {
+      const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+      if (!isAdmin) {
+        const uBranch = typeof AppState !== 'undefined' && typeof AppState.getUserBranch === 'function' ? AppState.getUserBranch() : 'cabang penugasan Anda';
+        this.showToast('🔒 Cabang penugasan terkunci khusus: ' + uBranch);
+        return;
+      }
     }
 
     this._activePickerType = type;
@@ -4684,12 +4688,17 @@ const UI = {
         }
       }
     } else if (type === 'noBa') {
+      const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+      if (!isAdmin) {
+        this.closeOptionPicker();
+        return;
+      }
       const el = document.getElementById('inputNoBa');
       if (el) el.value = value;
       const triggerText = document.getElementById('triggerNoBaText');
       if (triggerText) triggerText.textContent = label || value;
       const triggerBadge = document.getElementById('triggerNoBaBadge');
-      if (triggerBadge) triggerBadge.textContent = value.split(' - ')[0] || 'CABANG';
+      if (triggerBadge) triggerBadge.textContent = 'CABANG';
     }
 
     this.closeOptionPicker();
@@ -4763,14 +4772,53 @@ const UI = {
       }
     }
 
-    // 5. Branch No BA
+    // 5. Branch Business Area (BA)
     const noBaEl = document.getElementById('inputNoBa');
     if (noBaEl) {
-      const branchVal = noBaEl.value || 'D660 - Ahmad Yani';
-      const triggerText = document.getElementById('triggerNoBaText');
-      if (triggerText) triggerText.textContent = branchVal;
-      const triggerBadge = document.getElementById('triggerNoBaBadge');
-      if (triggerBadge) triggerBadge.textContent = branchVal.split(' - ')[0] || 'CABANG';
+      const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+      const userBranch = typeof AppState !== 'undefined' && typeof AppState.getUserBranch === 'function' ? AppState.getUserBranch() : 'D660 - Ahmad Yani';
+      const userBranchCode = typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function' ? AppState.getUserBranchCode() : 'D660';
+
+      noBaEl.className = 'hidden';
+      if (!isAdmin) {
+        noBaEl.value = userBranch;
+        noBaEl.disabled = true;
+        const triggerNoBa = document.getElementById('triggerNoBa');
+        if (triggerNoBa) {
+          triggerNoBa.disabled = true;
+          triggerNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 flex items-center justify-between shadow-2xs opacity-95 cursor-not-allowed text-left';
+          const triggerText = document.getElementById('triggerNoBaText');
+          if (triggerText) triggerText.textContent = userBranch;
+          const triggerBadge = document.getElementById('triggerNoBaBadge');
+          if (triggerBadge) {
+            triggerBadge.textContent = 'TERKUNCI: ' + userBranchCode;
+            triggerBadge.className = 'text-[9px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300';
+          }
+          const triggerIcon = document.getElementById('triggerNoBaIcon');
+          if (triggerIcon) {
+            triggerIcon.innerHTML = '<svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>';
+          }
+        }
+      } else {
+        const branchVal = noBaEl.value || 'D660 - Ahmad Yani';
+        noBaEl.disabled = false;
+        const triggerNoBa = document.getElementById('triggerNoBa');
+        if (triggerNoBa) {
+          triggerNoBa.disabled = false;
+          triggerNoBa.className = 'w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left';
+          const triggerText = document.getElementById('triggerNoBaText');
+          if (triggerText) triggerText.textContent = branchVal;
+          const triggerBadge = document.getElementById('triggerNoBaBadge');
+          if (triggerBadge) {
+            triggerBadge.textContent = 'CABANG';
+            triggerBadge.className = 'text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200';
+          }
+          const triggerIcon = document.getElementById('triggerNoBaIcon');
+          if (triggerIcon) {
+            triggerIcon.innerHTML = '<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+          }
+        }
+      }
     }
   },
 
@@ -4961,18 +5009,21 @@ const UI = {
     const inputNoBa = document.getElementById('inputNoBa');
     const inputNoBaBadge = document.getElementById('inputNoBaRoleBadge');
     const inputNoBaHint = document.getElementById('inputNoBaHint');
+    const triggerNoBa = document.getElementById('triggerNoBa');
 
     if (inputNoBa) {
+      inputNoBa.className = 'hidden'; // SELALU HIDDEN: Tidak boleh tampil menimpa trigger button!
+
       if (!isAdmin) {
         // Mode User: Otomatis langsung cabangnya sendiri (D660 dll) dan terkunci
         inputNoBa.innerHTML = `<option value="${userBranch}" selected>${userBranch}</option>`;
         inputNoBa.value = userBranch;
         inputNoBa.disabled = true;
-        inputNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 appearance-none focus:outline-none shadow-2xs opacity-95 cursor-not-allowed';
+        inputNoBa.className = 'hidden';
         inputNoBa.title = `Terkunci: Petugas User mencatat mutasi khusus cabang ${userBranch}`;
 
-        const triggerNoBa = document.getElementById('triggerNoBa');
         if (triggerNoBa) {
+          triggerNoBa.disabled = true;
           triggerNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 flex items-center justify-between shadow-2xs opacity-95 cursor-not-allowed text-left';
           const triggerNoBaText = document.getElementById('triggerNoBaText');
           if (triggerNoBaText) triggerNoBaText.textContent = userBranch;
@@ -4980,6 +5031,10 @@ const UI = {
           if (triggerNoBaBadge) {
             triggerNoBaBadge.textContent = `TERKUNCI: ${userBranchCode}`;
             triggerNoBaBadge.className = 'text-[9px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300';
+          }
+          const triggerNoBaIcon = document.getElementById('triggerNoBaIcon');
+          if (triggerNoBaIcon) {
+            triggerNoBaIcon.innerHTML = '<svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>';
           }
         }
 
@@ -5010,11 +5065,11 @@ const UI = {
         ).join('');
         inputNoBa.value = selectedVal;
         inputNoBa.disabled = false;
-        inputNoBa.className = 'w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer';
+        inputNoBa.className = 'hidden';
         inputNoBa.title = 'Akses Admin: Bebas memilih 5 cabang operasional (D660 s/d D664) untuk pencatatan unit';
 
-        const triggerNoBa = document.getElementById('triggerNoBa');
         if (triggerNoBa) {
+          triggerNoBa.disabled = false;
           triggerNoBa.className = 'w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left';
           const triggerNoBaText = document.getElementById('triggerNoBaText');
           if (triggerNoBaText) triggerNoBaText.textContent = selectedVal;
@@ -5022,6 +5077,10 @@ const UI = {
           if (triggerNoBaBadge) {
             triggerNoBaBadge.textContent = 'CABANG';
             triggerNoBaBadge.className = 'text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200';
+          }
+          const triggerNoBaIcon = document.getElementById('triggerNoBaIcon');
+          if (triggerNoBaIcon) {
+            triggerNoBaIcon.innerHTML = '<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
           }
         }
 
