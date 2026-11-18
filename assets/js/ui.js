@@ -6933,7 +6933,7 @@ const UI = {
         if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0';
         const cleanHost = String(conn.host || 'Google Apps Script').replace(/✓/g, '').trim();
         if (text) text.textContent = `Terhubung: ${cleanHost}`;
-        this.showToast(`✅ Server Terhubung! Mode: ${modeText} • Target: ${targetEmail}`, 4000);
+        // Silent connection check without noisy toast on modal open
 
         // Jika terhubung, sembunyikan kotak konfigurasi manual
         const directBox = document.getElementById('directConnectionModalBox');
@@ -7288,15 +7288,11 @@ const UI = {
         `;
       }
 
-      // Status Pengiriman / Database Badge
+      // Status Pengiriman / Offline Badge (Clean & Minimalist: Hanya tampil saat pending offline atau error)
       let statusBadge = '';
-      if (item.fromDatabase) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50/90 px-1.5 py-0.5 rounded border border-emerald-200"><svg class="w-2.5 h-2.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span>Spreadsheet Sync</span></span>`;
-      } else if (isSuccess) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-blue-700 bg-blue-50/90 px-1.5 py-0.5 rounded border border-blue-200"><svg class="w-2.5 h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span>Email Terkirim</span></span>`;
-      } else if (isOffline) {
+      if (isOffline) {
         statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><svg class="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Pending Sync</span></span>`;
-      } else {
+      } else if (!isSuccess && !item.fromDatabase) {
         statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200"><svg class="w-2.5 h-2.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>Gagal</span></span>`;
       }
 
