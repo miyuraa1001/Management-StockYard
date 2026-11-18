@@ -1535,10 +1535,10 @@ const UI = {
 
     // Row 6: Metadata Info Panel (Sleek Slate Matrix #F1F5F9 dengan border rapi)
     const r6 = worksheet.addRow([
-      `🏢 CABANG: ${branchFilter.toUpperCase()}`, '', '', '',
-      `📅 PERIODE: ${periodText}`, '', '', '',
-      `🕒 CETAK: ${printDateStr}`, '', '',
-      `🔒 STATUS: TERVERIFIKASI`, ''
+      `CABANG: ${branchFilter.toUpperCase()}`, '', '', '',
+      `PERIODE: ${periodText}`, '', '', '',
+      `CETAK: ${printDateStr}`, '', '',
+      `STATUS: TERVERIFIKASI`, ''
     ]);
     worksheet.mergeCells('A6:D6');
     worksheet.mergeCells('E6:H6');
@@ -1609,17 +1609,38 @@ const UI = {
         ? `${String(item.date).padStart(2,'0')}/${String(item.month).padStart(2,'0')}/${item.year}`
         : `${day}/${month}/${year}`;
 
+      const officerName = String(item.officerName || item.namaPetugas || "").trim();
+      const bCode = (String(item.noBa || item.branch || "D660").match(/D66[0-4]/i)?.[0] || "D660").toUpperCase();
+      let officerText = "";
+      if (officerName) {
+        officerText = `${officerName.toUpperCase()}\nSecurity — ${bCode}`;
+      } else {
+        const cleanPic = String(item.pic || "Petugas Security").replace(/DISTRICT/gi, "BRANCH").trim();
+        if (cleanPic.toUpperCase().includes("ADMIN")) {
+          officerText = "ADMIN HEAD\nBranch Manager";
+        } else if (cleanPic.includes(" — ")) {
+          officerText = cleanPic.replace(" — ", "\nSecurity — ");
+        } else if (cleanPic.includes(" - ")) {
+          officerText = cleanPic.replace(" - ", "\nSecurity — ");
+        } else {
+          officerText = `${cleanPic.toUpperCase()}\nSecurity — ${bCode}`;
+        }
+      }
+
+      const carColor = String(item.color || item.warna || "").trim();
+      const modelWithColor = (carColor && carColor !== "-") ? `${item.model} (${carColor})` : (item.model || "-");
+
       const row = worksheet.addRow([
         i + 1,
         item.id || '-',
         timeFormatted,
         dateFormattedRow,
-        item.color ? `${item.model} (${item.color})` : (item.model || '-'),
+        modelWithColor,
         branchName,
         item.vin || '-',
         item.engine || '-',
         item.type || 'Unit Masuk',
-        item.officerName ? `${item.officerName} — Security ${(String(item.noBa || item.branch || 'D660').match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase()}` : (item.pic || 'Security Yard'),
+        officerText,
         item.notes || 'Pemeriksaan standar unit.',
         '', // Foto Fisik Unit (Col 12)
         ''  // Foto Dokumen (Col 13)
@@ -1641,9 +1662,11 @@ const UI = {
       row.getCell(6).font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF92400E' } };
       row.getCell(7).font = { name: 'Courier New', size: 9, bold: true };
       row.getCell(8).font = { name: 'Courier New', size: 8.5 };
+      row.getCell(5).alignment = { vertical: 'middle', wrapText: true };
       row.getCell(9).font = { name: 'Arial', size: 9, bold: true, color: { argb: isMasuk ? 'FF15803D' : 'FF1D4ED8' } };
       row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
       row.getCell(10).font = { name: 'Arial', size: 8.5 };
+      row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
       row.getCell(11).font = { name: 'Arial', size: 8.5, color: { argb: 'FF475569' } };
 
       // Border hitam tegas pada baris data
@@ -1767,7 +1790,7 @@ const UI = {
 
     const ttd1 = worksheet.addRow(['', 'Petugas Pemeriksa & Pemindai:', '', '', '', '', '', 'Mengetahui & Menyetujui:']);
     const ttd2 = worksheet.addRow(['', 'SECURITY', '', '', '', '', '', 'ADH / BM (ADMIN HEAD / BRANCH MANAGER)']);
-    const ttd3 = worksheet.addRow(['', branchFilter, '', '', '', '', '', 'ASTRA DAIHATSU DSO LAMPUNG']);
+    const ttd3 = worksheet.addRow(['', branchFilter, '', '', '', '', '', '']);
     const ttdRow = ttd1.number;
 
     worksheet.mergeCells(`B${ttdRow}:E${ttdRow}`);
@@ -1791,22 +1814,16 @@ const UI = {
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    const ttdSign = worksheet.addRow(['', '( Petugas Security On-Duty )', '', '', '', '', '', '( Admin Head / Branch Manager )']);
-    const ttdSignSub = worksheet.addRow(['', 'Reg. Security Guard • Astra Daihatsu Lampung', '', '', '', '', '', 'Astra Daihatsu DSO Lampung']);
+    const ttdSign = worksheet.addRow(['', '( Petugas Security )', '', '', '', '', '', '( Admin Head / Branch Manager )']);
     const ttdSignRow = ttdSign.number;
 
     worksheet.mergeCells(`B${ttdSignRow}:E${ttdSignRow}`);
     worksheet.mergeCells(`H${ttdSignRow}:L${ttdSignRow}`);
-    worksheet.mergeCells(`B${ttdSignRow + 1}:E${ttdSignRow + 1}`);
-    worksheet.mergeCells(`H${ttdSignRow + 1}:L${ttdSignRow + 1}`);
 
     ttdSign.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0F172A' } };
     ttdSign.alignment = { vertical: 'middle', horizontal: 'center' };
     ttdSign.getCell(2).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
     ttdSign.getCell(8).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
-
-    ttdSignSub.font = { name: 'Arial', size: 8, color: { argb: 'FF64748B' } };
-    ttdSignSub.alignment = { vertical: 'middle', horizontal: 'center' };
 
     // Export buffer & download berkas
     const buffer = await workbook.xlsx.writeBuffer();
@@ -2223,17 +2240,38 @@ const UI = {
       else if (docTypeStr.includes('OKK')) docTypeStr = 'OKK';
       else docTypeStr = docTypeStr.replace(/\s+/g, '');
 
+      const officerName = String(item.officerName || item.namaPetugas || "").trim();
+      const bCode = (String(item.noBa || item.branch || "D660").match(/D66[0-4]/i)?.[0] || "D660").toUpperCase();
+      let officerPdfText = "";
+      if (officerName) {
+        officerPdfText = `${officerName.toUpperCase()}\nSecurity — ${bCode}`;
+      } else {
+        const cleanPic = String(item.pic || "Petugas Security").replace(/DISTRICT/gi, "BRANCH").trim();
+        if (cleanPic.toUpperCase().includes("ADMIN")) {
+          officerPdfText = "ADMIN HEAD\nBranch Manager";
+        } else if (cleanPic.includes(" — ")) {
+          officerPdfText = cleanPic.replace(" — ", "\nSecurity — ");
+        } else if (cleanPic.includes(" - ")) {
+          officerPdfText = cleanPic.replace(" - ", "\nSecurity — ");
+        } else {
+          officerPdfText = `${cleanPic.toUpperCase()}\nSecurity — ${bCode}`;
+        }
+      }
+
+      const carColor = String(item.color || item.warna || "").trim();
+      const modelWithColor = (carColor && carColor !== "-") ? `${item.model} (${carColor})` : (item.model || "-");
+
       return {
         no: String(idx + 1),
         id: item.id || '-',
         waktu: timeFormatted,
         tanggal: dateFormattedRow,
-        kendaraan: item.color ? `${item.model} (${item.color})` : (item.model || '-'),
+        kendaraan: modelWithColor,
         cabang: branchName,
         vin: item.vin || '-',
         mesin: item.engine || '-',
-        jenis: isMasuk ? '↓ MASUK' : '↑ KELUAR',
-        pic: item.officerName ? `${item.officerName} — Security ${(String(item.noBa || item.branch || 'D660').match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase()}` : (item.pic || 'Security Yard'),
+        jenis: isMasuk ? 'MASUK' : 'KELUAR',
+        pic: officerPdfText,
         catatan: item.notes || 'Pemeriksaan standar unit.',
         foto_unit: ' ',
         foto_doc: ' ',
@@ -2409,12 +2447,7 @@ const UI = {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(15, 23, 42);
-    doc.text('( Petugas Security On-Duty )', margin + (colW / 2), finalY + 25.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Reg. Security Guard • Astra Daihatsu Lampung', margin + (colW / 2), finalY + 29, { align: 'center' });
+    doc.text('( Petugas Security )', margin + (colW / 2), finalY + 25.5, { align: 'center' });
 
     // TTD 2: ADH / BM (KANAN)
     doc.setFont('helvetica', 'bold');
@@ -2426,10 +2459,6 @@ const UI = {
     doc.setTextColor(0, 32, 91);
     doc.text('ADH / BM (ADMIN HEAD / BRANCH MANAGER)', margin + colW + (colW / 2), finalY + 4, { align: 'center' });
 
-    doc.setFontSize(7.5);
-    doc.setTextColor(0, 32, 91);
-    doc.text('ASTRA DAIHATSU DSO LAMPUNG', margin + colW + (colW / 2), finalY + 8, { align: 'center' });
-
     // Garis TTD Kanan
     doc.setDrawColor(15, 23, 42);
     doc.setLineWidth(0.3);
@@ -2439,11 +2468,6 @@ const UI = {
     doc.setFontSize(8);
     doc.setTextColor(15, 23, 42);
     doc.text('( Admin Head / Branch Manager )', margin + colW + (colW / 2), finalY + 25.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Astra Daihatsu DSO Lampung', margin + colW + (colW / 2), finalY + 29, { align: 'center' });
 
     // ==========================================
     // 6. FOOTER & NOMOR HALAMAN
