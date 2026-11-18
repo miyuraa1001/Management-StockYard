@@ -45,13 +45,16 @@ const App = {
     UI.initHeroCarousel();
     if (UI.initPullToRefresh) UI.initPullToRefresh();
 
-    // 4. Sinkronisasi data real-time dari Google Spreadsheet (Initial Sync)
+    // 4. Pasang listener reaktif untuk validasi ketat formulir mutasi 11 kolom
+    this.setupMutationFormListeners();
+
+    // 5. Sinkronisasi data real-time dari Google Spreadsheet (Initial Sync)
     this.syncBackendData();
 
-    // 5. Mulai Realtime Polling Timer (Interval sinkronisasi background)
+    // 6. Mulai Realtime Polling Timer (Interval sinkronisasi background)
     this.startRealtimeSync();
 
-    // 6. Setup event listener koneksi online/offline & focus/visibility
+    // 7. Setup event listener koneksi online/offline & focus/visibility
     window.addEventListener('online', () => {
       AppState.isOnline = true;
       UI.showToast('🟢 Terhubung kembali ke jaringan');
@@ -72,6 +75,32 @@ const App = {
     window.addEventListener('focus', () => {
       if (AppState.isOnline) {
         this.syncBackendData(true);
+      }
+    });
+  },
+
+  /**
+   * Menghubungkan event listener reaktif pada 11 input formulir mutasi
+   */
+  setupMutationFormListeners() {
+    const fieldIds = [
+      'inputVin', 'scanVinInput', 'inputEngine', 'scanEngineInput',
+      'inputMutationType', 'inputCarModel', 'inputCarColor', 'inputOfficerName',
+      'inputNoBa', 'inputMutationDocType', 'inputKeterangan'
+    ];
+    fieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => {
+          if (typeof window.checkMutationFormCompleteness === 'function') {
+            window.checkMutationFormCompleteness();
+          }
+        });
+        el.addEventListener('change', () => {
+          if (typeof window.checkMutationFormCompleteness === 'function') {
+            window.checkMutationFormCompleteness();
+          }
+        });
       }
     });
   },
@@ -128,12 +157,13 @@ const App = {
     this._isSavingMutation = false;
     const submitBtn = document.getElementById('btnSubmitMutation');
     if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('opacity-60', 'pointer-events-none', 'cursor-not-allowed');
       submitBtn.innerHTML = `
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
         <span id="btnSubmitMutationText">Simpan & Verifikasi</span>
       `;
+    }
+    if (typeof window.checkMutationFormCompleteness === 'function') {
+      window.checkMutationFormCompleteness();
     }
   },
 
@@ -149,33 +179,52 @@ const App = {
 
     const vin = (document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '').trim();
     const engine = (document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '').trim();
-    const mutationType = document.getElementById('inputMutationType')?.value;
+    const mutationType = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
     const docType = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
-    const model = document.getElementById('inputCarModel')?.value;
+    const model = (document.getElementById('inputCarModel')?.value || '').trim();
+    const carColor = (document.getElementById('inputCarColor')?.value || '').trim();
+    const officerName = (document.getElementById('inputOfficerName')?.value || '').trim();
     const noBaInput = (document.getElementById('inputNoBa')?.value || '').trim();
     const noBa = (!AppState.isAdmin() && AppState.getUserBranch) ? AppState.getUserBranch() : (noBaInput || 'D660 - Ahmad Yani');
-    const notes = document.getElementById('inputKeterangan')?.value.trim();
+    const notes = (document.getElementById('inputKeterangan')?.value || '').trim();
+    const hasUnitPhoto = !!AppState.uploadedUnitPhotoUrl;
+    const hasDocPhoto = !!AppState.uploadedDocPhotoUrl;
 
-    if (!vin || !engine) {
-      UI.showToast('Harap isi nomor VIN dan nomor mesin!');
+    // Strict validation: wajib 11 kolom terisi lengkap (tidak boleh ada yang kosong)
+    if (!vin || !engine || !mutationType || !model || !carColor || !officerName || !noBa || !docType || !hasUnitPhoto || !hasDocPhoto || !notes) {
+      let missingFields = [];
+      if (!vin) missingFields.push('Nomor VIN');
+      if (!engine) missingFields.push('Nomor Mesin');
+      if (!mutationType) missingFields.push('Jenis Mutasi');
+      if (!model) missingFields.push('Model Kendaraan');
+      if (!carColor) missingFields.push('Warna Mobil');
+      if (!officerName) missingFields.push('Nama Petugas Lapangan');
+      if (!noBa) missingFields.push('Cabang');
+      if (!docType) missingFields.push('Jenis Dokumen');
+      if (!hasUnitPhoto) missingFields.push('Foto Fisik Unit');
+      if (!hasDocPhoto) missingFields.push('Foto Dokumen');
+      if (!notes) missingFields.push('Catatan Kondisi');
+      UI.showToast(`⚠️ Lengkapi seluruh 11 kolom formulir & foto! Kurang: ${missingFields.slice(0, 3).join(', ')}${missingFields.length > 3 ? '...' : ''}`, 4000);
       this.resetSubmitMutationButton();
       return;
     }
 
-    const cleanVin = vin.trim().toUpperCase();
-    const cleanEngine = engine.trim().toUpperCase();
-    const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin, cleanEngine) : null;
-    const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin, cleanEngine) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
+    const cleanVin = vin.toUpperCase();
+    const cleanEngine = engine.toUpperCase();
 
-    // Validasi Duplikat: Jika unit saat ini masih berada di dalam Stockyard dan dipilih 'Unit Masuk', TOLAK SIMPAN!
-    if (isInYard && mutationType === 'Unit Masuk') {
+    // Validasi siklus mutasi antar-cabang berdasarkan status transaksi terakhir (Last State)
+    const evalRes = typeof AppState.evaluateMutationAllowed === 'function'
+      ? AppState.evaluateMutationAllowed(cleanVin, cleanEngine, mutationType, noBa)
+      : { allowed: true };
+
+    if (!evalRes.allowed) {
       if (typeof ScannerService !== 'undefined') {
         ScannerService.playWarningBeep();
         ScannerService.triggerWarningHaptic();
       }
-      UI.showToast(`⛔ Unit Masuk Ditolak! Unit [${cleanVin}] sudah tercatat berada di stockyard pada ${currentStatus?.date || ''}. Tidak bisa menyimpan duplikat Unit Masuk. Silakan pilih 'Unit Keluar'.`, 6000);
-      if (typeof window.validateMutationFormDuplication === 'function') {
-        window.validateMutationFormDuplication();
+      UI.showToast(`⛔ Mutasi Ditolak! ${evalRes.reason}`, 6500);
+      if (typeof window.checkMutationFormCompleteness === 'function') {
+        window.checkMutationFormCompleteness();
       }
       const alertContainer = document.getElementById('mutationDuplicateAlert');
       if (alertContainer) {
@@ -227,13 +276,15 @@ const App = {
       timestamp: now.toISOString(),
       fullDateStr: `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`,
       model: model,
+      color: carColor,
+      officerName: officerName,
       modelPhoto: modelOfficialPhoto,
       vin: cleanVin,
       engine: cleanEngine,
       noBa: noBa,
-      pic: AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Andi Pratama',
+      pic: officerName || AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Petugas Lapangan',
       location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
-      notes: notes || 'Pemeriksaan standar serah terima unit di lapangan.',
+      notes: notes,
       unitPhoto: unitImg,
       docPhoto: docImg,
       docType: docType,
@@ -258,6 +309,7 @@ const App = {
       existingInv.docPhoto = docImg;
       existingInv.docType = docType;
       existingInv.noBa = noBa;
+      existingInv.color = carColor;
     } else {
       // Jika belum ada di inventory dan jenis mutasi adalah Unit Masuk, tambahkan ke inventory
       if (mutationType === 'Unit Masuk') {
@@ -273,7 +325,8 @@ const App = {
           location: catalogItem ? catalogItem.defaultLocation : 'Yard A - Receiving Bay',
           photo: modelOfficialPhoto,
           docPhoto: docImg,
-          docType: docType
+          docType: docType,
+          color: carColor
         });
       }
     }
@@ -282,6 +335,10 @@ const App = {
     AppState.updateKpiCounts();
 
     // Reset Form Input
+    const colorEl = document.getElementById('inputCarColor');
+    if (colorEl) colorEl.value = '';
+    const officerEl = document.getElementById('inputOfficerName');
+    if (officerEl) officerEl.value = AppState.userProfile?.name || '';
     const keteranganEl = document.getElementById('inputKeterangan');
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');
@@ -407,16 +464,38 @@ window.App = App;
 window.saveMutationData = () => App.saveMutationData();
 
 /**
- * Memvalidasi duplikasi status unit di form Step 2 secara realtime
- * Menolak duplikasi Unit Masuk jika unit sudah berada di stockyard,
- * namun MENGIZINKAN mutasi Unit Keluar untuk unit tersebut.
+ * Memvalidasi kelengkapan formulir mutasi ketat (Strict Validation) & Siklus Mutasi Antar-Cabang:
+ * Tombol "Simpan & Verifikasi" WAJIB dalam kondisi disabled (tidak bisa diklik)
+ * selama masih ada satu saja dari 11 kolom yang kosong:
+ * 1. Nomor VIN
+ * 2. Nomor Mesin
+ * 3. Jenis Mutasi
+ * 4. Model Kendaraan
+ * 5. Warna Mobil
+ * 6. Nama Petugas Lapangan
+ * 7. Cabang / Kode BA
+ * 8. Jenis Dokumen
+ * 9. Foto Fisik Unit
+ * 10. Foto Dokumen
+ * 11. Catatan Kondisi Unit
+ *
+ * Serta memvalidasi status transaksi terakhir (Last State) untuk mendukung alur:
+ * - D661 Masuk (SPPDC) -> D661 Keluar (OKK) -> D660 Masuk (OKK) -> D660 Keluar (BSTKB)
  */
-window.validateMutationFormDuplication = function() {
+window.checkMutationFormCompleteness = function() {
   const vinInput = document.getElementById('inputVin')?.value || document.getElementById('scanVinInput')?.value || '';
   const engineInput = document.getElementById('inputEngine')?.value || document.getElementById('scanEngineInput')?.value || '';
   const cleanVin = String(vinInput).trim().toUpperCase();
   const cleanEngine = String(engineInput).trim().toUpperCase();
-  const mutationType = document.getElementById('inputMutationType')?.value || 'Unit Masuk';
+  const mutationType = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
+  const model = (document.getElementById('inputCarModel')?.value || '').trim();
+  const carColor = (document.getElementById('inputCarColor')?.value || '').trim();
+  const officerName = (document.getElementById('inputOfficerName')?.value || '').trim();
+  const noBa = (document.getElementById('inputNoBa')?.value || '').trim();
+  const docType = (document.getElementById('inputMutationDocType')?.value || '').trim();
+  const notes = (document.getElementById('inputKeterangan')?.value || '').trim();
+  const hasUnitPhoto = !!(AppState && AppState.uploadedUnitPhotoUrl);
+  const hasDocPhoto = !!(AppState && AppState.uploadedDocPhotoUrl);
 
   const alertContainer = document.getElementById('mutationDuplicateAlert');
   const alertIcon = document.getElementById('mutationDuplicateIcon');
@@ -425,100 +504,100 @@ window.validateMutationFormDuplication = function() {
   const submitBtn = document.getElementById('btnSubmitMutation');
   const submitText = document.getElementById('btnSubmitMutationText');
 
-  if (!alertContainer) return true;
+  // 1. Evaluasi siklus mutasi & deteksi duplikasi berdasarkan transaksi terakhir (Last State)
+  let isCycleValid = true;
+  if (cleanVin || cleanEngine) {
+    const evalRes = typeof AppState.evaluateMutationAllowed === 'function'
+      ? AppState.evaluateMutationAllowed(cleanVin, cleanEngine, mutationType, noBa)
+      : { allowed: true };
 
-  if (!cleanVin && !cleanEngine) {
-    alertContainer.classList.add('hidden');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
+    if (!evalRes.allowed) {
+      isCycleValid = false;
+      if (alertContainer) {
+        alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-rose-50 border-rose-300 text-rose-900 shadow-sm animate-pulse';
+        if (alertIcon) alertIcon.textContent = '⛔';
+        if (alertTitle) {
+          alertTitle.textContent = 'Duplikasi Mutasi Ditolak!';
+          alertTitle.className = 'font-black text-xs leading-tight text-rose-800';
+        }
+        if (alertMsg) {
+          alertMsg.innerHTML = evalRes.reason;
+        }
+        alertContainer.classList.remove('hidden');
+      }
+    } else {
+      if (alertContainer) {
+        if (evalRes.lastStatus) {
+          alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm';
+          if (alertIcon) alertIcon.textContent = '✅';
+          if (alertTitle) {
+            alertTitle.textContent = 'Status Alur Mutasi Valid';
+            alertTitle.className = 'font-black text-xs leading-tight text-emerald-800';
+          }
+          if (alertMsg) {
+            alertMsg.innerHTML = evalRes.reason || `Unit <b>${cleanVin}</b> valid untuk diproses sebagai <b>${mutationType}</b>.`;
+          }
+          alertContainer.classList.remove('hidden');
+        } else {
+          alertContainer.classList.add('hidden');
+        }
+      }
     }
-    if (submitText) {
-      submitText.textContent = 'Simpan & Verifikasi';
-    }
-    return true;
+  } else {
+    if (alertContainer) alertContainer.classList.add('hidden');
   }
 
-  const currentStatus = typeof AppState.getUnitCurrentStatus === 'function' ? AppState.getUnitCurrentStatus(cleanVin, cleanEngine) : null;
-  const isInYard = typeof AppState.isUnitCurrentlyInYard === 'function' ? AppState.isUnitCurrentlyInYard(cleanVin, cleanEngine) : (currentStatus ? currentStatus.type === 'Unit Masuk' : false);
+  // 2. Evaluasi 11 Kolom Wajib
+  const missing = [];
+  if (!cleanVin) missing.push('Nomor VIN');
+  if (!cleanEngine) missing.push('Nomor Mesin');
+  if (!mutationType) missing.push('Jenis Mutasi');
+  if (!model) missing.push('Model Kendaraan');
+  if (!carColor) missing.push('Warna Mobil');
+  if (!officerName) missing.push('Nama Petugas Lapangan');
+  if (!noBa) missing.push('Cabang');
+  if (!docType) missing.push('Jenis Dokumen');
+  if (!hasUnitPhoto) missing.push('Foto Fisik Unit');
+  if (!hasDocPhoto) missing.push('Foto Dokumen');
+  if (!notes) missing.push('Catatan Kondisi');
 
-  if (isInYard && mutationType === 'Unit Masuk') {
-    // KASUS DUPLIKAT DITOLAK: Unit sudah ada di dalam stockyard, tidak boleh didaftarkan Masuk lagi!
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-rose-50 border-rose-300 text-rose-900 shadow-sm animate-pulse';
-    if (alertIcon) alertIcon.textContent = '⛔';
-    if (alertTitle) {
-      alertTitle.textContent = 'Duplikasi Unit Masuk Ditolak!';
-      alertTitle.className = 'font-black text-xs leading-tight text-rose-800';
-    }
-    if (alertMsg) {
-      alertMsg.innerHTML = `Nomor VIN <b>${cleanVin}</b> sudah pernah tercatat sebagai <b>Unit Masuk</b> di stockyard pada <i>${currentStatus?.date || 'sebelumnya'} ${currentStatus?.time || ''}</i> oleh PIC <i>${currentStatus?.pic || 'Petugas'}</i>.<br><span class="text-rose-700 font-bold">Peringatan:</span> Unit ini tidak bisa disimpan lagi sebagai 'Unit Masuk'. Silakan ubah Jenis Mutasi menjadi <b>'Unit Keluar'</b> jika unit ini akan dikeluarkan dari stockyard.`;
-    }
-    alertContainer.classList.remove('hidden');
+  const isFormComplete = missing.length === 0;
 
-    // Ubah tombol submit menjadi tombol peringatan merah yang interaktif
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-700 to-rose-600 hover:from-rose-700 hover:to-rose-800 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-rose-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer border border-rose-400/40';
-    }
+  if (!submitBtn) return isFormComplete && isCycleValid;
+
+  // Jika terjadi pelanggaran siklus mutasi (duplikat): Tombol disabled tegas
+  if (!isCycleValid) {
+    submitBtn.disabled = true;
+    submitBtn.className = 'w-full py-3.5 bg-rose-100 text-rose-600 border border-rose-300 text-xs font-black uppercase tracking-wider rounded-2xl shadow-none flex items-center justify-center space-x-2 opacity-60 pointer-events-none cursor-not-allowed transition';
+    if (submitText) submitText.textContent = '⛔ Mutasi Ditolak (Duplikasi)';
+    return false;
+  }
+
+  // Jika masih ada kolom yang kosong: Tombol wajib disabled (strict validation)
+  if (!isFormComplete) {
+    submitBtn.disabled = true;
+    submitBtn.className = 'w-full py-3.5 bg-slate-200 text-slate-400 text-xs font-black uppercase tracking-wider rounded-2xl shadow-none flex items-center justify-center space-x-2 opacity-60 pointer-events-none cursor-not-allowed transition';
     if (submitText) {
-      submitText.textContent = '⛔ Unit Masuk Duplikat (Ditolak Simpan)';
+      if (missing.length === 1) {
+        submitText.textContent = `Isi: ${missing[0]}`;
+      } else {
+        submitText.textContent = `Lengkapi Form (${11 - missing.length}/11 Terisi)`;
+      }
     }
     return false;
-  } else if (isInYard && mutationType === 'Unit Keluar') {
-    // KASUS VALID: Unit memang ada di yard dan siap dikeluarkan
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm';
-    if (alertIcon) alertIcon.textContent = '✅';
-    if (alertTitle) {
-      alertTitle.textContent = 'Unit Terverifikasi untuk Dikeluarkan';
-      alertTitle.className = 'font-black text-xs leading-tight text-emerald-800';
-    }
-    if (alertMsg) {
-      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> (${currentStatus?.model || 'Daihatsu'}) terkonfirmasi sedang berada di stockyard sejak <i>${currentStatus?.date || ''} ${currentStatus?.time || ''}</i>. Data valid untuk mutasi <b>Unit Keluar</b>.`;
-    }
-    alertContainer.classList.remove('hidden');
-
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
-    }
-    if (submitText) {
-      submitText.textContent = 'Simpan & Verifikasi Keluar';
-    }
-    return true;
-  } else if (!isInYard && currentStatus && mutationType === 'Unit Keluar') {
-    // Unit tercatat pernah keluar sebelumnya
-    alertContainer.className = 'mt-2.5 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all bg-amber-50 border-amber-300 text-amber-900 shadow-sm';
-    if (alertIcon) alertIcon.textContent = '⚠️';
-    if (alertTitle) {
-      alertTitle.textContent = 'Catatan Riwayat Unit';
-      alertTitle.className = 'font-black text-xs leading-tight text-amber-800';
-    }
-    if (alertMsg) {
-      alertMsg.innerHTML = `Unit <b>${cleanVin}</b> terakhir tercatat berstatus <b>Unit Keluar</b> pada <i>${currentStatus?.date || ''}</i>. Pastikan fisik unit benar-benar ada di yard jika akan dikeluarkan lagi.`;
-    }
-    alertContainer.classList.remove('hidden');
-
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
-    }
-    if (submitText) {
-      submitText.textContent = 'Simpan & Verifikasi Keluar';
-    }
-    return true;
-  } else {
-    // Normal / Brand New Unit
-    alertContainer.classList.add('hidden');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
-    }
-    if (submitText) {
-      submitText.textContent = 'Simpan & Verifikasi';
-    }
-    return true;
   }
+
+  // Jika SEMUA 11 KOLOM terisi LENGKAP dan lolos validasi siklus mutasi: Aktifkan tombol
+  submitBtn.disabled = false;
+  submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
+  if (submitText) {
+    submitText.textContent = mutationType === 'Unit Masuk' ? 'Simpan & Verifikasi Masuk' : 'Simpan & Verifikasi Keluar';
+  }
+  return true;
 };
+
+// Alias kompatibilitas
+window.validateMutationFormDuplication = window.checkMutationFormCompleteness;
 
 // Jalankan aplikasi saat dokumen siap
 document.addEventListener('DOMContentLoaded', () => {

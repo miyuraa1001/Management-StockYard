@@ -1640,38 +1640,25 @@ const ScannerService = {
       UI.syncRoleBranchUI();
     }
 
-    // Otomatis tangkap frame kamera scanner sebagai Foto Dokumen (Stiker Kaca) & Foto Bukti jika belum ada
-    const video = document.getElementById('scannerVideo');
-    if (video && video.videoWidth > 0) {
-      try {
-        const c = document.createElement('canvas');
-        c.width = 720;
-        c.height = Math.round((720 * video.videoHeight) / video.videoWidth);
-        const ctx = c.getContext('2d');
-        ctx.drawImage(video, 0, 0, c.width, c.height);
-        const snapUrl = c.toDataURL('image/jpeg', 0.75);
-
-        if (!AppState.uploadedDocPhotoUrl) {
-          if (typeof UI !== 'undefined' && UI.setPhotoPreview) {
-            UI.setPhotoPreview('docPhoto', snapUrl);
-          } else {
-            AppState.uploadedDocPhotoUrl = snapUrl;
-          }
-        }
-        if (!AppState.uploadedUnitPhotoUrl) {
-          if (typeof UI !== 'undefined' && UI.setPhotoPreview) {
-            UI.setPhotoPreview('unitPhoto', snapUrl);
-          } else {
-            AppState.uploadedUnitPhotoUrl = snapUrl;
-          }
-        }
-      } catch (e) {
-        console.warn('[Scanner] Gagal auto-capture snapshot kamera stiker:', e);
-      }
+    // Pastikan foto unit & foto dokumen selalu di-reset bersih (null) saat form Tahap 2 dibuka
+    // agar petugas lapangan WAJIB mengambil foto fisik unit & foto dokumen secara terpisah
+    AppState.uploadedUnitPhotoUrl = null;
+    AppState.uploadedDocPhotoUrl = null;
+    if (typeof UI !== 'undefined' && typeof UI.removeImagePreview === 'function') {
+      UI.removeImagePreview('unitPhoto');
+      UI.removeImagePreview('docPhoto');
     }
 
-    // Jalankan validasi status duplikasi pada form Step 2
-    if (typeof window.validateMutationFormDuplication === 'function') {
+    // Isi default Nama Petugas jika masih kosong dengan nama akun yang sedang login (bisa diedit bebas)
+    const officerInput = document.getElementById('inputOfficerName');
+    if (officerInput && !officerInput.value.trim()) {
+      officerInput.value = (typeof AppState !== 'undefined' && AppState.userProfile?.name) ? AppState.userProfile.name : '';
+    }
+
+    // Jalankan validasi kelengkapan formulir mutasi ketat (strict validation)
+    if (typeof window.checkMutationFormCompleteness === 'function') {
+      window.checkMutationFormCompleteness();
+    } else if (typeof window.validateMutationFormDuplication === 'function') {
       window.validateMutationFormDuplication();
     }
 

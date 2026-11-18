@@ -312,6 +312,8 @@ const ApiService = {
               pic: normPic,
               operator: normPic,
               docType: normDocType,
+              color: item.color || item.warna || '',
+              officerName: item.officerName || item.officer || '',
               engine: item.engine || '-',
               noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || item.cabang || item.branch || 'D660 - Ahmad Yani',
               location: item.location || item.destination || '-',

@@ -342,9 +342,13 @@ const AppState = {
         date: latest.fullDateStr || (latest.date ? `${latest.date}/${latest.month || ''}/${latest.year || ''}` : ''),
         time: latest.time || '',
         model: latest.model || '',
+        color: latest.color || '',
+        officerName: latest.officerName || '',
         pic: latest.pic || '',
+        branch: latest.noBa || latest.branch || latest.location || '',
         vin: latest.vin || cleanVin,
-        engine: latest.engine || cleanEngine
+        engine: latest.engine || cleanEngine,
+        docType: latest.docType || 'SPPDC'
       };
     }
 
@@ -365,13 +369,81 @@ const AppState = {
         date: invItem.date || '',
         time: invItem.time || '',
         model: invItem.model || '',
+        color: invItem.color || '',
+        officerName: '',
         pic: invItem.pic || '',
+        branch: invItem.noBa || invItem.branch || invItem.location || '',
         vin: invItem.vin || cleanVin,
-        engine: invItem.engine || cleanEngine
+        engine: invItem.engine || cleanEngine,
+        docType: invItem.docType || 'SPPDC'
       };
     }
 
     return null;
+  },
+
+  /**
+   * Evaluasi siklus mutasi unit antar-cabang:
+   * Menolak mutasi jika status terakhir sama dengan aksi baru (misal: sudah Masuk lalu di-scan Masuk lagi).
+   * Mendukung alur distribusi nyata:
+   * 1. Datang dari pusat -> Masuk di D661 (SPPDC)
+   * 2. Kirim dari D661 -> Keluar di D661 (OKK)
+   * 3. Tiba di D660 -> Masuk di D660 (OKK)
+   * 4. Serah terima customer -> Keluar di D660 (BSTKB)
+   */
+  evaluateMutationAllowed(vin, engine, proposedType, proposedBranch) {
+    const cleanVin = String(vin || '').trim().toUpperCase();
+    const cleanEngine = String(engine || '').trim().toUpperCase();
+    if (!cleanVin && !cleanEngine) {
+      return { allowed: true, isDuplicate: false, reason: '' };
+    }
+
+    const lastStatus = this.getUnitCurrentStatus(cleanVin, cleanEngine);
+    if (!lastStatus) {
+      // Unit baru (belum ada rekaman mutasi)
+      return { allowed: true, isDuplicate: false, lastStatus: null };
+    }
+
+    const lastType = lastStatus.type; // 'Unit Masuk' atau 'Unit Keluar'
+    const lastBranch = (lastStatus.branch || '').trim();
+
+    if (proposedType === 'Unit Masuk') {
+      // Tolak jika status terakhir sudah Unit Masuk (belum pernah dikeluarkan)
+      if (lastType === 'Unit Masuk') {
+        return {
+          allowed: false,
+          isDuplicate: true,
+          lastStatus: lastStatus,
+          reason: `Unit ${cleanVin} saat ini masih berstatus 'Unit Masuk' di ${lastBranch || 'stockyard'} (${lastStatus.date || 'sebelumnya'}). Unit harus di-scan 'Unit Keluar' terlebih dahulu sebelum dapat di-scan Masuk kembali.`
+        };
+      }
+      // Status terakhir adalah Unit Keluar -> Sah untuk di-scan Masuk di cabang penerima
+      return {
+        allowed: true,
+        isDuplicate: false,
+        lastStatus: lastStatus,
+        reason: `Unit ${cleanVin} sebelumnya tercatat 'Unit Keluar' dari ${lastBranch || 'cabang asal'}. Data valid untuk mutasi 'Unit Masuk'.`
+      };
+    } else if (proposedType === 'Unit Keluar') {
+      // Tolak jika status terakhir sudah Unit Keluar (belum pernah masuk kembali)
+      if (lastType === 'Unit Keluar') {
+        return {
+          allowed: false,
+          isDuplicate: true,
+          lastStatus: lastStatus,
+          reason: `Unit ${cleanVin} saat ini sudah berstatus 'Unit Keluar' (${lastStatus.date || 'sebelumnya'}). Tidak dapat menyimpan mutasi Unit Keluar sebelum unit tercatat masuk.`
+        };
+      }
+      // Status terakhir adalah Unit Masuk -> Sah untuk dikeluarkan
+      return {
+        allowed: true,
+        isDuplicate: false,
+        lastStatus: lastStatus,
+        reason: `Unit ${cleanVin} terkonfirmasi berada di stockyard sejak ${lastStatus.date || ''}. Valid untuk mutasi 'Unit Keluar'.`
+      };
+    }
+
+    return { allowed: true, isDuplicate: false, lastStatus: lastStatus };
   },
 
   /**
