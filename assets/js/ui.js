@@ -6738,8 +6738,8 @@ const UI = {
     if (chipsContainer) {
       if (emailList.length > 0) {
         chipsContainer.innerHTML = emailList.map(email => `
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
-            <span class="text-blue-500">@</span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
+            <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             <span>${email}</span>
           </span>
         `).join('');
@@ -6865,13 +6865,20 @@ const UI = {
       { id: 'notifFilterDaily', key: 'DAILY' }
     ];
 
-    const activeCls = 'flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-[11px] font-black text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-blue-600 text-white shadow-xs';
-    const inactiveCls = 'flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80';
+    const activeCls = 'py-1.5 px-1 rounded-xl text-[10.5px] font-black text-center transition active:scale-95 cursor-pointer bg-blue-600 text-white shadow-xs flex items-center justify-center space-x-1';
+    const inactiveCls = 'py-1.5 px-1 rounded-xl text-[10.5px] font-bold text-center transition active:scale-95 cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center justify-center space-x-1';
 
     buttons.forEach(b => {
       const el = document.getElementById(b.id);
       if (el) {
-        el.className = (this.emailNotifFilter === b.key) ? activeCls : inactiveCls;
+        const isActive = (this.emailNotifFilter === b.key);
+        el.className = isActive ? activeCls : inactiveCls;
+        const countSpan = el.querySelector('span:last-child');
+        if (countSpan) {
+          countSpan.className = isActive 
+            ? 'text-[9px] px-1 py-0.2 rounded-md bg-white/20 font-mono font-bold text-white'
+            : 'text-[9px] px-1 py-0.2 rounded-md bg-slate-300/60 font-mono font-bold text-slate-700';
+        }
       }
     });
 
@@ -6924,7 +6931,8 @@ const UI = {
 
       if (isOk) {
         if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0';
-        if (text) text.textContent = `Terhubung: ${conn.host || 'Google Apps Script & Gmail'} ✓`;
+        const cleanHost = String(conn.host || 'Google Apps Script').replace(/✓/g, '').trim();
+        if (text) text.textContent = `Terhubung: ${cleanHost}`;
         this.showToast(`✅ Server Terhubung! Mode: ${modeText} • Target: ${targetEmail}`, 4000);
 
         // Jika terhubung, sembunyikan kotak konfigurasi manual
@@ -7008,23 +7016,63 @@ const UI = {
       };
     });
 
+    // Helper Fungsi Format Tanggal Bersih (Cegah Raw Date Object 'Tue Nov 17 2026 GMT+0700')
+    const formatCleanDate = (raw) => {
+      if (!raw) return 'Hari Ini';
+      const str = String(raw).trim();
+      // Format DD/MM/YYYY sudah bersih
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(str)) return str;
+      try {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          const dd = String(d.getDate()).padStart(2, '0');
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const yyyy = d.getFullYear();
+          return `${dd}/${mm}/${yyyy}`;
+        }
+      } catch (e) {}
+      return str.split('GMT')[0].replace(/\([^\)]*\)/g, '').trim();
+    };
+
+    const formatCleanTimestamp = (rawTs, fallbackDate) => {
+      if (!rawTs) return `${fallbackDate || 'Hari Ini'} • 08:00 WIB`;
+      const str = String(rawTs).trim();
+      if (str.includes('GMT') || str.includes('T')) {
+        try {
+          const d = new Date(str);
+          if (!isNaN(d.getTime())) {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy} ${hh}:${min} WIB`;
+          }
+        } catch (e) {}
+      }
+      return str;
+    };
+
     // 2. Buat log laporan harian (DAILY_REPORT) dari database (tab ReportLogs) & sintesis cerdas per-tanggal
     const rawReportLogs = (Array.isArray(AppState.reportLogs) && AppState.reportLogs.length > 0)
       ? AppState.reportLogs
       : [];
 
     const dbReportLogs = rawReportLogs.map((r, idx) => {
-      const timeDisplay = r.timestamp || (r.reportDate ? `${r.reportDate} • 08:00 WIB` : '08:00 WIB');
+      const cleanDate = formatCleanDate(r.reportDate);
+      const timeDisplay = formatCleanTimestamp(r.timestamp, cleanDate);
       return {
-        id: r.id || `rep-db-${r.reportDate || idx}`,
+        id: r.id || `rep-db-${cleanDate || idx}`,
         trxId: r.id || `REP-${idx}`,
         timestamp: timeDisplay,
         targetEmail: r.targetEmail || defaultEmail,
         status: r.status || 'SUCCESS',
         category: 'DAILY_REPORT',
-        subject: `Rekapitulasi Mutasi Harian Stockyard (${r.reportDate || 'Periode Resmi'})`,
-        message: r.message || `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
-        reportDate: r.reportDate,
+        subject: `Rekapitulasi Mutasi Harian Stockyard — ${cleanDate}`,
+        message: r.message && !r.message.includes('GMT') 
+          ? r.message 
+          : `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
+        reportDate: cleanDate,
         totalUnits: r.totalUnits,
         masuk: r.masuk,
         keluar: r.keluar,
@@ -7071,7 +7119,7 @@ const UI = {
           targetEmail: defaultEmail,
           status: 'SUCCESS',
           category: 'DAILY_REPORT',
-          subject: `Rekapitulasi Mutasi Harian Stockyard (${dStr})`,
+          subject: `Rekapitulasi Mutasi Harian Stockyard — ${dStr}`,
           message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi terkirim otomatis ke email target per cabang & Admin DSO. Berkas PDF & Excel tersinkronisasi.`,
           reportDate: dStr,
           totalUnits: stats.total,
@@ -7215,26 +7263,26 @@ const UI = {
       let typeBadge = '';
 
       if (isDaily) {
-        leftAccent = 'border-l-4 border-l-indigo-500 bg-white';
+        leftAccent = 'border-l-4 border-l-blue-600 bg-white';
         typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/80 uppercase">
-            <span>📄</span>
-            <span>Laporan Rekap Harian</span>
+          <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/80 uppercase">
+            <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Rekap Harian</span>
           </span>
         `;
       } else if (isMasuk) {
         leftAccent = 'border-l-4 border-l-emerald-500 bg-white';
         typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 uppercase">
-            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+          <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 uppercase">
+            <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
             <span>Unit Masuk</span>
           </span>
         `;
       } else if (isKeluar) {
-        leftAccent = 'border-l-4 border-l-blue-500 bg-white';
+        leftAccent = 'border-l-4 border-l-amber-500 bg-white';
         typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9.5px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/80 uppercase">
-            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+          <span class="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 uppercase">
+            <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
             <span>Unit Keluar</span>
           </span>
         `;
@@ -7243,13 +7291,13 @@ const UI = {
       // Status Pengiriman / Database Badge
       let statusBadge = '';
       if (item.fromDatabase) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50/90 px-1.5 py-0.5 rounded border border-emerald-200">Spreadsheet Sync ✓</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50/90 px-1.5 py-0.5 rounded border border-emerald-200"><svg class="w-2.5 h-2.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span>Spreadsheet Sync</span></span>`;
       } else if (isSuccess) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700 bg-blue-50/90 px-1.5 py-0.5 rounded border border-blue-200">Email Terkirim ✓</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-blue-700 bg-blue-50/90 px-1.5 py-0.5 rounded border border-blue-200"><svg class="w-2.5 h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span>Email Terkirim</span></span>`;
       } else if (isOffline) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Pending Sync ⏳</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><svg class="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Pending Sync</span></span>`;
       } else {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Gagal ⚠️</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200"><svg class="w-2.5 h-2.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>Gagal</span></span>`;
       }
 
       // Unit info line
@@ -7262,16 +7310,19 @@ const UI = {
               <span class="text-[10.5px] text-slate-500 line-clamp-2">${item.message || 'Laporan ringkasan mutasi harian resmi terkirim via email.'}</span>
             </div>
             <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
-              <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-bold">
-                📅 Periode: ${item.reportDate || '-'}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-bold">
+                <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Periode: ${formatCleanDate(item.reportDate)}</span>
               </span>
               ${item.totalUnits !== undefined ? `
-                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70 font-semibold">
-                  📊 ${item.totalUnits} Unit (${item.masuk || 0} Masuk, ${item.keluar || 0} Keluar)
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70 font-semibold">
+                  <svg class="w-3 h-3 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <span>${item.totalUnits} Unit (${item.masuk || 0} Masuk • ${item.keluar || 0} Keluar)</span>
                 </span>
               ` : ''}
-              <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60 font-medium">
-                📎 Lampiran PDF & Excel
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60 font-medium">
+                <svg class="w-3 h-3 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                <span>Lampiran PDF & Excel</span>
               </span>
             </div>
           </div>
@@ -7408,7 +7459,7 @@ const UI = {
         second: '2-digit'
       }) + ' WIB');
 
-      const reportDateStr = res?.reportDate || new Date().toLocaleDateString('id-ID');
+      const reportDateStr = res?.reportDate ? String(res.reportDate).split('GMT')[0].replace(/\([^\)]*\)/g, '').trim() : new Date().toLocaleDateString('id-ID');
       const targetDisplay = res?.adminRecipients || targetEmail;
 
       const newLog = {
@@ -7417,7 +7468,7 @@ const UI = {
         targetEmail: targetDisplay,
         status: isSuccess ? 'SUCCESS' : 'FAILED',
         category: 'DAILY_REPORT',
-        subject: `Rekapitulasi Mutasi Harian Stockyard (${reportDateStr})`,
+        subject: `Rekapitulasi Mutasi Harian Stockyard — ${reportDateStr}`,
         message: isSuccess
           ? (res?.message || `Laporan rekapitulasi mutasi kendaraan (${res?.totalRecords || 0} unit) berhasil dikirimkan ke email penerima resmi.`)
           : `Gagal mengirimkan laporan email ke ${targetEmail}: ${res?.error || res?.message || 'Koneksi terputus'}`,

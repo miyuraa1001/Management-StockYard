@@ -2485,9 +2485,9 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </div>
             <div class="min-w-0">
-              <div class="flex items-center space-x-2">
-                <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Notifikasi & Laporan</h3>
-                <span id="notifDatabaseSyncBadge" class="text-[9px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">Database Sync</span>
+              <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">Notifikasi & Laporan</h3>
+                <span id="notifDatabaseSyncBadge" class="text-[8.5px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">Database Sync</span>
               </div>
               <p class="text-[11px] text-slate-400 font-medium">Log riwayat mutasi fisik & pengiriman email realtime</p>
             </div>
@@ -2508,7 +2508,7 @@
                   <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">Server Status</span>
                   <span id="emailLiveStatusMode" class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 uppercase">PROXY / DIRECT</span>
                 </div>
-                <span id="emailLiveStatusText" class="text-xs font-black text-slate-900 truncate block">Memeriksa status koneksi...</span>
+                <span id="emailLiveStatusText" class="text-xs font-black text-slate-800 truncate block">Memeriksa koneksi...</span>
               </div>
             </div>
             <div class="flex items-center space-x-1.5 flex-shrink-0">
@@ -2530,10 +2530,10 @@
               </button>
             </div>
             
-            <!-- Dynamic Chips Container for Registered Emails (No Ugly Truncation) -->
+            <!-- Dynamic Chips Container for Registered Emails (Clean Mail Icon, No Double @) -->
             <div id="notifModalEmailChips" class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
-                <span class="text-blue-500">@</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/95 border border-blue-200/80 text-[10.5px] font-mono font-bold text-slate-800 shadow-2xs">
+                <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 <span id="notifModalTargetEmail">(Memuat...)</span>
               </span>
             </div>
@@ -2542,25 +2542,29 @@
             <div class="pt-1.5 border-t border-blue-100/70 flex items-center justify-between gap-2">
               <span class="text-[10px] text-slate-500 font-medium leading-tight">Rekap scan fisik & laporan otomatis terkirim realtime</span>
               <button type="button" onclick="UI.triggerRealEmailReportNow()" id="btnTestSendEmail" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-black shadow-xs active:scale-95 transition cursor-pointer flex items-center space-x-1.5 flex-shrink-0" title="Kirim Laporan Rekapitulasi Manual Sekarang">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                <svg class="w-3.5 h-3.5 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
                 <span id="btnTestSendEmailText">Kirim Laporan</span>
               </button>
             </div>
           </div>
 
-          <!-- Segmented Filter Pills: Semua, Masuk, Keluar, Laporan (Mobile-Optimized High Contrast) -->
-          <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5 w-full">
-            <button type="button" id="notifFilterAll" onclick="UI.setEmailNotifFilter('ALL')" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-xl text-[11px] font-black text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-blue-600 text-white shadow-xs">
-              Semua (<span id="notifCountAll">0</span>)
+          <!-- Segmented Filter Grid (Equal 4-Column on Mobile, 0% Truncation / Overflow) -->
+          <div class="grid grid-cols-4 gap-1 p-1 bg-slate-200/60 rounded-2xl w-full">
+            <button type="button" id="notifFilterAll" onclick="UI.setEmailNotifFilter('ALL')" class="py-1.5 px-1 rounded-xl text-[10.5px] font-black text-center transition active:scale-95 cursor-pointer bg-blue-600 text-white shadow-xs flex items-center justify-center space-x-1">
+              <span>Semua</span>
+              <span id="notifCountAll" class="text-[9px] px-1 py-0.2 rounded-md bg-white/20 font-mono font-bold">0</span>
             </button>
-            <button type="button" id="notifFilterMasuk" onclick="UI.setEmailNotifFilter('MASUK')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Masuk (<span id="notifCountMasuk">0</span>)
+            <button type="button" id="notifFilterMasuk" onclick="UI.setEmailNotifFilter('MASUK')" class="py-1.5 px-1 rounded-xl text-[10.5px] font-bold text-center transition active:scale-95 cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center justify-center space-x-1">
+              <span>Masuk</span>
+              <span id="notifCountMasuk" class="text-[9px] px-1 py-0.2 rounded-md bg-slate-300/60 text-slate-700 font-mono font-bold">0</span>
             </button>
-            <button type="button" id="notifFilterKeluar" onclick="UI.setEmailNotifFilter('KELUAR')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Keluar (<span id="notifCountKeluar">0</span>)
+            <button type="button" id="notifFilterKeluar" onclick="UI.setEmailNotifFilter('KELUAR')" class="py-1.5 px-1 rounded-xl text-[10.5px] font-bold text-center transition active:scale-95 cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center justify-center space-x-1">
+              <span>Keluar</span>
+              <span id="notifCountKeluar" class="text-[9px] px-1 py-0.2 rounded-md bg-slate-300/60 text-slate-700 font-mono font-bold">0</span>
             </button>
-            <button type="button" id="notifFilterDaily" onclick="UI.setEmailNotifFilter('DAILY')" class="flex-1 min-w-[72px] py-1.5 px-2 rounded-xl text-[11px] font-bold text-center transition active:scale-95 cursor-pointer whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80">
-              Laporan (<span id="notifCountDaily">0</span>)
+            <button type="button" id="notifFilterDaily" onclick="UI.setEmailNotifFilter('DAILY')" class="py-1.5 px-1 rounded-xl text-[10.5px] font-bold text-center transition active:scale-95 cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center justify-center space-x-1">
+              <span>Laporan</span>
+              <span id="notifCountDaily" class="text-[9px] px-1 py-0.2 rounded-md bg-slate-300/60 text-slate-700 font-mono font-bold">0</span>
             </button>
           </div>
         </div>
