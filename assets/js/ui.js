@@ -4443,15 +4443,55 @@ const UI = {
       };
     }
 
+    if (type === 'profileBranch') {
+      const currentVal = (document.getElementById('inputProfileBranch')?.value || 'Sentra Lampung • Astra Daihatsu DSO Lampung').trim();
+      return {
+        title: 'Pilih Cabang Penugasan',
+        subtitle: 'Penetapan area operasional petugas',
+        iconBg: 'bg-amber-50 text-amber-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          { value: 'Sentra Lampung • Astra Daihatsu DSO Lampung', title: 'Sentra Lampung • Astra Daihatsu DSO Lampung', subtitle: 'Kantor Pusat Distribusi & Manajemen Area', badge: 'DSO', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
+          { value: 'D660 - Ahmad Yani', title: 'D660 - Ahmad Yani', subtitle: 'Bandar Lampung Pusat (Main Showroom & Office)', badge: 'D660', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
+          { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
+          { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
+          { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
+          { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
+        ]
+      };
+    }
+
+    if (type === 'profileRole') {
+      const currentVal = (document.getElementById('inputProfileRole')?.value || 'Admin').trim();
+      return {
+        title: 'Pilih Peran / Hak Akses Sistem',
+        subtitle: 'Tingkat kewenangan operator dalam sistem',
+        iconBg: 'bg-blue-50 text-blue-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          { value: 'Admin', title: 'Admin Head / Branch Manager', subtitle: 'Akses penuh ke semua 5 cabang, mutasi, inventory & approval', badge: 'FULL ACCESS', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🛡️' },
+          { value: 'User', title: 'Petugas Security Lapangan', subtitle: 'Khusus pencatatan mutasi di cabang penugasan masing-masing', badge: 'CABANG', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '👤' }
+        ]
+      };
+    }
+
     return null;
   },
 
   openOptionPicker(type) {
-    if (type === 'noBa') {
+    if (type === 'noBa' || type === 'profileBranch' || type === 'profileRole') {
       const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
       if (!isAdmin) {
-        const uBranch = typeof AppState !== 'undefined' && typeof AppState.getUserBranch === 'function' ? AppState.getUserBranch() : 'cabang penugasan Anda';
-        this.showToast('🔒 Cabang penugasan terkunci khusus: ' + uBranch);
+        if (type === 'noBa') {
+          const uBranch = typeof AppState !== 'undefined' && typeof AppState.getUserBranch === 'function' ? AppState.getUserBranch() : 'cabang penugasan Anda';
+          this.showToast('🔒 Cabang penugasan terkunci khusus: ' + uBranch);
+        } else {
+          this.showToast('🔒 Hak akses & cabang hanya dapat diubah oleh Administrator DSO.');
+        }
         return;
       }
     }
@@ -4699,6 +4739,25 @@ const UI = {
       if (triggerText) triggerText.textContent = label || value;
       const triggerBadge = document.getElementById('triggerNoBaBadge');
       if (triggerBadge) triggerBadge.textContent = 'CABANG';
+    } else if (type === 'profileBranch') {
+      const el = document.getElementById('inputProfileBranch');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerProfileBranchText');
+      if (triggerText) triggerText.textContent = label || value;
+      const triggerBadge = document.getElementById('triggerProfileBranchBadge');
+      if (triggerBadge) triggerBadge.textContent = (value.match(/D66[0-4]/i)?.[0] || 'DSO').toUpperCase();
+    } else if (type === 'profileRole') {
+      const el = document.getElementById('inputProfileRole');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerProfileRoleText');
+      if (triggerText) triggerText.textContent = value === 'Admin' ? 'Admin (Semua Cabang)' : 'User Cabang';
+      const triggerBadge = document.getElementById('triggerProfileRoleBadge');
+      if (triggerBadge) {
+        triggerBadge.textContent = value.toUpperCase();
+        triggerBadge.className = value === 'Admin' 
+          ? 'text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200'
+          : 'text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200';
+      }
     }
 
     this.closeOptionPicker();
@@ -4970,6 +5029,45 @@ const UI = {
     if (inputBranch) inputBranch.value = userBranch;
     if (inputRole) inputRole.value = isAdmin ? 'Admin' : 'User';
     if (editPreview && validPhotoUrl) editPreview.src = validPhotoUrl;
+
+    // Keamanan & Penyelarasan Hak Akses: Security User tidak boleh memilih/mengubah peran atau cabang!
+    const triggerProfileBranch = document.getElementById('triggerProfileBranch');
+    const lockedProfileBranchBox = document.getElementById('lockedProfileBranchBox');
+    const lockedProfileBranchText = document.getElementById('lockedProfileBranchText');
+    const triggerProfileRole = document.getElementById('triggerProfileRole');
+    const lockedProfileRoleBox = document.getElementById('lockedProfileRoleBox');
+
+    if (!isAdmin) {
+      // Petugas Security: Kunci Cabang & Hilangkan/Kunci Pilihan Peran
+      if (triggerProfileBranch) triggerProfileBranch.classList.add('hidden');
+      if (lockedProfileBranchBox) {
+        lockedProfileBranchBox.classList.remove('hidden');
+        if (lockedProfileBranchText) lockedProfileBranchText.textContent = userBranch;
+      }
+      if (triggerProfileRole) triggerProfileRole.classList.add('hidden');
+      if (lockedProfileRoleBox) lockedProfileRoleBox.classList.remove('hidden');
+    } else {
+      // Administrator DSO: Tampilkan Custom Trigger Berbasis Bottom Sheet Web
+      if (lockedProfileBranchBox) lockedProfileBranchBox.classList.add('hidden');
+      if (triggerProfileBranch) {
+        triggerProfileBranch.classList.remove('hidden');
+        const triggerBranchText = document.getElementById('triggerProfileBranchText');
+        if (triggerBranchText) triggerBranchText.textContent = userBranch;
+        const triggerBranchBadge = document.getElementById('triggerProfileBranchBadge');
+        if (triggerBranchBadge) triggerBranchBadge.textContent = (userBranch.match(/D66[0-4]/i)?.[0] || 'DSO').toUpperCase();
+      }
+      if (lockedProfileRoleBox) lockedProfileRoleBox.classList.add('hidden');
+      if (triggerProfileRole) {
+        triggerProfileRole.classList.remove('hidden');
+        const triggerRoleText = document.getElementById('triggerProfileRoleText');
+        if (triggerRoleText) triggerRoleText.textContent = 'Admin (Semua Cabang)';
+        const triggerRoleBadge = document.getElementById('triggerProfileRoleBadge');
+        if (triggerRoleBadge) {
+          triggerRoleBadge.textContent = 'ADMIN';
+          triggerRoleBadge.className = 'text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
+        }
+      }
+    }
 
     // Sync CONFIG operator name for recording PIC
     if (profile.name) CONFIG.OPERATOR_NAME = profile.name;
@@ -5576,11 +5674,22 @@ const UI = {
     const officialPosition = isAdmin ? 'ADMIN HEAD / BRANCH MANAGER' : 'SECURITY';
     const cleanName = String(name).replace(/DISTRICT/gi, 'BRANCH');
 
+    // Keamanan Ketat: Security User tidak boleh mengubah branch atau role!
+    let finalBranch = '';
+    let finalRole = '';
+    if (!isAdmin) {
+      finalBranch = AppState.getUserBranch();
+      finalRole = 'User';
+    } else {
+      finalBranch = branch || AppState.getUserBranch();
+      finalRole = role || 'Admin';
+    }
+
     // Terapkan ke state lokal terlebih dahulu agar UI merespons seketika
     AppState.userProfile.name = cleanName;
     AppState.userProfile.position = officialPosition;
-    if (branch) AppState.userProfile.branch = branch;
-    if (role) AppState.userProfile.role = role;
+    AppState.userProfile.branch = finalBranch;
+    AppState.userProfile.role = finalRole;
     if (newPhoto) {
       AppState.userProfile.photo = newPhoto;
       AppState.userProfile.avatar = newPhoto;
@@ -5602,8 +5711,8 @@ const UI = {
         id: AppState.userProfile.id || AppState.userProfile.username,
         username: AppState.userProfile.username || '',
         name: cleanName,
-        branch: branch,
-        role: role,
+        branch: finalBranch,
+        role: finalRole,
         position: officialPosition,
         photo: newPhoto || AppState.userProfile.photo,
         avatar: newPhoto || AppState.userProfile.photo
