@@ -44,6 +44,7 @@ const App = {
     UI.renderHistoryList();
     UI.initHeroCarousel();
     if (UI.initPullToRefresh) UI.initPullToRefresh();
+    if (typeof UI.syncAllFormTriggers === 'function') UI.syncAllFormTriggers();
 
     // 4. Pasang listener reaktif untuk validasi ketat formulir mutasi 11 kolom
     this.setupMutationFormListeners();
@@ -350,6 +351,9 @@ const App = {
     }
     UI.removeImagePreview('unitPhoto');
     UI.removeImagePreview('docPhoto');
+    if (typeof UI !== 'undefined' && typeof UI.syncAllFormTriggers === 'function') {
+      UI.syncAllFormTriggers();
+    }
 
     // Tutup Scanner Modal & Notifikasi Awal
     ScannerService.close();

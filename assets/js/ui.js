@@ -3921,9 +3921,7 @@ const UI = {
       'histFilterYear',
       'modelFilterDate',
       'modelFilterMonth',
-      'modelFilterYear',
-      'inputMutationType',
-      'inputCarModel'
+      'modelFilterYear'
     ];
 
     const nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
@@ -4276,6 +4274,482 @@ const UI = {
     }
   },
 
+  // ==========================================================================
+  // CUSTOM OPTION PICKER BOTTOM SHEET CONTROLLER (Mobile-First UI/UX)
+  // ==========================================================================
+  _activePickerType: null,
+  _activePickerOptions: [],
+
+  getPickerConfig(type) {
+    if (type === 'mutationDocType') {
+      const currentVal = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
+      return {
+        title: 'Pilih Jenis Dokumen Fisik',
+        subtitle: 'Dokumen serah terima fisik kendaraan di stockyard',
+        iconBg: 'bg-indigo-50 text-indigo-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          {
+            value: 'SPPDC',
+            title: 'SPPDC (Surat Pengantar Pengiriman Dealer / Car)',
+            subtitle: 'Penerimaan unit baru langsung dari pabrik / carrier pusat',
+            badge: 'UNIT BARU',
+            badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
+            icon: '📄'
+          },
+          {
+            value: 'BSTKB',
+            title: 'BSTKB (Bukti Serah Terima Kendaraan Baru)',
+            subtitle: 'Serah terima resmi kendaraan terjual ke customer / sales',
+            badge: 'PENJUALAN',
+            badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            icon: '🔑'
+          },
+          {
+            value: 'OKK',
+            title: 'OKK (Order Keluar Kendaraan)',
+            subtitle: 'Surat jalan mutasi pengiriman antar-cabang DSO Lampung',
+            badge: 'ANTAR-CABANG',
+            badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+            icon: '🚛'
+          }
+        ]
+      };
+    }
+
+    if (type === 'mutationType') {
+      const currentVal = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
+      return {
+        title: 'Pilih Jenis Mutasi',
+        subtitle: 'Arah aliran serah terima kendaraan di stockyard',
+        iconBg: 'bg-emerald-50 text-emerald-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          {
+            value: 'Unit Masuk',
+            title: 'Unit Masuk (Penerimaan Cabang)',
+            subtitle: 'Penerimaan unit baru dari pusat atau kiriman antar cabang',
+            badge: 'MASUK',
+            badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            icon: '🚘'
+          },
+          {
+            value: 'Unit Keluar',
+            title: 'Unit Keluar (Pengeluaran Cabang)',
+            subtitle: 'Pengiriman unit ke cabang lain atau penyerahan customer',
+            badge: 'KELUAR',
+            badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
+            icon: '🚚'
+          }
+        ]
+      };
+    }
+
+    if (type === 'carModel') {
+      const currentVal = (document.getElementById('inputCarModel')?.value || '').trim();
+      return {
+        title: 'Pilih Model Kendaraan Daihatsu',
+        subtitle: 'Katalog 13 lini kendaraan resmi Astra Daihatsu',
+        iconBg: 'bg-blue-50 text-blue-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>',
+        hasSearch: true,
+        currentValue: currentVal,
+        options: [
+          { value: 'Rocky e-Smart Hybrid', title: 'Rocky e-Smart Hybrid', subtitle: 'Smart Hybrid SUV — Compact Ramah Lingkungan', badge: 'HYBRID', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🚙' },
+          { value: 'Gran Max Pick Up', title: 'Gran Max Pick Up', subtitle: 'Niaga & Logistik Tangguh — Sahabat Bisnis Andal', badge: 'KOMERSIAL', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🛻' },
+          { value: 'New Terios', title: 'New Terios', subtitle: '7-Seater Adventure SUV — Tangguh di Segala Medan', badge: 'SUV', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🚙' },
+          { value: 'New Sigra', title: 'New Sigra', subtitle: 'LCGC 7-Seater Family MPV — Favorit Keluarga Indonesia', badge: 'MPV', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🚗' },
+          { value: 'All New Xenia', title: 'All New Xenia', subtitle: 'The Next Level MPV — Nyaman & Fitur Canggih', badge: 'MPV', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🚗' },
+          { value: 'All New Ayla', title: 'All New Ayla', subtitle: 'Compact Hatchback Urban — Lincah, Irit & Modern', badge: 'HATCHBACK', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🚗' },
+          { value: 'New Rocky', title: 'New Rocky', subtitle: 'Compact Turbo SUV — Desain Sporty & Bertenaga', badge: 'TURBO SUV', badgeClass: 'bg-rose-100 text-rose-800 border-rose-200', icon: '🚙' },
+          { value: 'Sirion', title: 'Sirion', subtitle: 'Stylish City Car — Fitur Pintar Urban Eksplorasi', badge: 'CITY CAR', badgeClass: 'bg-cyan-100 text-cyan-800 border-cyan-200', icon: '🚗' },
+          { value: 'Luxio', title: 'Luxio', subtitle: 'Spacious Elegant Van — Kabin Luas & Nyaman', badge: 'VAN', badgeClass: 'bg-slate-100 text-slate-800 border-slate-200', icon: '🚐' },
+          { value: 'Rocky', title: 'Rocky', subtitle: 'Compact SUV Standar', badge: 'SUV', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🚙' },
+          { value: 'Gran Max Minibus', title: 'Gran Max Minibus', subtitle: 'Family & Commercial Transport', badge: 'MINIBUS', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🚐' },
+          { value: 'Terios Special Edition', title: 'Terios Special Edition', subtitle: 'Limited Edition Sport SUV', badge: 'SPECIAL', badgeClass: 'bg-violet-100 text-violet-800 border-violet-200', icon: '🚙' },
+          { value: 'New Sigra (Prod Old)', title: 'New Sigra (Prod Old)', subtitle: 'LCGC 7-Seater MPV Produksi Sebelumnya', badge: 'LEGACY', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', icon: '🚗' }
+        ]
+      };
+    }
+
+    if (type === 'carColor') {
+      const currentVal = (document.getElementById('inputCarColor')?.value || '').trim();
+      return {
+        title: 'Pilih Warna Mobil',
+        subtitle: 'Warna resmi kendaraan Astra Daihatsu',
+        iconBg: 'bg-purple-50 text-purple-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>',
+        hasSearch: true,
+        currentValue: currentVal,
+        options: [
+          { value: 'Putih (White Solid)', title: 'Putih (White Solid)', subtitle: 'Warna solid putih standar pabrik', hex: '#FFFFFF' },
+          { value: 'Hitam (Black Metallic)', title: 'Hitam (Black Metallic)', subtitle: 'Warna hitam metalik elegan', hex: '#111827' },
+          { value: 'Silver Metallic', title: 'Silver Metallic', subtitle: 'Warna perak metalik mengkilap', hex: '#94A3B8' },
+          { value: 'Dark Grey Metallic', title: 'Dark Grey Metallic', subtitle: 'Abu-abu gelap metalik modern', hex: '#475569' },
+          { value: 'Merah (Compagno Red / Red Solid)', title: 'Merah (Compagno Red / Red Solid)', subtitle: 'Merah khas Daihatsu menyala', hex: '#DC2626' },
+          { value: 'Biru (Icy Blue / Blue Metallic)', title: 'Biru (Icy Blue / Blue Metallic)', subtitle: 'Biru metalik segar', hex: '#2563EB' },
+          { value: 'Bronze Metallic', title: 'Bronze Metallic', subtitle: 'Warna perunggu metalik mewah', hex: '#854D0E' },
+          { value: 'Yellow Metallic', title: 'Yellow Metallic', subtitle: 'Kuning cerah ceria', hex: '#EAB308' },
+          { value: 'Orange Metallic', title: 'Orange Metallic', subtitle: 'Jingga metalik sporty', hex: '#EA580C' },
+          { value: 'Two-Tone (Atap Hitam)', title: 'Two-Tone (Atap Hitam)', subtitle: 'Kombinasi warna bodi dengan atap hitam', hex: 'linear-gradient(135deg, #EF4444 50%, #111827 50%)' }
+        ]
+      };
+    }
+
+    if (type === 'noBa') {
+      const currentVal = (document.getElementById('inputNoBa')?.value || 'D660 - Ahmad Yani').trim();
+      return {
+        title: 'Pilih Cabang / Berita Acara (BA)',
+        subtitle: 'Lokasi cabang serah terima / mutasi unit',
+        iconBg: 'bg-amber-50 text-amber-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          { value: 'D660 - Ahmad Yani', title: 'D660 - Ahmad Yani', subtitle: 'Bandar Lampung Pusat (Main Showroom & Office)', badge: 'D660', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
+          { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
+          { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
+          { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
+          { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
+        ]
+      };
+    }
+
+    return null;
+  },
+
+  openOptionPicker(type) {
+    if (type === 'noBa' && typeof AppState !== 'undefined' && !AppState.isAdmin) {
+      this.showToast('🔒 Cabang penugasan Anda terkunci: ' + (AppState.userProfile?.branch || ''));
+      return;
+    }
+
+    this._activePickerType = type;
+    const modal = document.getElementById('customOptionPickerModal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('optionPickerTitle');
+    const subtitleEl = document.getElementById('optionPickerSubtitle');
+    const iconContainer = document.getElementById('optionPickerIconContainer');
+    const searchWrapper = document.getElementById('optionPickerSearchWrapper');
+    const searchInput = document.getElementById('optionPickerSearchInput');
+
+    if (searchInput) searchInput.value = '';
+
+    const config = this.getPickerConfig(type);
+    if (!config) return;
+
+    if (titleEl) titleEl.textContent = config.title;
+    if (subtitleEl) subtitleEl.textContent = config.subtitle;
+    if (iconContainer) {
+      iconContainer.className = `w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs ${config.iconBg}`;
+      iconContainer.innerHTML = config.iconSvg;
+    }
+
+    if (searchWrapper) {
+      if (config.hasSearch) {
+        searchWrapper.classList.remove('hidden');
+        setTimeout(() => searchInput && searchInput.focus(), 150);
+      } else {
+        searchWrapper.classList.add('hidden');
+      }
+    }
+
+    this._activePickerOptions = config.options;
+    this.renderOptionPickerList(config.options, config.currentValue, type);
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  },
+
+  closeOptionPicker() {
+    const modal = document.getElementById('customOptionPickerModal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    this._activePickerType = null;
+  },
+
+  filterOptionPicker(query) {
+    if (!this._activePickerOptions) return;
+    const cleanQ = String(query || '').trim().toLowerCase();
+    const filtered = cleanQ
+      ? this._activePickerOptions.filter(o => 
+          o.title.toLowerCase().includes(cleanQ) || 
+          (o.subtitle && o.subtitle.toLowerCase().includes(cleanQ)) ||
+          (o.badge && o.badge.toLowerCase().includes(cleanQ)) ||
+          (o.value && o.value.toLowerCase().includes(cleanQ))
+        )
+      : this._activePickerOptions;
+    
+    const config = this.getPickerConfig(this._activePickerType);
+    this.renderOptionPickerList(filtered, config ? config.currentValue : '', this._activePickerType);
+  },
+
+  renderOptionPickerList(options, currentVal, type) {
+    const listEl = document.getElementById('optionPickerList');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!options || options.length === 0) {
+      listEl.innerHTML = '<div class="text-center py-8 text-xs text-slate-400">Pilihan tidak ditemukan</div>';
+      return;
+    }
+
+    options.forEach(opt => {
+      const isSelected = String(opt.value).trim().toLowerCase() === String(currentVal).trim().toLowerCase();
+      const card = document.createElement('div');
+      card.className = `p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer select-none active:scale-[0.99] ${
+        isSelected
+          ? 'bg-blue-50/80 border-2 border-blue-600 shadow-sm'
+          : 'bg-white hover:bg-slate-50 border-slate-200/90 hover:border-slate-300 shadow-2xs'
+      }`;
+
+      const leftWrap = document.createElement('div');
+      leftWrap.className = 'flex items-center space-x-3 min-w-0 flex-1 mr-3';
+
+      if (opt.hex) {
+        const swatch = document.createElement('div');
+        swatch.className = 'w-7 h-7 rounded-full flex-shrink-0 shadow-xs border border-black/10';
+        swatch.style.background = opt.hex;
+        leftWrap.appendChild(swatch);
+      } else if (opt.icon) {
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm flex-shrink-0';
+        iconWrap.textContent = opt.icon;
+        leftWrap.appendChild(iconWrap);
+      }
+
+      const textWrap = document.createElement('div');
+      textWrap.className = 'min-w-0 flex-1';
+
+      const titleLine = document.createElement('div');
+      titleLine.className = 'flex items-center gap-2';
+      
+      const titleText = document.createElement('span');
+      titleText.className = `text-xs font-black leading-tight ${isSelected ? 'text-blue-900' : 'text-slate-800'}`;
+      titleText.textContent = opt.title;
+      titleLine.appendChild(titleText);
+
+      if (opt.badge) {
+        const badge = document.createElement('span');
+        badge.className = `text-[9px] font-black px-1.5 py-0.2 rounded-md border flex-shrink-0 ${opt.badgeClass || 'bg-slate-100 text-slate-700 border-slate-200'}`;
+        badge.textContent = opt.badge;
+        titleLine.appendChild(badge);
+      }
+      textWrap.appendChild(titleLine);
+
+      if (opt.subtitle) {
+        const subtitle = document.createElement('p');
+        subtitle.className = `text-[10.5px] mt-0.5 leading-tight truncate ${isSelected ? 'text-blue-600 font-semibold' : 'text-slate-400 font-normal'}`;
+        subtitle.textContent = opt.subtitle;
+        textWrap.appendChild(subtitle);
+      }
+      leftWrap.appendChild(textWrap);
+      card.appendChild(leftWrap);
+
+      const indicator = document.createElement('div');
+      indicator.className = 'flex-shrink-0';
+      if (isSelected) {
+        indicator.innerHTML = `
+          <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          </div>
+        `;
+      } else {
+        indicator.innerHTML = '<div class="w-5 h-5 rounded-full border-2 border-slate-300 bg-white"></div>';
+      }
+      card.appendChild(indicator);
+
+      card.addEventListener('click', () => {
+        this.selectOption(type, opt.value, opt.title);
+      });
+
+      listEl.appendChild(card);
+    });
+
+    if (type === 'carColor') {
+      const customCard = document.createElement('div');
+      customCard.className = 'p-3 rounded-2xl border border-dashed border-purple-300 bg-purple-50/40 mt-3';
+      customCard.innerHTML = `
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[11px] font-bold text-purple-900 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Warna Kustom Lainnya</span>
+          </span>
+          <span class="text-[9px] font-bold text-purple-600">Ketik Bebas</span>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="customColorInputVal" placeholder="Ketik warna (misal: Biru Tua Metallic)..." class="flex-1 bg-white border border-purple-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <button type="button" id="btnApplyCustomColor" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs transition active:scale-95 cursor-pointer">
+            Pilih
+          </button>
+        </div>
+      `;
+      const btn = customCard.querySelector('#btnApplyCustomColor');
+      const input = customCard.querySelector('#customColorInputVal');
+      if (btn && input) {
+        btn.addEventListener('click', () => {
+          const val = input.value.trim();
+          if (val) {
+            this.selectOption('carColor', val, val);
+          } else {
+            this.showToast('Ketik nama warna terlebih dahulu');
+          }
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+          }
+        });
+      }
+      listEl.appendChild(customCard);
+    }
+  },
+
+  selectOption(type, value, label) {
+    if (type === 'mutationDocType') {
+      const el = document.getElementById('inputMutationDocType');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerMutationDocTypeText');
+      if (triggerText) triggerText.textContent = label || value;
+      const triggerBadge = document.getElementById('triggerMutationDocTypeBadge');
+      if (triggerBadge) triggerBadge.textContent = value;
+      if (typeof window.onMutationDocTypeChanged === 'function') {
+        window.onMutationDocTypeChanged();
+      }
+    } else if (type === 'mutationType') {
+      const el = document.getElementById('inputMutationType');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerMutationTypeText');
+      if (triggerText) triggerText.textContent = label || value;
+      const triggerBadge = document.getElementById('triggerMutationTypeBadge');
+      if (triggerBadge) {
+        triggerBadge.textContent = value === 'Unit Masuk' ? 'MASUK' : 'KELUAR';
+        triggerBadge.className = value === 'Unit Masuk'
+          ? 'text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200'
+          : 'text-[9px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
+      }
+      if (typeof window.validateMutationFormDuplication === 'function') {
+        window.validateMutationFormDuplication();
+      }
+    } else if (type === 'carModel') {
+      const el = document.getElementById('inputCarModel');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerCarModelText');
+      if (triggerText) triggerText.textContent = label || value;
+    } else if (type === 'carColor') {
+      const el = document.getElementById('inputCarColor');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerCarColorText');
+      if (triggerText) {
+        triggerText.textContent = value;
+        triggerText.className = 'font-bold text-slate-800 text-xs truncate';
+      }
+      const triggerSwatch = document.getElementById('triggerCarColorSwatch');
+      if (triggerSwatch) {
+        const opt = this.getPickerConfig('carColor')?.options?.find(o => o.value === value);
+        if (opt && opt.hex) {
+          triggerSwatch.style.background = opt.hex;
+        } else {
+          triggerSwatch.style.background = '#64748B';
+        }
+      }
+    } else if (type === 'noBa') {
+      const el = document.getElementById('inputNoBa');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerNoBaText');
+      if (triggerText) triggerText.textContent = label || value;
+      const triggerBadge = document.getElementById('triggerNoBaBadge');
+      if (triggerBadge) triggerBadge.textContent = value.split(' - ')[0] || 'CABANG';
+    }
+
+    this.closeOptionPicker();
+
+    if (typeof window.checkMutationFormCompleteness === 'function') {
+      window.checkMutationFormCompleteness();
+    }
+  },
+
+  syncAllFormTriggers() {
+    // 1. Doc Type
+    const docEl = document.getElementById('inputMutationDocType');
+    if (docEl) {
+      const docVal = docEl.value || 'SPPDC';
+      const triggerText = document.getElementById('triggerMutationDocTypeText');
+      if (triggerText) {
+        const cfg = this.getPickerConfig('mutationDocType');
+        const opt = cfg?.options?.find(o => o.value === docVal);
+        triggerText.textContent = opt ? opt.title : docVal;
+      }
+      const triggerBadge = document.getElementById('triggerMutationDocTypeBadge');
+      if (triggerBadge) triggerBadge.textContent = docVal;
+    }
+
+    // 2. Mutation Type
+    const typeEl = document.getElementById('inputMutationType');
+    if (typeEl) {
+      const typeVal = typeEl.value || 'Unit Masuk';
+      const triggerText = document.getElementById('triggerMutationTypeText');
+      if (triggerText) {
+        triggerText.textContent = typeVal === 'Unit Masuk' ? 'Unit Masuk (Penerimaan Cabang)' : 'Unit Keluar (Pengeluaran Cabang)';
+      }
+      const triggerBadge = document.getElementById('triggerMutationTypeBadge');
+      if (triggerBadge) {
+        triggerBadge.textContent = typeVal === 'Unit Masuk' ? 'MASUK' : 'KELUAR';
+        triggerBadge.className = typeVal === 'Unit Masuk'
+          ? 'text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200'
+          : 'text-[9px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
+      }
+    }
+
+    // 3. Model
+    const modelEl = document.getElementById('inputCarModel');
+    if (modelEl) {
+      const modelVal = modelEl.value || 'Rocky e-Smart Hybrid';
+      const triggerText = document.getElementById('triggerCarModelText');
+      if (triggerText) {
+        const cfg = this.getPickerConfig('carModel');
+        const opt = cfg?.options?.find(o => o.value === modelVal);
+        triggerText.textContent = opt ? `${opt.title} — ${opt.subtitle}` : modelVal;
+      }
+    }
+
+    // 4. Color
+    const colorEl = document.getElementById('inputCarColor');
+    const triggerColorText = document.getElementById('triggerCarColorText');
+    const triggerColorSwatch = document.getElementById('triggerCarColorSwatch');
+    if (colorEl && triggerColorText) {
+      const val = colorEl.value.trim();
+      if (val) {
+        triggerColorText.textContent = val;
+        triggerColorText.className = 'font-bold text-slate-800 text-xs truncate';
+        if (triggerColorSwatch) {
+          const opt = this.getPickerConfig('carColor')?.options?.find(o => o.value === val);
+          triggerColorSwatch.style.background = opt?.hex || '#64748B';
+        }
+      } else {
+        triggerColorText.textContent = 'Pilih warna mobil (Putih, Hitam, Silver...)';
+        triggerColorText.className = 'text-slate-400 font-normal truncate';
+        if (triggerColorSwatch) triggerColorSwatch.style.background = '#F1F5F9';
+      }
+    }
+
+    // 5. Branch No BA
+    const noBaEl = document.getElementById('inputNoBa');
+    if (noBaEl) {
+      const branchVal = noBaEl.value || 'D660 - Ahmad Yani';
+      const triggerText = document.getElementById('triggerNoBaText');
+      if (triggerText) triggerText.textContent = branchVal;
+      const triggerBadge = document.getElementById('triggerNoBaBadge');
+      if (triggerBadge) triggerBadge.textContent = branchVal.split(' - ')[0] || 'CABANG';
+    }
+  },
+
   /**
    * Menginisialisasi animasi scroll profesional (IntersectionObserver compositor-friendly)
    */
@@ -4473,6 +4947,18 @@ const UI = {
         inputNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 appearance-none focus:outline-none shadow-2xs opacity-95 cursor-not-allowed';
         inputNoBa.title = `Terkunci: Petugas User mencatat mutasi khusus cabang ${userBranch}`;
 
+        const triggerNoBa = document.getElementById('triggerNoBa');
+        if (triggerNoBa) {
+          triggerNoBa.className = 'w-full bg-amber-50/85 border border-amber-300 rounded-2xl py-2.5 px-3.5 text-xs font-black text-amber-900 flex items-center justify-between shadow-2xs opacity-95 cursor-not-allowed text-left';
+          const triggerNoBaText = document.getElementById('triggerNoBaText');
+          if (triggerNoBaText) triggerNoBaText.textContent = userBranch;
+          const triggerNoBaBadge = document.getElementById('triggerNoBaBadge');
+          if (triggerNoBaBadge) {
+            triggerNoBaBadge.textContent = `TERKUNCI: ${userBranchCode}`;
+            triggerNoBaBadge.className = 'text-[9px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300';
+          }
+        }
+
         if (inputNoBaBadge) {
           inputNoBaBadge.className = 'text-[9px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300';
           inputNoBaBadge.textContent = `TERKUNCI: ${userBranchCode}`;
@@ -4502,6 +4988,18 @@ const UI = {
         inputNoBa.disabled = false;
         inputNoBa.className = 'w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer';
         inputNoBa.title = 'Akses Admin: Bebas memilih 5 cabang operasional (D660 s/d D664) untuk pencatatan unit';
+
+        const triggerNoBa = document.getElementById('triggerNoBa');
+        if (triggerNoBa) {
+          triggerNoBa.className = 'w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left';
+          const triggerNoBaText = document.getElementById('triggerNoBaText');
+          if (triggerNoBaText) triggerNoBaText.textContent = selectedVal;
+          const triggerNoBaBadge = document.getElementById('triggerNoBaBadge');
+          if (triggerNoBaBadge) {
+            triggerNoBaBadge.textContent = 'CABANG';
+            triggerNoBaBadge.className = 'text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200';
+          }
+        }
 
         if (inputNoBaBadge) {
           inputNoBaBadge.className = 'text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';

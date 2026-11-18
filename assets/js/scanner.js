@@ -415,6 +415,9 @@ const ScannerService = {
     if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
       UI.syncRoleBranchUI();
     }
+    if (typeof UI !== 'undefined' && typeof UI.syncAllFormTriggers === 'function') {
+      UI.syncAllFormTriggers();
+    }
 
     const displayVinEl = document.getElementById('displaySummaryVin');
     const displayEngineEl = document.getElementById('displaySummaryEngine');
@@ -1654,6 +1657,9 @@ const ScannerService = {
     // Selaraskan opsi dropdown cabang di formulir mutasi sesuai peran operator (Admin vs User Cabang)
     if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
       UI.syncRoleBranchUI();
+    }
+    if (typeof UI !== 'undefined' && typeof UI.syncAllFormTriggers === 'function') {
+      UI.syncAllFormTriggers();
     }
 
     // Pastikan warna mobil bersih dari autofill browser dan siap diisi

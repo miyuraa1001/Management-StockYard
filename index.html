@@ -2133,16 +2133,23 @@
             <input type="hidden" id="inputVin" value="">
             <input type="hidden" id="inputEngine" value="">
 
-            <!-- Field 1: Jenis Mutasi -->
+            <!-- Field 1: Jenis Mutasi (Custom Built-in Picker) -->
             <div>
-              <label for="inputMutationType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Jenis Mutasi</label>
-              <div class="relative">
-                <select id="inputMutationType" onchange="validateMutationFormDuplication()" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                  <option value="Unit Masuk">🚘 Unit Masuk (Penerimaan Cabang)</option>
-                  <option value="Unit Keluar">🚚 Unit Keluar (Pengiriman Lanjutan)</option>
-                </select>
-                <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-              </div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Jenis Mutasi</label>
+              <select id="inputMutationType" onchange="validateMutationFormDuplication()" class="hidden">
+                <option value="Unit Masuk" selected>Unit Masuk</option>
+                <option value="Unit Keluar">Unit Keluar</option>
+              </select>
+              <button type="button" id="triggerMutationType" onclick="UI.openOptionPicker('mutationType')" class="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-emerald-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left">
+                <div class="flex items-center space-x-2.5 truncate">
+                  <span id="triggerMutationTypeIcon" class="text-base flex-shrink-0">🚘</span>
+                  <span id="triggerMutationTypeText" class="truncate font-extrabold text-slate-800">Unit Masuk (Penerimaan Cabang)</span>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                  <span id="triggerMutationTypeBadge" class="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">MASUK</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
 
               <!-- Banner Validasi Status & Duplikasi Unit (Muncul Dinamis di Form) -->
               <div id="mutationDuplicateAlert" class="hidden mt-2 p-3 rounded-2xl border text-xs flex items-start space-x-2.5 transition-all">
@@ -2154,56 +2161,59 @@
               </div>
             </div>
 
-            <!-- Field 2: Model Kendaraan (13 Model Katalog Resmi) -->
+            <!-- Field 2: Model Kendaraan (Custom Built-in Picker) -->
             <div>
-              <label for="inputCarModel" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Model & Jenis Kendaraan Daihatsu</label>
-              <div class="relative">
-                <select id="inputCarModel" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                  <option value="Rocky e-Smart Hybrid">Rocky e-Smart Hybrid — Smart Hybrid SUV</option>
-                  <option value="Gran Max Pick Up">Gran Max Pick Up — Niaga & Logistik Tangguh</option>
-                  <option value="New Terios">New Terios — 7-Seater Adventure SUV</option>
-                  <option value="New Sigra">New Sigra — LCGC 7-Seater Family MPV</option>
-                  <option value="All New Xenia">All New Xenia — The Next Level MPV</option>
-                  <option value="All New Ayla">All New Ayla — Compact Hatchback Urban</option>
-                  <option value="New Rocky">New Rocky — Compact Turbo SUV</option>
-                  <option value="Sirion">Sirion — Stylish City Car</option>
-                  <option value="Luxio">Luxio — Spacious Elegant Van</option>
-                  <option value="Rocky">Rocky — Compact SUV</option>
-                  <option value="Gran Max Minibus">Gran Max Minibus — Family & Commercial Transport</option>
-                  <option value="Terios Special Edition">Terios Special Edition — Limited Edition Sport SUV</option>
-                  <option value="New Sigra (Prod Old)">New Sigra (Prod Old) — LCGC 7-Seater MPV</option>
-                </select>
-                <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-              </div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Model & Jenis Kendaraan Daihatsu</label>
+              <select id="inputCarModel" class="hidden">
+                <option value="Rocky e-Smart Hybrid" selected>Rocky e-Smart Hybrid</option>
+                <option value="Gran Max Pick Up">Gran Max Pick Up</option>
+                <option value="New Terios">New Terios</option>
+                <option value="New Sigra">New Sigra</option>
+                <option value="All New Xenia">All New Xenia</option>
+                <option value="All New Ayla">All New Ayla</option>
+                <option value="New Rocky">New Rocky</option>
+                <option value="Sirion">Sirion</option>
+                <option value="Luxio">Luxio</option>
+                <option value="Rocky">Rocky</option>
+                <option value="Gran Max Minibus">Gran Max Minibus</option>
+                <option value="Terios Special Edition">Terios Special Edition</option>
+                <option value="New Sigra (Prod Old)">New Sigra (Prod Old)</option>
+              </select>
+              <button type="button" id="triggerCarModel" onclick="UI.openOptionPicker('carModel')" class="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left">
+                <div class="flex items-center space-x-2.5 truncate">
+                  <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] flex-shrink-0">D</span>
+                  <span id="triggerCarModelText" class="truncate font-extrabold text-slate-800">Rocky e-Smart Hybrid — Smart Hybrid SUV</span>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                  <span class="text-[9px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">KATALOG</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
             </div>
 
-            <!-- Field 2B (Baru): Warna Mobil -->
+            <!-- Field 2B: Warna Mobil (Custom Built-in Picker) -->
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label for="inputCarColor" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                   <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                   <span>Warna Mobil</span>
                 </label>
                 <span class="text-[9px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">WAJIB DIISI</span>
               </div>
-              <div class="relative">
-                <input type="text" id="inputCarColor" list="carColorOptions" autocomplete="off" placeholder="Pilih atau ketik warna (misal: Putih, Hitam, Silver...)" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                <datalist id="carColorOptions">
-                  <option value="Putih (White Solid)">
-                  <option value="Hitam (Black Metallic)">
-                  <option value="Silver Metallic">
-                  <option value="Dark Grey Metallic">
-                  <option value="Merah (Compagno Red / Red Solid)">
-                  <option value="Biru (Icy Blue / Blue Metallic)">
-                  <option value="Bronze Metallic">
-                  <option value="Yellow Metallic">
-                  <option value="Orange Metallic">
-                  <option value="Two-Tone (Atap Hitam)">
-                </datalist>
-              </div>
+              <input type="hidden" id="inputCarColor" value="" autocomplete="off">
+              <button type="button" id="triggerCarColor" onclick="UI.openOptionPicker('carColor')" class="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-purple-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left">
+                <div class="flex items-center space-x-2.5 truncate">
+                  <span id="triggerCarColorSwatch" class="w-4 h-4 rounded-full border border-slate-300 bg-slate-100 flex-shrink-0"></span>
+                  <span id="triggerCarColorText" class="text-slate-400 font-normal truncate">Pilih warna mobil (Putih, Hitam, Silver...)</span>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                  <span class="text-[9px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">WARNA</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
             </div>
 
-            <!-- Field 2C (Baru): Nama Petugas Lapangan -->
+            <!-- Field 2C: Nama Petugas Lapangan -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label for="inputOfficerName" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
@@ -2218,45 +2228,59 @@
               <span class="text-[9.5px] text-slate-400 mt-1 block">Nama lengkap petugas keamanan / PIC lapangan yang memverifikasi fisik unit.</span>
             </div>
 
-            <!-- Field 3: Cabang / Kode Berita Acara (No. BA) - Dropdown Pilihan D660 - D664 -->
+            <!-- Field 3: Cabang / Kode Berita Acara (BA) (Custom Built-in Picker) -->
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label for="inputNoBa" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                   <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                   <span>Cabang / Kode Berita Acara (BA)</span>
                 </label>
                 <span id="inputNoBaRoleBadge" class="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">PILIHAN CABANG</span>
               </div>
-              <div class="relative">
-                <select id="inputNoBa" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                  <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
-                  <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
-                  <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
-                  <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
-                  <option value="D664 - Lampung Timur">D664 - Lampung Timur</option>
-                </select>
-                <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-              </div>
+              <select id="inputNoBa" class="hidden">
+                <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
+                <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
+                <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
+                <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
+                <option value="D664 - Lampung Timur">D664 - Lampung Timur</option>
+              </select>
+              <button type="button" id="triggerNoBa" onclick="UI.openOptionPicker('noBa')" class="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left">
+                <div class="flex items-center space-x-2.5 truncate">
+                  <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                  <span id="triggerNoBaText" class="truncate font-extrabold text-slate-800">D660 - Ahmad Yani</span>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                  <span id="triggerNoBaBadge" class="text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">CABANG</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
               <span id="inputNoBaHint" class="text-[9.5px] text-slate-400 mt-1 block">Pilihan cabang resmi: <strong>D660 - Ahmad Yani, D661 - Soekarno Hatta, D662 - Bandar Jaya, D663 - Lampung Utara, D664 - Lampung Timur</strong>.</span>
             </div>
 
-            <!-- Field 4: Jenis Dokumen Fisik (SPPDC / BSTKB / OKK) -->
+            <!-- Field 4: Jenis Dokumen Fisik (Custom Built-in Picker) -->
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label for="inputMutationDocType" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                   <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                   <span>Jenis Dokumen Fisik</span>
                 </label>
                 <span class="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">SPPDC / BSTKB / OKK</span>
               </div>
-              <div class="relative">
-                <select id="inputMutationDocType" onchange="if(typeof onMutationDocTypeChanged==='function') onMutationDocTypeChanged()" class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                  <option value="SPPDC" selected>SPPDC (Surat Pengantar Pengiriman Dealer / Car)</option>
-                  <option value="BSTKB">BSTKB (Bukti Serah Terima Kendaraan Baru)</option>
-                  <option value="OKK">OKK (Order Keluar Kendaraan)</option>
-                </select>
-                <svg class="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-              </div>
+              <select id="inputMutationDocType" onchange="if(typeof onMutationDocTypeChanged==='function') onMutationDocTypeChanged()" class="hidden">
+                <option value="SPPDC" selected>SPPDC (Surat Pengantar Pengiriman Dealer / Car)</option>
+                <option value="BSTKB">BSTKB (Bukti Serah Terima Kendaraan Baru)</option>
+                <option value="OKK">OKK (Order Keluar Kendaraan)</option>
+              </select>
+              <button type="button" id="triggerMutationDocType" onclick="UI.openOptionPicker('mutationDocType')" class="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-[0.99] transition cursor-pointer text-left">
+                <div class="flex items-center space-x-2.5 truncate">
+                  <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span id="triggerMutationDocTypeText" class="truncate font-black text-indigo-950">SPPDC (Surat Pengantar Pengiriman Dealer / Car)</span>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                  <span id="triggerMutationDocTypeBadge" class="text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">SPPDC</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
               <span class="text-[9.5px] text-slate-400 mt-1 block">Pilih tipe dokumen fisik serah terima: <strong>SPPDC</strong>, <strong>BSTKB</strong>, atau <strong>OKK</strong>.</span>
             </div>
 
@@ -2341,6 +2365,58 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         </div>
         <span id="toastMsg" class="text-xs font-semibold text-slate-100">Pemberitahuan berhasil!</span>
+      </div>
+    </div>
+
+    <!-- Custom Built-in Option Picker Modal (Bottom Sheet on Mobile, Centered Card on Desktop) -->
+    <div id="customOptionPickerModal" class="fixed inset-0 z-[85] bg-slate-950/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300" onclick="if(event.target === this) UI.closeOptionPicker()">
+      <div class="bg-white w-full max-h-[88vh] sm:max-w-md rounded-t-[32px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-slate-100 sm:border">
+        
+        <!-- Drag Handle Indicator (Khusus Mobile) -->
+        <div class="pt-3 pb-1 flex justify-center sm:hidden">
+          <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
+        </div>
+
+        <!-- Header Modal -->
+        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center space-x-3 min-w-0">
+            <div id="optionPickerIconContainer" class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="min-w-0">
+              <h3 id="optionPickerTitle" class="text-sm font-black text-slate-900 tracking-tight leading-tight truncate">Pilih Dokumen</h3>
+              <p id="optionPickerSubtitle" class="text-[11px] font-medium text-slate-500 truncate mt-0.5">Pilih tipe berkas serah terima unit</p>
+            </div>
+          </div>
+          <button type="button" onclick="UI.closeOptionPicker()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-sm font-black transition cursor-pointer active:scale-95" aria-label="Tutup Pilihan">
+            &times;
+          </button>
+        </div>
+
+        <!-- Search Box (Ditampilkan dinamis jika list panjang > 5 opsi, e.g. Model Kendaraan & Warna) -->
+        <div id="optionPickerSearchWrapper" class="px-5 pt-3 pb-1 hidden">
+          <div class="relative">
+            <input type="text" id="optionPickerSearchInput" oninput="UI.filterOptionPicker(this.value)" placeholder="Cari pilihan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+        </div>
+
+        <!-- Scrollable Option Items List -->
+        <div id="optionPickerList" class="p-4 sm:p-5 overflow-y-auto space-y-2.5 max-h-[60vh] scroll-smooth">
+          <!-- Injected dynamically -->
+        </div>
+
+        <!-- Footer Action (Tutup / Batal) -->
+        <div class="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+            <span>Ketuk salah satu pilihan untuk memilih</span>
+          </span>
+          <button type="button" onclick="UI.closeOptionPicker()" class="py-2 px-3.5 bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl active:scale-95 transition cursor-pointer">
+            Tutup
+          </button>
+        </div>
+
       </div>
     </div>
 
