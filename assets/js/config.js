@@ -143,16 +143,16 @@ const CONFIG = {
   REQUEST_TIMEOUT: 20000,
   REALTIME_SYNC_INTERVAL: 15000,
 
-  // LocalStorage Cache Key (v11 - Sinkronisasi Murni Database UserPIC & Target Email Per-Cabang)
+  // LocalStorage Cache Key (v12 - Sinkronisasi Murni Database UserPIC & Target Email Per-Cabang)
   CACHE_KEYS: {
     AUTH_SESSION: 'daihatsu_auth_session_v10',
     INVENTORY: 'daihatsu_inventory_cache_v8',
     HISTORY: 'daihatsu_history_cache_v8',
     KPI: 'daihatsu_kpi_cache_v8',
-    PROFILE: 'daihatsu_profile_cache_v11',
-    AUTOMATION: 'daihatsu_automation_cache_v11',
-    BRANCH_EMAILS: 'daihatsu_branch_emails_v11',
-    REPORT_LOGS: 'daihatsu_report_logs_v11',
+    PROFILE: 'daihatsu_profile_cache_v12',
+    AUTOMATION: 'daihatsu_automation_cache_v12',
+    BRANCH_EMAILS: 'daihatsu_branch_emails_v12',
+    REPORT_LOGS: 'daihatsu_report_logs_v12',
     API_TOKEN: 'daihatsu_api_secret_token',
     DRIVE_FOLDER_ID: 'daihatsu_drive_folder_id',
     DIRECT_URL: 'daihatsu_direct_appscript_url'

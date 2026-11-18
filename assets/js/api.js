@@ -188,7 +188,7 @@ const ApiService = {
             return url;
           };
 
-          AppState.historyData = payload.history.map(item => {
+          const rawHistoryList = payload.history.map(item => {
             let d = null;
             let m = null;
             let y = null;

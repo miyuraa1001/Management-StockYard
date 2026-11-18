@@ -557,8 +557,14 @@ const AppState = {
         return s.includes('nabila38148') || s.includes('andikaintan4') || s.includes('nabilatria044');
       };
 
-      if (hasFakeEmail(this.automationConfig.email)) {
-        this.automationConfig.email = 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id';
+      if (this.automationConfig) {
+        if (Array.isArray(this.automationConfig.emails)) {
+          this.automationConfig.emails = this.automationConfig.emails.filter(e => !hasFakeEmail(e));
+        }
+        if (!this.automationConfig.email || hasFakeEmail(this.automationConfig.email)) {
+          this.automationConfig.email = 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id';
+          this.automationConfig.emails = this.automationConfig.email.split(/[,;\n\s]+/).map(e => e.trim());
+        }
       }
 
       if (this.branchEmails) {
@@ -573,6 +579,9 @@ const AppState = {
             }
           }
         });
+        if (!this.branchEmails['DSO LAMPUNG']) {
+          this.branchEmails['DSO LAMPUNG'] = 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id';
+        }
       }
 
       const cachedReportLogs = localStorage.getItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8');
