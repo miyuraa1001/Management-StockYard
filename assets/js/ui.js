@@ -67,7 +67,13 @@ const UI = {
         this.stopHeroAutoScroll();
       }
     }
-    if (target === 'inventory') this.renderInventoryList();
+    if (target === 'inventory') {
+      if (this._inventoryViewMode === 'branches') {
+        this.renderInventoryBranchesView();
+      } else {
+        this.renderInventoryList();
+      }
+    }
     if (target === 'history') this.renderHistoryList();
     if (target === 'settings') {
       if (typeof this.checkCloudHealth === 'function') {
@@ -548,6 +554,18 @@ const UI = {
       if (badge) badge.textContent = chipCounts[key];
     });
 
+    // Update Live Radar In-Transit Badge pada tab Sebaran Cabang
+    const inTransit = AppState.getInTransitUnits ? AppState.getInTransitUnits() : [];
+    const tabBadge = document.getElementById('invTransitBadge');
+    if (tabBadge) {
+      if (inTransit.length > 0) {
+        tabBadge.textContent = `${inTransit.length} OTW`;
+        tabBadge.classList.remove('hidden');
+      } else {
+        tabBadge.classList.add('hidden');
+      }
+    }
+
     // Filter berdasarkan chip status & pencarian kata kunci
     const filtered = catalogWithStock.filter(entry => {
       let matchesStatus = true;
@@ -704,6 +722,345 @@ const UI = {
 
     if (typeof this.refreshScrollReveal === 'function') {
       this.refreshScrollReveal();
+    }
+  },
+
+
+  // =========================================================================
+  // UNIVERSAL MULTI-BRANCH INVENTORY & IN-TRANSIT RADAR OKK
+  // =========================================================================
+  _inventoryViewMode: 'catalog',
+  _branchUnitsFilter: 'all',
+
+  setInventoryViewMode(mode) {
+    this._inventoryViewMode = mode;
+    const catalogView = document.getElementById('inventoryCatalogView');
+    const branchesView = document.getElementById('inventoryBranchesView');
+    const tabCat = document.getElementById('invTabCatalogBtn');
+    const tabBranch = document.getElementById('invTabBranchesBtn');
+
+    if (mode === 'branches') {
+      if (catalogView) catalogView.classList.add('hidden');
+      if (branchesView) branchesView.classList.remove('hidden');
+      if (tabCat) {
+        tabCat.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition cursor-pointer flex items-center justify-center gap-1.5';
+      }
+      if (tabBranch) {
+        tabBranch.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-2';
+      }
+      this.renderInventoryBranchesView();
+    } else {
+      if (catalogView) catalogView.classList.remove('hidden');
+      if (branchesView) branchesView.classList.add('hidden');
+      if (tabCat) {
+        tabCat.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5';
+      }
+      if (tabBranch) {
+        tabBranch.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition cursor-pointer flex items-center justify-center gap-2';
+      }
+      this.renderInventoryList();
+    }
+  },
+
+  filterBranchActiveUnits(branchCode) {
+    this._branchUnitsFilter = branchCode || 'all';
+    this.renderInventoryBranchesView();
+    const tableEl = document.getElementById('invActiveUnitsContainer');
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  },
+
+  renderInventoryBranchesView() {
+    if (typeof AppState === 'undefined' || !AppState.getInTransitUnits) return;
+
+    const inTransit = AppState.getInTransitUnits() || [];
+    const multiBranch = AppState.getMultiBranchStockSummary() || { branches: [], totalActiveStock: 0, totalInTransit: 0 };
+    const currentBranchFilter = this._branchUnitsFilter || 'all';
+
+    // 1. Update Tab Transit Badge
+    const tabBadge = document.getElementById('invTransitBadge');
+    if (tabBadge) {
+      if (inTransit.length > 0) {
+        tabBadge.textContent = `${inTransit.length} OTW`;
+        tabBadge.classList.remove('hidden');
+      } else {
+        tabBadge.classList.add('hidden');
+      }
+    }
+
+    // 2. Render Container Radar In-Transit OKK
+    const radarContainer = document.getElementById('invTransitRadarContainer');
+    if (radarContainer) {
+      if (inTransit.length === 0) {
+        radarContainer.innerHTML = `
+          <div class="bg-white/95 rounded-[24px] p-5 border border-white shadow-saas-card text-center space-y-2.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-2xs">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">Radar Antar-Cabang Bersih (0 Unit In-Transit)</h3>
+              <p class="text-xs text-slate-400 max-w-md mx-auto mt-0.5">Semua unit mutasi antar-cabang (OKK) telah tiba dan terverifikasi aman di pool masing-masing. Tidak ada pengiriman aktif di jalan saat ini.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        radarContainer.innerHTML = `
+          <div class="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 rounded-[24px] p-4 sm:p-5 border border-amber-300/90 shadow-saas-card space-y-3.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-amber-200/70">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/30 flex-shrink-0 animate-pulse">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Radar Unit Dalam Pengiriman (In-Transit OKK)</h3>
+                    <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-amber-500 text-white shadow-2xs animate-pulse">${inTransit.length} UNIT AKTIF</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Kendaraan telah dikeluarkan dari cabang asal dan sedang bergerak menuju cabang penerima.</p>
+                </div>
+              </div>
+              <div class="text-[11px] font-extrabold text-amber-900 bg-amber-100/90 px-3 py-1.5 rounded-xl border border-amber-300 self-start sm:self-auto shadow-2xs">
+                Otomatis Pindah Pool saat Scan Masuk
+              </div>
+            </div>
+
+            <!-- List Card Unit In-Transit -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+              ${inTransit.map(item => `
+                <div class="bg-white rounded-2xl p-4 border border-amber-200/90 shadow-sm space-y-3">
+                  <!-- Header: Model, Warna, & VIN -->
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate">${item.model}</h4>
+                        ${item.color && item.color !== '-' ? `
+                          <span class="text-[9.5px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 truncate">${item.color}</span>
+                        ` : ''}
+                      </div>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="text-[10.5px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">VIN: ${item.vin}</span>
+                        ${item.engine && item.engine !== '-' ? `<span class="text-[10.5px] font-mono font-semibold text-slate-500">ENG: ${item.engine}</span>` : ''}
+                      </div>
+                    </div>
+                    <span class="px-2 py-1 rounded-lg text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 whitespace-nowrap flex-shrink-0">
+                      IN-TRANSIT
+                    </span>
+                  </div>
+
+                  <!-- Visual Route: Cabang Asal -> Cabang Tujuan -->
+                  <div class="bg-gradient-to-r from-slate-50 via-amber-50/50 to-slate-50 p-2.5 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-800">
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                      <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 text-[10px] font-black">
+                        ${(item.originBranch.match(/D66[0-4]/i)?.[0] || 'ASAL').toUpperCase()}
+                      </div>
+                      <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-slate-400 block uppercase leading-none">Dari Cabang</span>
+                        <span class="truncate block text-[11px] font-extrabold text-slate-800">${item.originBranch}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-center px-2 flex-shrink-0">
+                      <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest animate-pulse">MENUJU</span>
+                      <div class="flex items-center text-amber-500">
+                        <span class="h-0.5 w-6 sm:w-10 bg-amber-400"></span>
+                        <svg class="w-4 h-4 -ml-1 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1 justify-end text-right">
+                      <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-amber-700 block uppercase leading-none">Tujuan</span>
+                        <span class="truncate block text-[11px] font-extrabold text-amber-950">${item.destinationBranch}</span>
+                      </div>
+                      <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 text-[10px] font-black">
+                        ${(item.destinationBranch.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Departure Details & Thumbnails -->
+                  <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
+                    <div class="space-y-0.5">
+                      <div class="text-slate-500">
+                        Berangkat: <strong class="text-slate-800">${item.departedAt}</strong>
+                      </div>
+                      <div class="text-slate-500">
+                        Petugas Pengirim: <strong class="text-slate-800">${item.officerName}</strong>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                      ${item.unitPhoto ? `
+                        <div onclick="openImagePreviewModal('${item.unitPhoto}')" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition flex-shrink-0" title="Lihat Foto Unit">
+                          <img src="${item.unitPhoto}" alt="Unit" class="w-full h-full object-cover">
+                        </div>
+                      ` : ''}
+                      ${item.docPhoto ? `
+                        <div onclick="openImagePreviewModal('${item.docPhoto}')" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-amber-400 transition flex-shrink-0" title="Lihat Foto Dokumen OKK">
+                          <img src="${item.docPhoto}" alt="OKK" class="w-full h-full object-cover">
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <!-- Guide Note for Destination Branch -->
+                  <div class="bg-blue-50/70 p-2 rounded-xl text-[10px] font-medium text-blue-900 border border-blue-200/80 flex items-start gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Petugas <strong>${item.destinationBranch}</strong> cukup scan unit ini saat tiba dan pilih <strong>Unit Masuk (Dokumen OKK)</strong> untuk otomatis memindahkan pool.</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // 3. Render 5 Cabang Stock Summary Cards
+    const branchesGrid = document.getElementById('invBranchesGrid');
+    if (branchesGrid) {
+      branchesGrid.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">Sebaran Stok Fisik 5 Cabang DSO Lampung</h3>
+              <p class="text-[10.5px] text-slate-400 font-semibold">Total Unit Aktif di Seluruh Cabang: <strong class="text-slate-800">${multiBranch.totalActiveStock} Unit</strong></p>
+            </div>
+            ${currentBranchFilter !== 'all' ? `
+              <button type="button" onclick="UI.filterBranchActiveUnits('all')" class="text-[10.5px] font-extrabold text-blue-600 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 cursor-pointer transition">
+                Reset Filter Cabang ×
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
+            ${multiBranch.branches.map(b => {
+              const isSelected = currentBranchFilter === b.code;
+              return `
+                <div onclick="UI.filterBranchActiveUnits('${b.code}')" class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-white'} shadow-saas-card hover:border-blue-300 transition cursor-pointer flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[9.5px] font-black px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'} border border-slate-200">
+                        ${b.code}
+                      </span>
+                      <span class="text-[9px] font-semibold text-slate-400 truncate max-w-[80px]">${b.type}</span>
+                    </div>
+                    <h4 class="text-xs font-black text-slate-900 truncate" title="${b.name}">${b.shortName}</h4>
+                  </div>
+
+                  <div class="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
+                    <div>
+                      <span class="text-xl sm:text-2xl font-black ${b.stockCount > 0 ? 'text-blue-600' : 'text-slate-400'}">${b.stockCount}</span>
+                      <span class="text-[10px] font-bold text-slate-400 ml-1">Unit</span>
+                    </div>
+                    <span class="text-[10px] font-bold ${isSelected ? 'text-blue-700 underline' : 'text-slate-500'}">
+                      ${isSelected ? 'Aktif' : 'Pilih'} →
+                    </span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. Render Active Units Table per Branch
+    const activeUnitsContainer = document.getElementById('invActiveUnitsContainer');
+    if (activeUnitsContainer) {
+      const activeUnits = AppState.getActiveUnitsList(currentBranchFilter) || [];
+      const branchLabel = currentBranchFilter === 'all' 
+        ? 'Seluruh 5 Cabang' 
+        : (multiBranch.branches.find(b => b.code === currentBranchFilter)?.name || currentBranchFilter);
+
+      activeUnitsContainer.innerHTML = `
+        <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight">Daftar Kendaraan Aktif di Pool Yard</h3>
+                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-50 text-blue-700 border border-blue-200">${activeUnits.length} Unit</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Filter aktif: <strong class="text-slate-700">${branchLabel}</strong></p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <select onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
+                <option value="all" ${currentBranchFilter === 'all' ? 'selected' : ''}>Semua Cabang (5 Cabang)</option>
+                <option value="D660" ${currentBranchFilter === 'D660' ? 'selected' : ''}>D660 - Ahmad Yani</option>
+                <option value="D661" ${currentBranchFilter === 'D661' ? 'selected' : ''}>D661 - Soekarno Hatta</option>
+                <option value="D662" ${currentBranchFilter === 'D662' ? 'selected' : ''}>D662 - Bandar Jaya</option>
+                <option value="D663" ${currentBranchFilter === 'D663' ? 'selected' : ''}>D663 - Lampung Utara</option>
+                <option value="D664" ${currentBranchFilter === 'D664' ? 'selected' : ''}>D664 - Lampung Timur</option>
+              </select>
+            </div>
+          </div>
+
+          ${activeUnits.length === 0 ? `
+            <div class="text-center py-8 text-slate-400 text-xs">
+              Tidak ada unit mobil fisik yang tercatat aktif parkir di cabang ini saat ini.
+            </div>
+          ` : `
+            <div class="overflow-x-auto hide-scrollbar">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/80">
+                    <th class="py-2.5 px-3 rounded-l-xl">Kendaraan</th>
+                    <th class="py-2.5 px-3">No. Rangka (VIN) & Mesin</th>
+                    <th class="py-2.5 px-3">Cabang Lokasi</th>
+                    <th class="py-2.5 px-3">Waktu Masuk</th>
+                    <th class="py-2.5 px-3">Dokumen</th>
+                    <th class="py-2.5 px-3">Petugas</th>
+                    <th class="py-2.5 px-3 text-center rounded-r-xl">Foto</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${activeUnits.map(unit => `
+                    <tr class="hover:bg-slate-50/70 transition">
+                      <td class="py-2.5 px-3">
+                        <div class="font-extrabold text-slate-900">${unit.model}</div>
+                        ${unit.color && unit.color !== '-' ? `
+                          <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 inline-block mt-0.5">${unit.color}</span>
+                        ` : ''}
+                      </td>
+                      <td class="py-2.5 px-3">
+                        <div class="font-mono font-bold text-slate-800 text-[11px]">${unit.vin}</div>
+                        ${unit.engine && unit.engine !== '-' ? `<div class="font-mono text-[10px] text-slate-400">ENG: ${unit.engine}</div>` : ''}
+                      </td>
+                      <td class="py-2.5 px-3">
+                        <span class="font-extrabold text-slate-800 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200 text-[10.5px]">
+                          ${unit.branch}
+                        </span>
+                      </td>
+                      <td class="py-2.5 px-3 text-[11px] text-slate-600">
+                        ${unit.arrivedAt}
+                      </td>
+                      <td class="py-2.5 px-3">
+                        <span class="font-black text-[9.5px] px-2 py-0.5 rounded-md ${unit.docType === 'OKK' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                          ${unit.docType}
+                        </span>
+                      </td>
+                      <td class="py-2.5 px-3 text-[11px] text-slate-700 font-medium">
+                        ${unit.officerName || unit.pic}
+                      </td>
+                      <td class="py-2.5 px-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                          ${unit.unitPhoto ? `
+                            <button type="button" onclick="openImagePreviewModal('${unit.unitPhoto}')" class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition" title="Foto Unit">
+                              <img src="${unit.unitPhoto}" alt="Foto" class="w-full h-full object-cover">
+                            </button>
+                          ` : '<span class="text-slate-300">-</span>'}
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
     }
   },
 
@@ -4442,6 +4799,24 @@ const UI = {
         ]
       };
     }
+    if (type === 'destinationBranch') {
+      const currentVal = (document.getElementById('inputDestinationBranch')?.value || 'D661 - Soekarno Hatta').trim();
+      return {
+        title: 'Pilih Cabang Tujuan Pengiriman',
+        subtitle: 'Cabang DSO Lampung penerima unit mutasi (OKK)',
+        iconBg: 'bg-amber-50 text-amber-600',
+        iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>',
+        hasSearch: false,
+        currentValue: currentVal,
+        options: [
+          { value: 'D660 - Ahmad Yani', title: 'D660 - Ahmad Yani', subtitle: 'Bandar Lampung Pusat (Main Showroom & Office)', badge: 'D660', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
+          { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
+          { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
+          { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
+          { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
+        ]
+      };
+    }
 
     if (type === 'profileBranch') {
       const currentVal = (document.getElementById('inputProfileBranch')?.value || 'Sentra Lampung • Astra Daihatsu DSO Lampung').trim();
@@ -4702,9 +5077,19 @@ const UI = {
           ? 'text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200'
           : 'text-[9px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200';
       }
+      if (typeof window.onMutationDocTypeChanged === 'function') {
+        window.onMutationDocTypeChanged();
+      }
       if (typeof window.validateMutationFormDuplication === 'function') {
         window.validateMutationFormDuplication();
       }
+    } else if (type === 'destinationBranch') {
+      const el = document.getElementById('inputDestinationBranch');
+      if (el) el.value = value;
+      const triggerText = document.getElementById('triggerDestinationBranchText');
+      if (triggerText) triggerText.textContent = label || value;
+      const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
+      if (triggerBadge) triggerBadge.textContent = (value.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
     } else if (type === 'carModel') {
       const el = document.getElementById('inputCarModel');
       if (el) el.value = value;
@@ -4768,6 +5153,16 @@ const UI = {
   },
 
   syncAllFormTriggers() {
+    // 0. Destination Branch
+    const destEl = document.getElementById('inputDestinationBranch');
+    if (destEl) {
+      const destVal = destEl.value || 'D661 - Soekarno Hatta';
+      const triggerText = document.getElementById('triggerDestinationBranchText');
+      if (triggerText) triggerText.textContent = destVal;
+      const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
+      if (triggerBadge) triggerBadge.textContent = (destVal.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+    }
+
     // 1. Doc Type
     const docEl = document.getElementById('inputMutationDocType');
     if (docEl) {
@@ -8220,6 +8615,7 @@ const UI = {
 // Global bridging functions untuk kompatibilitas HTML
 window.UI = UI;
 window.switchTab = (tab) => UI.switchTab(tab);
+window.setInventoryViewMode = (mode) => UI.setInventoryViewMode(mode);
 window.filterInventory = () => UI.filterInventory();
 window.clearInventorySearch = () => UI.clearInventorySearch();
 window.openEditProfilePage = () => UI.openEditProfilePage();

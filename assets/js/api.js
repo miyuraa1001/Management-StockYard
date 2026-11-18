@@ -671,6 +671,7 @@ const ApiService = {
     try {
       // Backend Google Apps Script resmi menggunakan action 'recordMutation'
       const defaultBranch = mutationRecord.noBa || 'D660 - Ahmad Yani';
+      const destBranch = mutationRecord.destinationBranch || mutationRecord.destination || mutationRecord.cabangTujuan || '';
       const payload = { 
         ...mutationRecord,
         docType: mutationRecord.docType || 'SPPDC',
@@ -678,7 +679,10 @@ const ApiService = {
         noBa: defaultBranch,
         no_ba: defaultBranch,
         cabang: defaultBranch,
-        branch: defaultBranch
+        branch: defaultBranch,
+        destination: destBranch,
+        destinationBranch: destBranch,
+        cabangTujuan: destBranch
       };
       // Kirim satu kali request resmi (mencegah duplikasi ganda di server Apps Script)
       return await this.request('recordMutation', 'POST', payload);

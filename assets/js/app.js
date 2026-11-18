@@ -190,9 +190,12 @@ const App = {
     const notes = (document.getElementById('inputKeterangan')?.value || '').trim();
     const hasUnitPhoto = !!AppState.uploadedUnitPhotoUrl;
     const hasDocPhoto = !!AppState.uploadedDocPhotoUrl;
+    const isOkkExit = mutationType === 'Unit Keluar' && docType === 'OKK';
+    const destBranchInput = (document.getElementById('inputDestinationBranch')?.value || '').trim();
+    const destinationBranch = isOkkExit ? (destBranchInput || 'D661 - Soekarno Hatta') : '-';
 
-    // Strict validation: wajib 11 kolom terisi lengkap (tidak boleh ada yang kosong)
-    if (!vin || !engine || !mutationType || !model || !carColor || !officerName || !noBa || !docType || !hasUnitPhoto || !hasDocPhoto || !notes) {
+    // Strict validation: wajib kolom terisi lengkap (tidak boleh ada yang kosong)
+    if (!vin || !engine || !mutationType || !model || !carColor || !officerName || !noBa || !docType || !hasUnitPhoto || !hasDocPhoto || !notes || (isOkkExit && !destinationBranch)) {
       let missingFields = [];
       if (!vin) missingFields.push('Nomor VIN');
       if (!engine) missingFields.push('Nomor Mesin');
@@ -202,10 +205,11 @@ const App = {
       if (!officerName) missingFields.push('Nama Petugas Lapangan');
       if (!noBa) missingFields.push('Cabang');
       if (!docType) missingFields.push('Jenis Dokumen');
+      if (isOkkExit && !destinationBranch) missingFields.push('Cabang Tujuan');
       if (!hasUnitPhoto) missingFields.push('Foto Fisik Unit');
       if (!hasDocPhoto) missingFields.push('Foto Dokumen');
       if (!notes) missingFields.push('Catatan Kondisi');
-      UI.showToast(`⚠️ Lengkapi seluruh 11 kolom formulir & foto! Kurang: ${missingFields.slice(0, 3).join(', ')}${missingFields.length > 3 ? '...' : ''}`, 4000);
+      UI.showToast(`⚠️ Lengkapi seluruh kolom formulir & foto! Kurang: ${missingFields.slice(0, 3).join(', ')}${missingFields.length > 3 ? '...' : ''}`, 4000);
       this.resetSubmitMutationButton();
       return;
     }
@@ -289,6 +293,9 @@ const App = {
       unitPhoto: unitImg,
       docPhoto: docImg,
       docType: docType,
+      destinationBranch: destinationBranch,
+      destination: destinationBranch,
+      cabangTujuan: destinationBranch,
       targetEmail: (AppState.getBranchTargetEmails(noBa) || []).join(', ')
     };
 
@@ -344,6 +351,8 @@ const App = {
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');
     if (noBaEl) noBaEl.value = 'D660 - Ahmad Yani';
+    const destBranchEl = document.getElementById('inputDestinationBranch');
+    if (destBranchEl) destBranchEl.value = 'D661 - Soekarno Hatta';
     const docTypeEl = document.getElementById('inputMutationDocType');
     if (docTypeEl) docTypeEl.value = 'SPPDC';
     if (typeof window.onMutationDocTypeChanged === 'function') {
@@ -366,6 +375,9 @@ const App = {
     UI.updateDashboardKpis();
     UI.renderDashboardActivities();
     UI.renderInventoryList();
+    if (typeof UI.renderInventoryBranchesView === 'function') {
+      UI.renderInventoryBranchesView();
+    }
     UI.renderHistoryList();
 
     setTimeout(() => {
@@ -551,7 +563,10 @@ window.checkMutationFormCompleteness = function() {
     if (alertContainer) alertContainer.classList.add('hidden');
   }
 
-  // 2. Evaluasi 11 Kolom Wajib
+  // 2. Evaluasi Kolom Wajib
+  const isOkkExit = mutationType === 'Unit Keluar' && docType === 'OKK';
+  const destBranch = (document.getElementById('inputDestinationBranch')?.value || '').trim();
+
   const missing = [];
   if (!cleanVin) missing.push('Nomor VIN');
   if (!cleanEngine) missing.push('Nomor Mesin');
@@ -561,10 +576,12 @@ window.checkMutationFormCompleteness = function() {
   if (!officerName) missing.push('Nama Petugas Lapangan');
   if (!noBa) missing.push('Cabang');
   if (!docType) missing.push('Jenis Dokumen');
+  if (isOkkExit && !destBranch) missing.push('Cabang Tujuan');
   if (!hasUnitPhoto) missing.push('Foto Fisik Unit');
   if (!hasDocPhoto) missing.push('Foto Dokumen');
   if (!notes) missing.push('Catatan Kondisi');
 
+  const totalRequired = isOkkExit ? 12 : 11;
   const isFormComplete = missing.length === 0;
 
   if (!submitBtn) return isFormComplete && isCycleValid;
@@ -585,19 +602,39 @@ window.checkMutationFormCompleteness = function() {
       if (missing.length === 1) {
         submitText.textContent = `Isi: ${missing[0]}`;
       } else {
-        submitText.textContent = `Lengkapi Form (${11 - missing.length}/11 Terisi)`;
+        submitText.textContent = `Lengkapi Form (${totalRequired - missing.length}/${totalRequired} Terisi)`;
       }
     }
     return false;
   }
 
-  // Jika SEMUA 11 KOLOM terisi LENGKAP dan lolos validasi siklus mutasi: Aktifkan tombol
+  // Jika SEMUA KOLOM terisi LENGKAP dan lolos validasi siklus mutasi: Aktifkan tombol
   submitBtn.disabled = false;
   submitBtn.className = 'w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-98 transition cursor-pointer';
   if (submitText) {
     submitText.textContent = mutationType === 'Unit Masuk' ? 'Simpan & Verifikasi Masuk' : 'Simpan & Verifikasi Keluar';
   }
   return true;
+};
+
+/**
+ * Handler reaktif ketika jenis dokumen atau jenis mutasi berubah:
+ * Menampilkan / menyembunyikan input Cabang Tujuan Pengiriman khusus Unit Keluar + OKK
+ */
+window.onMutationDocTypeChanged = function() {
+  const docType = (document.getElementById('inputMutationDocType')?.value || '').trim();
+  const mutationType = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
+  const boxDest = document.getElementById('boxDestinationBranch');
+
+  if (mutationType === 'Unit Keluar' && docType === 'OKK') {
+    if (boxDest) boxDest.classList.remove('hidden');
+  } else {
+    if (boxDest) boxDest.classList.add('hidden');
+  }
+
+  if (typeof window.checkMutationFormCompleteness === 'function') {
+    window.checkMutationFormCompleteness();
+  }
 };
 
 // Alias kompatibilitas

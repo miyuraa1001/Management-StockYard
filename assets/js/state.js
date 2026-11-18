@@ -346,6 +346,7 @@ const AppState = {
         officerName: latest.officerName || '',
         pic: latest.pic || '',
         branch: latest.noBa || latest.branch || latest.location || '',
+        destinationBranch: latest.destinationBranch || latest.destination || latest.cabangTujuan || '-',
         vin: latest.vin || cleanVin,
         engine: latest.engine || cleanEngine,
         docType: latest.docType || 'SPPDC'
@@ -460,6 +461,155 @@ const AppState = {
    */
   isVinDuplicate(vin, engine) {
     return this.isUnitCurrentlyInYard(vin, engine);
+  },
+
+  /**
+   * Mengambil daftar kendaraan yang saat ini sedang dalam perjalanan (In-Transit OKK).
+   * Kondisi: Transaksi terakhir dari VIN/Mesin adalah 'Unit Keluar' dengan dokumen 'OKK'.
+   * Begitu cabang penerima men-scan 'Unit Masuk' dengan dokumen 'OKK', status terakhirnya
+   * otomatis menjadi 'Unit Masuk' dan unit secara alami keluar dari radar in-transit!
+   */
+  getInTransitUnits() {
+    const latestMap = new Map();
+    const history = this.historyData || [];
+
+    // Iterasi dari awal ke akhir (historyData terurut dari terbaru ke terlama)
+    for (let i = 0; i < history.length; i++) {
+      const item = history[i];
+      if (!item) continue;
+      const key = String(item.vin || item.chassis || item.engine || '').trim().toUpperCase();
+      if (!key || key === '-') continue;
+      if (!latestMap.has(key)) {
+        latestMap.set(key, item);
+      }
+    }
+
+    const inTransit = [];
+    for (const [key, item] of latestMap.entries()) {
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const docTypeStr = String(item.docType || '').trim().toUpperCase();
+      const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
+      const isOkk = docTypeStr.includes('OKK');
+
+      if (isKeluar && isOkk) {
+        const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
+        const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
+
+        inTransit.push({
+          id: item.id || `TRX-${key}`,
+          vin: item.vin || key,
+          engine: item.engine || '-',
+          model: item.model || 'Unit Daihatsu',
+          color: item.color || item.warna || '-',
+          originBranch: originBranch,
+          destinationBranch: destBranch,
+          departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
+          date: item.date || item.fullDateStr || '',
+          time: item.time || '',
+          officerName: item.officerName || item.pic || 'Petugas Keamanan',
+          pic: item.pic || item.officerName || 'Security',
+          unitPhoto: item.unitPhoto || item.unitPhotoUrl || '',
+          docPhoto: item.docPhoto || item.docPhotoUrl || '',
+          notes: item.notes || '-'
+        });
+      }
+    }
+    return inTransit;
+  },
+
+  /**
+   * Menghitung dan mengambil ringkasan sebaran stok fisik terkini di 5 Cabang Astra Daihatsu DSO Lampung
+   */
+  getMultiBranchStockSummary() {
+    const branches = [
+      { code: 'D660', name: 'D660 - Ahmad Yani', shortName: 'Ahmad Yani (Pusat)', type: 'Main Showroom & Office' },
+      { code: 'D661', name: 'D661 - Soekarno Hatta', shortName: 'Soekarno Hatta (Bypass)', type: 'Sentra Pool & Workshop' },
+      { code: 'D662', name: 'D662 - Bandar Jaya', shortName: 'Bandar Jaya', type: 'Cabang Lampung Tengah' },
+      { code: 'D663', name: 'D663 - Lampung Utara', shortName: 'Lampung Utara', type: 'Cabang Kotabumi' },
+      { code: 'D664', name: 'D664 - Lampung Timur', shortName: 'Lampung Timur', type: 'Cabang Way Jepara' }
+    ];
+
+    const inTransit = this.getInTransitUnits();
+    const activeUnits = this.getActiveUnitsList('all');
+
+    const result = branches.map(b => {
+      const unitsInBranch = activeUnits.filter(u => this.isBranchMatch(u.branch, b.code));
+      return {
+        ...b,
+        stockCount: unitsInBranch.length,
+        units: unitsInBranch
+      };
+    });
+
+    const totalActiveStock = activeUnits.length;
+    const totalInTransit = inTransit.length;
+
+    return {
+      branches: result,
+      inTransit: inTransit,
+      totalActiveStock: totalActiveStock,
+      totalInTransit: totalInTransit
+    };
+  },
+
+  /**
+   * Mengambil daftar seluruh unit mobil fisik yang saat ini parkir / berstatus aktif di yard
+   */
+  getActiveUnitsList(branchCode = 'all') {
+    const latestMap = new Map();
+    const history = this.historyData || [];
+
+    for (let i = 0; i < history.length; i++) {
+      const item = history[i];
+      if (!item) continue;
+      const key = String(item.vin || item.chassis || item.engine || '').trim().toUpperCase();
+      if (!key || key === '-') continue;
+      if (!latestMap.has(key)) {
+        latestMap.set(key, item);
+      }
+    }
+
+    const activeList = [];
+    for (const [key, item] of latestMap.entries()) {
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const isMasuk = typeStr.includes('masuk') || typeStr === 'in';
+
+      if (isMasuk) {
+        const itemBranch = item.noBa || item.branch || item.location || 'D660 - Ahmad Yani';
+        if (branchCode !== 'all' && !this.isBranchMatch(itemBranch, branchCode)) {
+          continue;
+        }
+
+        activeList.push({
+          id: item.id || `ACT-${key}`,
+          vin: item.vin || key,
+          engine: item.engine || '-',
+          model: item.model || 'Unit Daihatsu',
+          color: item.color || item.warna || '-',
+          branch: itemBranch,
+          arrivedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
+          date: item.date || item.fullDateStr || '',
+          time: item.time || '',
+          docType: item.docType || 'SPPDC',
+          officerName: item.officerName || item.pic || 'Petugas Keamanan',
+          pic: item.pic || item.officerName || 'Security',
+          unitPhoto: item.unitPhoto || item.unitPhotoUrl || '',
+          docPhoto: item.docPhoto || item.docPhotoUrl || '',
+          notes: item.notes || '-'
+        });
+      }
+    }
+    return activeList;
+  },
+
+  /**
+   * Helper pencocokan cabang yang fleksibel
+   */
+  isBranchMatch(rawBranch, targetCode) {
+    if (!targetCode || targetCode === 'all') return true;
+    const str = String(rawBranch || '').toUpperCase();
+    const code = String(targetCode || '').toUpperCase();
+    return str.includes(code);
   },
 
   // Inisialisasi Cache dari LocalStorage jika ada
