@@ -385,15 +385,31 @@ const ScannerService = {
     }
     if (step2) step2.classList.add('hidden');
 
-    // Kosongkan nilai VIN & Engine sebelum pemindaian barcode
+    // Kosongkan nilai VIN, Engine, Warna Mobil, & Foto sebelum pemindaian barcode
     const scanVinEl = document.getElementById('scanVinInput');
     const scanEngineEl = document.getElementById('scanEngineInput');
     const inputVinEl = document.getElementById('inputVin');
     const inputEngineEl = document.getElementById('inputEngine');
+    const inputColorEl = document.getElementById('inputCarColor');
+    const inputOfficerEl = document.getElementById('inputOfficerName');
+    const inputKetEl = document.getElementById('inputKeterangan');
+
     if (scanVinEl) scanVinEl.value = '';
     if (scanEngineEl) scanEngineEl.value = '';
     if (inputVinEl) inputVinEl.value = '';
     if (inputEngineEl) inputEngineEl.value = '';
+    if (inputColorEl) inputColorEl.value = '';
+    if (inputKetEl) inputKetEl.value = '';
+    if (inputOfficerEl) {
+      inputOfficerEl.value = (typeof AppState !== 'undefined' && AppState.userProfile?.name) ? AppState.userProfile.name : '';
+    }
+
+    AppState.uploadedUnitPhotoUrl = null;
+    AppState.uploadedDocPhotoUrl = null;
+    if (typeof UI !== 'undefined' && typeof UI.removeImagePreview === 'function') {
+      UI.removeImagePreview('unitPhoto');
+      UI.removeImagePreview('docPhoto');
+    }
 
     // Pastikan pilihan cabang formulir mutasi sinkron dengan peran (Admin vs User Cabang)
     if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
@@ -1638,6 +1654,12 @@ const ScannerService = {
     // Selaraskan opsi dropdown cabang di formulir mutasi sesuai peran operator (Admin vs User Cabang)
     if (typeof UI !== 'undefined' && typeof UI.syncRoleBranchUI === 'function') {
       UI.syncRoleBranchUI();
+    }
+
+    // Pastikan warna mobil bersih dari autofill browser dan siap diisi
+    const colorInput = document.getElementById('inputCarColor');
+    if (colorInput && !colorInput.value.trim()) {
+      colorInput.value = '';
     }
 
     // Pastikan foto unit & foto dokumen selalu di-reset bersih (null) saat form Tahap 2 dibuka
