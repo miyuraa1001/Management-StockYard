@@ -4218,7 +4218,7 @@ const UI = {
 
     if (!item) {
       if (prevDot) prevDot.style.backgroundColor = '#94a3b8';
-      if (prevCategory) prevCategory.textContent = 'Tidak ada stok fisik pada periode ini';
+      if (prevCategory) prevCategory.textContent = 'Menunggu Data Unit';
       if (prevBadge) {
         prevBadge.textContent = '0%';
         prevBadge.style.backgroundColor = '#94a3b8';
@@ -4227,7 +4227,7 @@ const UI = {
         prevImg.src = 'assets/images/Inventory_Gran Max Pick Up.jpeg';
         prevImg.alt = 'Unit Daihatsu';
       }
-      if (prevModel) prevModel.textContent = 'Belum Ada Mutasi Unit';
+      if (prevModel) prevModel.textContent = 'Belum Ada Unit';
       if (prevBar) {
         prevBar.style.width = '0%';
         prevBar.style.backgroundColor = '#94a3b8';
@@ -4238,8 +4238,8 @@ const UI = {
       if (prevMasukBtn) prevMasukBtn.onclick = () => this.filterHistoryTab('in');
       if (prevKeluarBtn) prevKeluarBtn.onclick = () => this.filterHistoryTab('out');
       if (prevBtn) {
-        prevBtn.innerHTML = `<span>Tampilkan Seluruh Stok</span><svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
-        prevBtn.onclick = () => this.setDashboardQuickPeriod('all');
+        prevBtn.innerHTML = `<span>Lihat Stok Unit</span><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
+        prevBtn.onclick = () => this.switchTab('inventory');
       }
       return;
     }
