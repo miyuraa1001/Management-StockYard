@@ -7478,455 +7478,486 @@ const UI = {
    * Render daftar notifikasi laporan email yang rapi, modern, dan sinkron 100% dengan database HistoryMutasi
    */
   renderEmailNotifications() {
-    const container = document.getElementById('emailNotifListContainer');
-    if (!container) return;
-
-    let localLogs = [];
     try {
-      const stored = localStorage.getItem('daihatsu_email_notifications');
-      if (stored) localLogs = JSON.parse(stored);
-    } catch (e) {}
+      const container = document.getElementById('emailNotifListContainer');
+      if (!container) return;
 
-    const defaultEmail = AppState.automationConfig?.email || '';
-    const dbHistory = Array.isArray(AppState.historyData) ? AppState.historyData : [];
-
-    // 1. Masukkan mutasi dari database terlebih dahulu (database sebagai single source of truth)
-    const dbLogs = dbHistory.map((item, idx) => {
-      const isMasuk = (item.status === 'Unit Masuk' || item.type === 'Unit Masuk' || String(item.status || '').toLowerCase().includes('masuk'));
-      const mutationType = isMasuk ? 'Unit Masuk' : 'Unit Keluar';
-      const cleanTime = String(item.time || '').replace(/\s*WIB\s*/gi, '').trim();
-      const timeStr = cleanTime ? `${cleanTime} WIB` : '';
-      const formattedDate = item.fullDateStr || (item.date ? `${String(item.date).padStart(2, '0')}/${String(item.month || '').padStart(2, '0')}/${item.year || ''}` : '');
-      const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
-
-      const itemBranch = item.noBa || item.branch || item.location || '';
-      const bEmails = AppState.getBranchTargetEmails(itemBranch);
-      const computedTarget = item.targetEmail || (bEmails.length > 0 ? bEmails.join(', ') : defaultEmail);
-
-      return {
-        id: item.id || `db-${item.vin || idx}-${item.date || idx}`,
-        trxId: item.id || `TRX-${idx}`,
-        timestamp: timeDisplay,
-        targetEmail: computedTarget,
-        status: 'SUCCESS',
-        category: 'MUTATION',
-        mutationType: mutationType,
-        model: item.model || item.name || 'Daihatsu',
-        vin: item.vin || '-',
-        engine: item.engine || '-',
-        operator: item.operator || item.pic || 'Petugas Stockyard',
-        location: item.location || item.destination || '-',
-        noBa: itemBranch,
-        notes: item.notes || item.keterangan || '-',
-        read: true,
-        fromDatabase: true
-      };
-    });
-
-    // Helper Fungsi Format Tanggal Bersih (Cegah Raw Date Object 'Tue Nov 17 2026 GMT+0700')
-    const formatCleanDate = (raw) => {
-      if (!raw) return 'Hari Ini';
-      const str = String(raw).trim();
-      // Format DD/MM/YYYY sudah bersih
-      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(str)) return str;
+      let localLogs = [];
       try {
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) {
-          const dd = String(d.getDate()).padStart(2, '0');
-          const mm = String(d.getMonth() + 1).padStart(2, '0');
-          const yyyy = d.getFullYear();
-          return `${dd}/${mm}/${yyyy}`;
-        }
+        const stored = localStorage.getItem('daihatsu_email_notifications');
+        if (stored) localLogs = JSON.parse(stored);
       } catch (e) {}
-      return str.split('GMT')[0].replace(/\([^\)]*\)/g, '').trim();
-    };
 
-    const formatCleanTimestamp = (rawTs, fallbackDate) => {
-      if (!rawTs) return `${fallbackDate || 'Hari Ini'} • 08:00 WIB`;
-      const str = String(rawTs).trim();
-      if (str.includes('GMT') || str.includes('T')) {
+      const defaultEmail = AppState.automationConfig?.email || '';
+      const activeBranch = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && AppState.isAdmin())
+        ? 'DSO LAMPUNG'
+        : ((typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function') ? AppState.getUserBranchCode() : 'D660');
+      const branchEmails = (typeof AppState !== 'undefined' && typeof AppState.getBranchTargetEmails === 'function')
+        ? AppState.getBranchTargetEmails(activeBranch)
+        : [];
+      const targetEmailDisplay = (branchEmails && branchEmails.length > 0) ? branchEmails.join(', ') : (defaultEmail || 'Belum diatur');
+
+      const dbHistory = Array.isArray(AppState.historyData) ? AppState.historyData : [];
+
+      // 1. Masukkan mutasi dari database (single source of truth)
+      const dbLogs = dbHistory.map((item, idx) => {
+        const rawType = String(item.mutationType || item.type || item.jenisMutasi || item.status || '').toLowerCase();
+        const isKeluar = rawType.includes('keluar') || rawType.includes('out') || rawType.includes('exit');
+        const mutationType = isKeluar ? 'Unit Keluar' : 'Unit Masuk';
+
+        const cleanTime = String(item.time || '').replace(/\s*WIB\s*/gi, '').trim();
+        const timeStr = cleanTime ? `${cleanTime} WIB` : '';
+        const formattedDate = item.fullDateStr || (item.date ? `${String(item.date).padStart(2, '0')}/${String(item.month || '').padStart(2, '0')}/${item.year || ''}` : '');
+        const timeDisplay = [formattedDate, timeStr].filter(Boolean).join(' • ') || 'Tercatat di Database';
+
+        const itemBranch = item.noBa || item.branch || item.location || '';
+        const bEmails = (typeof AppState !== 'undefined' && typeof AppState.getBranchTargetEmails === 'function')
+          ? AppState.getBranchTargetEmails(itemBranch)
+          : [];
+        const computedTarget = item.targetEmail || (bEmails.length > 0 ? bEmails.join(', ') : defaultEmail);
+
+        return {
+          id: item.id || `db-${item.vin || idx}-${item.date || idx}`,
+          trxId: item.id || `TRX-${idx}`,
+          timestamp: timeDisplay,
+          targetEmail: computedTarget,
+          status: 'SUCCESS',
+          category: 'MUTATION',
+          mutationType: mutationType,
+          model: item.model || item.name || 'Daihatsu',
+          vin: item.vin || '-',
+          engine: item.engine || '-',
+          operator: item.operator || item.pic || 'Petugas Stockyard',
+          location: item.location || item.destination || '-',
+          noBa: itemBranch,
+          notes: item.notes || item.keterangan || '-',
+          read: true,
+          fromDatabase: true
+        };
+      });
+
+      // Helper Fungsi Format Tanggal Bersih
+      const formatCleanDate = (raw) => {
+        if (!raw) return 'Hari Ini';
+        const str = String(raw).trim();
+        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(str)) return str;
         try {
           const d = new Date(str);
           if (!isNaN(d.getTime())) {
             const dd = String(d.getDate()).padStart(2, '0');
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const yyyy = d.getFullYear();
-            const hh = String(d.getHours()).padStart(2, '0');
-            const min = String(d.getMinutes()).padStart(2, '0');
-            return `${dd}/${mm}/${yyyy} ${hh}:${min} WIB`;
+            return `${dd}/${mm}/${yyyy}`;
           }
         } catch (e) {}
-      }
-      return str;
-    };
-
-    // 2. Buat log laporan harian (DAILY_REPORT) dari database (tab ReportLogs) & sintesis cerdas per-tanggal
-    const rawReportLogs = (Array.isArray(AppState.reportLogs) && AppState.reportLogs.length > 0)
-      ? AppState.reportLogs
-      : [];
-
-    const dbReportLogs = rawReportLogs.map((r, idx) => {
-      const cleanDate = formatCleanDate(r.reportDate);
-      const timeDisplay = formatCleanTimestamp(r.timestamp, cleanDate);
-      return {
-        id: r.id || `rep-db-${cleanDate || idx}`,
-        trxId: r.id || `REP-${idx}`,
-        timestamp: timeDisplay,
-        targetEmail: r.targetEmail || defaultEmail,
-        status: r.status || 'SUCCESS',
-        category: 'DAILY_REPORT',
-        subject: `Rekapitulasi Mutasi Harian Stockyard — ${cleanDate}`,
-        message: r.message && !r.message.includes('GMT') 
-          ? r.message 
-          : `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
-        reportDate: cleanDate,
-        totalUnits: r.totalUnits,
-        masuk: r.masuk,
-        keluar: r.keluar,
-        attachmentsCount: r.attachmentsCount,
-        branch: r.branch || 'ALL',
-        read: true,
-        fromDatabase: true
+        return str.split('GMT')[0].replace(/\([^\)]*\)/g, '').trim();
       };
-    });
 
-    // Jika dbReportLogs masih kosong, sintesiskan riwayat laporan harian dari data History yang ada di database
-    if (dbReportLogs.length === 0 && dbHistory.length > 0) {
-      const dateMap = {};
-      dbHistory.forEach(h => {
-        let dStr = null;
-        if (h.date && h.month && h.year) {
-          dStr = `${String(h.date).padStart(2, '0')}/${String(h.month).padStart(2, '0')}/${h.year}`;
-        } else if (h.fullDateStr) {
-          dStr = String(h.fullDateStr).trim();
-        } else if (h.timestamp) {
+      const formatCleanTimestamp = (rawTs, fallbackDate) => {
+        if (!rawTs) return `${fallbackDate || 'Hari Ini'} • 08:00 WIB`;
+        const str = String(rawTs).trim();
+        if (str.includes('GMT') || str.includes('T')) {
           try {
-            const dt = new Date(h.timestamp);
-            if (!isNaN(dt.getTime())) {
-              dStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) {
+              const dd = String(d.getDate()).padStart(2, '0');
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const yyyy = d.getFullYear();
+              const hh = String(d.getHours()).padStart(2, '0');
+              const min = String(d.getMinutes()).padStart(2, '0');
+              return `${dd}/${mm}/${yyyy} ${hh}:${min} WIB`;
             }
-          } catch(e) {}
+          } catch (e) {}
         }
+        return str;
+      };
 
-        if (dStr) {
-          if (!dateMap[dStr]) dateMap[dStr] = { total: 0, masuk: 0, keluar: 0 };
-          dateMap[dStr].total++;
-          if (h.type === 'Unit Masuk' || h.status === 'Unit Masuk') dateMap[dStr].masuk++;
-          if (h.type === 'Unit Keluar' || h.status === 'Unit Keluar') dateMap[dStr].keluar++;
-        }
-      });
+      // 2. Buat log laporan harian (DAILY_REPORT) dari database (tab ReportLogs) & sintesis cerdas per-tanggal
+      const rawReportLogs = (Array.isArray(AppState.reportLogs) && AppState.reportLogs.length > 0)
+        ? AppState.reportLogs
+        : [];
 
-      Object.keys(dateMap).sort().reverse().forEach((dStr, idx) => {
-        const stats = dateMap[dStr];
-        const cleanId = String(dStr).replace(/[^a-zA-Z0-9]/g, '');
-        dbReportLogs.push({
-          id: `rep-auto-${cleanId}`,
-          trxId: `REP-${cleanId}`,
-          timestamp: `${dStr} • 08:00 WIB`,
-          targetEmail: defaultEmail,
-          status: 'SUCCESS',
+      const dbReportLogs = rawReportLogs.map((r, idx) => {
+        const cleanDate = formatCleanDate(r.reportDate);
+        const timeDisplay = formatCleanTimestamp(r.timestamp, cleanDate);
+        return {
+          id: r.id || `rep-db-${cleanDate || idx}`,
+          trxId: r.id || `REP-${idx}`,
+          timestamp: timeDisplay,
+          targetEmail: r.targetEmail || defaultEmail,
+          status: r.status || 'SUCCESS',
           category: 'DAILY_REPORT',
-          subject: `Rekapitulasi Mutasi Harian Stockyard — ${dStr}`,
-          message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi terkirim otomatis ke email target per cabang & Admin DSO. Berkas PDF & Excel tersinkronisasi.`,
-          reportDate: dStr,
-          totalUnits: stats.total,
-          masuk: stats.masuk,
-          keluar: stats.keluar,
-          attachmentsCount: 2,
-          branch: 'ALL',
-          fromDatabase: true,
-          read: true
-        });
-      });
-    }
-
-    // Gabungkan data database dengan log pengiriman lokal
-    const combinedMap = new Map();
-
-    // 1. Masukkan mutasi dari database
-    dbLogs.forEach((l, idx) => {
-      const key = (l.id && l.id !== 'MUT-TRX') ? l.id : `${l.vin}_${l.mutationType}_${l.timestamp}_${idx}`;
-      combinedMap.set(key, l);
-    });
-
-    // 2. Masukkan log laporan harian database
-    dbReportLogs.forEach(r => {
-      combinedMap.set(r.id, r);
-    });
-
-    // 3. Tambahkan/timpa dari log pengiriman lokal
-    localLogs.forEach(l => {
-      if (l.category === 'DAILY_REPORT') {
-        combinedMap.set(l.id || `local-rep-${Math.random()}`, {
-          ...l,
+          subject: `Rekapitulasi Mutasi Harian Stockyard — ${cleanDate}`,
+          message: r.message && !r.message.includes('GMT') 
+            ? r.message 
+            : `Laporan rekapitulasi mutasi harian kendaraan (${r.totalUnits || 0} Unit: ${r.masuk || 0} Masuk, ${r.keluar || 0} Keluar) berhasil diproses dan dikirimkan ke email resmi. Seluruh berkas PDF & Excel telah terlampir.`,
+          reportDate: cleanDate,
+          totalUnits: r.totalUnits,
+          masuk: r.masuk,
+          keluar: r.keluar,
+          attachmentsCount: r.attachmentsCount,
+          branch: r.branch || 'ALL',
+          read: true,
           fromDatabase: true
-        });
-      } else if (l.category === 'MUTATION' && l.vin) {
-        // Cari entri yang cocok berdasarkan VIN dan jenis mutasi
-        let matchedKey = null;
-        for (const [k, v] of combinedMap.entries()) {
-          if (v.vin === l.vin && v.mutationType === l.mutationType) {
-            matchedKey = k;
-            break;
-          }
-        }
+        };
+      });
 
-        if (matchedKey) {
-          const existing = combinedMap.get(matchedKey);
-          combinedMap.set(matchedKey, {
-            ...existing,
+      // Jika dbReportLogs masih kosong, sintesiskan riwayat laporan harian dari data History yang ada di database
+      if (dbReportLogs.length === 0 && dbHistory.length > 0) {
+        const dateMap = {};
+        dbHistory.forEach(h => {
+          let dStr = null;
+          if (h.date && h.month && h.year) {
+            dStr = `${String(h.date).padStart(2, '0')}/${String(h.month).padStart(2, '0')}/${h.year}`;
+          } else if (h.fullDateStr) {
+            dStr = String(h.fullDateStr).trim();
+          } else if (h.timestamp) {
+            try {
+              const dt = new Date(h.timestamp);
+              if (!isNaN(dt.getTime())) {
+                dStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+              }
+            } catch(e) {}
+          }
+
+          if (dStr) {
+            if (!dateMap[dStr]) dateMap[dStr] = { total: 0, masuk: 0, keluar: 0 };
+            dateMap[dStr].total++;
+            const rawHType = String(h.type || h.status || '').toLowerCase();
+            if (rawHType.includes('keluar')) dateMap[dStr].keluar++;
+            else dateMap[dStr].masuk++;
+          }
+        });
+
+        Object.keys(dateMap).sort().reverse().forEach((dStr, idx) => {
+          const stats = dateMap[dStr];
+          const cleanId = String(dStr).replace(/[^a-zA-Z0-9]/g, '');
+          dbReportLogs.push({
+            id: `rep-auto-${cleanId}`,
+            trxId: `REP-${cleanId}`,
+            timestamp: `${dStr} • 08:00 WIB`,
+            targetEmail: defaultEmail,
+            status: 'SUCCESS',
+            category: 'DAILY_REPORT',
+            subject: `Rekapitulasi Mutasi Harian Stockyard — ${dStr}`,
+            message: `Laporan rekapitulasi mutasi harian kendaraan (${stats.total} Unit: ${stats.masuk} Masuk, ${stats.keluar} Keluar) resmi terkirim otomatis ke email target per cabang & Admin DSO. Berkas PDF & Excel tersinkronisasi.`,
+            reportDate: dStr,
+            totalUnits: stats.total,
+            masuk: stats.masuk,
+            keluar: stats.keluar,
+            attachmentsCount: 2,
+            branch: 'ALL',
+            fromDatabase: true,
+            read: true
+          });
+        });
+      }
+
+      // Gabungkan data database dengan log pengiriman lokal
+      const combinedMap = new Map();
+
+      // 1. Masukkan mutasi dari database
+      dbLogs.forEach((l, idx) => {
+        const key = (l.id && l.id !== 'MUT-TRX') ? l.id : `${l.vin}_${l.mutationType}_${l.timestamp}_${idx}`;
+        combinedMap.set(key, l);
+      });
+
+      // 2. Masukkan log laporan harian database
+      dbReportLogs.forEach(r => {
+        combinedMap.set(r.id, r);
+      });
+
+      // 3. Tambahkan/timpa dari log pengiriman lokal
+      localLogs.forEach(l => {
+        if (l.category === 'DAILY_REPORT') {
+          combinedMap.set(l.id || `local-rep-${Math.random()}`, {
             ...l,
-            engine: l.engine || existing?.engine || '-',
-            operator: l.operator || existing?.operator || 'Petugas Stockyard',
             fromDatabase: true
           });
+        } else if (l.category === 'MUTATION' && l.vin) {
+          let matchedKey = null;
+          for (const [k, v] of combinedMap.entries()) {
+            if (v.vin === l.vin && v.mutationType === l.mutationType) {
+              matchedKey = k;
+              break;
+            }
+          }
+
+          if (matchedKey) {
+            const existing = combinedMap.get(matchedKey);
+            combinedMap.set(matchedKey, {
+              ...existing,
+              ...l,
+              engine: l.engine || existing?.engine || '-',
+              operator: l.operator || existing?.operator || 'Petugas Stockyard',
+              fromDatabase: true
+            });
+          } else {
+            combinedMap.set(l.id || `local-${Math.random()}`, l);
+          }
         } else {
           combinedMap.set(l.id || `local-${Math.random()}`, l);
         }
-      } else {
-        combinedMap.set(l.id || `local-${Math.random()}`, l);
-      }
-    });
-
-    // Filter berdasarkan role (User Cabang vs Admin DSO)
-    const isUserRole = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function') ? !AppState.isAdmin() : false;
-    const userBranchCode = (typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function') ? AppState.getUserBranchCode() : 'D660';
-
-    let allCombined = Array.from(combinedMap.values());
-
-    if (isUserRole) {
-      allCombined = allCombined.filter(item => {
-        if (item.category === 'MUTATION') {
-          const ba = (item.noBa || item.branch || item.location || '').toUpperCase();
-          return ba.includes(userBranchCode);
-        }
-        if (item.category === 'DAILY_REPORT') {
-          const b = String(item.branch || '').toUpperCase();
-          return b === 'ALL' || b.includes(userBranchCode);
-        }
-        return true;
       });
-    }
 
-    // Update Counter Badges di Tab Filter
-    const countAllEl = document.getElementById('notifCountAll');
-    const countMasukEl = document.getElementById('notifCountMasuk');
-    const countKeluarEl = document.getElementById('notifCountKeluar');
-    const countDailyEl = document.getElementById('notifCountDaily');
+      // Filter berdasarkan role (User Cabang vs Admin DSO)
+      const isUserRole = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function') ? !AppState.isAdmin() : false;
+      const userBranchCode = (typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function') ? AppState.getUserBranchCode() : 'D660';
 
-    const totalMasuk = allCombined.filter(l => l.mutationType === 'Unit Masuk').length;
-    const totalKeluar = allCombined.filter(l => l.mutationType === 'Unit Keluar').length;
-    const totalDaily = allCombined.filter(l => l.category === 'DAILY_REPORT').length;
+      let allCombined = Array.from(combinedMap.values());
 
-    if (countAllEl) countAllEl.textContent = allCombined.length;
-    if (countMasukEl) countMasukEl.textContent = totalMasuk;
-    if (countKeluarEl) countKeluarEl.textContent = totalKeluar;
-    if (countDailyEl) countDailyEl.textContent = totalDaily;
-
-    // Filter daftar sesuai tab aktif
-    const filter = this.emailNotifFilter || 'ALL';
-    let filteredLogs = allCombined;
-    if (filter === 'MASUK') {
-      filteredLogs = allCombined.filter(l => l.mutationType === 'Unit Masuk');
-    } else if (filter === 'KELUAR') {
-      filteredLogs = allCombined.filter(l => l.mutationType === 'Unit Keluar');
-    } else if (filter === 'MUTATION') {
-      filteredLogs = allCombined.filter(l => l.category === 'MUTATION');
-    } else if (filter === 'DAILY') {
-      filteredLogs = allCombined.filter(l => l.category === 'DAILY_REPORT');
-    }
-
-    if (!filteredLogs || filteredLogs.length === 0) {
-      let emptyMsg = `Target email aktif saat ini adalah <strong class="text-slate-800 font-mono">${targetEmail}</strong>. Setiap ada unit masuk atau keluar, mutasi database dan pengiriman email akan otomatis tercatat di sini secara realtime.`;
-      if (filter === 'MUTATION') emptyMsg = 'Belum ada data mutasi unit masuk atau keluar di database HistoryMutasi.';
-      else if (filter === 'DAILY') emptyMsg = 'Belum ada laporan harian yang dikirimkan. Tekan tombol "Kirim Laporan" di atas untuk memicu laporan.';
-
-      container.innerHTML = `
-        <div class="p-8 text-center text-slate-400 space-y-3 bg-slate-50/60 rounded-2xl border border-slate-200/60">
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center shadow-2xs">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          </div>
-          <div>
-            <h4 class="text-xs font-black text-slate-800">Belum Ada Riwayat ${filter === 'MUTATION' ? 'Mutasi Database' : (filter === 'DAILY' ? 'Laporan Harian' : 'Notifikasi')}</h4>
-            <p class="text-[11px] text-slate-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
-              ${emptyMsg}
-            </p>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    // Desain Card Notifikasi: Rapi, Modern, Tidak Membosankan, Mobile-Friendly
-    container.innerHTML = filteredLogs.map(item => {
-      const isSuccess = item.status === 'SUCCESS';
-      const isOffline = item.status === 'PENDING_OFFLINE';
-      const isMasuk = item.mutationType === 'Unit Masuk';
-      const isKeluar = item.mutationType === 'Unit Keluar';
-      const isDaily = item.category === 'DAILY_REPORT' || (!isMasuk && !isKeluar);
-
-      // Aksen card tepi kiri
-      let leftAccent = 'border-l-4 border-l-slate-300';
-      let typeBadge = '';
-
-      if (isDaily) {
-        leftAccent = 'border-l-4 border-l-blue-600 bg-white';
-        typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/80 uppercase">
-            <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Rekap Harian</span>
-          </span>
-        `;
-      } else if (isMasuk) {
-        leftAccent = 'border-l-4 border-l-emerald-500 bg-white';
-        typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 uppercase">
-            <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
-            <span>Unit Masuk</span>
-          </span>
-        `;
-      } else if (isKeluar) {
-        leftAccent = 'border-l-4 border-l-amber-500 bg-white';
-        typeBadge = `
-          <span class="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 uppercase">
-            <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-            <span>Unit Keluar</span>
-          </span>
-        `;
+      if (isUserRole) {
+        allCombined = allCombined.filter(item => {
+          if (item.category === 'MUTATION') {
+            const ba = (item.noBa || item.branch || item.location || '').toUpperCase();
+            return ba.includes(userBranchCode);
+          }
+          if (item.category === 'DAILY_REPORT') {
+            const b = String(item.branch || '').toUpperCase();
+            return b === 'ALL' || b.includes(userBranchCode);
+          }
+          return true;
+        });
       }
 
-      // Status Pengiriman / Offline Badge (Clean & Minimalist: Hanya tampil saat pending offline atau error)
-      let statusBadge = '';
-      if (isOffline) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><svg class="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Pending Sync</span></span>`;
-      } else if (!isSuccess && !item.fromDatabase) {
-        statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200"><svg class="w-2.5 h-2.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>Gagal</span></span>`;
+      // Update Counter Badges di Tab Filter
+      const countAllEl = document.getElementById('notifCountAll');
+      const countMasukEl = document.getElementById('notifCountMasuk');
+      const countKeluarEl = document.getElementById('notifCountKeluar');
+      const countDailyEl = document.getElementById('notifCountDaily');
+
+      const totalMasuk = allCombined.filter(l => l.category === 'MUTATION' && l.mutationType === 'Unit Masuk').length;
+      const totalKeluar = allCombined.filter(l => l.category === 'MUTATION' && l.mutationType === 'Unit Keluar').length;
+      const totalDaily = allCombined.filter(l => l.category === 'DAILY_REPORT').length;
+
+      if (countAllEl) countAllEl.textContent = allCombined.length;
+      if (countMasukEl) countMasukEl.textContent = totalMasuk;
+      if (countKeluarEl) countKeluarEl.textContent = totalKeluar;
+      if (countDailyEl) countDailyEl.textContent = totalDaily;
+
+      // Filter daftar sesuai tab aktif
+      const filter = this.emailNotifFilter || 'ALL';
+      let filteredLogs = allCombined;
+      if (filter === 'MASUK') {
+        filteredLogs = allCombined.filter(l => l.category === 'MUTATION' && l.mutationType === 'Unit Masuk');
+      } else if (filter === 'KELUAR') {
+        filteredLogs = allCombined.filter(l => l.category === 'MUTATION' && l.mutationType === 'Unit Keluar');
+      } else if (filter === 'DAILY') {
+        filteredLogs = allCombined.filter(l => l.category === 'DAILY_REPORT');
       }
 
-      // Unit info line
-      let unitDetailsHtml = '';
-      if (isDaily) {
-        unitDetailsHtml = `
-          <div class="space-y-1.5">
-            <div class="text-[11.5px] text-slate-700 leading-snug">
-              <span class="font-extrabold text-slate-900 block text-[12px]">${item.subject || 'Rekapitulasi Mutasi Harian Stockyard'}</span>
-              <span class="text-[10.5px] text-slate-500 line-clamp-2">${item.message || 'Laporan ringkasan mutasi harian resmi terkirim via email.'}</span>
+      if (!filteredLogs || filteredLogs.length === 0) {
+        let emptyTitle = 'Belum Ada Notifikasi';
+        let emptyMsg = `Target email aktif saat ini adalah <strong class="text-slate-800 font-mono">${targetEmailDisplay}</strong>. Setiap ada unit masuk atau keluar, mutasi database dan pengiriman email akan otomatis tercatat di sini secara realtime.`;
+
+        if (filter === 'KELUAR') {
+          emptyTitle = 'Belum Ada Unit Keluar';
+          emptyMsg = `Belum ada rekaman notifikasi unit keluar di database cabang <strong class="text-slate-800">${activeBranch}</strong>. Saat ada unit keluar tercatat, datanya akan langsung muncul di sini.`;
+        } else if (filter === 'MASUK') {
+          emptyTitle = 'Belum Ada Unit Masuk';
+          emptyMsg = `Belum ada rekaman notifikasi unit masuk di database cabang <strong class="text-slate-800">${activeBranch}</strong>.`;
+        } else if (filter === 'DAILY') {
+          emptyTitle = 'Belum Ada Laporan Harian';
+          emptyMsg = 'Belum ada rekapitulasi harian yang dikirimkan. Tekan tombol <strong>"Kirim Laporan"</strong> di atas untuk memicu pengiriman laporan.';
+        }
+
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 space-y-3 bg-slate-50/60 rounded-2xl border border-slate-200/60 animate-in fade-in duration-150">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center shadow-2xs">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             </div>
-            <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-bold">
-                <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <span>Periode: ${formatCleanDate(item.reportDate)}</span>
-              </span>
-              ${item.totalUnits !== undefined ? `
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70 font-semibold">
-                  <svg class="w-3 h-3 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                  <span>${item.totalUnits} Unit (${item.masuk || 0} Masuk • ${item.keluar || 0} Keluar)</span>
-                </span>
-              ` : ''}
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60 font-medium">
-                <svg class="w-3 h-3 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                <span>Lampiran PDF & Excel</span>
-              </span>
+            <div>
+              <h4 class="text-xs font-black text-slate-800">${emptyTitle}</h4>
+              <p class="text-[11px] text-slate-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
+                ${emptyMsg}
+              </p>
             </div>
           </div>
         `;
-      } else {
-        unitDetailsHtml = `
-          <div class="space-y-1">
-            <div class="flex items-center justify-between">
-              <span class="font-black text-slate-900 text-[12.5px] tracking-tight">${item.model || 'Unit Kendaraan'}</span>
-              ${item.operator ? `<span class="text-[10px] text-slate-500 font-medium">Petugas: <strong class="text-slate-800">${item.operator}</strong></span>` : ''}
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 text-[10.5px] font-mono">
-              <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200/60 font-bold">
-                <span class="text-slate-400 font-sans text-[9.5px]">VIN: </span><span class="text-blue-700">${item.vin || '-'}</span>
-              </span>
-              ${item.engine && item.engine !== '-' ? `
-                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 font-semibold">
-                  <span class="text-slate-400 font-sans text-[9.5px]">Mesin: </span>${item.engine}
-                </span>
-              ` : ''}
-              ${item.location && item.location !== '-' ? `
-                <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/50">
-                  <span class="text-slate-400 font-sans text-[9.5px]">Lokasi: </span>${item.location}
-                </span>
-              ` : ''}
-            </div>
-          </div>
-        `;
+        return;
       }
 
-      // Render Daftar Target Email Penerima (Multi-Email Tags Responsive)
-      let recipientList = [];
-      if (item.targetEmail && typeof item.targetEmail === 'string' && item.targetEmail.trim()) {
-        recipientList = item.targetEmail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
-      }
-      if (recipientList.length === 0) {
-        const itemBranch = item.noBa || item.branch || (AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode());
-        recipientList = AppState.getBranchTargetEmails(itemBranch);
-      }
+      // Desain Card Notifikasi: Rapi, Modern, Tidak Membosankan, Mobile-Friendly
+      container.innerHTML = filteredLogs.map(item => {
+        const isSuccess = item.status === 'SUCCESS';
+        const isOffline = item.status === 'PENDING_OFFLINE';
+        const isMasuk = item.mutationType === 'Unit Masuk';
+        const isKeluar = item.mutationType === 'Unit Keluar';
+        const isDaily = item.category === 'DAILY_REPORT' || (!isMasuk && !isKeluar);
 
-      let recipientsHtml = '';
-      if (recipientList.length === 0) {
-        recipientsHtml = `
-          <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
-            <span class="flex items-center gap-1.5 min-w-0 text-slate-400">
-              <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
-              <span class="italic text-slate-400">(Belum diatur di database)</span>
+        let leftAccent = 'border-l-4 border-l-slate-300';
+        let typeBadge = '';
+
+        if (isDaily) {
+          leftAccent = 'border-l-4 border-l-blue-600 bg-white';
+          typeBadge = `
+            <span class="inline-flex items-center gap-1 text-[9px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/80 uppercase">
+              <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Rekap Harian</span>
             </span>
-          </div>
-        `;
-      } else if (recipientList.length === 1) {
-        recipientsHtml = `
-          <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
-            <span class="flex items-center gap-1.5 min-w-0 text-slate-500">
-              <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
-              <strong class="font-mono text-slate-700 truncate">${recipientList[0]}</strong>
+          `;
+        } else if (isMasuk) {
+          leftAccent = 'border-l-4 border-l-emerald-500 bg-white';
+          typeBadge = `
+            <span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 uppercase">
+              <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              <span>Unit Masuk</span>
             </span>
-          </div>
-        `;
-      } else {
-        recipientsHtml = `
-          <div class="pt-1.5 space-y-1 border-t border-slate-100">
-            <div class="flex items-center justify-between text-[10px] text-slate-500">
-              <span class="flex items-center gap-1.5 font-medium">
+          `;
+        } else if (isKeluar) {
+          leftAccent = 'border-l-4 border-l-amber-500 bg-white';
+          typeBadge = `
+            <span class="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 uppercase">
+              <svg class="w-3 h-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              <span>Unit Keluar</span>
+            </span>
+          `;
+        }
+
+        let statusBadge = '';
+        if (isOffline) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><svg class="w-2.5 h-2.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Pending Sync</span></span>`;
+        } else if (!isSuccess && !item.fromDatabase) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[8.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200"><svg class="w-2.5 h-2.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>Gagal</span></span>`;
+        }
+
+        let unitDetailsHtml = '';
+        if (isDaily) {
+          unitDetailsHtml = `
+            <div class="space-y-1.5">
+              <div class="text-[11.5px] text-slate-700 leading-snug">
+                <span class="font-extrabold text-slate-900 block text-[12px]">${item.subject || 'Rekapitulasi Mutasi Harian Stockyard'}</span>
+                <span class="text-[10.5px] text-slate-500 line-clamp-2">${item.message || 'Laporan ringkasan mutasi harian resmi terkirim via email.'}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-bold">
+                  <svg class="w-3 h-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>Periode: ${formatCleanDate(item.reportDate)}</span>
+                </span>
+                ${item.totalUnits !== undefined ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/70 font-semibold">
+                    <svg class="w-3 h-3 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>${item.totalUnits} Unit (${item.masuk || 0} Masuk • ${item.keluar || 0} Keluar)</span>
+                  </span>
+                ` : ''}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60 font-medium">
+                  <svg class="w-3 h-3 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <span>Lampiran PDF & Excel</span>
+                </span>
+              </div>
+            </div>
+          `;
+        } else {
+          unitDetailsHtml = `
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-black text-slate-900 text-[12.5px] tracking-tight">${item.model || 'Unit Kendaraan'}</span>
+                ${item.operator ? `<span class="text-[10px] text-slate-500 font-medium">Petugas: <strong class="text-slate-800">${item.operator}</strong></span>` : ''}
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 text-[10.5px] font-mono">
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200/60 font-bold">
+                  <span class="text-slate-400 font-sans text-[9.5px]">VIN: </span><span class="text-blue-700">${item.vin || '-'}</span>
+                </span>
+                ${item.engine && item.engine !== '-' ? `
+                  <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 font-semibold">
+                    <span class="text-slate-400 font-sans text-[9.5px]">Mesin: </span>${item.engine}
+                  </span>
+                ` : ''}
+                ${item.location && item.location !== '-' ? `
+                  <span class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/50">
+                    <span class="text-slate-400 font-sans text-[9.5px]">Lokasi: </span>${item.location}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }
+
+        let recipientList = [];
+        if (item.targetEmail && typeof item.targetEmail === 'string' && item.targetEmail.trim()) {
+          recipientList = item.targetEmail.split(/[,;\n\s]+/).map(e => e.trim()).filter(e => e.includes('@'));
+        }
+        if (recipientList.length === 0) {
+          const itemBranch = item.noBa || item.branch || (AppState.isAdmin() ? 'DSO LAMPUNG' : AppState.getUserBranchCode());
+          recipientList = (typeof AppState !== 'undefined' && typeof AppState.getBranchTargetEmails === 'function')
+            ? AppState.getBranchTargetEmails(itemBranch)
+            : [];
+        }
+
+        let recipientsHtml = '';
+        if (recipientList.length === 0) {
+          recipientsHtml = `
+            <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
+              <span class="flex items-center gap-1.5 min-w-0 text-slate-400">
+                <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
+                <span class="italic text-slate-400">(Belum diatur di database)</span>
+              </span>
+            </div>
+          `;
+        } else if (recipientList.length === 1) {
+          recipientsHtml = `
+            <div class="pt-1.5 flex items-center justify-between text-[10px] border-t border-slate-100 font-medium">
+              <span class="flex items-center gap-1.5 min-w-0 text-slate-500">
                 <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <span class="text-slate-400 text-[9.5px]">Tujuan (${recipientList.length} Penerima Terdaftar):</span>
+                <span class="text-slate-400 text-[9.5px]">Tujuan:</span>
+                <strong class="font-mono text-slate-700 truncate">${recipientList[0]}</strong>
               </span>
             </div>
-            <div class="flex flex-wrap gap-1">
-              ${recipientList.map(em => `
-                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9.5px] font-bold border border-slate-200/80">
-                  <span class="text-blue-500">@</span>
-                  <span class="truncate max-w-[200px]">${em}</span>
+          `;
+        } else {
+          recipientsHtml = `
+            <div class="pt-1.5 space-y-1 border-t border-slate-100">
+              <div class="flex items-center justify-between text-[10px] text-slate-500">
+                <span class="flex items-center gap-1.5 font-medium">
+                  <svg class="w-3 h-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  <span class="text-slate-400 text-[9.5px]">Tujuan (${recipientList.length} Penerima Terdaftar):</span>
                 </span>
-              `).join('')}
+              </div>
+              <div class="flex flex-wrap gap-1">
+                ${recipientList.map(em => `
+                  <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9.5px] font-bold border border-slate-200/80">
+                    <span class="text-blue-500">@</span>
+                    <span class="truncate max-w-[200px]">${em}</span>
+                  </span>
+                `).join('')}
+              </div>
             </div>
+          `;
+        }
+
+        return `
+          <div class="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs ${leftAccent} transition hover:border-slate-300 space-y-2">
+            <!-- Top Row: Type, Status, Timestamp (Responsive No Overlap) -->
+            <div class="flex items-start justify-between gap-1.5">
+              <div class="flex flex-wrap items-center gap-1 min-w-0">
+                ${typeBadge}
+                ${statusBadge}
+              </div>
+              <span class="text-[9.5px] font-bold text-slate-400 whitespace-nowrap flex-shrink-0 text-right pt-0.5">${item.timestamp}</span>
+            </div>
+
+            <!-- Body: Unit Information -->
+            ${unitDetailsHtml}
+
+            <!-- Footer: Email Destination -->
+            ${recipientsHtml}
+          </div>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.error('[UI] Error in renderEmailNotifications:', err);
+      const container = document.getElementById('emailNotifListContainer');
+      if (container) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+            <p class="text-xs font-bold text-slate-700">Gagal memuat daftar notifikasi</p>
+            <p class="text-[11px] text-slate-400 mt-1">${err.message || 'Silakan coba lagi.'}</p>
           </div>
         `;
       }
-
-      return `
-        <div class="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs ${leftAccent} transition hover:border-slate-300 space-y-2">
-          <!-- Top Row: Type, Status, Timestamp (Responsive No Overlap) -->
-          <div class="flex items-start justify-between gap-1.5">
-            <div class="flex flex-wrap items-center gap-1 min-w-0">
-              ${typeBadge}
-              ${statusBadge}
-            </div>
-            <span class="text-[9.5px] font-bold text-slate-400 whitespace-nowrap flex-shrink-0 text-right pt-0.5">${item.timestamp}</span>
-          </div>
-
-          <!-- Body: Unit Information -->
-          ${unitDetailsHtml}
-
-          <!-- Footer: Email Destination -->
-          ${recipientsHtml}
-        </div>
-      `;
-    }).join('');
+    }
   },
 
   /**
