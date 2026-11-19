@@ -1177,19 +1177,29 @@
           </div>
         </div>
 
-        <!-- VIEW MODE 2: SEBARAN CABANG & RADAR UNIT DALAM PENGIRIMAN (OKK) -->
-        <div id="inventoryBranchesView" class="hidden space-y-3.5 md:space-y-4">
-          <!-- Radar In-Transit OKK Container -->
-          <div id="invTransitRadarContainer">
+        <!-- VIEW MODE 2: FLIGHT BOARD & RADAR LOGISTIK MUTASI OKK ANTAR-CABANG (OPSI 2) -->
+        <div id="inventoryBranchesView" class="hidden space-y-4 md:space-y-5">
+          <!-- 1. Top Flight Control Bar: Route Filter, Live Status, & Fast Search -->
+          <div id="invFlightHeaderContainer">
             <!-- Rendered by UI.renderInventoryBranchesView -->
           </div>
 
-          <!-- 5 Cabang Stock Matrix Cards -->
-          <div id="invBranchesGrid">
+          <!-- 2. Logistics Flight KPI Metric Strip (4 Cards) -->
+          <div id="invLogisticsKpiStrip">
             <!-- Rendered by UI.renderInventoryBranchesView -->
           </div>
 
-          <!-- Active Physical Units Table per Branch -->
+          <!-- 3. Mini 5-Branch Pool Status Ribbon -->
+          <div id="invMiniBranchesRibbon">
+            <!-- Rendered by UI.renderInventoryBranchesView -->
+          </div>
+
+          <!-- 4. The 3-Column Logistics Flight Kanban Board (Pool Asal | Sedang di Jalan | Tiba di Tujuan) -->
+          <div id="invKanbanBoardContainer">
+            <!-- Rendered by UI.renderInventoryBranchesView -->
+          </div>
+
+          <!-- 5. Collapsible Physical Stock Drawer (Complete 10-Column Raw Table) -->
           <div id="invActiveUnitsContainer">
             <!-- Rendered by UI.renderInventoryBranchesView -->
           </div>

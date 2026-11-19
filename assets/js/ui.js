@@ -855,193 +855,277 @@ const UI = {
     }
   },
 
+  setLogisticsRouteFilter(route) {
+    this._logisticsRouteFilter = route || 'all';
+    this.renderInventoryBranchesView();
+  },
+
+  setLogisticsSearch(val) {
+    this._logisticsSearch = val || '';
+    this.renderInventoryBranchesView();
+  },
+
+  togglePhysicalStockTable() {
+    this._isPhysicalStockOpen = !this._isPhysicalStockOpen;
+    this.renderInventoryBranchesView();
+  },
+
+  copyVinToClipboard(vin) {
+    if (!vin) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(vin).then(() => {
+        this.showToast(`No. Rangka (VIN) ${vin} berhasil disalin!`, 'success');
+      }).catch(() => {
+        this._fallbackCopyText(vin);
+      });
+    } else {
+      this._fallbackCopyText(vin);
+    }
+  },
+
+  _fallbackCopyText(text) {
+    const temp = document.createElement('textarea');
+    temp.value = text;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try {
+      document.execCommand('copy');
+      this.showToast(`No. Rangka ${text} berhasil disalin!`, 'success');
+    } catch (e) {
+      this.showToast(`VIN: ${text}`);
+    }
+    document.body.removeChild(temp);
+  },
+
+  openInTransitArrivalModal(vin) {
+    if (!vin) return;
+    const inTransit = (AppState.getInTransitUnits ? AppState.getInTransitUnits() : []) || [];
+    const item = inTransit.find(u => u.vin === vin);
+
+    if (typeof ScannerService !== 'undefined') {
+      ScannerService.open();
+      const vinInput = document.getElementById('scanVinInput');
+      const engineInput = document.getElementById('scanEngineInput');
+      if (vinInput) vinInput.value = vin;
+      if (engineInput && item?.engine && item.engine !== '-') engineInput.value = item.engine;
+
+      // Auto-set mutation type to 'Unit Masuk' with doc 'OKK'
+      const mutSelect = document.getElementById('inputMutationType');
+      if (mutSelect) {
+        mutSelect.value = 'Unit Masuk';
+        const badge = document.getElementById('triggerMutationTypeBadge');
+        const text = document.getElementById('triggerMutationTypeText');
+        if (badge) badge.textContent = 'MASUK';
+        if (text) text.textContent = 'Unit Masuk (Penerimaan Cabang)';
+      }
+      const docSelect = document.getElementById('inputDocumentType');
+      if (docSelect) {
+        docSelect.value = 'OKK';
+        const docBadge = document.getElementById('triggerDocTypeBadge');
+        const docText = document.getElementById('triggerDocTypeText');
+        if (docBadge) docBadge.textContent = 'OKK';
+        if (docText) docText.textContent = 'OKK (Otorisasi Pengiriman Cabang)';
+      }
+
+      setTimeout(() => {
+        if (ScannerService.goToStep2Form) ScannerService.goToStep2Form();
+      }, 150);
+    } else {
+      this.copyVinToClipboard(vin);
+    }
+  },
+
+  /**
+   * FLIGHT BOARD & RADAR LOGISTIK OKK ANTAR-CABANG (OPSI 2)
+   * Menyajikan tampilan operasional logistik dengan Flight Control Header,
+   * 4-Card KPI Strip, Ribbon 5-Pool Cabang, dan 3-Column Flight Kanban Board:
+   * 1. Pool Asal (Baru Dikeluarkan)
+   * 2. Sedang Di Jalan (In-Transit Ticket / Boarding Pass)
+   * 3. Tiba di Tujuan (Selesai Diterima)
+   */
   renderInventoryBranchesView() {
     if (typeof AppState === 'undefined' || !AppState.getInTransitUnits) return;
 
-    const inTransit = AppState.getInTransitUnits() || [];
+    const currentRoute = this._logisticsRouteFilter || 'all';
+    const searchQuery = this._logisticsSearch || '';
+    const currentBranchStockFilter = this._branchUnitsFilter || 'all';
+
+    const kanban = (AppState.getLogisticsKanbanData ? AppState.getLogisticsKanbanData(currentRoute, searchQuery) : {
+      inTransit: AppState.getInTransitUnits() || [],
+      departures: [],
+      delivered: [],
+      metrics: { totalInTransit: 0, totalDelivered: 0, avgTransitTime: '-' }
+    });
     const multiBranch = AppState.getMultiBranchStockSummary() || { branches: [], totalActiveStock: 0, totalInTransit: 0 };
-    const currentBranchFilter = this._branchUnitsFilter || 'all';
 
     // 1. Update Tab Transit Badge
     const tabBadge = document.getElementById('invTransitBadge');
     if (tabBadge) {
-      if (inTransit.length > 0) {
-        tabBadge.textContent = `${inTransit.length} OTW`;
+      if (kanban.metrics.totalInTransit > 0) {
+        tabBadge.textContent = `${kanban.metrics.totalInTransit} OTW`;
         tabBadge.classList.remove('hidden');
       } else {
         tabBadge.classList.add('hidden');
       }
     }
 
-    // 2. Render Container Radar In-Transit OKK
-    const radarContainer = document.getElementById('invTransitRadarContainer');
-    if (radarContainer) {
-      if (inTransit.length === 0) {
-        radarContainer.innerHTML = `
-          <div class="bg-white/95 rounded-[24px] p-5 border border-white shadow-saas-card text-center space-y-2.5">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-2xs">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-            </div>
-            <div>
-              <h3 class="text-sm font-black text-slate-900">Radar Antar-Cabang Bersih (0 Unit In-Transit)</h3>
-              <p class="text-xs text-slate-400 max-w-md mx-auto mt-0.5">Semua unit mutasi antar-cabang (OKK) telah tiba dan terverifikasi aman di pool masing-masing. Tidak ada pengiriman aktif di jalan saat ini.</p>
-            </div>
-          </div>
-        `;
-      } else {
-        radarContainer.innerHTML = `
-          <div class="bg-gradient-to-r from-amber-500/10 via-blue-500/10 to-indigo-500/10 rounded-[24px] p-4 sm:p-5 border border-amber-300/90 shadow-saas-card space-y-3.5">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-amber-200/70">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/30 flex-shrink-0 animate-pulse">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Radar Unit Dalam Pengiriman (In-Transit OKK)</h3>
-                    <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-amber-500 text-white shadow-2xs animate-pulse">${inTransit.length} UNIT AKTIF</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Kendaraan telah dikeluarkan dari cabang asal dan sedang bergerak menuju cabang penerima.</p>
-                </div>
+    // 2. Render Flight Control Header
+    const headerContainer = document.getElementById('invFlightHeaderContainer');
+    if (headerContainer) {
+      headerContainer.innerHTML = `
+        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-start sm:items-center space-x-3 min-w-0">
+              <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
-              <div class="text-[11px] font-extrabold text-amber-900 bg-amber-100/90 px-3 py-1.5 rounded-xl border border-amber-300 self-start sm:self-auto shadow-2xs">
-                Otomatis Pindah Pool saat Scan Masuk
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board OKK</h3>
+                  <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                    <span>LIVE RADAR CABANG</span>
+                  </span>
+                </div>
+                <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
               </div>
             </div>
 
-            <!-- List Card Unit In-Transit -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-              ${inTransit.map(item => `
-                <div class="bg-white rounded-2xl p-4 border border-amber-200/90 shadow-sm space-y-3">
-                  <!-- Header: Model, Warna, & VIN -->
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate">${item.model}</h4>
-                        ${item.color && item.color !== '-' ? `
-                          <span class="text-[9.5px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 truncate">${item.color}</span>
-                        ` : ''}
-                      </div>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="text-[10.5px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">VIN: ${item.vin}</span>
-                        ${item.engine && item.engine !== '-' ? `<span class="text-[10.5px] font-mono font-semibold text-slate-500">ENG: ${item.engine}</span>` : ''}
-                      </div>
-                    </div>
-                    <span class="px-2 py-1 rounded-lg text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 whitespace-nowrap flex-shrink-0">
-                      IN-TRANSIT
-                    </span>
-                  </div>
+            <!-- Route Selector & Live Search -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
+              <!-- Route Dropdown Filter -->
+              <div class="relative">
+                <select id="invLogisticsRouteSelect" onchange="UI.setLogisticsRouteFilter(this.value)" class="w-full sm:w-auto bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
+                  <option value="all" ${currentRoute === 'all' ? 'selected' : ''}>🌐 Semua Rute (5 Cabang)</option>
+                  <option value="to_D660" ${currentRoute === 'to_D660' ? 'selected' : ''}>➔ Menuju D660 (Ahmad Yani)</option>
+                  <option value="to_D661" ${currentRoute === 'to_D661' ? 'selected' : ''}>➔ Menuju D661 (Bypass)</option>
+                  <option value="to_D662" ${currentRoute === 'to_D662' ? 'selected' : ''}>➔ Menuju D662 (Bandar Jaya)</option>
+                  <option value="to_D663" ${currentRoute === 'to_D663' ? 'selected' : ''}>➔ Menuju D663 (Kotabumi)</option>
+                  <option value="to_D664" ${currentRoute === 'to_D664' ? 'selected' : ''}>➔ Menuju D664 (Way Jepara)</option>
+                  <option value="from_D661" ${currentRoute === 'from_D661' ? 'selected' : ''}>🛫 Keluar dari D661 (Bypass)</option>
+                </select>
+              </div>
 
-                  <!-- Visual Route: Cabang Asal -> Cabang Tujuan -->
-                  <div class="bg-gradient-to-r from-slate-50 via-amber-50/50 to-slate-50 p-2.5 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-800">
-                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                      <div class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 text-[10px] font-black">
-                        ${(item.originBranch.match(/D66[0-4]/i)?.[0] || 'ASAL').toUpperCase()}
-                      </div>
-                      <div class="min-w-0">
-                        <span class="text-[9px] font-bold text-slate-400 block uppercase leading-none">Dari Cabang</span>
-                        <span class="truncate block text-[11px] font-extrabold text-slate-800">${item.originBranch}</span>
-                      </div>
-                    </div>
-
-                    <div class="flex flex-col items-center px-2 flex-shrink-0">
-                      <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest animate-pulse">MENUJU</span>
-                      <div class="flex items-center text-amber-500">
-                        <span class="h-0.5 w-6 sm:w-10 bg-amber-400"></span>
-                        <svg class="w-4 h-4 -ml-1 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 min-w-0 flex-1 justify-end text-right">
-                      <div class="min-w-0">
-                        <span class="text-[9px] font-bold text-amber-700 block uppercase leading-none">Tujuan</span>
-                        <span class="truncate block text-[11px] font-extrabold text-amber-950">${item.destinationBranch}</span>
-                      </div>
-                      <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 text-[10px] font-black">
-                        ${(item.destinationBranch.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Departure Details & Thumbnails -->
-                  <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
-                    <div class="space-y-0.5">
-                      <div class="text-slate-500">
-                        Berangkat: <strong class="text-slate-800">${item.departedAt}</strong>
-                      </div>
-                      <div class="text-slate-500">
-                        Petugas Pengirim: <strong class="text-slate-800">${item.officerName}</strong>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center gap-1.5">
-                      ${item.unitPhoto ? `
-                        <div onclick="openImagePreviewModal('${item.unitPhoto}')" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition flex-shrink-0" title="Lihat Foto Unit">
-                          <img src="${item.unitPhoto}" alt="Unit" class="w-full h-full object-cover">
-                        </div>
-                      ` : ''}
-                      ${item.docPhoto ? `
-                        <div onclick="openImagePreviewModal('${item.docPhoto}')" class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-amber-400 transition flex-shrink-0" title="Lihat Foto Dokumen OKK">
-                          <img src="${item.docPhoto}" alt="OKK" class="w-full h-full object-cover">
-                        </div>
-                      ` : ''}
-                    </div>
-                  </div>
-
-                  <!-- Guide Note for Destination Branch -->
-                  <div class="bg-blue-50/70 p-2 rounded-xl text-[10px] font-medium text-blue-900 border border-blue-200/80 flex items-start gap-1.5">
-                    <svg class="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Petugas <strong>${item.destinationBranch}</strong> cukup scan unit ini saat tiba dan pilih <strong>Unit Masuk (Dokumen OKK)</strong> untuk otomatis memindahkan pool.</span>
-                  </div>
-                </div>
-              `).join('')}
+              <!-- Quick Search Input -->
+              <div class="relative">
+                <input type="text" value="${searchQuery}" oninput="UI.setLogisticsSearch(this.value)" placeholder="Cari VIN, Model, Driver..." class="w-full sm:w-48 bg-slate-50 border border-slate-200/90 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                ${searchQuery ? `
+                  <button type="button" onclick="UI.setLogisticsSearch('')" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold">×</button>
+                ` : ''}
+              </div>
             </div>
           </div>
-        `;
-      }
+        </div>
+      `;
     }
 
-    // 3. Render 5 Cabang Stock Summary Cards
-    const branchesGrid = document.getElementById('invBranchesGrid');
-    if (branchesGrid) {
-      branchesGrid.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">Sebaran Stok Fisik 5 Cabang DSO Lampung</h3>
-              <p class="text-[10.5px] text-slate-400 font-semibold">Total Unit Aktif di Seluruh Cabang: <strong class="text-slate-800">${multiBranch.totalActiveStock} Unit</strong></p>
+    // 3. Render Logistics KPI Strip (4 Cards)
+    const kpiStrip = document.getElementById('invLogisticsKpiStrip');
+    if (kpiStrip) {
+      kpiStrip.innerHTML = `
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+          <!-- KPI 1: In-Transit Aktif (Amber) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-amber-700 uppercase tracking-wider">Sedang Di Jalan</span>
+              <div class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center ${kanban.metrics.totalInTransit > 0 ? 'animate-pulse' : ''}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
             </div>
-            ${currentBranchFilter !== 'all' ? `
-              <button type="button" onclick="UI.filterBranchActiveUnits('all')" class="text-[10.5px] font-extrabold text-blue-600 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 cursor-pointer transition">
-                Reset Filter Cabang ×
-              </button>
-            ` : ''}
+            <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-amber-950">${kanban.metrics.totalInTransit}</span>
+              <span class="text-xs font-bold text-amber-700">Unit OTW</span>
+            </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+              <span>Mutasi antar-cabang aktif</span>
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
-            ${multiBranch.branches.map(b => {
-              const isSelected = currentBranchFilter === b.code;
-              return `
-                <div onclick="UI.filterBranchActiveUnits('${b.code}')" class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-white'} shadow-saas-card hover:border-blue-300 transition cursor-pointer flex flex-col justify-between">
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                      <span class="text-[9.5px] font-black px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'} border border-slate-200">
-                        ${b.code}
-                      </span>
-                      <span class="text-[9px] font-semibold text-slate-400 truncate max-w-[80px]">${b.type}</span>
-                    </div>
-                    <h4 class="text-xs font-black text-slate-900 truncate" title="${b.name}">${b.shortName}</h4>
-                  </div>
+          <!-- KPI 2: Tiba di Pool Tujuan (Emerald) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-emerald-700 uppercase tracking-wider">Tiba di Pool</span>
+              <div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-emerald-950">${kanban.metrics.totalDelivered}</span>
+              <span class="text-xs font-bold text-emerald-700">Unit Selesai</span>
+            </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+              <span>Terkonfirmasi di tujuan</span>
+            </div>
+          </div>
 
-                  <div class="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                    <div>
-                      <span class="text-xl sm:text-2xl font-black ${b.stockCount > 0 ? 'text-blue-600' : 'text-slate-400'}">${b.stockCount}</span>
-                      <span class="text-[10px] font-bold text-slate-400 ml-1">Unit</span>
+          <!-- KPI 3: Estimasi Waktu Tempuh (Blue) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-blue-700 uppercase tracking-wider">Rata-rata Waktu</span>
+              <div class="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-lg sm:text-xl font-black text-blue-950">${kanban.metrics.avgTransitTime}</span>
+            </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+              <span>Durasi perjalanan unit</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: Total Stok Fisik 5 Pool (Purple) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-purple-700 uppercase tracking-wider">Jaringan Pool DSO</span>
+              <div class="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-purple-950">${multiBranch.totalActiveStock}</span>
+              <span class="text-xs font-bold text-purple-700">Unit Terparkir</span>
+            </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+              <span>Tersebar di 5 cabang</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. Render 5-Branch Mini Pool Status Ribbon
+    const ribbonContainer = document.getElementById('invMiniBranchesRibbon');
+    if (ribbonContainer) {
+      ribbonContainer.innerHTML = `
+        <div class="bg-white/90 rounded-2xl p-2.5 sm:p-3 border border-white shadow-saas-card">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <span class="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-wider">Stok Fisik & Radar Pool DSO:</span>
+            <span class="text-[9.5px] text-slate-400 font-semibold">Klik cabang untuk filter rute</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            ${multiBranch.branches.map(b => {
+              const isFiltered = currentRoute === `to_${b.code}`;
+              const incoming = (kanban.inTransit || []).filter(u => u.destinationCode === b.code).length;
+              return `
+                <div onclick="UI.setLogisticsRouteFilter('${isFiltered ? 'all' : `to_${b.code}`}')" class="px-2.5 py-2 rounded-xl border ${isFiltered ? 'border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/20' : 'border-slate-200/70 bg-slate-50/80 hover:bg-slate-100/70'} transition cursor-pointer flex items-center justify-between">
+                  <div class="min-w-0">
+                    <div class="flex items-center space-x-1">
+                      <span class="text-[9.5px] font-black ${isFiltered ? 'text-blue-700' : 'text-slate-800'}">${b.code}</span>
+                      <span class="text-[8.5px] text-slate-400 truncate max-w-[65px]">${b.shortName.split('(')[0]}</span>
                     </div>
-                    <span class="text-[10px] font-bold ${isSelected ? 'text-blue-700 underline' : 'text-slate-500'}">
-                      ${isSelected ? 'Aktif' : 'Pilih'} →
-                    </span>
+                    <div class="text-[11px] font-black ${b.stockCount > 0 ? 'text-slate-900' : 'text-slate-400'}">
+                      ${b.stockCount} <span class="text-[8.5px] font-semibold text-slate-400">Unit</span>
+                    </div>
                   </div>
+                  ${incoming > 0 ? `
+                    <span class="px-1.5 py-0.5 rounded-full text-[8.5px] font-black bg-amber-500 text-white animate-pulse" title="${incoming} unit sedang dalam perjalanan menuju cabang ini">
+                      +${incoming} OTW
+                    </span>
+                  ` : ''}
                 </div>
               `;
             }).join('')}
@@ -1050,104 +1134,369 @@ const UI = {
       `;
     }
 
-    // 4. Render Active Units Table per Branch
-    const activeUnitsContainer = document.getElementById('invActiveUnitsContainer');
-    if (activeUnitsContainer) {
-      const activeUnits = AppState.getActiveUnitsList(currentBranchFilter) || [];
-      const branchLabel = currentBranchFilter === 'all' 
-        ? 'Seluruh 5 Cabang' 
-        : (multiBranch.branches.find(b => b.code === currentBranchFilter)?.name || currentBranchFilter);
-
-      activeUnitsContainer.innerHTML = `
-        <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight">Daftar Kendaraan Aktif di Pool Yard</h3>
-                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-50 text-blue-700 border border-blue-200">${activeUnits.length} Unit</span>
+    // 5. Render 3-Column Logistics Flight Kanban Board
+    const kanbanContainer = document.getElementById('invKanbanBoardContainer');
+    if (kanbanContainer) {
+      kanbanContainer.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 items-start">
+          
+          <!-- ========================================== -->
+          <!-- KOLOM 1: POOL ASAL (BARU DIKELUARKAN)       -->
+          <!-- ========================================== -->
+          <div class="bg-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border border-slate-200/80 shadow-saas-card space-y-3">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
+              <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Pool Asal</h4>
+                  <p class="text-[9.5px] text-slate-400 font-medium">Baru keluar dari cabang asal</p>
+                </div>
               </div>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Filter aktif: <strong class="text-slate-700">${branchLabel}</strong></p>
+              <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-600 text-white shadow-2xs">${kanban.departures.length}</span>
             </div>
 
-            <div class="flex items-center space-x-2">
-              <select onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
-                <option value="all" ${currentBranchFilter === 'all' ? 'selected' : ''}>Semua Cabang (5 Cabang)</option>
-                <option value="D660" ${currentBranchFilter === 'D660' ? 'selected' : ''}>D660 - Ahmad Yani</option>
-                <option value="D661" ${currentBranchFilter === 'D661' ? 'selected' : ''}>D661 - Soekarno Hatta</option>
-                <option value="D662" ${currentBranchFilter === 'D662' ? 'selected' : ''}>D662 - Bandar Jaya</option>
-                <option value="D663" ${currentBranchFilter === 'D663' ? 'selected' : ''}>D663 - Lampung Utara</option>
-                <option value="D664" ${currentBranchFilter === 'D664' ? 'selected' : ''}>D664 - Lampung Timur</option>
-              </select>
+            <div class="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+              ${kanban.departures.length === 0 ? `
+                <div class="text-center py-10 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1">
+                  <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                  </div>
+                  <span class="font-bold text-slate-600 block">Antrean Keberangkatan Bersih</span>
+                  <p class="text-[10px] text-slate-400">Belum ada unit yang dikeluarkan dari pool asal.</p>
+                </div>
+              ` : kanban.departures.map(item => `
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-blue-300 transition space-y-2">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="font-black px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[130px]">
+                      📍 ${item.originCode}
+                    </span>
+                    <span class="font-bold text-slate-400">🕒 ${item.departedAt}</span>
+                  </div>
+
+                  <div class="flex items-center space-x-2.5">
+                    <div class="w-12 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      ${item.unitPhoto ? `
+                        <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
+                      ` : `
+                        <span class="text-[8px] font-bold text-slate-400">MOBIL</span>
+                      `}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h5 class="text-xs font-black text-slate-900 truncate leading-tight">${item.model}</h5>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="text-[10px] font-mono font-bold text-slate-600 truncate">${item.vin}</span>
+                        ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1 rounded truncate">${item.color}</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10.5px]">
+                    <div class="text-slate-500 truncate min-w-0">
+                      Tujuan: <strong class="text-slate-800">${item.destinationCode}</strong>
+                    </div>
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 flex-shrink-0">
+                      ${item.officerName.split(' ')[0]}
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
             </div>
           </div>
 
-          ${activeUnits.length === 0 ? `
-            <div class="text-center py-8 text-slate-400 text-xs">
-              Tidak ada unit mobil fisik yang tercatat aktif parkir di cabang ini saat ini.
+          <!-- ========================================== -->
+          <!-- KOLOM 2: SEDANG DI JALAN (IN-TRANSIT OKK)   -->
+          <!-- ========================================== -->
+          <div class="bg-gradient-to-b from-amber-500/10 via-amber-500/5 to-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border-2 border-amber-300 shadow-saas-card space-y-3 relative">
+            <div class="flex items-center justify-between pb-2.5 border-b border-amber-200/80">
+              <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Sedang Di Jalan (In-Transit)</h4>
+                  <p class="text-[9.5px] text-amber-700 font-semibold">Aktif bergerak menuju cabang penerima</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-black bg-amber-500 text-white shadow-sm animate-pulse">
+                ${kanban.inTransit.length} OTW
+              </span>
             </div>
-          ` : `
-            <div class="overflow-x-auto hide-scrollbar">
-              <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr class="border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/80">
-                    <th class="py-2.5 px-3 rounded-l-xl">Kendaraan</th>
-                    <th class="py-2.5 px-3">No. Rangka (VIN) & Mesin</th>
-                    <th class="py-2.5 px-3">Cabang Lokasi</th>
-                    <th class="py-2.5 px-3">Waktu Masuk</th>
-                    <th class="py-2.5 px-3">Dokumen</th>
-                    <th class="py-2.5 px-3">Petugas</th>
-                    <th class="py-2.5 px-3 text-center rounded-r-xl">Foto</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  ${activeUnits.map(unit => `
-                    <tr class="hover:bg-slate-50/70 transition">
-                      <td class="py-2.5 px-3">
-                        <div class="font-extrabold text-slate-900">${unit.model}</div>
-                        ${unit.color && unit.color !== '-' ? `
-                          <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 inline-block mt-0.5">${unit.color}</span>
-                        ` : ''}
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <div class="font-mono font-bold text-slate-800 text-[11px]">${unit.vin}</div>
-                        ${unit.engine && unit.engine !== '-' ? `<div class="font-mono text-[10px] text-slate-400">ENG: ${unit.engine}</div>` : ''}
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <span class="font-extrabold text-slate-800 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200 text-[10.5px]">
-                          ${unit.branch}
-                        </span>
-                      </td>
-                      <td class="py-2.5 px-3 text-[11px] text-slate-600">
-                        ${unit.arrivedAt}
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <span class="font-black text-[9.5px] px-2 py-0.5 rounded-md ${unit.docType === 'OKK' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
-                          ${unit.docType}
-                        </span>
-                      </td>
-                      <td class="py-2.5 px-3 text-[11px] text-slate-700 font-medium">
-                        ${unit.officerName || unit.pic}
-                      </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <div class="flex items-center justify-center gap-1">
-                          ${unit.unitPhoto ? `
-                            <button type="button" onclick="openImagePreviewModal('${unit.unitPhoto}')" class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition" title="Foto Unit">
-                              <img src="${unit.unitPhoto}" alt="Foto" class="w-full h-full object-cover">
-                            </button>
-                          ` : '<span class="text-slate-300">-</span>'}
+
+            <!-- List Cards Column 2 (Flight Ticket / Boarding Pass Style) -->
+            <div class="space-y-3 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+              ${kanban.inTransit.length === 0 ? `
+                <div class="text-center py-12 px-4 bg-white/80 rounded-2xl border border-dashed border-amber-300 text-amber-900 text-xs space-y-1.5">
+                  <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 shadow-2xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <span class="font-extrabold text-sm text-slate-800 block">Semua Pengiriman Tuntas</span>
+                  <p class="text-[11px] text-slate-500">Tidak ada unit di jalan saat ini (0 In-Transit). Seluruh unit terverifikasi aman di pool masing-masing.</p>
+                </div>
+              ` : kanban.inTransit.map(item => `
+                <div class="bg-white rounded-2xl border ${item.isUrgent ? 'border-rose-400 ring-2 ring-rose-300 shadow-rose-100' : 'border-amber-200/90'} shadow-sm overflow-hidden transition space-y-0">
+                  
+                  <!-- Top Flight Route Strip (Boarding Pass Notch) -->
+                  <div class="bg-gradient-to-r ${item.isUrgent ? 'from-rose-500 to-amber-600' : 'from-slate-900 via-slate-800 to-blue-900'} text-white px-3.5 py-2 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-1.5 min-w-0">
+                      <span class="px-1.5 py-0.5 rounded bg-white/20 font-black text-[10px]">${item.originCode}</span>
+                      <span class="text-[9.5px] text-slate-300 font-bold truncate max-w-[70px]">${item.originBranch.split('-')[1] || item.originBranch}</span>
+                    </div>
+
+                    <div class="flex items-center space-x-1 px-1 flex-shrink-0 text-amber-300">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                      <span class="text-[10px] tracking-widest font-black">➔</span>
+                    </div>
+
+                    <div class="flex items-center space-x-1.5 min-w-0 justify-end text-right">
+                      <span class="text-[9.5px] text-amber-200 font-bold truncate max-w-[70px]">${item.destinationBranch.split('-')[1] || item.destinationBranch}</span>
+                      <span class="px-1.5 py-0.5 rounded bg-amber-400 text-slate-900 font-black text-[10px]">${item.destinationCode}</span>
+                    </div>
+                  </div>
+
+                  <!-- Ticket Body -->
+                  <div class="p-3.5 space-y-3">
+                    <div class="flex items-start space-x-3">
+                      <div class="w-16 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        ${item.unitPhoto ? `
+                          <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
+                        ` : `
+                          <span class="text-[9px] font-bold text-slate-400">DAIHATSU</span>
+                        `}
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-start justify-between gap-1">
+                          <h5 class="text-xs sm:text-sm font-black text-slate-900 leading-tight truncate">${item.model}</h5>
                         </div>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span onclick="UI.copyVinToClipboard('${item.vin}')" class="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200/80 cursor-pointer flex items-center gap-1" title="Klik untuk Salin VIN">
+                            <span>${item.vin}</span>
+                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          </span>
+                          ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 truncate">${item.color}</span>` : ''}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Real-time Journey Elapsed Timer -->
+                    <div class="bg-amber-50/80 rounded-xl p-2 border border-amber-200/70 flex items-center justify-between text-xs font-bold text-amber-950">
+                      <div class="flex items-center space-x-1.5 min-w-0">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+                        <span class="text-[10.5px] truncate">⏱️ <strong>${item.elapsedHuman}</strong> di Perjalanan</span>
+                      </div>
+                      <span class="text-[9.5px] font-semibold text-amber-800/80 flex-shrink-0">Sejak ${item.time || item.departedAt}</span>
+                    </div>
+
+                    ${item.isUrgent ? `
+                      <div class="bg-rose-50 rounded-xl p-2 border border-rose-200 text-[10px] font-bold text-rose-800 flex items-center gap-1.5 animate-pulse">
+                        <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>Perhatian: Unit telah > 24 jam dalam transit. Harap konfirmasi ke pengemudi/tujuan.</span>
+                      </div>
+                    ` : ''}
+
+                    <!-- Dispatcher PIC & Notes -->
+                    <div class="text-[10px] text-slate-500 space-y-0.5">
+                      <div>Petugas Pengirim: <strong class="text-slate-800">${item.officerName}</strong></div>
+                      ${item.notes && item.notes !== '-' ? `<div class="italic text-slate-400 truncate">"${item.notes}"</div>` : ''}
+                    </div>
+
+                    <!-- Ticket Action Footer -->
+                    <div class="pt-2 border-t border-slate-100 flex items-center gap-2">
+                      <button type="button" onclick="UI.openInTransitArrivalModal('${item.vin}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-1.5 px-2 text-[11px] font-black shadow-xs active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M5 13l4 4L19 7"/></svg>
+                        <span>Konfirmasi Tiba</span>
+                      </button>
+                      ${item.docPhoto ? `
+                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl py-1.5 px-2.5 text-[10.5px] font-extrabold border border-amber-300 transition cursor-pointer flex items-center gap-1" title="Lihat Foto Dokumen OKK">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                          <span>OKK</span>
+                        </button>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
             </div>
-          `}
+          </div>
+
+          <!-- ========================================== -->
+          <!-- KOLOM 3: TIBA DI TUJUAN (DELIVERED SELESAI) -->
+          <!-- ========================================== -->
+          <div class="bg-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border border-slate-200/80 shadow-saas-card space-y-3">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
+              <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Tiba di Tujuan</h4>
+                  <p class="text-[9.5px] text-slate-400 font-medium">Selesai diverifikasi masuk pool</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-emerald-600 text-white shadow-2xs">${kanban.delivered.length}</span>
+            </div>
+
+            <div class="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+              ${kanban.delivered.length === 0 ? `
+                <div class="text-center py-10 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1">
+                  <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <span class="font-bold text-slate-600 block">Belum Ada Unit Tiba</span>
+                  <p class="text-[10px] text-slate-400">Unit masuk dengan dokumen OKK akan dicatat di kolom ini.</p>
+                </div>
+              ` : kanban.delivered.map(item => `
+                <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-emerald-300 transition space-y-2">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 truncate max-w-[140px]">
+                      🏁 Tiba: ${item.destinationCode}
+                    </span>
+                    <span class="font-bold text-slate-400">🕒 ${item.arrivedAt}</span>
+                  </div>
+
+                  <div class="flex items-center space-x-2.5">
+                    <div class="w-12 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      ${item.unitPhoto ? `
+                        <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
+                      ` : `
+                        <span class="text-[8px] font-bold text-slate-400">MOBIL</span>
+                      `}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h5 class="text-xs font-black text-slate-900 truncate leading-tight">${item.model}</h5>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="text-[10px] font-mono font-bold text-slate-600 truncate">${item.vin}</span>
+                        ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1 rounded truncate">${item.color}</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                    <span class="font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      ⏱️ ${item.transitDuration}
+                    </span>
+                    <span class="text-slate-500 truncate min-w-0 text-right">
+                      Penerima: <strong class="text-slate-700">${item.receiverName.split(' ')[0]}</strong>
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    // 6. Render Collapsible Physical Stock Drawer
+    const activeUnitsContainer = document.getElementById('invActiveUnitsContainer');
+    if (activeUnitsContainer) {
+      const activeUnits = AppState.getActiveUnitsList(currentBranchStockFilter) || [];
+      const branchLabel = currentBranchStockFilter === 'all' 
+        ? 'Seluruh 5 Cabang' 
+        : (multiBranch.branches.find(b => b.code === currentBranchStockFilter)?.name || currentBranchStockFilter);
+
+      activeUnitsContainer.innerHTML = `
+        <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100 cursor-pointer select-none" onclick="UI.togglePhysicalStockTable()">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight">Tabel Rinci Stok Fisik Parkir di Pool Yard</h3>
+                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-50 text-blue-700 border border-blue-200">${activeUnits.length} Unit</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Filter aktif: <strong class="text-slate-700">${branchLabel}</strong> • Klik untuk ${this._isPhysicalStockOpen ? 'menyembunyikan' : 'membuka'} tabel lengkap</p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center space-x-1.5 shadow-2xs transition">
+                <span>${this._isPhysicalStockOpen ? 'Tutup Tabel ▲' : 'Buka Tabel Lengkap ▼'}</span>
+              </button>
+            </div>
+          </div>
+
+          ${this._isPhysicalStockOpen ? `
+            <div class="pt-2 space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold text-slate-600">Pilih Cabang:</span>
+                <select onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
+                  <option value="all" ${currentBranchStockFilter === 'all' ? 'selected' : ''}>Semua Cabang (5 Cabang)</option>
+                  <option value="D660" ${currentBranchStockFilter === 'D660' ? 'selected' : ''}>D660 - Ahmad Yani</option>
+                  <option value="D661" ${currentBranchStockFilter === 'D661' ? 'selected' : ''}>D661 - Soekarno Hatta</option>
+                  <option value="D662" ${currentBranchStockFilter === 'D662' ? 'selected' : ''}>D662 - Bandar Jaya</option>
+                  <option value="D663" ${currentBranchStockFilter === 'D663' ? 'selected' : ''}>D663 - Lampung Utara</option>
+                  <option value="D664" ${currentBranchStockFilter === 'D664' ? 'selected' : ''}>D664 - Lampung Timur</option>
+                </select>
+              </div>
+
+              ${activeUnits.length === 0 ? `
+                <div class="text-center py-8 text-slate-400 text-xs">
+                  Tidak ada unit mobil fisik yang tercatat aktif parkir di cabang ini saat ini.
+                </div>
+              ` : `
+                <div class="overflow-x-auto hide-scrollbar">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/80">
+                        <th class="py-2.5 px-3 rounded-l-xl">Kendaraan</th>
+                        <th class="py-2.5 px-3">No. Rangka (VIN) & Mesin</th>
+                        <th class="py-2.5 px-3">Cabang Lokasi</th>
+                        <th class="py-2.5 px-3">Waktu Masuk</th>
+                        <th class="py-2.5 px-3">Dokumen</th>
+                        <th class="py-2.5 px-3">Petugas</th>
+                        <th class="py-2.5 px-3 text-center rounded-r-xl">Foto</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      ${activeUnits.map(unit => `
+                        <tr class="hover:bg-slate-50/70 transition">
+                          <td class="py-2.5 px-3">
+                            <div class="font-extrabold text-slate-900">${unit.model}</div>
+                            ${unit.color && unit.color !== '-' ? `
+                              <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 inline-block mt-0.5">${unit.color}</span>
+                            ` : ''}
+                          </td>
+                          <td class="py-2.5 px-3">
+                            <div class="font-mono font-bold text-slate-800 text-[11px]">${unit.vin}</div>
+                            ${unit.engine && unit.engine !== '-' ? `<div class="font-mono text-[10px] text-slate-400">ENG: ${unit.engine}</div>` : ''}
+                          </td>
+                          <td class="py-2.5 px-3">
+                            <span class="font-extrabold text-slate-800 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200 text-[10.5px]">
+                              ${unit.branch}
+                            </span>
+                          </td>
+                          <td class="py-2.5 px-3 text-[11px] text-slate-600">
+                            ${unit.arrivedAt}
+                          </td>
+                          <td class="py-2.5 px-3">
+                            <span class="font-black text-[9.5px] px-2 py-0.5 rounded-md ${unit.docType === 'OKK' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                              ${unit.docType}
+                            </span>
+                          </td>
+                          <td class="py-2.5 px-3 text-[11px] text-slate-700 font-medium">
+                            ${unit.officerName || unit.pic}
+                          </td>
+                          <td class="py-2.5 px-3 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                              ${unit.unitPhoto ? `
+                                <button type="button" onclick="openImagePreviewModal('${unit.unitPhoto}')" class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition" title="Foto Unit">
+                                  <img src="${unit.unitPhoto}" alt="Foto" class="w-full h-full object-cover">
+                                </button>
+                              ` : '<span class="text-slate-300">-</span>'}
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+            </div>
+          ` : ''}
         </div>
       `;
     }
   },
-
   filterInventory() {
     this.renderInventoryList();
   },

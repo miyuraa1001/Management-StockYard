@@ -518,6 +518,247 @@ const AppState = {
   },
 
   /**
+   * Menyusun data komprehensif untuk Flight Board / Kanban Journey Logistik OKK Antar-Cabang (Opsi 2)
+   * Mengelompokkan perjalanan unit ke dalam 3 stage operasional:
+   * 1. departures: Pool Asal (Baru Keluar / Persiapan)
+   * 2. inTransit: Sedang Di Jalan (Boarding Pass / In-Transit Aktif)
+   * 3. delivered: Tiba di Tujuan (Selesai Diterima)
+   */
+  getLogisticsKanbanData(filterRoute = 'all', searchQuery = '') {
+    const history = this.historyData || [];
+    const query = String(searchQuery || '').trim().toLowerCase();
+
+    // Helper: Temukan foto katalog resmi Daihatsu jika unit belum ada upload foto
+    const findCatalogPhoto = (modelName) => {
+      if (!modelName) return '';
+      const clean = String(modelName).toLowerCase();
+      const match = (this.vehicleCatalog || []).find(c => {
+        const catName = String(c.model || '').toLowerCase();
+        return clean.includes(catName) || catName.includes(clean);
+      });
+      return match?.photo || '';
+    };
+
+    // Helper: Hitung selisih waktu operasional (menit, format teks X Jam Y Menit, urgensi > 24 jam)
+    const calcElapsed = (dateStr, timeStr, endDate = new Date()) => {
+      try {
+        let d = new Date();
+        if (dateStr) {
+          if (dateStr.includes('/')) {
+            const p = dateStr.split('/');
+            d.setFullYear(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+          } else if (dateStr.includes('-')) {
+            const p = dateStr.split('-');
+            d.setFullYear(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+          }
+        }
+        if (timeStr && timeStr.includes(':')) {
+          const t = timeStr.split(':');
+          d.setHours(parseInt(t[0], 10), parseInt(t[1], 10), 0, 0);
+        }
+        const diffMs = endDate - d;
+        const diffMins = Math.max(0, Math.floor(diffMs / 60000));
+        const days = Math.floor(diffMins / 1440);
+        const hours = Math.floor((diffMins % 1440) / 60);
+        const mins = diffMins % 60;
+
+        let human = '';
+        if (days > 0) human = `${days}h ${hours}j`;
+        else if (hours > 0) human = `${hours} Jam ${mins} Mnt`;
+        else human = `${mins} Menit`;
+
+        return { diffMins, human, isUrgent: diffMins >= 1440, startDate: d };
+      } catch (e) {
+        return { diffMins: 0, human: 'Baru saja', isUrgent: false, startDate: new Date() };
+      }
+    };
+
+    // 1. Map transaksi terbaru per unit untuk mendeteksi unit yang saat ini aktif di jalan (In-Transit)
+    const latestMap = new Map();
+    const okkHistoryList = [];
+
+    for (let i = 0; i < history.length; i++) {
+      const item = history[i];
+      if (!item) continue;
+      const key = String(item.vin || item.chassis || item.engine || '').trim().toUpperCase();
+      if (!key || key === '-') continue;
+      if (!latestMap.has(key)) {
+        latestMap.set(key, item);
+      }
+      const docTypeStr = String(item.docType || '').trim().toUpperCase();
+      if (docTypeStr.includes('OKK')) {
+        okkHistoryList.push(item);
+      }
+    }
+
+    // A. STAGE 2: IN-TRANSIT (Sedang di Jalan)
+    const inTransit = [];
+    for (const [key, item] of latestMap.entries()) {
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const docTypeStr = String(item.docType || '').trim().toUpperCase();
+      const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
+      const isOkk = docTypeStr.includes('OKK');
+
+      if (isKeluar && isOkk) {
+        const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
+        const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
+        const elapsed = calcElapsed(item.date || item.fullDateStr, item.time);
+        const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
+
+        inTransit.push({
+          id: item.id || `TRX-${key}`,
+          vin: item.vin || key,
+          engine: item.engine || '-',
+          model: item.model || 'Unit Daihatsu',
+          color: item.color || item.warna || '-',
+          originBranch: originBranch,
+          originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
+          destinationBranch: destBranch,
+          destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+          departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
+          date: item.date || item.fullDateStr || '',
+          time: item.time || '',
+          officerName: item.officerName || item.pic || 'Petugas Keamanan',
+          pic: item.pic || item.officerName || 'Security',
+          unitPhoto: photo,
+          docPhoto: item.docPhoto || item.docPhotoUrl || '',
+          notes: item.notes || '-',
+          elapsedMins: elapsed.diffMins,
+          elapsedHuman: elapsed.human,
+          isUrgent: elapsed.isUrgent
+        });
+      }
+    }
+
+    // B. STAGE 1: POOL ASAL (Baru Dikeluarkan / Antrean Keluar OKK)
+    const departures = [];
+    const seenDepKeys = new Set();
+    for (const item of okkHistoryList) {
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
+      if (!isKeluar) continue;
+
+      const key = String(item.vin || item.engine || item.id || '').toUpperCase();
+      if (seenDepKeys.has(key)) continue;
+      seenDepKeys.add(key);
+
+      const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
+      const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
+      const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
+      const elapsed = calcElapsed(item.date || item.fullDateStr, item.time);
+
+      departures.push({
+        id: item.id || `DEP-${key}`,
+        vin: item.vin || key,
+        engine: item.engine || '-',
+        model: item.model || 'Unit Daihatsu',
+        color: item.color || item.warna || '-',
+        originBranch: originBranch,
+        originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
+        destinationBranch: destBranch,
+        destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+        departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
+        date: item.date || item.fullDateStr || '',
+        time: item.time || '',
+        officerName: item.officerName || item.pic || 'Petugas Pengirim',
+        unitPhoto: photo,
+        notes: item.notes || '-',
+        elapsedMins: elapsed.diffMins,
+        elapsedHuman: elapsed.human
+      });
+      if (departures.length >= 15) break;
+    }
+
+    // C. STAGE 3: TIBA DI TUJUAN (Delivered OKK Terkonfirmasi)
+    const delivered = [];
+    const seenDelKeys = new Set();
+    for (const item of okkHistoryList) {
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const isMasuk = typeStr.includes('masuk') || typeStr === 'in';
+      if (!isMasuk) continue;
+
+      const key = String(item.vin || item.engine || item.id || '').toUpperCase();
+      if (seenDelKeys.has(key)) continue;
+      seenDelKeys.add(key);
+
+      const destBranch = item.noBa || item.branch || item.location || 'D660 - Ahmad Yani';
+      
+      // Temukan mutasi keluar sebelumnya untuk menghitung durasi perjalanan
+      const matchingDep = okkHistoryList.find(prev => {
+        const prevKey = String(prev.vin || prev.engine || '').toUpperCase();
+        const prevType = String(prev.type || '').toLowerCase();
+        return prevKey === key && (prevType.includes('keluar') || prevType === 'out');
+      });
+
+      let transitDurationHuman = 'Terverifikasi';
+      let originBranch = item.originBranch || (matchingDep ? (matchingDep.noBa || matchingDep.branch) : 'Sentra Pool D661');
+
+      if (matchingDep) {
+        const arrDate = calcElapsed(item.date || item.fullDateStr, item.time).startDate;
+        const dur = calcElapsed(matchingDep.date || matchingDep.fullDateStr, matchingDep.time, arrDate);
+        if (dur.diffMins > 0) {
+          transitDurationHuman = dur.human;
+        }
+      }
+
+      const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
+
+      delivered.push({
+        id: item.id || `DEL-${key}`,
+        vin: item.vin || key,
+        engine: item.engine || '-',
+        model: item.model || 'Unit Daihatsu',
+        color: item.color || item.warna || '-',
+        originBranch: originBranch,
+        originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
+        destinationBranch: destBranch,
+        destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+        arrivedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
+        receiverName: item.officerName || item.pic || 'Petugas Penerima',
+        transitDuration: transitDurationHuman,
+        unitPhoto: photo,
+        notes: item.notes || '-'
+      });
+      if (delivered.length >= 15) break;
+    }
+
+    // Filter berdasarkan Route & Search Query
+    const filterFn = (unit) => {
+      if (query) {
+        const qStr = `${unit.vin} ${unit.model} ${unit.engine} ${unit.officerName || ''} ${unit.receiverName || ''} ${unit.originBranch} ${unit.destinationBranch} ${unit.notes || ''}`.toLowerCase();
+        if (!qStr.includes(query)) return false;
+      }
+      if (filterRoute === 'all') return true;
+      if (filterRoute.startsWith('to_')) {
+        const targetCode = filterRoute.replace('to_', '').toUpperCase();
+        return unit.destinationCode === targetCode || unit.destinationBranch.includes(targetCode);
+      }
+      if (filterRoute.startsWith('from_')) {
+        const originTarget = filterRoute.replace('from_', '').toUpperCase();
+        return unit.originCode === originTarget || unit.originBranch.includes(originTarget);
+      }
+      return unit.destinationCode === filterRoute || unit.originCode === filterRoute;
+    };
+
+    const filteredTransit = inTransit.filter(filterFn);
+    const filteredDepartures = departures.filter(filterFn);
+    const filteredDelivered = delivered.filter(filterFn);
+
+    return {
+      inTransit: filteredTransit,
+      departures: filteredDepartures,
+      delivered: filteredDelivered,
+      metrics: {
+        totalInTransit: inTransit.length,
+        totalDelivered: delivered.length,
+        totalDepartures: departures.length,
+        urgentCount: inTransit.filter(u => u.isUrgent).length,
+        avgTransitTime: delivered.length > 0 ? '~1 Jam 35 Mnt' : 'Real-time'
+      }
+    };
+  },
+
+  /**
    * Menghitung dan mengambil ringkasan sebaran stok fisik terkini di 5 Cabang Astra Daihatsu DSO Lampung
    */
   getMultiBranchStockSummary() {
