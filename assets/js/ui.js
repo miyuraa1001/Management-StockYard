@@ -623,7 +623,14 @@ const UI = {
       const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       const netFromHistory = Math.max(0, histMasuk - histKeluar);
-      const totalUnits = hasRealHistory ? netFromHistory : Math.max(sheetYardStock + unitInYard, netFromHistory);
+
+      const sheetTotalIn = units.reduce((acc, u) => acc + (parseInt(u.totalIn, 10) || 0), 0);
+      const sheetTotalOut = units.reduce((acc, u) => acc + (parseInt(u.totalOut, 10) || 0), 0);
+      const sheetNetStock = Math.max(0, sheetTotalIn - sheetTotalOut);
+
+      const displayMasuk = hasRealHistory ? histMasuk : (sheetTotalIn || histMasuk);
+      const displayKeluar = hasRealHistory ? histKeluar : (sheetTotalOut || histKeluar);
+      const totalUnits = hasRealHistory ? netFromHistory : (sheetTotalIn > 0 || sheetTotalOut > 0 ? sheetNetStock : Math.max(sheetYardStock + unitInYard, netFromHistory));
 
       const latestIn = matchingHistory.find(h => h.type === 'Unit Masuk');
       const primaryUnit = units[0] || (latestIn ? { plate: latestIn.plate, vin: latestIn.vin, engine: latestIn.engine } : null);
@@ -633,8 +640,8 @@ const UI = {
         units,
         matchingHistory,
         totalUnits,
-        histMasuk,
-        histKeluar,
+        histMasuk: displayMasuk,
+        histKeluar: displayKeluar,
         primaryUnit
       };
     });

@@ -297,7 +297,7 @@ const AppState = {
     if (clean.includes('special edition') || clean.includes('terios se') || clean.includes('da3se')) return this.vehicleCatalog[11];
     if (clean.includes('terios')) return this.vehicleCatalog[2];
     if (clean.includes('xenia')) return this.vehicleCatalog[4];
-    if (clean.includes('old') || clean.includes('prod old') || clean.includes('salvage')) return this.vehicleCatalog[12];
+    if (clean.includes('old') || clean.includes('prod old') || clean.includes('prod_old')) return this.vehicleCatalog[12];
     if (clean.includes('sigra')) return this.vehicleCatalog[3];
     if (clean.includes('ayla')) return this.vehicleCatalog[5];
     if (clean.includes('new rocky') || clean.includes('turbo')) return this.vehicleCatalog[6];
@@ -1122,7 +1122,11 @@ const AppState = {
       const histMasuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
       const histKeluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
       const netFromHistory = Math.max(0, histMasuk - histKeluar);
-      const modelStock = netFromHistory;
+      const sheetTotalIn = units.reduce((acc, u) => acc + (parseInt(u.totalIn, 10) || 0), 0);
+      const sheetTotalOut = units.reduce((acc, u) => acc + (parseInt(u.totalOut, 10) || 0), 0);
+      const sheetStock = Math.max(0, sheetTotalIn - sheetTotalOut);
+      const hasHistory = targetHistory.length > 0;
+      const modelStock = hasHistory ? netFromHistory : Math.max(sheetStock, sheetYardStock);
 
       totalStokCount += modelStock;
       if (modelStock === 0) {

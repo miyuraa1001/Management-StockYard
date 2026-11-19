@@ -1617,7 +1617,7 @@ const ScannerService = {
     if (v.includes('P3FA2') || v.includes('P3FA3') || v.includes('BUS') || v.includes('MINIBUS') || v.includes('VAN')) return 'Gran Max Minibus';
     if (v.includes('M4BA') || v.includes('M800') || v.includes('SIRION')) return 'Sirion';
     if (v.includes('W2CA') || v.includes('S400') || v.includes('LUXIO')) return 'Luxio';
-    if (v.includes('OLD') || v.includes('PROD OLD') || v.includes('SALVAGE')) return 'New Sigra (Prod Old)';
+    if (v.includes('OLD') || v.includes('PROD OLD') || v.includes('PROD_OLD')) return 'New Sigra (Prod Old)';
     if (v.includes('A250') || v.includes('A251') || v.includes('ROCKY')) return 'Rocky';
     if (v.includes('P3FA')) return 'Gran Max Pick Up';
     return 'Gran Max Pick Up';

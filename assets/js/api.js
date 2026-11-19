@@ -160,15 +160,22 @@ const ApiService = {
 
       if (hasInventory || hasHistory || payload.config || payload.users || payload.user) {
         if (hasInventory) {
-          AppState.inventoryData = payload.inventory.map(item => ({
-            ...item,
-            model: item.model || item.name || '',
-            name: item.name || item.model || '',
-            noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || item.cabang || item.branch || 'D660 - Ahmad Yani',
-            stockYard: parseInt(item.stockYard != null ? item.stockYard : (item.inYard || 0), 10) || 0,
-            stockTransit: parseInt(item.stockTransit != null ? item.stockTransit : (item.inTransit || 0), 10) || 0,
-            status: (parseInt(item.stockYard != null ? item.stockYard : 0, 10) > 0) ? 'Tersedia' : 'Kosong'
-          }));
+          AppState.inventoryData = payload.inventory.map(item => {
+            const totalIn = parseInt(item.totalIn != null ? item.totalIn : (item.masuk || 0), 10) || 0;
+            const totalOut = parseInt(item.totalOut != null ? item.totalOut : (item.keluar || 0), 10) || 0;
+            const stockYard = parseInt(item.stockYard != null ? item.stockYard : Math.max(0, totalIn - totalOut), 10) || 0;
+            return {
+              ...item,
+              model: item.model || item.name || '',
+              name: item.name || item.model || '',
+              totalIn: totalIn,
+              totalOut: totalOut,
+              noBa: item.noBa || item.no_ba || item.baNumber || item.ba_number || item.cabang || item.branch || 'D660 - Ahmad Yani',
+              stockYard: stockYard,
+              stockTransit: parseInt(item.stockTransit != null ? item.stockTransit : (item.inTransit || 0), 10) || 0,
+              status: stockYard > 0 ? 'Tersedia' : 'Kosong'
+            };
+          });
         }
 
         if (hasHistory) {
