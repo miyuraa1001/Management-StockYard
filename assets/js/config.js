@@ -26,7 +26,7 @@ const CONFIG = {
     { code: 'D664', name: 'Lampung Timur', label: 'D664 - Lampung Timur' }
   ],
 
-  // 6 Akun Resmi Sesuai Database Google Spreadsheet Tab UserPIC
+  // 6 Akun Resmi Sesuai Database Google Spreadsheet Tab UserPIC (Kredensial diamankan murni di Server Backend)
   USER_ACCOUNTS: [
     {
       id: 'USR-001',
@@ -36,7 +36,6 @@ const CONFIG = {
       branchCode: 'ALL',
       role: 'ADMIN HEAD / BRANCH MANAGER',
       systemRole: 'Admin',
-      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com, nanchysilvia1301@gmail.com, adeliaadl105@gmail.com, M.kurniadi@dso.astra.co.id',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -48,7 +47,6 @@ const CONFIG = {
       branchCode: 'D660',
       role: 'SECURITY',
       systemRole: 'User',
-      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -60,7 +58,6 @@ const CONFIG = {
       branchCode: 'D661',
       role: 'SECURITY',
       systemRole: 'User',
-      password: 'daihatsu2026',
       email: 'syafirafira08162@gmail.com',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -72,7 +69,6 @@ const CONFIG = {
       branchCode: 'D662',
       role: 'SECURITY',
       systemRole: 'User',
-      password: 'daihatsu2026',
       email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -84,7 +80,6 @@ const CONFIG = {
       branchCode: 'D663',
       role: 'SECURITY',
       systemRole: 'User',
-      password: 'daihatsu2026',
       email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     },
@@ -96,7 +91,6 @@ const CONFIG = {
       branchCode: 'D664',
       role: 'SECURITY',
       systemRole: 'User',
-      password: 'daihatsu2026',
       email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'
     }

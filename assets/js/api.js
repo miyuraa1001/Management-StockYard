@@ -590,34 +590,40 @@ const ApiService = {
       const payload = { username: cleanUser, password: cleanPass };
       let res = await this.request('login', 'POST', payload);
 
-      if (res && (res.success || res.user)) {
+      // Jika server berhasil dihubungi dan mengembalikan respons valid
+      if (res && typeof res === 'object') {
+        if (res.success && res.user) {
+          return {
+            success: true,
+            message: res.message || 'Otentikasi berhasil!',
+            user: res.user
+          };
+        }
+        // Jika server menolak (password salah / user tidak aktif), hormati keputusan server (Zero-Bypass)
         return {
-          success: true,
-          message: res.message || 'Otentikasi berhasil!',
-          user: res.user || res.data
+          success: false,
+          message: res.message || 'Kredensial tidak valid. Silakan periksa kembali username dan kata sandi Anda.'
         };
       }
-
-      if (res && res.success === false && res.message) {
-        // Cek jika akun resmi terdaftar di cache lokal
-        const local = this.verifyLocalCredentials(cleanUser, cleanPass);
-        if (local.success) return local;
-        return res;
-      }
     } catch (apiErr) {
-      console.warn('[ApiService] Server login tidak merespons, beralih ke verifikasi lokal:', apiErr);
+      console.warn('[ApiService] Server login tidak merespons (kemungkinan offline):', apiErr);
     }
 
-    // 2. Fallback verifikasi lokal jika server offline/kendala jaringan
+    // 2. Mode Darurat / Offline: Hanya izinkan jika sesi akun ini sudah pernah diautentikasi resmi di perangkat ini
     return this.verifyLocalCredentials(cleanUser, cleanPass);
   },
 
   /**
-   * Verifikasi kredensial lokal dari daftar akun resmi CONFIG.USER_ACCOUNTS
+   * Verifikasi kredensial lokal darurat (Zero-Hardcode Password)
+   * Hanya mengizinkan login lokal jika akun tersebut sudah memiliki sesi tersimpan yang sah
    */
   verifyLocalCredentials(username, password) {
     const search = String(username || '').trim().toLowerCase();
     const inputPass = String(password || '').trim();
+
+    if (!inputPass) {
+      return { success: false, message: 'Kata sandi tidak boleh kosong.' };
+    }
 
     const accounts = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.USER_ACCOUNTS)) 
       ? CONFIG.USER_ACCOUNTS 
@@ -638,32 +644,20 @@ const ApiService = {
       };
     }
 
-    const expectedPass = matched.password || 'daihatsu2026';
-    if (inputPass === expectedPass) {
-      const isAdm = (matched.systemRole === 'Admin') || 
-                    (matched.role && matched.role.toUpperCase().includes('ADMIN')) || 
-                    (matched.username && matched.username.toUpperCase().includes('DSO'));
+    // Cek apakah ada sesi aktif tersimpan di perangkat ini untuk akun yang sama
+    const savedSession = AppState.authSession || null;
+    if (savedSession && savedSession.user && String(savedSession.user.username || '').toLowerCase() === search) {
       return {
         success: true,
-        message: 'Otentikasi berhasil!',
-        user: {
-          id: matched.id || 'USR-001',
-          username: matched.username,
-          name: String(matched.name || '').replace(/DISTRICT/gi, 'BRANCH'),
-          branch: matched.branch,
-          role: isAdm ? 'Admin' : 'User',
-          position: isAdm ? 'ADMIN HEAD / BRANCH MANAGER' : (matched.role || 'SECURITY'),
-          targetEmail: matched.email,
-          email: matched.email,
-          avatar: matched.avatar,
-          photo: matched.avatar
-        }
+        message: 'Masuk dalam mode offline (Sesi terverifikasi sebelumnya).',
+        user: savedSession.user
       };
     }
 
-    return { 
-      success: false, 
-      message: 'Kata sandi yang Anda masukkan tidak sesuai.' 
+    // Jika perangkat offline dan belum pernah login resmi online
+    return {
+      success: false,
+      message: 'Perangkat sedang offline. Sambungkan koneksi internet untuk autentikasi pertama kali dengan server database.'
     };
   },
 

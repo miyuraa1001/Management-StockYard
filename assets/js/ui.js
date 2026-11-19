@@ -6230,6 +6230,14 @@ const UI = {
     if (passInput) {
       passInput.value = '';
     }
+
+    // Cek apakah akun sedang dalam penalti lockout anti brute-force
+    const lockedUntil = parseInt(localStorage.getItem('daihatsu_login_locked_until') || '0', 10);
+    const now = Date.now();
+    if (lockedUntil && now < lockedUntil) {
+      const remainingSec = Math.ceil((lockedUntil - now) / 1000);
+      this.startLoginLockoutCountdown(remainingSec);
+    }
   },
 
   hideLoginScreen() {
@@ -6270,6 +6278,49 @@ const UI = {
     }
   },
 
+  _loginLockoutTimer: null,
+
+  /**
+   * Menjalankan penghitung waktu mundur lockout anti brute-force
+   */
+  startLoginLockoutCountdown(seconds) {
+    if (this._loginLockoutTimer) clearInterval(this._loginLockoutTimer);
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    const errBox = document.getElementById('loginErrorAlert');
+    const errMsg = document.getElementById('loginErrorMsg');
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+    }
+    if (errBox) errBox.classList.remove('hidden');
+
+    let rem = seconds;
+    const updateMsg = () => {
+      if (errMsg) {
+        errMsg.innerHTML = `⛔ <strong>Akses Dikunci Sementara:</strong> Percobaan kata sandi salah 3 kali berturut-turut. Tunggu <strong>${rem} detik</strong> sebelum mencoba kembali demi keamanan akun.`;
+      }
+    };
+    updateMsg();
+
+    this._loginLockoutTimer = setInterval(() => {
+      rem--;
+      if (rem <= 0) {
+        clearInterval(this._loginLockoutTimer);
+        this._loginLockoutTimer = null;
+        localStorage.removeItem('daihatsu_login_locked_until');
+        localStorage.removeItem('daihatsu_login_failed_attempts');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        }
+        if (errBox) errBox.classList.add('hidden');
+      } else {
+        updateMsg();
+      }
+    }, 1000);
+  },
+
   async handleEnterpriseLogin(event) {
     if (event) event.preventDefault();
 
@@ -6283,6 +6334,15 @@ const UI = {
     const errMsg = document.getElementById('loginErrorMsg');
     const succBox = document.getElementById('loginSuccessAlert');
     const succMsg = document.getElementById('loginSuccessMsg');
+
+    // 1. Cek status penalti lockout (Anti Brute-Force Rate Limiting)
+    const lockedUntil = parseInt(localStorage.getItem('daihatsu_login_locked_until') || '0', 10);
+    const now = Date.now();
+    if (lockedUntil && now < lockedUntil) {
+      const remainingSec = Math.ceil((lockedUntil - now) / 1000);
+      this.startLoginLockoutCountdown(remainingSec);
+      return;
+    }
 
     const username = (userInput && userInput.value.trim()) 
       ? userInput.value.trim() 
@@ -6316,6 +6376,14 @@ const UI = {
       const res = await ApiService.login(username, password);
 
       if (res && res.success && res.user) {
+        // Bersihkan counter kegagalan saat login berhasil
+        localStorage.removeItem('daihatsu_login_failed_attempts');
+        localStorage.removeItem('daihatsu_login_locked_until');
+        if (this._loginLockoutTimer) {
+          clearInterval(this._loginLockoutTimer);
+          this._loginLockoutTimer = null;
+        }
+
         if (succBox) {
           if (succMsg) succMsg.innerText = 'Autentikasi berhasil! Selamat datang, ' + res.user.name + '.';
           succBox.classList.remove('hidden');
@@ -6333,9 +6401,22 @@ const UI = {
           this.showToast('🎉 Berhasil masuk sebagai ' + res.user.name + ' (' + res.user.branch + ')!');
         }, 600);
       } else {
-        if (errBox) {
-          if (errMsg) errMsg.innerText = (res && res.message) ? res.message : 'Kredensial tidak valid. Silakan periksa kembali kata sandi Anda.';
-          errBox.classList.remove('hidden');
+        // Catat kegagalan login & kunci jika mencapai 3 kali
+        let fails = parseInt(localStorage.getItem('daihatsu_login_failed_attempts') || '0', 10) + 1;
+        if (fails >= 3) {
+          const lockTime = Date.now() + 60000; // 60 detik lockout
+          localStorage.setItem('daihatsu_login_locked_until', String(lockTime));
+          localStorage.setItem('daihatsu_login_failed_attempts', '0');
+          this.startLoginLockoutCountdown(60);
+          return;
+        } else {
+          localStorage.setItem('daihatsu_login_failed_attempts', String(fails));
+          const sisaKesempatan = 3 - fails;
+          if (errBox) {
+            const serverMsg = (res && res.message) ? res.message : 'Kredensial tidak valid. Silakan periksa kembali kata sandi Anda.';
+            if (errMsg) errMsg.innerText = `${serverMsg} (Sisa kesempatan: ${sisaKesempatan}x sebelum akun dikunci sementara)`;
+            errBox.classList.remove('hidden');
+          }
         }
       }
     } catch (err) {
@@ -6345,7 +6426,8 @@ const UI = {
         errBox.classList.remove('hidden');
       }
     } finally {
-      if (submitBtn) submitBtn.disabled = false;
+      const isStillLocked = parseInt(localStorage.getItem('daihatsu_login_locked_until') || '0', 10) > Date.now();
+      if (submitBtn && !isStillLocked) submitBtn.disabled = false;
       if (spinner) spinner.classList.add('hidden');
       if (arrow) arrow.classList.remove('hidden');
     }
