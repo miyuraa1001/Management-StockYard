@@ -733,6 +733,11 @@ const UI = {
   _branchUnitsFilter: 'all',
 
   setInventoryViewMode(mode) {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin && mode === 'branches') {
+      this.showToast('🔒 Akses Terbatas: Tab Sebaran Cabang & Radar OKK khusus untuk Administrator DSO.');
+      mode = 'catalog';
+    }
     this._inventoryViewMode = mode;
     const catalogView = document.getElementById('inventoryCatalogView');
     const branchesView = document.getElementById('inventoryBranchesView');
@@ -5585,6 +5590,20 @@ const UI = {
           inputNoBaHint.innerHTML = 'Akses Admin: Silakan pilih cabang penyerahan/penerimaan unit (<strong>D660 s/d D664</strong>).';
         }
       }
+    }
+
+    // Hak Akses Khusus: Security User HANYA melihat Katalog 13 Model (Tab Switcher & Radar OKK disembunyikan)
+    const switcherCard = document.getElementById('invViewModeSwitcherCard');
+    const branchesView = document.getElementById('inventoryBranchesView');
+    const catalogView = document.getElementById('inventoryCatalogView');
+
+    if (!isAdmin) {
+      if (switcherCard) switcherCard.classList.add('hidden');
+      if (branchesView) branchesView.classList.add('hidden');
+      if (catalogView) catalogView.classList.remove('hidden');
+      this._inventoryViewMode = 'catalog';
+    } else {
+      if (switcherCard) switcherCard.classList.remove('hidden');
     }
   },
 
