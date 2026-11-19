@@ -252,6 +252,9 @@ const UI = {
     if (m && (!m.value || m.value === 'all')) m.value = todayMonth;
     if (y && (!y.value || y.value === 'all')) y.value = todayYear;
 
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
     // Sinkronisasi status peran Admin vs Security untuk filter Cabang Dashboard
     const isAdmin = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function') ? AppState.isAdmin() : false;
     const userBranch = (typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function') ? AppState.getUserBranchCode() : 'D660';
@@ -317,11 +320,64 @@ const UI = {
       }
     }
 
+    // 1.5 Update Visual State Tombol Quick Filter (Hari Ini | Bulan Ini | Semua | Kustom)
+    const isMonth = (fDate === 'all' && fMonth === String(now.getMonth() + 1) && fYear === String(now.getFullYear()));
+    const isAll = (fDate === 'all' && fMonth === 'all' && fYear === 'all');
+    const activeQuickKey = isToday ? 'today' : (isMonth ? 'month' : (isAll ? 'all' : 'custom'));
+
+    ['today', 'month', 'all', 'custom'].forEach(p => {
+      const btn = document.getElementById(`dashQuick-${p}`);
+      if (!btn) return;
+      if (p === activeQuickKey) {
+        btn.className = 'dash-quick-period-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white shadow-xs font-black transition cursor-pointer flex items-center justify-center space-x-1';
+      } else {
+        btn.className = 'dash-quick-period-btn px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 font-bold transition cursor-pointer flex items-center justify-center space-x-1';
+      }
+    });
+
     // 2. Re-render aktivitas mutasi terbaru sesuai filter tanggal
     this.renderDashboardActivities();
 
     // 3. Re-render Distribusi Donut & KPI agar data unit masuk langsung terbaca
     this.updateDashboardKpis();
+  },
+
+  /**
+   * Setel filter cepat periode Dashboard (1-Tap Segmented Filter)
+   */
+  setDashboardQuickPeriod(period) {
+    const now = new Date();
+    const d = document.getElementById('dashFilterDate');
+    const m = document.getElementById('dashFilterMonth');
+    const y = document.getElementById('dashFilterYear');
+    const customPanel = document.getElementById('dashCustomDatePanel');
+
+    if (period === 'today') {
+      if (d) d.value = String(now.getDate());
+      if (m) m.value = String(now.getMonth() + 1);
+      if (y) y.value = String(now.getFullYear());
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan data mutasi Hari Ini');
+    } else if (period === 'month') {
+      if (d) d.value = 'all';
+      if (m) m.value = String(now.getMonth() + 1);
+      if (y) y.value = String(now.getFullYear());
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan data mutasi Bulan Ini');
+    } else if (period === 'all') {
+      if (d) d.value = 'all';
+      if (m) m.value = 'all';
+      if (y) y.value = 'all';
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan Seluruh Riwayat Mutasi');
+    } else if (period === 'custom') {
+      if (customPanel) {
+        customPanel.classList.toggle('hidden');
+      }
+    }
   },
 
   /**
@@ -335,6 +391,9 @@ const UI = {
     if (d) d.value = String(now.getDate());
     if (m) m.value = String(now.getMonth() + 1);
     if (y) y.value = String(now.getFullYear());
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
     this.applyDashboardDateFilter();
     this.showToast('Filter dashboard disetel ke Hari Ini');
   },
@@ -350,12 +409,16 @@ const UI = {
     if (d) d.value = 'all';
     if (m) m.value = 'all';
     if (y) y.value = 'all';
+    if (b) b.value = 'all';
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
     const isAdmin = (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function') ? AppState.isAdmin() : false;
     if (isAdmin && b) {
       b.value = 'all';
     }
     this.applyDashboardDateFilter();
-    this.showToast('Filter dashboard di-reset (Semua Waktu)');
+    this.showToast('Filter dashboard di-reset (Semua Waktu & BA)');
   },
 
   setDashboardDateFilterToAll() {
@@ -1808,6 +1871,12 @@ const UI = {
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
               <span>${this.formatBranchName(item.noBa || item.branch)}</span>
             </div>
+            ${(item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) ? `
+              <div class="mt-1 flex items-center space-x-1 text-[9px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                <span>➔</span>
+                <span class="truncate">Tujuan: ${this.formatBranchName(item.destinationBranch)}</span>
+              </div>
+            ` : ''}
           </td>
 
           <!-- Kolom 6: No. Rangka (VIN) & Mesin -->
@@ -2363,7 +2432,10 @@ const UI = {
       const isMasuk = item.type === 'Unit Masuk';
       if (isMasuk) totalMasuk++; else totalKeluar++;
 
-      const branchName = this.formatBranchName(item.noBa || item.branch);
+      let branchName = this.formatBranchName(item.noBa || item.branch);
+      if (item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) {
+        branchName += `\n➔ Tujuan: ${this.formatBranchName(item.destinationBranch)}`;
+      }
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
@@ -2977,7 +3049,10 @@ const UI = {
       const isMasuk = item.type === 'Unit Masuk';
       if (isMasuk) masukCount++; else keluarCount++;
 
-      const branchName = this.formatBranchName(item.noBa || item.branch);
+      let branchName = this.formatBranchName(item.noBa || item.branch);
+      if (item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) {
+        branchName += `\n➔ Tujuan: ${this.formatBranchName(item.destinationBranch)}`;
+      }
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
