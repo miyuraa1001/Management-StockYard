@@ -124,6 +124,32 @@ const UI = {
     if (kpiKeluar) kpiKeluar.innerText = AppState.kpi.keluar;
     if (kpiTotalStok) kpiTotalStok.innerText = AppState.kpi.totalStok;
 
+    // Update Executive 4-Card KPI Strip di Dashboard
+    const dashTotal = document.getElementById('dashKpiTotalStok');
+    const dashMasuk = document.getElementById('dashKpiMasuk');
+    const dashKeluar = document.getElementById('dashKpiKeluar');
+    const dashStatus = document.getElementById('dashKpiStatus');
+    const dashStatusSub = document.getElementById('dashKpiStatusSub');
+    const dashStatusCard = document.getElementById('dashKpiStatusCard');
+
+    if (dashTotal) dashTotal.innerText = AppState.kpi.totalStok;
+    if (dashMasuk) dashMasuk.innerText = AppState.kpi.masuk;
+    if (dashKeluar) dashKeluar.innerText = AppState.kpi.keluar;
+    if (dashStatus) {
+      const isAvailable = (AppState.kpi.totalStok > 0);
+      dashStatus.innerText = isAvailable ? 'Tersedia' : 'Kosong';
+      if (dashStatusSub) {
+        dashStatusSub.innerText = isAvailable ? `${AppState.kpi.totalStok} unit ready di pool` : 'Menunggu unit masuk';
+      }
+      if (dashStatusCard) {
+        if (isAvailable) {
+          dashStatusCard.className = 'bg-teal-50/80 border border-teal-200/80 rounded-2xl p-3 sm:p-4 shadow-saas-card flex flex-col justify-between';
+        } else {
+          dashStatusCard.className = 'bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-saas-card flex flex-col justify-between';
+        }
+      }
+    }
+
     if (typeof this.renderDashboardDonut === 'function') {
       this.renderDashboardDonut();
     }
@@ -263,11 +289,64 @@ const UI = {
       }
     }
 
+    // 1.5 Update Visual State Tombol Quick Filter (Hari Ini | Bulan Ini | Semua | Kustom)
+    const isMonth = (fDate === 'all' && fMonth === String(now.getMonth() + 1) && fYear === String(now.getFullYear()));
+    const isAll = (fDate === 'all' && fMonth === 'all' && fYear === 'all');
+    const activeQuickKey = isToday ? 'today' : (isMonth ? 'month' : (isAll ? 'all' : 'custom'));
+
+    ['today', 'month', 'all', 'custom'].forEach(p => {
+      const btn = document.getElementById(`dashQuick-${p}`);
+      if (!btn) return;
+      if (p === activeQuickKey) {
+        btn.className = 'dash-quick-period-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white shadow-xs font-black transition cursor-pointer flex items-center justify-center space-x-1';
+      } else {
+        btn.className = 'dash-quick-period-btn px-3 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 font-bold transition cursor-pointer flex items-center justify-center space-x-1';
+      }
+    });
+
     // 2. Re-render aktivitas mutasi terbaru sesuai filter tanggal
     this.renderDashboardActivities();
 
     // 3. Re-render Distribusi Donut & KPI agar data unit masuk langsung terbaca
     this.updateDashboardKpis();
+  },
+
+  /**
+   * Setel filter cepat periode Dashboard (1-Tap Segmented Filter)
+   */
+  setDashboardQuickPeriod(period) {
+    const now = new Date();
+    const d = document.getElementById('dashFilterDate');
+    const m = document.getElementById('dashFilterMonth');
+    const y = document.getElementById('dashFilterYear');
+    const customPanel = document.getElementById('dashCustomDatePanel');
+
+    if (period === 'today') {
+      if (d) d.value = String(now.getDate());
+      if (m) m.value = String(now.getMonth() + 1);
+      if (y) y.value = String(now.getFullYear());
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan data mutasi Hari Ini');
+    } else if (period === 'month') {
+      if (d) d.value = 'all';
+      if (m) m.value = String(now.getMonth() + 1);
+      if (y) y.value = String(now.getFullYear());
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan data mutasi Bulan Ini');
+    } else if (period === 'all') {
+      if (d) d.value = 'all';
+      if (m) m.value = 'all';
+      if (y) y.value = 'all';
+      if (customPanel) customPanel.classList.add('hidden');
+      this.applyDashboardDateFilter();
+      this.showToast('Menampilkan Seluruh Riwayat Mutasi');
+    } else if (period === 'custom') {
+      if (customPanel) {
+        customPanel.classList.toggle('hidden');
+      }
+    }
   },
 
   /**
@@ -3818,7 +3897,7 @@ const UI = {
 
     if (!item) {
       if (prevDot) prevDot.style.backgroundColor = '#94a3b8';
-      if (prevCategory) prevCategory.textContent = 'Menunggu Data Unit';
+      if (prevCategory) prevCategory.textContent = 'Tidak ada stok fisik pada periode ini';
       if (prevBadge) {
         prevBadge.textContent = '0%';
         prevBadge.style.backgroundColor = '#94a3b8';
@@ -3827,7 +3906,7 @@ const UI = {
         prevImg.src = 'assets/images/Inventory_Gran Max Pick Up.jpeg';
         prevImg.alt = 'Unit Daihatsu';
       }
-      if (prevModel) prevModel.textContent = 'Belum Ada Unit';
+      if (prevModel) prevModel.textContent = 'Belum Ada Mutasi Unit';
       if (prevBar) {
         prevBar.style.width = '0%';
         prevBar.style.backgroundColor = '#94a3b8';
@@ -3837,7 +3916,10 @@ const UI = {
       if (prevKeluar) prevKeluar.textContent = 'Keluar 0';
       if (prevMasukBtn) prevMasukBtn.onclick = () => this.filterHistoryTab('in');
       if (prevKeluarBtn) prevKeluarBtn.onclick = () => this.filterHistoryTab('out');
-      if (prevBtn) prevBtn.onclick = () => this.switchTab('inventory');
+      if (prevBtn) {
+        prevBtn.innerHTML = `<span>Tampilkan Seluruh Stok</span><svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
+        prevBtn.onclick = () => this.setDashboardQuickPeriod('all');
+      }
       return;
     }
 
@@ -4299,9 +4381,6 @@ const UI = {
     });
 
     const selectIds = [
-      'dashFilterDate',
-      'dashFilterMonth',
-      'dashFilterYear',
       'histFilterDate',
       'histFilterMonth',
       'histFilterYear',
@@ -5503,6 +5582,20 @@ const UI = {
         dd.title = 'Filter Cabang (Akses Admin ke Semua Cabang)';
       }
     });
+
+    // Update Dashboard Branch Badge & Selector
+    const dashLockedBadge = document.getElementById('dashBranchLockedBadge');
+    const dashLockedText = document.getElementById('dashBranchLockedText');
+    const dashAdminWrapper = document.getElementById('dashBranchAdminWrapper');
+
+    if (dashLockedText) dashLockedText.textContent = userBranch;
+    if (isAdmin) {
+      if (dashLockedBadge) dashLockedBadge.classList.add('hidden');
+      if (dashAdminWrapper) dashAdminWrapper.classList.remove('hidden');
+    } else {
+      if (dashLockedBadge) dashLockedBadge.classList.remove('hidden');
+      if (dashAdminWrapper) dashAdminWrapper.classList.add('hidden');
+    }
 
     const inputNoBa = document.getElementById('inputNoBa');
     const inputNoBaBadge = document.getElementById('inputNoBaRoleBadge');
@@ -8714,6 +8807,7 @@ window.clearEmailNotificationLogs = () => UI.clearEmailNotificationLogs ? UI.cle
 window.applyDashboardDateFilter = () => UI.applyDashboardDateFilter();
 window.resetDashboardDateFilter = () => UI.resetDashboardDateFilter();
 window.setDashboardDateFilterToToday = () => UI.setDashboardDateFilterToToday();
+window.setDashboardQuickPeriod = (p) => UI.setDashboardQuickPeriod ? UI.setDashboardQuickPeriod(p) : null;
 window.quickToggleRole = () => UI.quickToggleRole();
 
 // Pastikan event touchmove pada grafik donat bersifat non-passive, custom dropdown, animasi scroll & pull to refresh terinisialisasi
