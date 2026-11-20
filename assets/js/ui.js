@@ -6901,14 +6901,18 @@ const UI = {
   /**
    * Buka modal pengaturan Target Email Penerima (Multi-Email Tags/Chips)
    */
-    openEditTargetEmailModal() {
+  openEditTargetEmailModal() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO (ADH/BM) yang berhak mengubah target email penerima laporan.');
+      return;
+    }
     this.initAutomationModal();
 
     // Sinkronkan Branch Selector Dropdown sesuai hak akses (Admin bisa pilih cabang, User terkunci)
     const branchSelect = document.getElementById('selectTargetEmailBranch');
     const branchBadge = document.getElementById('targetEmailBranchBadge');
     const branchNotice = document.getElementById('targetEmailBranchNotice');
-    const isAdmin = AppState.isAdmin();
     const userBranchCode = AppState.getUserBranchCode();
 
     let targetBranchKey = 'DSO LAMPUNG';
@@ -6988,6 +6992,11 @@ const UI = {
    * Buka modal pembaruan informasi otomatisasi laporan (Backward compatibility alias)
    */
   openEditAutomationModal() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak mengubah otomatisasi laporan.');
+      return;
+    }
     this.openEditScheduleModal();
   },
 
@@ -7340,6 +7349,11 @@ const UI = {
    * Simpan khusus Jadwal Pengiriman Laporan ke Google Sheets & State
    */
   async saveScheduleData() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Ditolak: Hanya Administrator DSO (ADH/BM) yang berhak mengubah jadwal pengiriman laporan.');
+      return;
+    }
     const sched = this.buildScheduleString();
     const saveBtn = document.querySelector('button[onclick*="saveScheduleData"]');
     const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
@@ -7420,6 +7434,11 @@ const UI = {
    * Simpan khusus Target Email Penerima Laporan ke Google Sheets & State
    */
   async saveTargetEmailData() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Ditolak: Hanya Administrator DSO (ADH/BM) yang berhak mengubah target email penerima laporan.');
+      return;
+    }
     const emailList = (this.automationState.emails && this.automationState.emails.length > 0)
       ? this.automationState.emails
       : (document.getElementById('inputAutoEmail')?.value || '').split(/[,;\n\s]+/).filter(e => e.includes('@'));
@@ -7645,30 +7664,105 @@ const UI = {
     const torchToggle = document.getElementById('settingAutoTorchToggle');
     if (torchToggle) torchToggle.checked = savedTorch;
 
-    // 3. Daily Digest Toggle (Otoritas Admin)
-    const digestToggle = document.getElementById('settingDailyDigestToggle');
-    if (digestToggle && AppState.automationConfig) {
-      digestToggle.checked = AppState.automationConfig.enabled !== false;
-      digestToggle.disabled = !isAdmin;
+    // 3. Durasi Perjalanan Unit Antar Cabang (Sembunyikan sepenuhnya di akun Security, tampilkan HANYA di akun Admin)
+    const transitCard = document.getElementById('transitTimesSettingsCard');
+    if (transitCard) {
       if (!isAdmin) {
-        digestToggle.title = 'Hanya Administrator DSO yang berhak mengubah status otomatisasi laporan';
+        transitCard.classList.add('hidden');
       } else {
+        transitCard.classList.remove('hidden');
+      }
+    }
+
+    // 4. Status Koneksi Cloud & Database (Sembunyikan sepenuhnya di akun Security, tampilkan HANYA di akun Admin)
+    const cloudCard = document.getElementById('cloudConnectionSettingsCard');
+    if (cloudCard) {
+      if (!isAdmin) {
+        cloudCard.classList.add('hidden');
+      } else {
+        cloudCard.classList.remove('hidden');
+      }
+    }
+
+    // 5. Otomatisasi Laporan (Kunci Total untuk Akun Security, Hanya Admin yang Berhak Mengedit)
+    const dailyDigestBadge = document.getElementById('dailyDigestAdminBadge');
+    const schedDesktopBtn = document.getElementById('editScheduleBtnDesktop');
+    const digestToggle = document.getElementById('settingDailyDigestToggle');
+    const schedItem = document.getElementById('settingScheduleItem');
+    const schedAction = document.getElementById('settingScheduleActionIcon');
+    const emailItem = document.getElementById('settingTargetEmailItem');
+    const emailAction = document.getElementById('settingTargetEmailActionIcon');
+    const notifManageEmailBtn = document.getElementById('notifModalManageEmailBtn');
+
+    if (!isAdmin) {
+      if (dailyDigestBadge) {
+        dailyDigestBadge.textContent = '🔒 Khusus Admin';
+        dailyDigestBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-50 text-amber-700 border border-amber-200';
+      }
+      if (schedDesktopBtn) schedDesktopBtn.classList.add('hidden');
+      if (digestToggle) {
+        if (AppState.automationConfig) {
+          digestToggle.checked = AppState.automationConfig.enabled !== false;
+        }
+        digestToggle.disabled = true;
+        if (digestToggle.parentElement) {
+          digestToggle.parentElement.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        }
+        digestToggle.title = 'Hanya Administrator DSO yang berhak mengubah status otomatisasi laporan';
+      }
+      if (schedItem) {
+        schedItem.classList.remove('cursor-pointer', 'hover:border-slate-200');
+        schedItem.classList.add('cursor-default');
+      }
+      if (schedAction) {
+        schedAction.innerHTML = '<span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">🔒 <span>Terkunci</span></span>';
+      }
+      if (emailItem) {
+        emailItem.classList.remove('cursor-pointer', 'hover:border-slate-200');
+        emailItem.classList.add('cursor-default');
+      }
+      if (emailAction) {
+        emailAction.innerHTML = '<span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">🔒 <span>Terkunci</span></span>';
+      }
+      if (notifManageEmailBtn) {
+        notifManageEmailBtn.classList.add('hidden');
+      }
+    } else {
+      if (dailyDigestBadge) {
+        dailyDigestBadge.textContent = '🛡️ Otoritas Admin';
+        dailyDigestBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200';
+      }
+      if (schedDesktopBtn) schedDesktopBtn.classList.remove('hidden');
+      if (digestToggle) {
+        if (AppState.automationConfig) {
+          digestToggle.checked = AppState.automationConfig.enabled !== false;
+        }
+        digestToggle.disabled = false;
+        if (digestToggle.parentElement) {
+          digestToggle.parentElement.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        }
         digestToggle.title = 'Aktifkan / nonaktifkan laporan email otomatis harian';
       }
-    }
-
-    const schedBtn = document.getElementById('editScheduleBtnDesktop');
-    if (schedBtn) {
-      if (!isAdmin) {
-        schedBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        schedBtn.title = 'Khusus Administrator DSO';
-      } else {
-        schedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        schedBtn.title = 'Ubah jadwal pengiriman laporan';
+      if (schedItem) {
+        schedItem.classList.add('cursor-pointer', 'hover:border-slate-200');
+        schedItem.classList.remove('cursor-default');
+      }
+      if (schedAction) {
+        schedAction.innerHTML = '<span class="hidden sm:inline-flex text-[11px] font-bold text-slate-400">Edit</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>';
+      }
+      if (emailItem) {
+        emailItem.classList.add('cursor-pointer', 'hover:border-slate-200');
+        emailItem.classList.remove('cursor-default');
+      }
+      if (emailAction) {
+        emailAction.innerHTML = '<span class="hidden sm:inline-flex text-[11px] font-bold text-slate-400">Edit</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>';
+      }
+      if (notifManageEmailBtn) {
+        notifManageEmailBtn.classList.remove('hidden');
       }
     }
 
-    // 4. Sinkronisasi Nilai Durasi Transit Cabang (SLA Radar OKK)
+    // 6. Sinkronisasi Nilai Durasi Transit Cabang (SLA Radar OKK)
     const tt = (AppState.transitTimes || {});
     const inputD660 = document.getElementById('transitDuration_D660');
     const inputD661 = document.getElementById('transitDuration_D661');
@@ -7684,22 +7778,11 @@ const UI = {
     if (inputD664) inputD664.value = tt.D664 || 180;
     if (inputDef)  inputDef.value  = tt.DEFAULT || 90;
 
-    // Pengaturan Otoritas Khusus Admin pada Durasi Transit
     const securityNotice = document.getElementById('transitSettingsSecurityNotice');
     const saveTransitBtn = document.getElementById('saveTransitDurationsBtn');
     const transitInputs = [inputD660, inputD661, inputD662, inputD663, inputD664, inputDef].filter(Boolean);
 
-    if (!isAdmin) {
-      if (securityNotice) securityNotice.classList.remove('hidden');
-      if (saveTransitBtn) {
-        saveTransitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        saveTransitBtn.disabled = true;
-      }
-      transitInputs.forEach(inp => {
-        inp.disabled = true;
-        inp.classList.add('bg-slate-100', 'cursor-not-allowed');
-      });
-    } else {
+    if (isAdmin) {
       if (securityNotice) securityNotice.classList.add('hidden');
       if (saveTransitBtn) {
         saveTransitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -7711,10 +7794,10 @@ const UI = {
       });
     }
 
-    // 5. Update notification badge dot
+    // 7. Update notification badge dot
     this.updateNotificationBadge();
 
-    // 6. Pre-fill Direct AppScript URL in Settings
+    // 8. Pre-fill Direct AppScript URL in Settings
     const inputSettings = document.getElementById('directAppScriptUrlInputSettings');
     if (inputSettings) {
       inputSettings.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';

@@ -74,9 +74,9 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** dan prinsip **Lea
 │                                          │ • Terbatas HANYA pada data cabang sendiri   │
 │                                          │ • Universal login tanpa NPK perorangan      │
 │                                          │ • Menerima rekap email eksklusif cabangnya  │
-│                                          │ • Mengelola email penerima cabang sendiri   │
-│                                          │ • TERKUNCI: Tidak dapat ubah jadwal global, │
-│                                          │   toggle bot digest, atau SLA durasi        │
+│                                          │ • TERKUNCI & TERSEMBUNYI: Otomatisasi       │
+│                                          │   Laporan dikunci total (read-only),        │
+│                                          │   Durasi SLA & Status Cloud disembunyikan   │
 └──────────────────────────────────────────┴─────────────────────────────────────────────┘
 ```
 
@@ -89,11 +89,12 @@ Sistem menerapkan prinsip **Role-Based Access Control (RBAC)** dan prinsip **Lea
 | **Konfirmasi Unit Tiba (Radar OKK)** | ✅ Ya | ✅ Ya (Di Cabang Tujuan) | Security cabang penerima wajib memverifikasi kedatangan fisik. |
 | **Lihat Dashboard & Stok Katalog** | ✅ Ya (Semua) | ✅ Ya (Filtered Cabang) | Visibilitas ketersediaan unit. |
 | **Ekspor PDF & Excel Riwayat** | ✅ Ya (Semua) | ✅ Ya (Cabang Sendiri) | Kebutuhan serah terima dan laporan shift. |
-| **Ubah Email Penerima Cabang** | ✅ Ya (Semua) | ✅ Ya (Cabang Sendiri) | Fleksibilitas saat staf logistik cabang berganti email. |
+| **Ubah Email Penerima Cabang** | ✅ **Hanya Admin** | ❌ **Terkunci** | Mencegah kebocoran data dokumen rahasia korporat (SPPDC/OKK) ke email pribadi. |
 | **Edit Jadwal Pengiriman Unit** | ✅ **Hanya Admin** | ❌ **Terkunci** | Jadwal pengiriman merupakan wewenang distribusi supply chain; security hanya bertindak sebagai eksekutor fisik gerbang. |
 | **Aktif/Nonaktifkan Daily Digest** | ✅ **Hanya Admin** | ❌ **Terkunci** | Mencegah bot rekap harian termatikan secara tidak sengaja oleh regu jaga shift malam/pagi. |
 | **Ubah Jam Pengiriman Daily Digest** | ✅ **Hanya Admin** | ❌ **Terkunci** | Jam rekap 08:00 WIB terikat SOP holding DSO & Astra International. |
-| **Atur Durasi Perjalanan SLA Cabang** | ✅ **Hanya Admin** | ❌ **Terkunci** | Penentuan SLA logistik merupakan parameter audit manajerial di `SystemConfig`. |
+| **Atur Durasi Perjalanan SLA Cabang** | ✅ **Tampil & Edit** | ❌ **Disembunyikan (*Hidden*)** | Parameter manajerial disembunyikan sepenuhnya dari pandangan antarmuka Security. |
+| **Status Koneksi Cloud & Database** | ✅ **Tampil & Periksa** | ❌ **Disembunyikan (*Hidden*)** | Pengawasan kesehatan teknis database cloud hanya relevan untuk Administrator DSO. |
 
 ---
 
