@@ -227,6 +227,17 @@ const App = {
       return;
     }
 
+    // Strict validation: Cabang Tujuan Pengiriman tidak boleh sama dengan Cabang Asal
+    if (isOkkExit) {
+      const originCode = (noBa.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+      const destCode = (destinationBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+      if (originCode && destCode && originCode === destCode) {
+        UI.showToast(`⚠️ Cabang Tujuan (${destCode}) tidak boleh sama dengan Cabang Asal (${originCode})!`, 5000);
+        this.resetSubmitMutationButton();
+        return;
+      }
+    }
+
     const cleanVin = vin.toUpperCase();
     const cleanEngine = engine.toUpperCase();
 
@@ -363,9 +374,10 @@ const App = {
     const keteranganEl = document.getElementById('inputKeterangan');
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');
-    if (noBaEl) noBaEl.value = 'D660 - Ahmad Yani';
+    if (noBaEl && AppState.isAdmin && AppState.isAdmin()) noBaEl.value = 'D660 - Ahmad Yani';
     const destBranchEl = document.getElementById('inputDestinationBranch');
-    if (destBranchEl) destBranchEl.value = 'D661 - Soekarno Hatta';
+    const curOriginCode = ((noBaEl ? noBaEl.value : '') || (AppState.getUserBranchCode ? AppState.getUserBranchCode() : '')).match(/D66[0-4]/i)?.[0]?.toUpperCase() || '';
+    if (destBranchEl) destBranchEl.value = curOriginCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta';
     const docTypeEl = document.getElementById('inputMutationDocType');
     if (docTypeEl) docTypeEl.value = 'SPPDC';
     if (typeof window.onMutationDocTypeChanged === 'function') {
@@ -584,6 +596,9 @@ window.checkMutationFormCompleteness = function() {
   // 2. Evaluasi Kolom Wajib
   const isOkkExit = mutationType === 'Unit Keluar' && docType === 'OKK';
   const destBranch = (document.getElementById('inputDestinationBranch')?.value || '').trim();
+  const originCode = (noBa.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+  const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+  const isSameBranchError = isOkkExit && originCode && destCode && (originCode === destCode);
 
   const missing = [];
   if (!cleanVin) missing.push('Nomor VIN');
@@ -602,13 +617,21 @@ window.checkMutationFormCompleteness = function() {
   const totalRequired = isOkkExit ? 12 : 11;
   const isFormComplete = missing.length === 0;
 
-  if (!submitBtn) return isFormComplete && isCycleValid;
+  if (!submitBtn) return isFormComplete && isCycleValid && !isSameBranchError;
 
   // Jika terjadi pelanggaran siklus mutasi (duplikat): Tombol disabled tegas
   if (!isCycleValid) {
     submitBtn.disabled = true;
     submitBtn.className = 'w-full py-3.5 bg-rose-100 text-rose-600 border border-rose-300 text-xs font-black uppercase tracking-wider rounded-2xl shadow-none flex items-center justify-center space-x-2 opacity-60 pointer-events-none cursor-not-allowed transition';
     if (submitText) submitText.textContent = '⛔ Mutasi Ditolak (Duplikasi)';
+    return false;
+  }
+
+  // Jika cabang tujuan sama dengan cabang asal pada OKK Keluar: Tombol ditolak tegas
+  if (isSameBranchError) {
+    submitBtn.disabled = true;
+    submitBtn.className = 'w-full py-3.5 bg-rose-100 text-rose-600 border border-rose-300 text-xs font-black uppercase tracking-wider rounded-2xl shadow-none flex items-center justify-center space-x-2 opacity-60 pointer-events-none cursor-not-allowed transition';
+    if (submitText) submitText.textContent = `⛔ Tujuan Sama Dgn Asal (${originCode})`;
     return false;
   }
 
@@ -640,12 +663,39 @@ window.checkMutationFormCompleteness = function() {
  * Menampilkan / menyembunyikan input Cabang Tujuan Pengiriman khusus Unit Keluar + OKK
  */
 window.onMutationDocTypeChanged = function() {
-  const docType = (document.getElementById('inputMutationDocType')?.value || '').trim();
+  const docType = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
   const mutationType = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
   const boxDest = document.getElementById('boxDestinationBranch');
 
+  if (typeof AppState !== 'undefined') AppState.selectedDocType = docType;
+  const labelEl = document.getElementById('docPhotoCardLabel');
+  if (labelEl) labelEl.textContent = `Foto Dokumen (${docType})`;
+
   if (mutationType === 'Unit Keluar' && docType === 'OKK') {
     if (boxDest) boxDest.classList.remove('hidden');
+
+    // Pastikan cabang tujuan tidak sama dengan cabang asal pengirim
+    const originBranchVal = (document.getElementById('inputNoBa')?.value || (AppState && AppState.getUserBranch ? AppState.getUserBranch() : '') || '').trim();
+    const originCode = (originBranchVal.match(/D66[0-4]/i)?.[0] || (AppState && AppState.getUserBranchCode ? AppState.getUserBranchCode() : '') || '').toUpperCase();
+    const destEl = document.getElementById('inputDestinationBranch');
+    if (destEl) {
+      let curDest = (destEl.value || '').trim();
+      if (!curDest || (originCode && curDest.toUpperCase().includes(originCode))) {
+        const fallbacks = [
+          'D660 - Ahmad Yani',
+          'D661 - Soekarno Hatta',
+          'D662 - Bandar Jaya',
+          'D663 - Lampung Utara',
+          'D664 - Lampung Timur'
+        ].filter(b => !b.toUpperCase().includes(originCode));
+        const newDest = fallbacks[0] || (originCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta');
+        destEl.value = newDest;
+        const triggerText = document.getElementById('triggerDestinationBranchText');
+        if (triggerText) triggerText.textContent = newDest;
+        const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
+        if (triggerBadge) triggerBadge.textContent = (newDest.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+      }
+    }
   } else {
     if (boxDest) boxDest.classList.add('hidden');
   }

@@ -256,15 +256,31 @@ flowchart TD
   - Pilihan radio: **Unit Masuk** atau **Unit Keluar**.
   - Dropdown 13 Model Resmi Kendaraan Daihatsu.
   - Dropdown Cabang Asal (Otomatis terkunci ke cabang penugasan petugas).
-  - Dropdown Cabang Tujuan (Aktif saat scan Unit Keluar untuk memicu Radar OKK).
+  - Dropdown Cabang Tujuan (Aktif saat scan Unit Keluar dengan dokumen OKK untuk memicu Radar OKK. Pilihan opsi secara dinamis menyaring dan menyembunyikan cabang asal, serta validasi form memblokir pengiriman jika cabang asal dan cabang tujuan sama).
   - Dropdown Dokumen Resmi: **SPPDC**, **BSTKB**, atau **OKK**.
   - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPPDC / BSTKB / OKK).
   - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar.
 
-### 5.6 Pusat Notifikasi & Sinkronisasi Cloud (`ReportLogs`)
-* **Live Status Koneksi**: Indikator koneksi realtime ke backend Google Apps Script.
-* **Tombol Kirim Laporan On-Demand**: Memicu pengiriman laporan harian ke email manajemen seketika.
-* **Filter Riwayat Notifikasi**:
+### 5.6 Pusat Notifikasi & Sistem Pemberitahuan Android (`NotificationService` & `ReportLogs`)
+* **Integrasi Penuh Status Bar & Notifikasi Sistem Android**:
+  - Berfungsi langsung melalui Service Worker (`reg.showNotification`) pada smartphone Android yang telah menginstal PWA/WebAPK.
+  - Dilengkapi banner aktivasi 1-klik di Dashboard jika izin notifikasi belum diaktifkan di perangkat.
+  - Dilengkapi nada notifikasi sistem, getaran haptik (*tactile vibration patterns*), logo resmi Daihatsu pada status bar, serta dukungan buka-langsung ke tab terkait saat notifikasi diketuk.
+* **Skenario Pemberitahuan Real-Time di Handphone Petugas**:
+  1. **Scan Berhasil Masuk Database**: Seketika setelah barcode discan dan data tersimpan ke Google Spreadsheet & Drive, ponsel memunculkan notifikasi: `✅ Unit Masuk/Keluar Berhasil Tersimpan` dengan rincian model, nomor rangka (VIN), dan nama petugas.
+  2. **Pengiriman Transit OKK (Asal vs Tujuan)**:
+     - **Cabang Pengirim (misal D661)**: Notifikasi status bar: `🚛 Unit Dalam Perjalanan (Transit OKK)` — mengonfirmasi unit resmi meluncur menuju cabang tujuan.
+     - **Cabang Penerima (misal D660)**: Notifikasi getar tegas: `📍 Unit OTW Menuju Cabang Anda!` — memberi peringatan kepada regu security pos tujuan bahwa armada sedang menuju lokasinya agar gerbang penerimaan siap.
+     - **Admin DSO**: Notifikasi sentral: `🚛 Mutasi OKK Antar-Cabang (D661 ➔ D660)`.
+  3. **Konfirmasi Kedatangan Fisik (Scan Tiba di Tujuan)**:
+     - **Cabang Penerima (D660)**: `✅ Unit OKK Berhasil Diterima di Pool!` — unit tercatat masuk ke database dan stok fisik bertambah.
+     - **Cabang Pengirim (D661)**: `🏁 Unit Transit Tiba di Tujuan!` — memastikan mobil yang dikirim telah sampai dengan aman di pos penerima.
+     - **Admin DSO**: `✅ OKK Selesai: Tiba di D660`.
+  4. **Peringatan Keterlambatan Perjalanan (Radar SLA Delay)**:
+     - Jika unit di jalan melebihi estimasi durasi matriks rute cabang, sistem secara otomatis membunyikan alarm dan memunculkan notifikasi darurat: `⚠️ Peringatan Keterlambatan OKK!` lengkap dengan indikator selisih waktu keterlambatan.
+  5. **Rekapitulasi Harian Email Berhasil Terkirim**:
+     - Pukul 08:00 WIB, ponsel menampilkan notifikasi: `📊 Rekapitulasi Mutasi Harian Terkirim!` mengonfirmasi pengiriman berkas PDF & Excel ke email manajemen.
+* **Filter Riwayat Notifikasi di Tab History**:
   - `Semua (N)`: Menggabungkan seluruh mutasi unit dan riwayat pengiriman laporan.
   - `Masuk (N)`: Mutasi unit masuk.
   - `Keluar (N)`: Mutasi unit keluar.
@@ -374,7 +390,26 @@ Pengendali siklus hidup aplikasi (*Application Lifecycle & Orchestrator*):
 * `App.saveMutationData()`: Memvalidasi kelengkapan form serah terima mutasi (nomor rangka, mesin, foto unit, foto dokumen, jenis mutasi, cabang asal/tujuan), mengompresi foto di sisi klien (< 400 KB), memperbarui state lokal secara optimistik, dan mengirimkan data ke Google Apps Script backend.
 * `App.handleImageUpload(inputEl, previewId)`: Membaca file gambar dari kamera/galeri, melakukan kompresi proporsional menggunakan HTML5 Canvas, dan membuat URL preview lokal.
 
-### 6.7 Berkas `backend/backend_stockyard_v2_24.gs` (Google Apps Script Engine)
+### 6.7 Berkas `assets/js/notification.js` (`NotificationService`)
+Sistem pengelola notifikasi bawaan Android (*Native Web Push & System Notification Drawer*):
+* `NotificationService.init()`: Memuat riwayat ID mutasi yang telah dilihat dari `localStorage`, mendaftarkan listener Service Worker, dan menyalakan timer pemantau SLA delay setiap 60 detik.
+* `NotificationService.isSupported()` / `isGranted()`: Memeriksa dukungan peramban dan status izin notifikasi sistem Android.
+* `NotificationService.requestPermission()`: Meminta izin notifikasi ke sistem operasi Android/Chrome dan memunculkan konfirmasi getar pertama.
+* `NotificationService.show(title, options)`: Mengirimkan payload notifikasi kaya (*rich notification*) melalui `registration.showNotification` lengkap dengan getaran haptik, badge icon, tag anti-spam, dan URL navigasi tab.
+* `NotificationService.notifyMutation(record)`: Menangani orkestrasi skenario notifikasi:
+  - *Scan Berhasil Masuk Database*: Memberi notif `✅ Unit Masuk/Keluar Berhasil Tersimpan` saat operator lapangan selesai scan.
+  - *Transit Antar-Cabang (OKK Keluar)*:
+    - Cabang Asal (D661): Menerima notif `🚛 Unit Dalam Perjalanan (Transit OKK)`.
+    - Cabang Tujuan (D660): Menerima notif `📍 Unit OTW Menuju Cabang Anda! Siapkan gerbang!`.
+    - Admin DSO: Menerima notif pergerakan armada antar cabang.
+  - *Konfirmasi Kedatangan Fisik (OKK Masuk di Tujuan)*:
+    - Cabang Pengirim (D661): Menerima notif `🏁 Unit Transit Tiba di Tujuan!`.
+    - Cabang Penerima (D660): Menerima notif `✅ Unit OKK Berhasil Diterima di Pool!`.
+* `NotificationService.checkDelaysAndNotify()`: Memeriksa armada *In-Transit* yang melebihi estimasi durasi SLA rute dan memicu alarm keterlambatan.
+* `NotificationService.notifyDailyReport(reportLog)`: Memunculkan notifikasi status bar saat rekap harian PDF/Excel terkirim ke email manajemen.
+* `NotificationService.testNotification()`: Tombol uji coba instan untuk memverifikasi getaran dan visual status bar di ponsel petugas.
+
+### 6.8 Berkas `backend/backend_stockyard_v2_26.gs` (Google Apps Script Engine)
 Mesin komputasi awan serverless yang berjalan di Google Workspace:
 * `doGet(e)` / `doPost(e)`: Pintu gerbang API HTTP RESTful yang menangani routing aksi (*actions*): `getInitialData`, `recordMutation`, `updateConfig`, `updateProfile`, `updateBranchEmail`, `verifyCredentials`, `sendReportEmail`, dan `health`.
 * `getInitialData(ss)`: Mengekstrak seluruh data 5 sheet dalam format JSON teroptimasi.
@@ -383,7 +418,7 @@ Mesin komputasi awan serverless yang berjalan di Google Workspace:
   - `Unit Masuk` HANYA menambah angka pada Kolom D (`Total Masuk`).
   - `Unit Keluar` HANYA menambah angka pada Kolom E (`Total Keluar`).
 * `reconcileInventoryStock(ss)`: Membaca ulang seluruh riwayat transaksi di `HistoryMutasi` dan menghitung ulang angka akumulasi masuk dan keluar untuk memastikan tidak ada selisih stok fisik.
-* `getSystemConfigData(ss)` / `updateSystemConfig(ss, data)`: Mengelola parameter key-value konfigurasi sistem di tab `SystemConfig` (termasuk nilai `TRANSIT_TIME_*` per cabang).
+* `getSystemConfigData(ss)` / `updateSystemConfig(ss, data)`: Mengelola parameter key-value konfigurasi sistem di tab `SystemConfig` (termasuk matriks `TRANSIT_ROUTES_JSON` dan nilai `TRANSIT_TIME_*` per cabang).
 * `menuInitSystemConfig()`: Fungsi menu khusus Google Sheets untuk menginisialisasi parameter durasi dan jadwal secara otomatis dengan 1-klik.
 * `generateDailyPdfReport(ss, dateStr, branchFilter)`: Membangun dokumen laporan rekapitulasi PDF berkop resmi Astra Daihatsu 13 kolom dengan tanda tangan digital Security dan ADH/BM.
 * `generateDailyExcelReport(ss, dateStr, branchFilter)`: Membangun dokumen laporan rekapitulasi Excel (.xlsx) dengan visual foto unit tersemat rapi di sel.
@@ -392,13 +427,14 @@ Mesin komputasi awan serverless yang berjalan di Google Workspace:
 * `uploadImageToDrive(folderId, base64Data, fileName, mimeType)`: Mengunggah file foto dari aplikasi langsung ke folder Google Drive perusahaan.
 * `deleteDriveFile(fileUrlOrId)`: Menghapus file foto lama di Google Drive secara otomatis saat foto profil diperbarui.
 
-### 6.8 Berkas `sw.js` (Progressive Web App Service Worker)
-Pengelola fungsionalitas offline dan caching aset:
-* `CACHE_NAME`: Nama cache versi aktif (`stockyard-pwa-v1.4.2`).
+### 6.9 Berkas `sw.js` (Progressive Web App Service Worker)
+Pengelola fungsionalitas offline, caching aset, dan penerimaan notifikasi status bar Android:
+* `CACHE_NAME`: Nama cache versi aktif (`stockyard-pwa-v1.4.9`).
 * `STATIC_ASSETS`: Daftar berkas inti aplikasi (*App Shell*) yang di-cache di perangkat: HTML, CSS, JavaScript modul, dan icon manifest.
 * Menggunakan strategi *Stale-While-Revalidate* untuk aset statis dan strategi *Network-Only* untuk pemanggilan API dan Google Drive.
+* `notificationclick`: Event listener yang menangani sentuhan pada notifikasi status bar Android, otomatis memfokuskan jendela aplikasi dan menavigasi ke tab yang relevan (Dashboard, Riwayat, atau Radar OKK).
 
-### 6.9 Berkas `api/proxy.js` (Vercel Serverless Reverse Proxy)
+### 6.10 Berkas `api/proxy.js` (Vercel Serverless Reverse Proxy)
 Lapisan pengaman kredensial dan gateway reverse proxy:
 * Menerima permintaan HTTPS dari aplikasi frontend dan meneruskannya ke URL rahasia Google Apps Script (`APPSCRIPT_URL`).
 * Menyuntikkan token otentikasi rahasia (`API_SECRET_TOKEN`) ke header request di sisi server sehingga kredensial cloud tidak pernah terekspos ke perangkat pengguna atau DevTools browser.

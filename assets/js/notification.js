@@ -107,6 +107,8 @@ const NotificationService = {
 
       if (result === 'granted') {
         localStorage.setItem(this.STORAGE_KEY_PERMISSION, 'granted');
+        const banner = document.getElementById('androidNotifPermissionBanner');
+        if (banner) banner.classList.add('hidden');
         if (typeof UI !== 'undefined') {
           UI.showToast('🎉 Notifikasi Android aktif! Anda akan menerima update mutasi & keterlambatan.', 4500);
         }
@@ -168,10 +170,19 @@ const NotificationService = {
   },
 
   /**
-   * Notifikasi Scan Unit Masuk / Keluar Baru
-   * Filter RBAC:
-   * - Admin: Menerima mutasi seluruh cabang.
-   * - Security: Hanya menerima mutasi untuk cabangnya sendiri.
+   * Notifikasi Scan Unit Masuk / Keluar Baru & Transit Antar-Cabang (OKK)
+   * Filter RBAC & Skenario:
+   * 1. Mutasi Scan Masuk/Keluar biasa (SPPDC/BSTKB):
+   *    - Admin: Menerima mutasi seluruh cabang.
+   *    - Security: Hanya menerima mutasi untuk cabangnya sendiri.
+   * 2. Transit Antar-Cabang (OKK Keluar / OTW):
+   *    - Cabang Asal (misal D661): Menerima notif "Unit Dalam Perjalanan (Transit OKK)"
+   *    - Cabang Tujuan (misal D660): Menerima notif "Unit OTW Menuju Cabang Anda!"
+   *    - Admin DSO: Menerima notif "Mutasi OKK Antar-Cabang (D661 -> D660)"
+   * 3. Kedatangan Transit (OKK Masuk di Pos Tujuan):
+   *    - Cabang Penerima (D660): Menerima notif "Unit OKK Berhasil Diterima di Pool!"
+   *    - Cabang Pengirim (D661): Menerima notif "Unit Transit Tiba di Tujuan!"
+   *    - Admin DSO: Menerima notif "OKK Selesai: Tiba di D660"
    */
   notifyMutation(record) {
     if (!record || !this.isGranted()) return;
@@ -179,31 +190,110 @@ const NotificationService = {
     const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : true;
     const userBranchCode = typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function' ? AppState.getUserBranchCode() : 'D660';
     const recBranch = record.noBa || record.branch || record.location || '';
-    
-    // Validasi filter otorisasi peran
-    if (!isAdmin) {
-      const matchBranch = typeof UI !== 'undefined' && typeof UI.isBranchMatch === 'function'
-        ? UI.isBranchMatch(recBranch, userBranchCode)
-        : recBranch.toUpperCase().includes(userBranchCode.toUpperCase());
-      if (!matchBranch) return; // Lewatkan mutasi cabang lain untuk akun Security
-    }
+    const destBranch = record.destinationBranch || record.destination || '';
+    const originCode = (recBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
 
     const type = record.type || record.mutationType || 'Unit Masuk';
     const isMasuk = type === 'Unit Masuk' || type.toLowerCase().includes('masuk');
+    const docType = String(record.docType || record.documentType || 'SPPDC').toUpperCase();
+    const isOkk = docType === 'OKK';
     const model = record.model || 'Unit Kendaraan';
     const vin = record.vin || '-';
     const officer = record.officerName || record.pic || 'Petugas Lapangan';
     const branchLabel = record.noBa || record.branch || 'Stockyard';
 
-    const title = isMasuk ? `🚘 Unit Masuk: ${model}` : `🚛 Unit Keluar: ${model}`;
-    const body = `${branchLabel} • VIN: ${vin}\nPetugas: ${officer} • Catatan: ${record.notes || 'Kondisi baik'}`;
+    // Evaluasi Otorisasi & Peran
+    if (!isAdmin) {
+      if (isOkk) {
+        // Pada mutasi OKK, libatkan cabang asal MAUPUN cabang tujuan
+        const isOriginMatch = originCode && originCode === userBranchCode;
+        const isDestMatch = destCode && destCode === userBranchCode;
+        if (!isOriginMatch && !isDestMatch) {
+          return; // Cabang tidak terafiliasi dengan pengiriman OKK ini
+        }
+      } else {
+        // Mutasi reguler (SPPDC/BSTKB): hanya cabang yang bersangkutan
+        const matchBranch = typeof UI !== 'undefined' && typeof UI.isBranchMatch === 'function'
+          ? UI.isBranchMatch(recBranch, userBranchCode)
+          : recBranch.toUpperCase().includes(userBranchCode.toUpperCase());
+        if (!matchBranch) return;
+      }
+    }
+
+    let title = '';
+    let body = '';
+    let notifTag = `mutasi-${record.id || vin}`;
+    let notifTab = 'history';
+    let vibratePattern = [150, 100, 150];
+
+    // SKENARIO 1: Pengiriman Transit Antar-Cabang (Unit Keluar + OKK)
+    if (!isMasuk && isOkk) {
+      notifTab = 'inventory';
+      notifTag = `transit-${vin}-${Date.now()}`;
+      
+      if (!isAdmin && userBranchCode === destCode) {
+        // Bagi Petugas di Cabang Penerima (misal D660):
+        title = `📍 Unit OTW Menuju Cabang Anda!`;
+        body = `Unit ${model} (${vin}) sedang dikirim dari ${originCode || branchLabel} menuju cabang Anda (${destCode}). Siapkan gerbang penerimaan!`;
+        vibratePattern = [300, 150, 300, 150, 300]; // Getar lebih tegas agar security sigap di gerbang
+      } else if (!isAdmin && userBranchCode === originCode) {
+        // Bagi Petugas di Cabang Pengirim (misal D661):
+        title = `🚛 Unit Dalam Perjalanan (Transit OKK)`;
+        body = `Unit ${model} (${vin}) resmi diberangkatkan menuju ${destCode || destBranch}.\nStatus: Dalam Perjalanan (Radar In-Transit).`;
+        vibratePattern = [200, 100, 200];
+      } else {
+        // Bagi Administrator DSO (Akses Sentral):
+        title = `🚛 Mutasi OKK Antar-Cabang (${originCode || 'Asal'} ➔ ${destCode || 'Tujuan'})`;
+        body = `Unit ${model} (${vin}) diberangkatkan oleh ${officer} dari ${originCode} menuju ${destCode}. Pantau di Radar Logistik OKK.`;
+        vibratePattern = [200, 100, 200];
+      }
+    }
+    // SKENARIO 2: Penerimaan Transit Tiba (Unit Masuk + OKK)
+    else if (isMasuk && isOkk) {
+      notifTag = `arrival-${vin}-${Date.now()}`;
+
+      if (!isAdmin && userBranchCode === originCode) {
+        // Bagi Petugas Cabang Pengirim (mendapat konfirmasi bahwa unit yang dikirim sudah sampai):
+        title = `🏁 Unit Transit Tiba di Tujuan!`;
+        body = `Unit ${model} (${vin}) yang Anda kirim dari ${originCode} telah diverifikasi tiba oleh petugas ${destCode || branchLabel}.`;
+        notifTab = 'inventory';
+        vibratePattern = [200, 100, 200];
+      } else if (!isAdmin && userBranchCode === destCode) {
+        // Bagi Petugas Cabang Penerima:
+        title = `✅ Unit OKK Berhasil Diterima di Pool!`;
+        body = `Unit ${model} (${vin}) dari ${originCode || 'asal'} resmi diverifikasi masuk database ${branchLabel}. Stok fisik bertambah.`;
+        notifTab = 'history';
+        vibratePattern = [150, 100, 150];
+      } else {
+        // Bagi Admin DSO:
+        title = `✅ OKK Selesai: Tiba di ${destCode || branchLabel}`;
+        body = `Unit ${model} (${vin}) dari ${originCode || 'Asal'} resmi tiba dan diverifikasi masuk. Mutasi transit selesai.`;
+        notifTab = 'history';
+        vibratePattern = [150, 100, 150];
+      }
+    }
+    // SKENARIO 3: Mutasi Standar Harian (Unit Masuk / Keluar biasa SPPDC / BSTKB)
+    else {
+      if (isMasuk) {
+        title = `🚘 Unit Masuk Berhasil Tersimpan`;
+        body = `${branchLabel} • ${model} (${vin})\nDokumen: ${docType} • Petugas: ${officer}\n✓ Tersimpan di Google Spreadsheet & Drive`;
+        vibratePattern = [150, 100, 150];
+      } else {
+        title = `🚛 Unit Keluar Berhasil Tersimpan`;
+        body = `${branchLabel} • ${model} (${vin})\nDokumen: ${docType} • Petugas: ${officer}\n✓ Tersimpan di Google Spreadsheet & Drive`;
+        vibratePattern = [200, 100, 200, 100];
+      }
+      notifTag = `mutasi-${record.id || vin}`;
+      notifTab = 'history';
+    }
 
     this.show(title, {
       body: body,
-      tag: `mutasi-${record.id || vin}`,
-      tab: 'history',
-      data: { url: './', tab: 'history', id: record.id },
-      vibrate: isMasuk ? [150, 100, 150] : [200, 100, 200, 100]
+      tag: notifTag,
+      tab: notifTab,
+      data: { url: './', tab: notifTab, id: record.id },
+      vibrate: vibratePattern
     });
   },
 
@@ -358,6 +448,15 @@ const NotificationService = {
         btnEnable.classList.add('hidden');
       } else {
         btnEnable.classList.remove('hidden');
+      }
+    }
+
+    const banner = document.getElementById('androidNotifPermissionBanner');
+    if (banner) {
+      if (perm === 'granted' || perm === 'denied') {
+        banner.classList.add('hidden');
+      } else {
+        banner.classList.remove('hidden');
       }
     }
   },

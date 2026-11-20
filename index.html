@@ -170,6 +170,30 @@
       <!-- ======================================================== -->
       <section id="viewDashboard" class="max-w-[1440px] mx-auto w-full space-y-4 md:space-y-5">
         
+        <!-- Banner Notifikasi Sistem Android (Muncul Hanya Jika Izin Notifikasi Belum Diaktifkan di HP) -->
+        <div id="androidNotifPermissionBanner" class="hidden rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-3.5 sm:p-4 text-white shadow-md border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+          <div class="flex items-center space-x-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-white">Hubungkan ke Notifikasi Status Bar HP</span>
+                <span class="text-[9px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded uppercase tracking-wider">Sistem Android</span>
+              </div>
+              <p class="text-[11px] text-blue-200/90 leading-tight mt-0.5">Dapatkan notifikasi status bar saat scan berhasil masuk database, unit transit OTW, dan delay SLA.</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 w-full sm:w-auto flex-shrink-0">
+            <button type="button" onclick="NotificationService.requestPermission()" class="flex-1 sm:flex-none py-1.5 px-3.5 rounded-xl bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-black transition cursor-pointer shadow-sm shadow-blue-500/30">
+              Aktifkan Sekarang
+            </button>
+            <button type="button" onclick="document.getElementById('androidNotifPermissionBanner').classList.add('hidden')" class="p-1.5 rounded-xl hover:bg-white/10 text-blue-300 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        
         <!-- ======================================================== -->
         <!-- HERO KPI LANDSCAPE CAROUSEL (Widescreen Proportion so KPIs are Visible Above the Fold) -->
         <!-- ======================================================== -->
@@ -2636,8 +2660,8 @@
                 <span class="text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">TRANSFER ANTAR-CABANG</span>
               </div>
               <select id="inputDestinationBranch" class="hidden">
-                <option value="D661 - Soekarno Hatta" selected>D661 - Soekarno Hatta</option>
-                <option value="D660 - Ahmad Yani">D660 - Ahmad Yani</option>
+                <option value="D660 - Ahmad Yani" selected>D660 - Ahmad Yani</option>
+                <option value="D661 - Soekarno Hatta">D661 - Soekarno Hatta</option>
                 <option value="D662 - Bandar Jaya">D662 - Bandar Jaya</option>
                 <option value="D663 - Lampung Utara">D663 - Lampung Utara</option>
                 <option value="D664 - Lampung Timur">D664 - Lampung Timur</option>
@@ -2647,10 +2671,10 @@
                   <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                   </div>
-                  <span id="triggerDestinationBranchText" class="truncate font-extrabold text-amber-950">D661 - Soekarno Hatta</span>
+                  <span id="triggerDestinationBranchText" class="truncate font-extrabold text-amber-950">D660 - Ahmad Yani</span>
                 </div>
                 <div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
-                  <span id="triggerDestinationBranchBadge" class="text-[9px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300">D661</span>
+                  <span id="triggerDestinationBranchBadge" class="text-[9px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300">D660</span>
                   <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
               </button>

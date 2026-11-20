@@ -5294,21 +5294,42 @@ const UI = {
       };
     }
     if (type === 'destinationBranch') {
-      const currentVal = (document.getElementById('inputDestinationBranch')?.value || 'D661 - Soekarno Hatta').trim();
+      const originBranchVal = (document.getElementById('inputNoBa')?.value || (AppState && AppState.getUserBranch ? AppState.getUserBranch() : '') || '').trim();
+      const originCode = (originBranchVal.match(/D66[0-4]/i)?.[0] || (AppState && AppState.getUserBranchCode ? AppState.getUserBranchCode() : '') || '').toUpperCase();
+
+      const allBranches = [
+        { value: 'D660 - Ahmad Yani', title: 'D660 - Ahmad Yani', subtitle: 'Bandar Lampung Pusat (Main Showroom & Office)', badge: 'D660', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
+        { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
+        { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
+        { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
+        { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
+      ];
+
+      // Strict filter: sembunyikan cabang pengirim/asal agar operator tidak bisa memilih cabang asal sebagai tujuan
+      const filteredBranches = originCode 
+        ? allBranches.filter(b => b.badge !== originCode && !b.value.toUpperCase().includes(originCode))
+        : allBranches;
+
+      let currentVal = (document.getElementById('inputDestinationBranch')?.value || '').trim();
+      // Jika nilai saat ini kosong atau sama dengan cabang asal, alihkan otomatis ke opsi tujuan valid pertama
+      if (!currentVal || (originCode && currentVal.toUpperCase().includes(originCode))) {
+        currentVal = filteredBranches[0]?.value || 'D660 - Ahmad Yani';
+        const el = document.getElementById('inputDestinationBranch');
+        if (el) el.value = currentVal;
+        const triggerText = document.getElementById('triggerDestinationBranchText');
+        if (triggerText) triggerText.textContent = currentVal;
+        const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
+        if (triggerBadge) triggerBadge.textContent = (currentVal.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+      }
+
       return {
         title: 'Pilih Cabang Tujuan Pengiriman',
-        subtitle: 'Cabang DSO Lampung penerima unit mutasi (OKK)',
+        subtitle: originCode ? `Pilih tujuan OKK (Kecuali cabang asal ${originCode})` : 'Cabang DSO Lampung penerima unit mutasi (OKK)',
         iconBg: 'bg-amber-50 text-amber-600',
         iconSvg: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>',
         hasSearch: false,
         currentValue: currentVal,
-        options: [
-          { value: 'D660 - Ahmad Yani', title: 'D660 - Ahmad Yani', subtitle: 'Bandar Lampung Pusat (Main Showroom & Office)', badge: 'D660', badgeClass: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🏢' },
-          { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
-          { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
-          { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
-          { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
-        ]
+        options: filteredBranches
       };
     }
 
@@ -5618,6 +5639,25 @@ const UI = {
       if (triggerText) triggerText.textContent = label || value;
       const triggerBadge = document.getElementById('triggerNoBaBadge');
       if (triggerBadge) triggerBadge.textContent = 'CABANG';
+
+      // Jika cabang asal diubah oleh Admin dan sama dengan cabang tujuan OKK, ganti cabang tujuan otomatis
+      const newOriginCode = (value.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+      const destEl = document.getElementById('inputDestinationBranch');
+      if (destEl && newOriginCode && (destEl.value || '').toUpperCase().includes(newOriginCode)) {
+        const fallbacks = [
+          'D660 - Ahmad Yani',
+          'D661 - Soekarno Hatta',
+          'D662 - Bandar Jaya',
+          'D663 - Lampung Utara',
+          'D664 - Lampung Timur'
+        ].filter(b => !b.toUpperCase().includes(newOriginCode));
+        const newDest = fallbacks[0] || 'D660 - Ahmad Yani';
+        destEl.value = newDest;
+        const triggerDestText = document.getElementById('triggerDestinationBranchText');
+        if (triggerDestText) triggerDestText.textContent = newDest;
+        const triggerDestBadge = document.getElementById('triggerDestinationBranchBadge');
+        if (triggerDestBadge) triggerDestBadge.textContent = (newDest.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+      }
     } else if (type === 'profileBranch') {
       const el = document.getElementById('inputProfileBranch');
       if (el) el.value = value;
@@ -5650,7 +5690,20 @@ const UI = {
     // 0. Destination Branch
     const destEl = document.getElementById('inputDestinationBranch');
     if (destEl) {
-      const destVal = destEl.value || 'D661 - Soekarno Hatta';
+      const originBranchVal = (document.getElementById('inputNoBa')?.value || (AppState && AppState.getUserBranch ? AppState.getUserBranch() : '') || '').trim();
+      const originCode = (originBranchVal.match(/D66[0-4]/i)?.[0] || (AppState && AppState.getUserBranchCode ? AppState.getUserBranchCode() : '') || '').toUpperCase();
+      let destVal = (destEl.value || '').trim();
+      if (!destVal || (originCode && destVal.toUpperCase().includes(originCode))) {
+        const fallbacks = [
+          'D660 - Ahmad Yani',
+          'D661 - Soekarno Hatta',
+          'D662 - Bandar Jaya',
+          'D663 - Lampung Utara',
+          'D664 - Lampung Timur'
+        ].filter(b => !b.toUpperCase().includes(originCode));
+        destVal = fallbacks[0] || (originCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta');
+        destEl.value = destVal;
+      }
       const triggerText = document.getElementById('triggerDestinationBranchText');
       if (triggerText) triggerText.textContent = destVal;
       const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
