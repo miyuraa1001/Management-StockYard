@@ -3328,6 +3328,80 @@
       </div>
     </div>
 
+    <!-- Modal Panduan Instalasi Khusus Android Chrome -->
+    <div id="androidInstallModal" onclick="if(event.target === this) closeAndroidInstallModal()" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300">
+      <div class="bg-white rounded-t-[32px] sm:rounded-[32px] max-w-sm sm:max-w-md w-full shadow-2xl border border-white/60 overflow-hidden p-6 space-y-4">
+        
+        <!-- Header with Android / Chrome Icon -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-slate-50 p-1 flex items-center justify-center border border-slate-200 shadow-2xs">
+              <img src="assets/icons/icon-apk.png" alt="Daihatsu" class="w-7 h-7 rounded-xl object-contain">
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-900 leading-tight">Pasang di HP Android</h3>
+              <p class="text-[11px] text-slate-400 font-semibold mt-0.5">Panduan Cepat Layar Utama</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeAndroidInstallModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- 3 Visual Steps -->
+        <div class="space-y-2.5 text-xs">
+          <!-- Step 1: Tap Menu Chrome (Titik Tiga) -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              1
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Ketuk ikon <span class="text-blue-600 font-extrabold">titik tiga (⋮)</span> di sudut kanan atas layar browser Chrome Anda.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2: Install App or Add to Home Screen -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              2
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Pilih menu <span class="text-slate-900 font-extrabold">"Instal aplikasi"</span> atau <span class="text-slate-900 font-extrabold">"Tambahkan ke Layar Utama"</span>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3: Confirm Install -->
+          <div class="flex items-start space-x-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-extrabold text-[11px]">
+              3
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-800 leading-snug">
+                Ketuk tombol <span class="text-blue-600 font-extrabold">"Instal"</span> pada kotak dialog pop-up konfirmasi.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/80 rounded-2xl p-2.5 border border-emerald-200/60 text-[11px] text-emerald-800 flex items-start space-x-2">
+          <span class="text-emerald-500 font-bold">✓</span>
+          <p class="font-medium leading-relaxed">
+            Ikon aplikasi <strong class="font-bold">StockYard</strong> akan langsung muncul di layar utama (Homescreen) HP Android Anda.
+          </p>
+        </div>
+
+        <!-- Button Mengerti -->
+        <button type="button" onclick="closeAndroidInstallModal()" class="w-full py-3 px-4 bg-[#00205B] hover:bg-blue-900 text-white text-xs font-black rounded-2xl active:scale-95 transition cursor-pointer shadow-md shadow-[#00205B]/20">
+          Saya Mengerti
+        </button>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Modular Scripts Architecture -->
@@ -3374,26 +3448,54 @@
     let deferredInstallPrompt = null;
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isAndroidDevice = /Android/i.test(navigator.userAgent);
 
-    // Helper untuk memperbarui status visual tombol saat aplikasi sudah terpasang
-    function markPWAInstalledUI() {
+    // Periksa apakah aplikasi BENAR-BENAR sedang berjalan sebagai aplikasi terpasang (Standalone PWA)
+    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true || 
+      document.referrer.includes('android-app://');
+
+    // Bersihkan false-flag pwa_installed di localStorage yang menyebabkan bug tombol terkunci padahal belum terpasang
+    try {
+      if (!isStandaloneMode) {
+        localStorage.removeItem('pwa_installed');
+      }
+    } catch(e) {}
+
+    // Helper untuk memperbarui status visual tombol HANYA jika BENAR-BENAR berjalan di mode standalone
+    function checkPWAStatusUI() {
       const btnText = document.getElementById('pwaSettingsInstallBtnText');
       const settingsBtn = document.getElementById('pwaSettingsInstallBtn');
-      if (btnText) btnText.textContent = 'Aplikasi Sudah Terpasang ✓';
-      if (settingsBtn) {
-        settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
-        settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
+      if (isStandaloneMode) {
+        if (btnText) btnText.textContent = 'Aplikasi Sedang Berjalan (Mode App) ✓';
+        if (settingsBtn) {
+          settingsBtn.classList.remove('bg-[#00205B]', 'hover:bg-blue-900', 'bg-blue-600', 'hover:bg-blue-700');
+          settingsBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
+        }
+      } else {
+        if (btnText) btnText.textContent = 'Pasang ke Layar Utama';
+        if (settingsBtn) {
+          settingsBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-600', 'cursor-default', 'opacity-90');
+          settingsBtn.classList.add('bg-[#00205B]', 'hover:bg-blue-900');
+        }
       }
     }
 
-    // Tandai tombol di settings jika sudah berjalan di mode standalone atau sudah pernah dipasang
-    if (isStandaloneMode || localStorage.getItem('pwa_installed') === 'true') {
-      document.addEventListener('DOMContentLoaded', markPWAInstalledUI);
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        markPWAInstalledUI();
-      }
+    document.addEventListener('DOMContentLoaded', checkPWAStatusUI);
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      checkPWAStatusUI();
     }
+
+    // Modal Panduan Khusus Android
+    window.openAndroidInstallModal = () => {
+      const modal = document.getElementById('androidInstallModal');
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeAndroidInstallModal = () => {
+      const modal = document.getElementById('androidInstallModal');
+      if (modal) modal.classList.add('hidden');
+    };
 
     // Modal Panduan Khusus iPhone (iOS Safari)
     window.openIOSInstallModal = () => {
@@ -3407,19 +3509,20 @@
     };
 
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Cegah mini-infobar default browser agar pemicuan murni via tombol di Pengaturan
+      // Tangkap prompt agar dapat dipicu via tombol di Pengaturan
       e.preventDefault();
       deferredInstallPrompt = e;
       console.log('[PWA] Event beforeinstallprompt siap (dipicu via menu Pengaturan).');
+      checkPWAStatusUI();
     });
 
-    // 3. Fungsi memicu instalasi kustom via tombol di Pengaturan dengan notifikasi status yang jelas
+    // 3. Fungsi memicu instalasi kustom via tombol di Pengaturan
     window.triggerPWAInstall = async () => {
-      if (isStandaloneMode || localStorage.getItem('pwa_installed') === 'true') {
+      if (isStandaloneMode) {
         if (typeof UI !== 'undefined' && UI.showToast) {
-          UI.showToast('✅ Aplikasi Stockyard sudah terpasang di layar utama Anda. Silakan periksa beranda HP Anda.');
+          UI.showToast('✅ Anda sedang menggunakan aplikasi Stockyard dalam mode layar utama (Standalone App).');
         } else {
-          alert('✅ Aplikasi Stockyard sudah terpasang di layar utama Anda.');
+          alert('✅ Anda sedang menggunakan aplikasi Stockyard dalam mode layar utama.');
         }
         return;
       }
@@ -3446,10 +3549,13 @@
       } else if (isIOSDevice) {
         // Tampilkan modal panduan interaktif khusus iPhone / iPad
         window.openIOSInstallModal();
+      } else if (isAndroidDevice) {
+        // Buka panduan khusus Android Chrome jika prompt native belum terpancing
+        window.openAndroidInstallModal();
       } else {
-        const desktopMsg = 'ℹ️ Untuk memasang aplikasi: Klik ikon pasang di ujung kanan bilah alamat browser, atau buka Menu Browser > "Install Stockyard".';
+        const desktopMsg = 'ℹ️ Untuk memasang aplikasi di Desktop/Laptop: Klik ikon pasang (install) di ujung kanan bilah alamat browser, atau buka Menu Browser > "Instal Stockyard".';
         if (typeof UI !== 'undefined' && UI.showToast) {
-          UI.showToast(desktopMsg);
+          UI.showToast(desktopMsg, 5000);
         } else {
           alert(desktopMsg);
         }
@@ -3459,11 +3565,13 @@
     // 4. Tangkap event appinstalled ketika selesai dipasang di Android / Desktop
     window.addEventListener('appinstalled', () => {
       console.log('[PWA] Aplikasi Stockyard berhasil dipasang di perangkat!');
-      localStorage.setItem('pwa_installed', 'true');
-      markPWAInstalledUI();
+      try {
+        localStorage.setItem('pwa_installed', 'true');
+      } catch(e) {}
+      checkPWAStatusUI();
 
       if (typeof UI !== 'undefined' && UI.showToast) {
-        UI.showToast('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda. Silakan periksa beranda HP Anda.');
+        UI.showToast('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda. Silakan periksa beranda HP Anda.', 5000);
       } else {
         alert('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda.');
       }
