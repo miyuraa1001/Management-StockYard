@@ -46,6 +46,11 @@ const App = {
     if (UI.initPullToRefresh) UI.initPullToRefresh();
     if (typeof UI.syncAllFormTriggers === 'function') UI.syncAllFormTriggers();
 
+    // 3b. Inisialisasi Sistem Notifikasi Native Android & PWA Push
+    if (typeof NotificationService !== 'undefined') {
+      NotificationService.init();
+    }
+
     // 4. Pasang listener reaktif untuk validasi ketat formulir mutasi 11 kolom
     this.setupMutationFormListeners();
 
@@ -139,6 +144,14 @@ const App = {
         if (AppState.selectedModelCatalogId && typeof UI.renderModelDetailTable === 'function') {
           UI.renderModelDetailTable();
         }
+
+        // Pengecekan notifikasi sistem Android (Keterlambatan SLA transit & mutasi baru)
+        if (typeof NotificationService !== 'undefined') {
+          NotificationService.checkDelaysAndNotify();
+          NotificationService.checkNewMutationsAndNotify(AppState.historyData);
+          NotificationService.checkNewReportLogsAndNotify(AppState.reportLogs);
+        }
+
         console.log('[App] Berhasil sinkronisasi data dari Google Spreadsheet secara realtime');
       }
     } catch (err) {
@@ -432,6 +445,11 @@ const App = {
           UI.showToast(`✅ Mutasi tersimpan di Spreadsheet, namun ⚠️ email notifikasi gagal: ${mailStatus.error}`, 5500);
         } else {
           UI.showToast('✅ Berhasil tersimpan ke Google Spreadsheet & Google Drive!', 4500);
+        }
+
+        // Pemicu Notifikasi Android Native untuk scan mutasi baru
+        if (typeof NotificationService !== 'undefined') {
+          NotificationService.notifyMutation(newRecord);
         }
 
         // Segera sinkronkan ulang database agar chart donat & stok unit yard langsung terupdate

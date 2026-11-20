@@ -6107,6 +6107,11 @@ const UI = {
     } else {
       if (switcherCard) switcherCard.classList.remove('hidden');
     }
+
+    // Perbarui status UI kartu Notifikasi Android
+    if (typeof NotificationService !== 'undefined' && typeof NotificationService.updateUIStatus === 'function') {
+      NotificationService.updateUIStatus();
+    }
   },
 
   /**
@@ -8808,6 +8813,9 @@ const UI = {
 
       if (isSuccess) {
         this.showToast(`🎉 Sukses! Laporan telah terkirim ke ${targetEmail}!`, 4500);
+        if (typeof NotificationService !== 'undefined' && typeof NotificationService.notifyDailyReport === 'function') {
+          NotificationService.notifyDailyReport(newLog);
+        }
       } else {
         this.showToast(`⛔ Pengiriman email gagal: ${res?.error || res?.message || 'Server sibuk'}`, 5000);
       }

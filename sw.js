@@ -9,7 +9,7 @@
  * 4. Otomatis membersihkan cache versi lama saat pembaruan dideploy
  */
 
-const CACHE_NAME = 'stockyard-pwa-v1.4.5';
+const CACHE_NAME = 'stockyard-pwa-v1.4.6';
 
 // Daftar aset inti App Shell untuk pre-caching
 const STATIC_ASSETS = [
@@ -20,6 +20,7 @@ const STATIC_ASSETS = [
   './assets/js/config.js',
   './assets/js/state.js',
   './assets/js/api.js',
+  './assets/js/notification.js',
   './assets/js/scanner.js',
   './assets/js/ui.js',
   './assets/js/app.js',
@@ -158,4 +159,33 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+/**
+ * 4. LIFECYCLE: NOTIFICATION CLICK
+ * Membuka / memfokuskan aplikasi saat notifikasi Android status bar diketuk oleh pengguna
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const notifData = event.notification.data || {};
+  const targetUrl = notifData.url || './';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Jika tab/jendela aplikasi sudah terbuka, fokuskan dan navigasikan tab
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          if (notifData.tab && client.postMessage) {
+            client.postMessage({ action: 'SWITCH_TAB', tab: notifData.tab });
+          }
+          return client.focus();
+        }
+      }
+      // Jika belum terbuka, buka jendela baru
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
 
