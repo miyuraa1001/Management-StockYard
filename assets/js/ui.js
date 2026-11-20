@@ -7916,6 +7916,9 @@ const UI = {
     // Render riwayat mutasi dari database & email logs
     this.renderEmailNotifications();
 
+    // Sinkronkan mutasi & report logs terbaru dari Google Spreadsheet database secara otomatis di latar belakang
+    this.refreshNotificationsFromDatabase(false);
+
     // Periksa status koneksi server secara otomatis saat modal dibuka
     this.checkEmailConnectionNow();
 
@@ -7929,6 +7932,35 @@ const UI = {
     } catch (e) {}
 
     this.updateNotificationBadge();
+  },
+
+  /**
+   * Sinkronisasi data notifikasi langsung dari Google Apps Script database (HistoryMutasi & ReportLogs)
+   */
+  async refreshNotificationsFromDatabase(showToast = false) {
+    const syncBtn = document.getElementById('btnSyncNotifications');
+    const syncIcon = document.getElementById('iconSyncNotifications');
+    if (syncIcon) syncIcon.classList.add('animate-spin');
+    if (syncBtn) syncBtn.disabled = true;
+
+    try {
+      if (typeof App !== 'undefined' && typeof App.syncBackendData === 'function') {
+        await App.syncBackendData(true);
+      }
+      this.renderEmailNotifications();
+      this.updateNotificationBadge();
+      if (showToast) {
+        this.showToast('✅ Notifikasi & riwayat mutasi berhasil disinkronkan dengan database Google!', 3000);
+      }
+    } catch (err) {
+      console.warn('[UI] Gagal menyinkronkan notifikasi dari database:', err);
+      if (showToast) {
+        this.showToast('⚠️ Gagal menyinkronkan notifikasi: ' + (err.message || 'Koneksi terganggu'), 4000);
+      }
+    } finally {
+      if (syncIcon) syncIcon.classList.remove('animate-spin');
+      if (syncBtn) syncBtn.disabled = false;
+    }
   },
 
   /**
@@ -8226,6 +8258,15 @@ const UI = {
           : [];
         const computedTarget = item.targetEmail || (bEmails.length > 0 ? bEmails.join(', ') : defaultEmail);
 
+        const officerName = item.officerName || item.namaPetugas || '';
+        const picRole = item.pic || item.picSecurity || '';
+        let operatorDisplay = '';
+        if (officerName && picRole && officerName.toLowerCase() !== picRole.toLowerCase()) {
+          operatorDisplay = `${officerName} (${picRole})`;
+        } else {
+          operatorDisplay = officerName || picRole || item.operator || 'Petugas Lapangan';
+        }
+
         return {
           id: item.id || `db-${item.vin || idx}-${item.date || idx}`,
           trxId: item.id || `TRX-${idx}`,
@@ -8237,7 +8278,9 @@ const UI = {
           model: item.model || item.name || 'Daihatsu',
           vin: item.vin || '-',
           engine: item.engine || '-',
-          operator: item.operator || item.pic || 'Petugas Stockyard',
+          operator: operatorDisplay,
+          officerName: officerName,
+          picSecurity: picRole,
           location: item.location || item.destination || '-',
           noBa: itemBranch,
           notes: item.notes || item.keterangan || '-',

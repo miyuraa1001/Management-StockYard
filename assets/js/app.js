@@ -282,12 +282,12 @@ const App = {
       fullDateStr: `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`,
       model: model,
       color: carColor,
-      officerName: officerName,
+      officerName: officerName, // Nama Petugas Lapangan yang diketik (misal: "Rico")
       modelPhoto: modelOfficialPhoto,
       vin: cleanVin,
       engine: cleanEngine,
       noBa: noBa,
-      pic: officerName || AppState.userProfile?.name || CONFIG.OPERATOR_NAME || 'Petugas Lapangan',
+      pic: noBa || (AppState.getUserBranch ? AppState.getUserBranch() : null) || AppState.userProfile?.branch || AppState.userProfile?.name || 'Petugas Security', // PIC Security Cabang (misal: "D661 - Soekarno Hatta" / "D660 - Ahmad Yani")
       location: AppState.userProfile?.branch || CONFIG.BRANCH_NAME || 'Sentra Lampung DSO',
       notes: notes,
       unitPhoto: unitImg,
@@ -346,7 +346,7 @@ const App = {
     const colorEl = document.getElementById('inputCarColor');
     if (colorEl) colorEl.value = '';
     const officerEl = document.getElementById('inputOfficerName');
-    if (officerEl) officerEl.value = AppState.userProfile?.name || '';
+    if (officerEl) officerEl.value = '';
     const keteranganEl = document.getElementById('inputKeterangan');
     if (keteranganEl) keteranganEl.value = '';
     const noBaEl = document.getElementById('inputNoBa');

@@ -401,7 +401,7 @@ const ScannerService = {
     if (inputColorEl) inputColorEl.value = '';
     if (inputKetEl) inputKetEl.value = '';
     if (inputOfficerEl) {
-      inputOfficerEl.value = (typeof AppState !== 'undefined' && AppState.userProfile?.name) ? AppState.userProfile.name : '';
+      inputOfficerEl.value = '';
     }
 
     AppState.uploadedUnitPhotoUrl = null;
@@ -1677,11 +1677,9 @@ const ScannerService = {
       UI.removeImagePreview('docPhoto');
     }
 
-    // Isi default Nama Petugas jika masih kosong dengan nama akun yang sedang login (bisa diedit bebas)
+    // Biarkan kolom Nama Petugas kosong (tidak di-autofill) agar petugas lapangan mengetik nama aslinya secara independen
     const officerInput = document.getElementById('inputOfficerName');
-    if (officerInput && !officerInput.value.trim()) {
-      officerInput.value = (typeof AppState !== 'undefined' && AppState.userProfile?.name) ? AppState.userProfile.name : '';
-    }
+    // Tidak melakukan autofill dari AppState.userProfile?.name agar guard shift mengisi nama sendiri
 
     // Jalankan validasi kelengkapan formulir mutasi ketat (strict validation)
     if (typeof window.checkMutationFormCompleteness === 'function') {
