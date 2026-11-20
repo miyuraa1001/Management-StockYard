@@ -1321,19 +1321,25 @@ const UI = {
                       </div>
                     </div>
 
-                    <!-- Real-time Journey Elapsed Timer -->
-                    <div class="bg-amber-50/80 rounded-xl p-2 border border-amber-200/70 flex items-center justify-between text-xs font-bold text-amber-950">
-                      <div class="flex items-center space-x-1.5 min-w-0">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
-                        <span class="text-[10.5px] truncate">⏱️ <strong>${item.elapsedHuman}</strong> di Perjalanan</span>
+                    <!-- Real-time Journey Elapsed Timer & SLA Status -->
+                    <div class="rounded-xl p-2 border ${item.isDelayed ? 'bg-rose-50/90 border-rose-200 text-rose-950' : 'bg-amber-50/80 border-amber-200/70 text-amber-950'} flex flex-col gap-1 text-xs">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-1.5 min-w-0">
+                          <span class="w-2 h-2 rounded-full ${item.isDelayed ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse flex-shrink-0"></span>
+                          <span class="text-[10.5px] font-bold truncate">⏱️ <strong>${item.elapsedHuman}</strong> di Perjalanan</span>
+                        </div>
+                        <span class="text-[9.5px] font-semibold text-slate-500 flex-shrink-0">SLA: ~${item.targetDurationHuman || (item.targetDurationMins + ' Mnt')}</span>
                       </div>
-                      <span class="text-[9.5px] font-semibold text-amber-800/80 flex-shrink-0">Sejak ${item.time || item.departedAt}</span>
+                      <div class="flex items-center justify-between pt-1 border-t ${item.isDelayed ? 'border-rose-200/60' : 'border-amber-200/60'} text-[10px]">
+                        <span class="font-extrabold ${item.isDelayed ? 'text-rose-700' : 'text-emerald-700'}">${item.etaStatus || 'Sesuai Jadwal'}</span>
+                        <span class="text-[9px] text-slate-400">Berangkat ${item.time || item.departedAt}</span>
+                      </div>
                     </div>
 
                     ${item.isUrgent ? `
                       <div class="bg-rose-50 rounded-xl p-2 border border-rose-200 text-[10px] font-bold text-rose-800 flex items-center gap-1.5 animate-pulse">
                         <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <span>Perhatian: Unit telah > 24 jam dalam transit. Harap konfirmasi ke cabang tujuan.</span>
+                        <span>${item.isDelayed ? `Perhatian: Perjalanan telah melebihi target durasi SLA (${item.targetDurationMins} mnt). Harap hubungi ${item.destinationBranch.split('-')[1] || item.destinationBranch}.` : 'Perhatian: Unit telah > 24 jam dalam transit. Harap konfirmasi ke cabang tujuan.'}</span>
                       </div>
                     ` : ''}
 
@@ -6871,6 +6877,11 @@ const UI = {
    * Buka modal pengaturan Jadwal Pengiriman (Analog Clock Face "Jam Bulet" & Frekuensi)
    */
   openEditScheduleModal() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO (ADH/BM) yang berhak mengubah jadwal pengiriman otomatis laporan.');
+      return;
+    }
     this.initAutomationModal();
     const modal = document.getElementById('editScheduleModal');
     if (modal) {
@@ -7595,6 +7606,14 @@ const UI = {
    * Toggle Daily Digest Email Setting
    */
   async toggleDailyDigestSetting(isChecked) {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO (ADH/BM) yang berhak mengubah status otomatisasi laporan email.');
+      const toggle = document.getElementById('settingDailyDigestToggle');
+      if (toggle) toggle.checked = !isChecked;
+      return;
+    }
+
     if (!AppState.automationConfig) AppState.automationConfig = {};
     AppState.automationConfig.enabled = isChecked;
 
@@ -7611,6 +7630,8 @@ const UI = {
    * Inisialisasi status toggle preferensi pada Menu Settings
    */
   syncSettingsPreferences() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+
     // 1. Default Camera
     const savedFacing = localStorage.getItem('daihatsu_camera_facing') || 'environment';
     AppState.facingMode = savedFacing;
@@ -7624,19 +7645,140 @@ const UI = {
     const torchToggle = document.getElementById('settingAutoTorchToggle');
     if (torchToggle) torchToggle.checked = savedTorch;
 
-    // 3. Daily Digest Toggle
+    // 3. Daily Digest Toggle (Otoritas Admin)
     const digestToggle = document.getElementById('settingDailyDigestToggle');
     if (digestToggle && AppState.automationConfig) {
       digestToggle.checked = AppState.automationConfig.enabled !== false;
+      digestToggle.disabled = !isAdmin;
+      if (!isAdmin) {
+        digestToggle.title = 'Hanya Administrator DSO yang berhak mengubah status otomatisasi laporan';
+      } else {
+        digestToggle.title = 'Aktifkan / nonaktifkan laporan email otomatis harian';
+      }
     }
 
-    // 4. Update notification badge dot
+    const schedBtn = document.getElementById('editScheduleBtnDesktop');
+    if (schedBtn) {
+      if (!isAdmin) {
+        schedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        schedBtn.title = 'Khusus Administrator DSO';
+      } else {
+        schedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        schedBtn.title = 'Ubah jadwal pengiriman laporan';
+      }
+    }
+
+    // 4. Sinkronisasi Nilai Durasi Transit Cabang (SLA Radar OKK)
+    const tt = (AppState.transitTimes || {});
+    const inputD660 = document.getElementById('transitDuration_D660');
+    const inputD661 = document.getElementById('transitDuration_D661');
+    const inputD662 = document.getElementById('transitDuration_D662');
+    const inputD663 = document.getElementById('transitDuration_D663');
+    const inputD664 = document.getElementById('transitDuration_D664');
+    const inputDef  = document.getElementById('transitDuration_DEFAULT');
+
+    if (inputD660) inputD660.value = tt.D660 || 45;
+    if (inputD661) inputD661.value = tt.D661 || 30;
+    if (inputD662) inputD662.value = tt.D662 || 90;
+    if (inputD663) inputD663.value = tt.D663 || 150;
+    if (inputD664) inputD664.value = tt.D664 || 180;
+    if (inputDef)  inputDef.value  = tt.DEFAULT || 90;
+
+    // Pengaturan Otoritas Khusus Admin pada Durasi Transit
+    const securityNotice = document.getElementById('transitSettingsSecurityNotice');
+    const saveTransitBtn = document.getElementById('saveTransitDurationsBtn');
+    const transitInputs = [inputD660, inputD661, inputD662, inputD663, inputD664, inputDef].filter(Boolean);
+
+    if (!isAdmin) {
+      if (securityNotice) securityNotice.classList.remove('hidden');
+      if (saveTransitBtn) {
+        saveTransitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        saveTransitBtn.disabled = true;
+      }
+      transitInputs.forEach(inp => {
+        inp.disabled = true;
+        inp.classList.add('bg-slate-100', 'cursor-not-allowed');
+      });
+    } else {
+      if (securityNotice) securityNotice.classList.add('hidden');
+      if (saveTransitBtn) {
+        saveTransitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        saveTransitBtn.disabled = false;
+      }
+      transitInputs.forEach(inp => {
+        inp.disabled = false;
+        inp.classList.remove('bg-slate-100', 'cursor-not-allowed');
+      });
+    }
+
+    // 5. Update notification badge dot
     this.updateNotificationBadge();
 
-    // 5. Pre-fill Direct AppScript URL in Settings
+    // 6. Pre-fill Direct AppScript URL in Settings
     const inputSettings = document.getElementById('directAppScriptUrlInputSettings');
     if (inputSettings) {
       inputSettings.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';
+    }
+  },
+
+  /**
+   * Menyimpan Estimasi Standar Durasi Perjalanan Unit Antar Cabang ke Database (tab SystemConfig)
+   * Hanya dapat diakses oleh Admin Head / Branch Manager (ADH/BM)
+   */
+  async saveTransitDurations() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Ditolak: Hanya Administrator DSO yang berhak mengubah standar durasi perjalanan.');
+      return;
+    }
+
+    const d660 = parseInt(document.getElementById('transitDuration_D660')?.value, 10) || 45;
+    const d661 = parseInt(document.getElementById('transitDuration_D661')?.value, 10) || 30;
+    const d662 = parseInt(document.getElementById('transitDuration_D662')?.value, 10) || 90;
+    const d663 = parseInt(document.getElementById('transitDuration_D663')?.value, 10) || 150;
+    const d664 = parseInt(document.getElementById('transitDuration_D664')?.value, 10) || 180;
+    const def = parseInt(document.getElementById('transitDuration_DEFAULT')?.value, 10) || 90;
+
+    const durations = {
+      D660: d660,
+      D661: d661,
+      D662: d662,
+      D663: d663,
+      D664: d664,
+      DEFAULT: def
+    };
+
+    if (typeof AppState.setTransitTimes === 'function') {
+      AppState.setTransitTimes(durations);
+    } else {
+      AppState.transitTimes = durations;
+      AppState.saveToCache();
+    }
+
+    const btn = document.getElementById('saveTransitDurationsBtn');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="inline-block animate-spin mr-1.5">⏳</span><span>Menyimpan ke SystemConfig...</span>`;
+    }
+
+    try {
+      const res = await ApiService.saveTransitDurations(durations);
+      if (res && res.error) {
+        throw new Error(res.error);
+      }
+      this.showToast('✅ Berhasil! Estimasi durasi perjalanan per cabang tersimpan di database (SystemConfig).', 4000);
+      if (typeof this.renderInventoryBranchesView === 'function') {
+        this.renderInventoryBranchesView();
+      }
+    } catch (err) {
+      console.error('[UI] Gagal simpan durasi transit:', err);
+      this.showToast('⚠️ Gagal menyimpan ke server: ' + (err.message || 'Error jaringan'), 4000);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
     }
   },
 
@@ -9348,3 +9490,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.handleTargetEmailBranchChange = (b) => UI.handleTargetEmailBranchChange(b);
+window.saveTransitDurations = () => UI.saveTransitDurations();

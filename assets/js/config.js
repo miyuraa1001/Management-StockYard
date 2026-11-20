@@ -26,6 +26,16 @@ const CONFIG = {
     { code: 'D664', name: 'Lampung Timur', label: 'D664 - Lampung Timur' }
   ],
 
+  // Standar Default Estimasi Durasi Perjalanan Antar Cabang (SLA Radar OKK dalam Menit)
+  DEFAULT_TRANSIT_TIMES: {
+    DEFAULT: 90, // Standar umum (1 Jam 30 Mnt)
+    D660: 45,    // D660 - Ahmad Yani (~45 Mnt)
+    D661: 30,    // D661 - Soekarno Hatta / Sentra Hub (~30 Mnt)
+    D662: 90,    // D662 - Bandar Jaya (~1 Jam 30 Mnt)
+    D663: 150,   // D663 - Lampung Utara (~2 Jam 30 Mnt)
+    D664: 180    // D664 - Lampung Timur / Tulang Bawang (~3 Jam)
+  },
+
   // 6 Akun Resmi Sesuai Database Google Spreadsheet Tab UserPIC (Kredensial diamankan murni di Server Backend)
   USER_ACCOUNTS: [
     {

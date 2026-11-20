@@ -150,6 +150,54 @@ const AppState = {
     enabled: true
   },
 
+  // Standar Estimasi Rata-rata Durasi Perjalanan Unit Antar Cabang (SLA Radar OKK dalam Menit)
+  transitTimes: {
+    DEFAULT: 90,
+    D660: 45,
+    D661: 30,
+    D662: 90,
+    D663: 150,
+    D664: 180
+  },
+
+  /**
+   * Mengambil durasi target SLA transit untuk cabang tujuan tertentu (dalam Menit)
+   */
+  getTransitDurationForBranch(branchCodeOrName) {
+    const code = String(branchCodeOrName || '').match(/D66[0-4]/i)?.[0]?.toUpperCase() || 'DEFAULT';
+    const cfg = this.transitTimes || {};
+    if (cfg[code] !== undefined && cfg[code] !== null && parseInt(cfg[code], 10) > 0) {
+      return parseInt(cfg[code], 10);
+    }
+    const defMap = (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_TRANSIT_TIMES)
+      ? CONFIG.DEFAULT_TRANSIT_TIMES
+      : { DEFAULT: 90, D660: 45, D661: 30, D662: 90, D663: 150, D664: 180 };
+    return defMap[code] || parseInt(cfg.DEFAULT, 10) || 90;
+  },
+
+  /**
+   * Format menit ke representasi manusiawi (e.g. 90 -> '1 Jam 30 Mnt')
+   */
+  formatMinutesToHuman(totalMinutes) {
+    const mins = Math.max(0, parseInt(totalMinutes, 10) || 0);
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    if (hours > 0 && remMins > 0) return `${hours} Jam ${remMins} Mnt`;
+    if (hours > 0) return `${hours} Jam`;
+    return `${remMins} Menit`;
+  },
+
+  /**
+   * Menghitung rata-rata estimasi menit perjalanan unit
+   */
+  getAverageTransitMinutes() {
+    const cfg = this.transitTimes || {};
+    const vals = [cfg.D660, cfg.D661, cfg.D662, cfg.D663, cfg.D664].map(v => parseInt(v, 10)).filter(v => v > 0);
+    if (vals.length === 0) return parseInt(cfg.DEFAULT, 10) || 90;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return Math.round(sum / vals.length);
+  },
+
   // Riwayat Pengiriman Notifikasi Laporan Email (Tersinkronisasi Nyata)
   emailNotificationLogs: [],
   reportLogs: [],
@@ -605,6 +653,16 @@ const AppState = {
         const elapsed = calcElapsed(item.date || item.fullDateStr, item.time);
         const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
 
+        const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
+        const originCode = (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase();
+        const targetDurationMins = this.getTransitDurationForBranch(destCode);
+        const isDelayed = elapsed.diffMins > targetDurationMins;
+        const diffFromTarget = Math.abs(elapsed.diffMins - targetDurationMins);
+        const diffHuman = this.formatMinutesToHuman(diffFromTarget);
+        const etaStatus = isDelayed
+          ? `⚠️ Melebihi Estimasi (+${diffHuman})`
+          : `⏱️ On-Track (Sisa ~${diffHuman})`;
+
         inTransit.push({
           id: item.id || `TRX-${key}`,
           vin: item.vin || key,
@@ -612,9 +670,9 @@ const AppState = {
           model: item.model || 'Unit Daihatsu',
           color: item.color || item.warna || '-',
           originBranch: originBranch,
-          originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
+          originCode: originCode,
           destinationBranch: destBranch,
-          destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+          destinationCode: destCode,
           departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
           date: item.date || item.fullDateStr || '',
           time: item.time || '',
@@ -625,7 +683,11 @@ const AppState = {
           notes: item.notes || '-',
           elapsedMins: elapsed.diffMins,
           elapsedHuman: elapsed.human,
-          isUrgent: elapsed.isUrgent
+          targetDurationMins: targetDurationMins,
+          targetDurationHuman: this.formatMinutesToHuman(targetDurationMins),
+          isDelayed: isDelayed,
+          isUrgent: isDelayed || elapsed.isUrgent,
+          etaStatus: etaStatus
         });
       }
     }
@@ -752,8 +814,8 @@ const AppState = {
         totalInTransit: inTransit.length,
         totalDelivered: delivered.length,
         totalDepartures: departures.length,
-        urgentCount: inTransit.filter(u => u.isUrgent).length,
-        avgTransitTime: delivered.length > 0 ? '~1 Jam 35 Mnt' : 'Real-time'
+        urgentCount: inTransit.filter(u => u.isDelayed || u.isUrgent).length,
+        avgTransitTime: `~${this.formatMinutesToHuman(this.getAverageTransitMinutes())}`
       }
     };
   },
@@ -942,6 +1004,13 @@ const AppState = {
         this.branchEmails = Object.assign({}, this.branchEmails, JSON.parse(cachedBranchEmails));
       }
 
+      const cachedTransit = localStorage.getItem('daihatsu_transit_times');
+      if (cachedTransit) {
+        try {
+          this.transitTimes = Object.assign({}, this.transitTimes, JSON.parse(cachedTransit));
+        } catch (e) {}
+      }
+
       // Sanitasi ketat: Cegah data email fiktif lama mencemari state
       const hasFakeEmail = (str) => {
         const s = String(str || '').toLowerCase();
@@ -1059,6 +1128,9 @@ const AppState = {
       localStorage.setItem(CONFIG.CACHE_KEYS.PROFILE, JSON.stringify(this.userProfile));
       localStorage.setItem(CONFIG.CACHE_KEYS.AUTOMATION, JSON.stringify(this.automationConfig));
       localStorage.setItem(CONFIG.CACHE_KEYS.BRANCH_EMAILS, JSON.stringify(this.branchEmails));
+      if (this.transitTimes) {
+        localStorage.setItem('daihatsu_transit_times', JSON.stringify(this.transitTimes));
+      }
       if (Array.isArray(this.reportLogs)) {
         localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(this.reportLogs));
       }

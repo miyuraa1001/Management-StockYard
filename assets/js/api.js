@@ -487,6 +487,20 @@ const ApiService = {
           if (c.REPORT_DOCUMENT_TYPE) {
             AppState.automationConfig.type = c.REPORT_DOCUMENT_TYPE;
           }
+          // Sinkronisasi Estimasi Durasi Perjalanan Unit (SLA Radar OKK) per cabang dari SystemConfig
+          if (!AppState.transitTimes) AppState.transitTimes = {};
+          const defTimes = (typeof CONFIG !== 'undefined' && CONFIG.DEFAULT_TRANSIT_TIMES) ? CONFIG.DEFAULT_TRANSIT_TIMES : { DEFAULT: 90, D660: 45, D661: 30, D662: 90, D663: 150, D664: 180 };
+          AppState.transitTimes = {
+            DEFAULT: parseInt(c.TRANSIT_TIME_DEFAULT || defTimes.DEFAULT || 90, 10),
+            D660: parseInt(c.TRANSIT_TIME_D660 || defTimes.D660 || 45, 10),
+            D661: parseInt(c.TRANSIT_TIME_D661 || defTimes.D661 || 30, 10),
+            D662: parseInt(c.TRANSIT_TIME_D662 || defTimes.D662 || 90, 10),
+            D663: parseInt(c.TRANSIT_TIME_D663 || defTimes.D663 || 150, 10),
+            D664: parseInt(c.TRANSIT_TIME_D664 || defTimes.D664 || 180, 10)
+          };
+          if (typeof AppState.saveToCache === 'function') {
+            AppState.saveToCache();
+          }
           // Hanya timpa email dari SystemConfig jika TARGET_EMAIL di SystemConfig tidak kosong
           if (c.TARGET_EMAIL && String(c.TARGET_EMAIL).trim() !== '') {
             const confMail = String(c.TARGET_EMAIL).trim();
@@ -716,6 +730,26 @@ const ApiService = {
       return await this.request('updateConfig', 'POST', configData);
     } catch (e) {
       console.error('[ApiService] Gagal update config di server:', e);
+      return { success: false, error: e.message };
+    }
+  },
+
+  /**
+   * Memperbarui estimasi durasi perjalanan unit per cabang (SLA Radar OKK) di database (tab SystemConfig)
+   */
+  async saveTransitDurations(durations) {
+    try {
+      const payload = {
+        TRANSIT_TIME_DEFAULT: durations.DEFAULT || durations.default || 90,
+        TRANSIT_TIME_D660: durations.D660 || 45,
+        TRANSIT_TIME_D661: durations.D661 || 30,
+        TRANSIT_TIME_D662: durations.D662 || 90,
+        TRANSIT_TIME_D663: durations.D663 || 150,
+        TRANSIT_TIME_D664: durations.D664 || 180
+      };
+      return await this.request('updateConfig', 'POST', payload);
+    } catch (e) {
+      console.error('[ApiService] Gagal simpan durasi transit di server:', e);
       return { success: false, error: e.message };
     }
   },
