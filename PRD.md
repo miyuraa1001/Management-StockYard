@@ -37,7 +37,7 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi pro
 | **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis (`smartFilterBarcodes`)**. Kamera langsung mengunci VIN berawalan `MHK...` serta membuang kode pabrik yang tidak relevan. |
 | **Identitas Petugas Security** | Diikat ke NPK perorangan sehingga sulit saat ganti shift atau petugas piket berganti. | **Universal Branch Account Login**. Login fleksibel per cabang untuk seluruh security bertugas tanpa perlu input NPK perorangan. |
 | **Pencatatan Sopir / Driver** | Mengetik nama supir pihak ketiga yang sering berganti dan memperlambat antrean gerbang pool. | **Disederhanakan (Bebas Input Driver)**. Sistem fokus pada verifikasi unit, rute cabang tujuan, dan bukti fisik dokumen serah terima. |
-| **Pelacakan Mobil di Jalan (Antar Cabang)** | Mengandalkan telepon / WhatsApp manual untuk mengetahui apakah mobil sudah berangkat atau sampai di cabang tujuan. | **Radar OKK & Logistics Flight Board**. Kanban live menampilkan unit *In-Transit* lengkap dengan timer jalan, SLA durasi cabang, deteksi keterlambatan, dan tombol konfirmasi tiba di tujuan. |
+| **Pelacakan Mobil di Jalan (Antar Cabang)** | Mengandalkan telepon / WhatsApp manual untuk mengetahui apakah mobil sudah berangkat atau sampai di cabang tujuan. | **Radar OKK & Logistics Flight Board**. Kanban live menampilkan unit *In-Transit* lengkap dengan timer jalan, SLA durasi rute, deteksi keterlambatan real-time, dan status otomatis berpindah tiba di tujuan saat security cabang penerima men-scan barcode Unit Masuk (murni verifikasi fisik tanpa tombol bypass). |
 | **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi seketika mengunci layar merah, menyalakan alarm nada rendah, dan menolak penyimpanan. |
 | **Keamanan Autentikasi Pengguna** | Password tersimpan pada kode aplikasi front-end, rentan dibongkar via DevTools / Inspect Element. | **Server-First Hardened Auth**. Verifikasi kredensial terisolasi ke Apps Script tanpa ekspos password, plus proteksi *brute-force lockout* 60 detik (3 salah coba). |
 | **Sinkronisasi Stok di Database** | Total masuk dan keluar rentan salah hitung manual pada spreadsheet. | **Kalkulasi Matematis Presisi & Auto-Reconcile**. Col D (Total Masuk) dan Col E (Total Keluar) terpisah tegas. Tersedia menu 1-klik di Google Sheets untuk sinkronisasi ulang instan. |
@@ -181,8 +181,8 @@ flowchart TD
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 3. MANAJEMEN INVENTARIS &     │ • Tab Katalog 13 Model vs Tab Sebaran Cabang,    │
 │    RADAR OKK LOGISTIK         │   Kartu Flight Board Radar OKK (In-Transit live, │
-│                               │   timer durasi, SLA cabang, deteksi keterlambatan│
-│                               │   konfirmasi unit tiba di cabang tujuan)         │
+│                               │   timer durasi, SLA rute, deteksi keterlambatan, │
+│                               │   status otomatis tiba saat scan Unit Masuk)     │
 ├───────────────────────────────┼──────────────────────────────────────────────────┤
 │ 4. RINCIAN MODEL (DRILL-DOWN) │ • Banner Spesifikasi Model, Filter Mutasi Model, │
 │                               │   Filter Tanggal, Tabel Rincian Unit per Model   │
