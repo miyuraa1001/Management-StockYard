@@ -869,20 +869,20 @@ const UI = {
       if (catalogView) catalogView.classList.add('hidden');
       if (branchesView) branchesView.classList.remove('hidden');
       if (tabCat) {
-        tabCat.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition cursor-pointer flex items-center justify-center gap-1.5';
+        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
-        tabBranch.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-2';
+        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       this.renderInventoryBranchesView();
     } else {
       if (catalogView) catalogView.classList.remove('hidden');
       if (branchesView) branchesView.classList.add('hidden');
       if (tabCat) {
-        tabCat.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5';
+        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
-        tabBranch.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition cursor-pointer flex items-center justify-center gap-2';
+        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       this.renderInventoryList();
     }
@@ -1017,29 +1017,29 @@ const UI = {
     const headerContainer = document.getElementById('invFlightHeaderContainer');
     if (headerContainer) {
       headerContainer.innerHTML = `
-        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
+        <div class="bg-white/95 rounded-[24px] md:rounded-[28px] p-3.5 sm:p-5 border border-white shadow-saas-card space-y-3">
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div class="flex items-start sm:items-center space-x-3 min-w-0">
+            <div class="flex items-center space-x-3 min-w-0">
               <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
               <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board OKK</h3>
-                  <span class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
+                  <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
                     <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                    <span>LIVE RADAR CABANG</span>
+                    <span>LIVE RADAR</span>
                   </span>
                 </div>
-                <p class="text-[10.5px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
               </div>
             </div>
 
             <!-- Route Selector & Live Search -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-2 flex-shrink-0">
               <!-- Route Dropdown Filter -->
-              <div class="relative">
-                <select id="invLogisticsRouteSelect" onchange="UI.setLogisticsRouteFilter(this.value)" class="w-full sm:w-auto bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
+              <div class="relative w-full sm:w-auto">
+                <select id="invLogisticsRouteSelect" onchange="UI.setLogisticsRouteFilter(this.value)" class="w-full sm:w-52 bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
                   <option value="all" ${currentRoute === 'all' ? 'selected' : ''}>🌐 Semua Rute (5 Cabang)</option>
                   <option value="to_D660" ${currentRoute === 'to_D660' ? 'selected' : ''}>➔ Menuju D660 (Ahmad Yani)</option>
                   <option value="to_D661" ${currentRoute === 'to_D661' ? 'selected' : ''}>➔ Menuju D661 (Bypass)</option>
@@ -1047,12 +1047,13 @@ const UI = {
                   <option value="to_D663" ${currentRoute === 'to_D663' ? 'selected' : ''}>➔ Menuju D663 (Kotabumi)</option>
                   <option value="to_D664" ${currentRoute === 'to_D664' ? 'selected' : ''}>➔ Menuju D664 (Way Jepara)</option>
                   <option value="from_D661" ${currentRoute === 'from_D661' ? 'selected' : ''}>🛫 Keluar dari D661 (Bypass)</option>
+                  <option value="from_D660" ${currentRoute === 'from_D660' ? 'selected' : ''}>🛫 Keluar dari D660 (Ahmad Yani)</option>
                 </select>
               </div>
 
               <!-- Quick Search Input -->
-              <div class="relative">
-                <input type="text" value="${searchQuery}" oninput="UI.setLogisticsSearch(this.value)" placeholder="Cari VIN, Model, Cabang..." class="w-full sm:w-48 bg-slate-50 border border-slate-200/90 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+              <div class="relative w-full sm:w-auto">
+                <input type="text" value="${searchQuery}" oninput="UI.setLogisticsSearch(this.value)" placeholder="Cari VIN, Model, Cabang..." class="w-full sm:w-48 bg-slate-50 border border-slate-200/90 rounded-xl pl-8 pr-6 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
                 <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 ${searchQuery ? `
                   <button type="button" onclick="UI.setLogisticsSearch('')" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold">×</button>
@@ -1070,9 +1071,9 @@ const UI = {
       kpiStrip.innerHTML = `
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <!-- KPI 1: In-Transit Aktif (Amber) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-amber-700 uppercase tracking-wider">Sedang Di Jalan</span>
+              <span class="text-[9px] sm:text-[10px] font-extrabold text-amber-700 uppercase tracking-wider">Sedang Di Jalan</span>
               <div class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center ${kanban.metrics.totalInTransit > 0 ? 'animate-pulse' : ''}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
@@ -1081,15 +1082,15 @@ const UI = {
               <span class="text-xl sm:text-2xl font-black text-amber-950">${kanban.metrics.totalInTransit}</span>
               <span class="text-xs font-bold text-amber-700">Unit OTW</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
               <span>Mutasi antar-cabang aktif</span>
             </div>
           </div>
 
           <!-- KPI 2: Tiba di Pool Tujuan (Emerald) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-emerald-700 uppercase tracking-wider">Tiba di Pool</span>
+              <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">Tiba di Pool</span>
               <div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
               </div>
@@ -1098,15 +1099,15 @@ const UI = {
               <span class="text-xl sm:text-2xl font-black text-emerald-950">${kanban.metrics.totalDelivered}</span>
               <span class="text-xs font-bold text-emerald-700">Unit Selesai</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
               <span>Terkonfirmasi di tujuan</span>
             </div>
           </div>
 
-          <!-- KPI 3: Estimasi Waktu Tempuh (Blue) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+          <!-- KPI 3: Estimasi Waktu Tempuh (Blue - Realtime Synchronized) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-blue-700 uppercase tracking-wider">Rata-rata Waktu</span>
+              <span class="text-[9px] sm:text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">Rata-rata Waktu</span>
               <div class="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
@@ -1114,15 +1115,15 @@ const UI = {
             <div class="flex items-baseline space-x-1.5 mt-0.5">
               <span class="text-lg sm:text-xl font-black text-blue-950">${kanban.metrics.avgTransitTime}</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
-              <span>Durasi perjalanan unit</span>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
+              <span>SLA rute & perjalanan unit</span>
             </div>
           </div>
 
           <!-- KPI 4: Total Stok Fisik 5 Pool (Purple) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-4 border border-white shadow-saas-card relative overflow-hidden">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[9.5px] sm:text-[10.5px] font-extrabold text-purple-700 uppercase tracking-wider">Jaringan Pool DSO</span>
+              <span class="text-[9px] sm:text-[10px] font-extrabold text-purple-700 uppercase tracking-wider">Jaringan Pool DSO</span>
               <div class="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
@@ -1131,7 +1132,7 @@ const UI = {
               <span class="text-xl sm:text-2xl font-black text-purple-950">${multiBranch.totalActiveStock}</span>
               <span class="text-xs font-bold text-purple-700">Unit Terparkir</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[10px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
               <span>Tersebar di 5 cabang</span>
             </div>
           </div>
@@ -7783,6 +7784,9 @@ const UI = {
     if (inputD664) inputD664.value = tt.D664 || 180;
     if (inputDef)  inputDef.value  = tt.DEFAULT || 90;
 
+    // Render daftar rute point-to-point aktif di settings
+    this.renderTransitRoutesSettings();
+
     const securityNotice = document.getElementById('transitSettingsSecurityNotice');
     const saveTransitBtn = document.getElementById('saveTransitDurationsBtn');
     const transitInputs = [inputD660, inputD661, inputD662, inputD663, inputD664, inputDef].filter(Boolean);
@@ -7810,8 +7814,74 @@ const UI = {
   },
 
   /**
+   * Render Matriks Rute Point-to-Point Antar-Cabang di Halaman Settings (Otoritas Admin)
+   */
+  renderTransitRoutesSettings() {
+    const container = document.getElementById('transitRoutesListContainer');
+    const badgeCount = document.getElementById('transitRoutesCountBadge');
+    if (!container) return;
+
+    if (typeof AppState !== 'undefined' && (!Array.isArray(AppState.transitRoutes) || AppState.transitRoutes.length === 0)) {
+      if (typeof AppState.initTransitRoutes === 'function') AppState.initTransitRoutes();
+    }
+
+    const routes = (AppState && Array.isArray(AppState.transitRoutes)) ? AppState.transitRoutes : [];
+    if (badgeCount) badgeCount.textContent = `${routes.length} Rute`;
+
+    if (routes.length === 0) {
+      container.innerHTML = `
+        <div class="sm:col-span-2 text-center py-6 px-4 bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+          Belum ada rute khusus. Sistem menggunakan standar durasi default (90 menit). Tambahkan rute baru di bawah.
+        </div>
+      `;
+      return;
+    }
+
+    const branchNames = {
+      D660: 'Ahmad Yani (Pusat)',
+      D661: 'Bypass / Sentra Hub',
+      D662: 'Bandar Jaya',
+      D663: 'Lampung Utara',
+      D664: 'Lampung Timur'
+    };
+
+    container.innerHTML = routes.map((r) => {
+      const oName = branchNames[r.origin] || r.origin;
+      const dName = branchNames[r.dest] || r.dest;
+      const dur = parseInt(r.duration, 10) || 30;
+
+      return `
+        <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
+          <div class="min-w-0 pr-1">
+            <div class="flex items-center space-x-1.5 text-xs font-black text-slate-800 truncate">
+              <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-mono">${r.origin}</span>
+              <span class="text-slate-400 font-black text-[10px]">➔</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono">${r.dest}</span>
+            </div>
+            <span class="text-[10px] text-slate-400 font-medium block truncate mt-0.5">${oName} ke ${dName}</span>
+          </div>
+
+          <div class="flex items-center space-x-1 flex-shrink-0">
+            <!-- Stepper Pill (Minus / Plus 15 Menit) -->
+            <div class="flex items-center space-x-1 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
+              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', -15)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-xs sm:text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit">－</button>
+              <span class="w-10 sm:w-12 text-center font-black text-xs text-slate-900 select-all">${dur}</span>
+              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', 15)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-xs sm:text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit">＋</button>
+              <span class="text-[10px] font-bold text-slate-400 pr-1 select-none">Mnt</span>
+            </div>
+
+            <!-- Tombol Hapus Rute -->
+            <button type="button" onclick="UI.deleteTransitRoute('${r.origin}', '${r.dest}')" class="w-7 h-7 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 flex items-center justify-center transition cursor-pointer" title="Hapus Rute Ini">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  /**
    * Mengatur estimasi durasi perjalanan cabang dengan tombol stepper (+ / -)
-   * Memberikan kemudahan 1-sentuhan tanpa memicu keyboard virtual & tanpa shadow/cursor droplet biru
    */
   adjustTransitDuration(branchKey, delta) {
     const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
@@ -7833,11 +7903,92 @@ const UI = {
     if (newVal > 1440) newVal = 1440;
     input.value = newVal;
 
-    // Animasi visual halus pada input
     input.classList.add('text-blue-600', 'scale-105');
     setTimeout(() => {
       input.classList.remove('text-blue-600', 'scale-105');
     }, 200);
+  },
+
+  /**
+   * Menyesuaikan durasi rute point-to-point dengan tombol stepper (+/-)
+   */
+  adjustRouteDuration(origin, dest, delta) {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak mengubah rute.');
+      return;
+    }
+
+    const routes = (AppState && Array.isArray(AppState.transitRoutes)) ? AppState.transitRoutes : [];
+    const targetRoute = routes.find(r => r.origin === origin && r.dest === dest);
+    if (!targetRoute) return;
+
+    let newDur = (parseInt(targetRoute.duration, 10) || 30) + delta;
+    if (newDur < 5) newDur = 5;
+    if (newDur > 1440) newDur = 1440;
+
+    AppState.setTransitRoute(origin, dest, newDur);
+    this.renderTransitRoutesSettings();
+    if (typeof this.renderInventoryBranchesView === 'function') {
+      this.renderInventoryBranchesView();
+    }
+  },
+
+  /**
+   * Menambahkan rute antar cabang baru sesuka hati oleh Admin (Sistem Nambahin Sendiri)
+   */
+  addNewTransitRoute() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Ditolak: Hanya Administrator DSO yang berhak menambah rute perjalanan.');
+      return;
+    }
+
+    const originSelect = document.getElementById('newRouteOrigin');
+    const destSelect = document.getElementById('newRouteDest');
+    const durationInput = document.getElementById('newRouteDuration');
+
+    const origin = originSelect ? originSelect.value : 'D661';
+    const dest = destSelect ? destSelect.value : 'D660';
+    const duration = parseInt(durationInput?.value, 10) || 60;
+
+    if (origin === dest) {
+      this.showToast('⚠️ Cabang Asal dan Cabang Tujuan tidak boleh sama! Pilih cabang yang berbeda.', 4500);
+      return;
+    }
+
+    if (duration <= 0) {
+      this.showToast('⚠️ Durasi perjalanan harus lebih dari 0 menit.', 4000);
+      return;
+    }
+
+    AppState.setTransitRoute(origin, dest, duration);
+    this.renderTransitRoutesSettings();
+    if (typeof this.renderInventoryBranchesView === 'function') {
+      this.renderInventoryBranchesView();
+    }
+
+    this.showToast(`✅ Rute ${origin} ➔ ${dest} (${duration} Menit) berhasil ditambahkan! Silakan simpan untuk memperbarui database.`, 4500);
+  },
+
+  /**
+   * Menghapus rute antar cabang dari daftar
+   */
+  deleteTransitRoute(origin, dest) {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak menghapus rute.');
+      return;
+    }
+
+    if (confirm(`Hapus rute khusus ${origin} ➔ ${dest}? Rute ini akan kembali menggunakan durasi default.`)) {
+      AppState.removeTransitRoute(origin, dest);
+      this.renderTransitRoutesSettings();
+      if (typeof this.renderInventoryBranchesView === 'function') {
+        this.renderInventoryBranchesView();
+      }
+      this.showToast(`🗑️ Rute ${origin} ➔ ${dest} telah dihapus.`, 3500);
+    }
   },
 
   /**
@@ -7882,11 +8033,11 @@ const UI = {
     }
 
     try {
-      const res = await ApiService.saveTransitDurations(durations);
+      const res = await ApiService.saveTransitDurations(durations, AppState.transitRoutes);
       if (res && res.error) {
         throw new Error(res.error);
       }
-      this.showToast('✅ Berhasil! Estimasi durasi perjalanan per cabang tersimpan di database (SystemConfig).', 4000);
+      this.showToast('✅ Berhasil! Estimasi rute perjalanan antar cabang tersimpan di database (SystemConfig).', 4500);
       if (typeof this.renderInventoryBranchesView === 'function') {
         this.renderInventoryBranchesView();
       }
@@ -9657,3 +9808,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.handleTargetEmailBranchChange = (b) => UI.handleTargetEmailBranchChange(b);
 window.saveTransitDurations = () => UI.saveTransitDurations();
 window.adjustTransitDuration = (b, d) => UI.adjustTransitDuration(b, d);
+window.adjustRouteDuration = (o, d, delta) => UI.adjustRouteDuration ? UI.adjustRouteDuration(o, d, delta) : null;
+window.addNewTransitRoute = () => UI.addNewTransitRoute ? UI.addNewTransitRoute() : null;
+window.deleteTransitRoute = (o, d) => UI.deleteTransitRoute ? UI.deleteTransitRoute(o, d) : null;
+window.renderTransitRoutesSettings = () => UI.renderTransitRoutesSettings ? UI.renderTransitRoutesSettings() : null;

@@ -498,6 +498,19 @@ const ApiService = {
             D663: parseInt(c.TRANSIT_TIME_D663 || defTimes.D663 || 150, 10),
             D664: parseInt(c.TRANSIT_TIME_D664 || defTimes.D664 || 180, 10)
           };
+
+          // Sinkronisasi Matriks Rute Point-to-Point Antar-Cabang dari SystemConfig
+          if (c.TRANSIT_ROUTES_JSON) {
+            try {
+              const parsedRoutes = JSON.parse(c.TRANSIT_ROUTES_JSON);
+              if (Array.isArray(parsedRoutes) && parsedRoutes.length > 0) {
+                AppState.transitRoutes = parsedRoutes;
+                if (typeof AppState.saveTransitRoutesToStorage === 'function') {
+                  AppState.saveTransitRoutesToStorage();
+                }
+              }
+            } catch (e) {}
+          }
           if (typeof AppState.saveToCache === 'function') {
             AppState.saveToCache();
           }
@@ -737,7 +750,7 @@ const ApiService = {
   /**
    * Memperbarui estimasi durasi perjalanan unit per cabang (SLA Radar OKK) di database (tab SystemConfig)
    */
-  async saveTransitDurations(durations) {
+  async saveTransitDurations(durations, routes) {
     try {
       const payload = {
         TRANSIT_TIME_DEFAULT: durations.DEFAULT || durations.default || 90,
@@ -745,7 +758,8 @@ const ApiService = {
         TRANSIT_TIME_D661: durations.D661 || 30,
         TRANSIT_TIME_D662: durations.D662 || 90,
         TRANSIT_TIME_D663: durations.D663 || 150,
-        TRANSIT_TIME_D664: durations.D664 || 180
+        TRANSIT_TIME_D664: durations.D664 || 180,
+        TRANSIT_ROUTES_JSON: JSON.stringify(routes || (AppState && AppState.transitRoutes) || [])
       };
       return await this.request('updateConfig', 'POST', payload);
     } catch (e) {

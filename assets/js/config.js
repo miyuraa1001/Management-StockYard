@@ -36,6 +36,22 @@ const CONFIG = {
     D664: 180    // D664 - Lampung Timur / Tulang Bawang (~3 Jam)
   },
 
+  // Matriks Rute Standar Antar-Cabang (Point-to-Point SLA Radar OKK dalam Menit)
+  DEFAULT_TRANSIT_ROUTES: [
+    { origin: 'D661', dest: 'D660', duration: 30, label: 'D661 (Bypass) ➔ D660 (Ahmad Yani)' },
+    { origin: 'D660', dest: 'D661', duration: 30, label: 'D660 (Ahmad Yani) ➔ D661 (Bypass)' },
+    { origin: 'D661', dest: 'D662', duration: 90, label: 'D661 (Bypass) ➔ D662 (Bandar Jaya)' },
+    { origin: 'D662', dest: 'D661', duration: 90, label: 'D662 (Bandar Jaya) ➔ D661 (Bypass)' },
+    { origin: 'D661', dest: 'D663', duration: 150, label: 'D661 (Bypass) ➔ D663 (Lampung Utara)' },
+    { origin: 'D663', dest: 'D661', duration: 150, label: 'D663 (Lampung Utara) ➔ D661 (Bypass)' },
+    { origin: 'D661', dest: 'D664', duration: 180, label: 'D661 (Bypass) ➔ D664 (Lampung Timur)' },
+    { origin: 'D664', dest: 'D661', duration: 180, label: 'D664 (Lampung Timur) ➔ D661 (Bypass)' },
+    { origin: 'D662', dest: 'D663', duration: 60, label: 'D662 (Bandar Jaya) ➔ D663 (Lampung Utara)' },
+    { origin: 'D663', dest: 'D662', duration: 60, label: 'D663 (Lampung Utara) ➔ D662 (Bandar Jaya)' },
+    { origin: 'D660', dest: 'D662', duration: 75, label: 'D660 (Ahmad Yani) ➔ D662 (Bandar Jaya)' },
+    { origin: 'D662', dest: 'D660', duration: 75, label: 'D662 (Bandar Jaya) ➔ D660 (Ahmad Yani)' }
+  ],
+
   // 6 Akun Resmi Sesuai Database Google Spreadsheet Tab UserPIC (Kredensial diamankan murni di Server Backend)
   USER_ACCOUNTS: [
     {

@@ -1019,19 +1019,19 @@
       <!-- ======================================================== -->
       <!-- SECTION 2: INVENTORY & KATALOG 13 MODEL (STOK UNIT) -->
       <!-- ======================================================== -->
-      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4">
+      <section id="viewInventory" class="hidden max-w-[1440px] mx-auto w-full space-y-3.5 md:space-y-4 pb-32 sm:pb-24">
         
-        <!-- View Mode Segmented Switcher: Katalog Model vs Sebaran Cabang & Radar OKK (Khusus Admin) -->
-        <div id="invViewModeSwitcherCard" class="bg-white/95 rounded-[22px] p-2 border border-white shadow-saas-card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div class="flex items-center space-x-1.5 p-1 bg-slate-100/90 rounded-2xl w-full sm:w-auto">
-            <button type="button" id="invTabCatalogBtn" onclick="setInventoryViewMode('catalog')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <!-- View Mode Segmented Switcher: Katalog Model vs Radar Logistik OKK (Khusus Admin) -->
+        <div id="invViewModeSwitcherCard" class="bg-white/95 rounded-[22px] p-1.5 border border-slate-100 shadow-sm flex items-center justify-between gap-2">
+          <div class="grid grid-cols-2 p-1 bg-slate-100/90 rounded-2xl w-full sm:w-auto sm:flex sm:items-center gap-1">
+            <button type="button" id="invTabCatalogBtn" onclick="setInventoryViewMode('catalog')" class="px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
               <span>Katalog Model (13)</span>
             </button>
-            <button type="button" id="invTabBranchesBtn" onclick="setInventoryViewMode('branches')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition cursor-pointer flex items-center justify-center gap-2">
-              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-              <span>Sebaran Cabang & Radar OKK</span>
-              <span id="invTransitBadge" class="hidden px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white animate-pulse">0</span>
+            <button type="button" id="invTabBranchesBtn" onclick="setInventoryViewMode('branches')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Radar OKK & Pool</span>
+              <span id="invTransitBadge" class="hidden px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white animate-pulse">0</span>
             </button>
           </div>
 
@@ -1799,7 +1799,7 @@
                         <h4 class="text-sm font-bold text-slate-900 leading-tight">Durasi Perjalanan Unit Antar Cabang</h4>
                         <span id="transitSettingsRoleBadge" class="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-50 text-blue-700 border border-blue-200">🛡️ Otoritas Admin</span>
                       </div>
-                      <p class="text-xs text-slate-400 font-medium mt-0.5 leading-tight">Estimasi SLA waktu tempuh unit (Menit) tersinkronisasi ke tab SystemConfig</p>
+                      <p class="text-xs text-slate-400 font-medium mt-0.5 leading-tight">Estimasi SLA waktu tempuh unit berdasarkan rute spesifik (Asal ➔ Tujuan) tersinkronisasi ke tab SystemConfig</p>
                     </div>
                   </div>
                 </div>
@@ -1815,121 +1815,97 @@
                   </p>
                 </div>
 
-                <!-- Form Durasi Per Cabang -->
-                <div id="transitSettingsAdminForm" class="space-y-3">
+                <!-- Form Durasi Per Cabang & Matriks Rute -->
+                <div id="transitSettingsAdminForm" class="space-y-3.5">
                   <!-- Quick Helper Tip -->
                   <div class="flex items-center justify-between bg-blue-50/70 rounded-2xl px-3.5 py-2.5 border border-blue-100/90 text-xs text-blue-900 font-medium">
                     <div class="flex items-center space-x-2 min-w-0">
                       <span class="text-base flex-shrink-0">⚡</span>
                       <span class="text-[11px] leading-tight text-blue-800">
-                        Sentuh tombol <b>＋</b> / <b>－</b> untuk mengatur durasi per 15 menit secara cepat tanpa perlu mengetik.
+                        Admin dapat mengatur durasi rute dengan tombol <b>＋</b> / <b>－</b> (15 mnt), atau <b>menambah rute antar-cabang baru</b> sesuka hati di bawah.
                       </span>
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <!-- D660: Ahmad Yani -->
-                    <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-slate-800 block truncate">D660 – Ahmad Yani</span>
-                        <span class="text-[10px] text-slate-400 font-medium block">Showroom Pusat</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('D660', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_D660" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-slate-900 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="45">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('D660', 15)" class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-slate-400 pr-1.5 select-none">Mnt</span>
-                      </div>
+                  <!-- 1. Container Daftar Rute Aktif (Point-to-Point) -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between px-1">
+                      <span class="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Daftar Rute Perjalanan Terdaftar:</span>
+                      <span id="transitRoutesCountBadge" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">0 Rute</span>
                     </div>
-
-                    <!-- D661: Soekarno Hatta -->
-                    <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-slate-800 block truncate">D661 – Soekarno Hatta</span>
-                        <span class="text-[10px] text-slate-400 font-medium block">Sentra Pool & Bypass</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('D661', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_D661" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-slate-900 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="30">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('D661', 15)" class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-slate-400 pr-1.5 select-none">Mnt</span>
-                      </div>
-                    </div>
-
-                    <!-- D662: Bandar Jaya -->
-                    <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-slate-800 block truncate">D662 – Bandar Jaya</span>
-                        <span class="text-[10px] text-slate-400 font-medium block">Lampung Tengah</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('D662', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_D662" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-slate-900 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="90">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('D662', 15)" class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-slate-400 pr-1.5 select-none">Mnt</span>
-                      </div>
-                    </div>
-
-                    <!-- D663: Lampung Utara -->
-                    <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-slate-800 block truncate">D663 – Lampung Utara</span>
-                        <span class="text-[10px] text-slate-400 font-medium block">Kotabumi</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('D663', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_D663" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-slate-900 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="150">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('D663', 15)" class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-slate-400 pr-1.5 select-none">Mnt</span>
-                      </div>
-                    </div>
-
-                    <!-- D664: Lampung Timur -->
-                    <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-slate-800 block truncate">D664 – Lampung Timur</span>
-                        <span class="text-[10px] text-slate-400 font-medium block">Way Jepara / Tulang Bawang</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('D664', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_D664" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-slate-900 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="180">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('D664', 15)" class="w-7 h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-slate-400 pr-1.5 select-none">Mnt</span>
-                      </div>
-                    </div>
-
-                    <!-- DEFAULT Standar Global -->
-                    <div class="p-3 rounded-2xl bg-blue-50/60 border border-blue-200/80 flex items-center justify-between gap-2 hover:bg-blue-50/80 transition">
-                      <div class="min-w-0 pr-1">
-                        <span class="text-xs font-bold text-blue-900 block truncate">Standar Rute Lain / Default</span>
-                        <span class="text-[10px] text-blue-600/80 font-medium block">Patokan Durasi Umum</span>
-                      </div>
-                      <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-blue-200 shadow-2xs">
-                        <button type="button" onclick="UI.adjustTransitDuration('DEFAULT', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
-                        <div class="relative flex items-center justify-center">
-                          <input type="number" id="transitDuration_DEFAULT" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-blue-950 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="90">
-                        </div>
-                        <button type="button" onclick="UI.adjustTransitDuration('DEFAULT', 15)" class="w-7 h-7 rounded-xl bg-blue-100 hover:bg-blue-200 active:scale-90 text-blue-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
-                        <span class="text-[10px] font-bold text-blue-600 pr-1.5 select-none">Mnt</span>
-                      </div>
+                    <div id="transitRoutesListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <!-- Rendered dynamically by UI.renderTransitRoutesSettings -->
                     </div>
                   </div>
 
-                  <!-- Tombol Simpan Durasi -->
+                  <!-- 2. Tambah Rute Antar Cabang Baru (Sistem Nambahin Sendiri) -->
+                  <div class="bg-slate-50/90 rounded-2xl p-3.5 sm:p-4 border border-dashed border-slate-300 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-2">
+                        <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black">＋</span>
+                        <span class="text-xs font-black text-slate-900">Tambah Rute Antar Cabang Baru</span>
+                      </div>
+                      <span class="text-[10px] font-bold text-slate-400">Admin Bebas Menambah</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                      <div class="sm:col-span-4">
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1">Cabang Asal</label>
+                        <select id="newRouteOrigin" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                          <option value="D661">D661 - Soekarno Hatta (Bypass)</option>
+                          <option value="D660">D660 - Ahmad Yani (Pusat)</option>
+                          <option value="D662">D662 - Bandar Jaya</option>
+                          <option value="D663">D663 - Lampung Utara</option>
+                          <option value="D664">D664 - Lampung Timur</option>
+                        </select>
+                      </div>
+
+                      <div class="hidden sm:flex sm:col-span-1 items-center justify-center text-slate-400 font-black text-sm pb-2">➔</div>
+
+                      <div class="sm:col-span-4">
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1">Cabang Tujuan</label>
+                        <select id="newRouteDest" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                          <option value="D660">D660 - Ahmad Yani (Pusat)</option>
+                          <option value="D661">D661 - Soekarno Hatta (Bypass)</option>
+                          <option value="D662">D662 - Bandar Jaya</option>
+                          <option value="D663">D663 - Lampung Utara</option>
+                          <option value="D664">D664 - Lampung Timur</option>
+                        </select>
+                      </div>
+
+                      <div class="sm:col-span-3">
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1">Durasi (Menit)</label>
+                        <input type="number" id="newRouteDuration" min="5" max="1440" step="15" value="60" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-black text-center text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs" placeholder="60">
+                      </div>
+                    </div>
+
+                    <button type="button" onclick="UI.addNewTransitRoute()" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-black transition cursor-pointer flex items-center justify-center space-x-1.5 shadow-2xs">
+                      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+                      <span>Tambahkan Rute Ini ke Sistem</span>
+                    </button>
+                  </div>
+
+                  <!-- 3. Patokan Standar Rute Lain / Default -->
+                  <div class="p-3 rounded-2xl bg-blue-50/60 border border-blue-200/80 flex items-center justify-between gap-2 hover:bg-blue-50/80 transition">
+                    <div class="min-w-0 pr-1">
+                      <span class="text-xs font-bold text-blue-900 block truncate">Standar Rute Lain / Default (SLA Umum)</span>
+                      <span class="text-[10px] text-blue-600/80 font-medium block">Berlaku otomatis jika rute belum terdaftar di atas</span>
+                    </div>
+                    <div class="flex items-center space-x-1 flex-shrink-0 bg-white p-1 rounded-2xl border border-blue-200 shadow-2xs">
+                      <button type="button" onclick="UI.adjustTransitDuration('DEFAULT', -15)" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit" aria-label="Kurangi">－</button>
+                      <div class="relative flex items-center justify-center">
+                        <input type="number" id="transitDuration_DEFAULT" min="5" max="1440" step="5" inputmode="numeric" class="w-12 py-0.5 text-center font-black text-xs text-blue-950 bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus:border-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-transform" placeholder="90">
+                      </div>
+                      <button type="button" onclick="UI.adjustTransitDuration('DEFAULT', 15)" class="w-7 h-7 rounded-xl bg-blue-100 hover:bg-blue-200 active:scale-90 text-blue-700 font-black text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit" aria-label="Tambah">＋</button>
+                      <span class="text-[10px] font-bold text-blue-600 pr-1.5 select-none">Mnt</span>
+                    </div>
+                  </div>
+
+                  <!-- Tombol Simpan Semua Rute -->
                   <div class="pt-2">
                     <button type="button" id="saveTransitDurationsBtn" onclick="UI.saveTransitDurations()" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white text-xs font-black flex items-center justify-center space-x-2 transition cursor-pointer shadow-md shadow-blue-500/20">
                       <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                      <span>Simpan Durasi Perjalanan ke Database (SystemConfig)</span>
+                      <span>Simpan Semua Rute ke Database (SystemConfig)</span>
                     </button>
                   </div>
                 </div>

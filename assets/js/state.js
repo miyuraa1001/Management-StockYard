@@ -160,6 +160,115 @@ const AppState = {
     D664: 180
   },
 
+  // Matriks Rute Spesifik Point-to-Point Antar-Cabang (Asal -> Tujuan)
+  transitRoutes: [],
+
+  /**
+   * Inisialisasi daftar rute transit (dari storage / default CONFIG)
+   */
+  initTransitRoutes() {
+    try {
+      const stored = localStorage.getItem('daihatsu_transit_routes_matrix');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.transitRoutes = parsed;
+          return;
+        }
+      }
+    } catch (e) {}
+
+    const defRoutes = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_TRANSIT_ROUTES))
+      ? CONFIG.DEFAULT_TRANSIT_ROUTES
+      : [
+          { origin: 'D661', dest: 'D660', duration: 30, label: 'D661 (Bypass) ➔ D660 (Ahmad Yani)' },
+          { origin: 'D660', dest: 'D661', duration: 30, label: 'D660 (Ahmad Yani) ➔ D661 (Bypass)' },
+          { origin: 'D661', dest: 'D662', duration: 90, label: 'D661 (Bypass) ➔ D662 (Bandar Jaya)' },
+          { origin: 'D662', dest: 'D661', duration: 90, label: 'D662 (Bandar Jaya) ➔ D661 (Bypass)' },
+          { origin: 'D661', dest: 'D663', duration: 150, label: 'D661 (Bypass) ➔ D663 (Lampung Utara)' },
+          { origin: 'D663', dest: 'D661', duration: 150, label: 'D663 (Lampung Utara) ➔ D661 (Bypass)' },
+          { origin: 'D661', dest: 'D664', duration: 180, label: 'D661 (Bypass) ➔ D664 (Lampung Timur)' },
+          { origin: 'D664', dest: 'D661', duration: 180, label: 'D664 (Lampung Timur) ➔ D661 (Bypass)' },
+          { origin: 'D662', dest: 'D663', duration: 60, label: 'D662 (Bandar Jaya) ➔ D663 (Lampung Utara)' },
+          { origin: 'D663', dest: 'D662', duration: 60, label: 'D663 (Lampung Utara) ➔ D662 (Bandar Jaya)' }
+        ];
+    this.transitRoutes = JSON.parse(JSON.stringify(defRoutes));
+  },
+
+  /**
+   * Mengambil durasi target SLA transit untuk rute spesifik (Asal -> Tujuan) dalam Menit
+   */
+  getTransitDurationForRoute(originCodeOrName, destCodeOrName) {
+    if (!Array.isArray(this.transitRoutes) || this.transitRoutes.length === 0) {
+      this.initTransitRoutes();
+    }
+
+    const origin = String(originCodeOrName || '').match(/D66[0-4]/i)?.[0]?.toUpperCase() || 'D661';
+    const dest = String(destCodeOrName || '').match(/D66[0-4]/i)?.[0]?.toUpperCase() || 'D660';
+
+    // 1. Cari rute spesifik searah (Origin -> Destination)
+    const directMatch = this.transitRoutes.find(r => r.origin === origin && r.dest === dest);
+    if (directMatch && parseInt(directMatch.duration, 10) > 0) {
+      return parseInt(directMatch.duration, 10);
+    }
+
+    // 2. Cari rute simetris (Destination -> Origin) jika direct belum ada
+    const reverseMatch = this.transitRoutes.find(r => r.origin === dest && r.dest === origin);
+    if (reverseMatch && parseInt(reverseMatch.duration, 10) > 0) {
+      return parseInt(reverseMatch.duration, 10);
+    }
+
+    // 3. Fallback ke cabang tujuan atau default
+    return this.getTransitDurationForBranch(dest);
+  },
+
+  /**
+   * Menambahkan rute baru atau memperbarui durasi rute yang ada (Admin dinamis)
+   */
+  setTransitRoute(origin, dest, duration) {
+    const o = String(origin || '').match(/D66[0-4]/i)?.[0]?.toUpperCase();
+    const d = String(dest || '').match(/D66[0-4]/i)?.[0]?.toUpperCase();
+    const dur = Math.max(5, parseInt(duration, 10) || 30);
+    if (!o || !d || o === d) return false;
+
+    if (!Array.isArray(this.transitRoutes)) this.initTransitRoutes();
+
+    const branchNames = {
+      D660: 'Ahmad Yani',
+      D661: 'Bypass',
+      D662: 'Bandar Jaya',
+      D663: 'Lampung Utara',
+      D664: 'Lampung Timur'
+    };
+    const label = `${o} (${branchNames[o] || o}) ➔ ${d} (${branchNames[d] || d})`;
+
+    const existingIdx = this.transitRoutes.findIndex(r => r.origin === o && r.dest === d);
+    if (existingIdx >= 0) {
+      this.transitRoutes[existingIdx].duration = dur;
+      this.transitRoutes[existingIdx].label = label;
+    } else {
+      this.transitRoutes.push({ origin: o, dest: d, duration: dur, label: label });
+    }
+
+    this.saveTransitRoutesToStorage();
+    return true;
+  },
+
+  /**
+   * Menghapus rute dari daftar (Admin dinamis)
+   */
+  removeTransitRoute(origin, dest) {
+    if (!Array.isArray(this.transitRoutes)) return;
+    this.transitRoutes = this.transitRoutes.filter(r => !(r.origin === origin && r.dest === dest));
+    this.saveTransitRoutesToStorage();
+  },
+
+  saveTransitRoutesToStorage() {
+    try {
+      localStorage.setItem('daihatsu_transit_routes_matrix', JSON.stringify(this.transitRoutes));
+    } catch (e) {}
+  },
+
   /**
    * Mengambil durasi target SLA transit untuk cabang tujuan tertentu (dalam Menit)
    */
@@ -196,6 +305,46 @@ const AppState = {
     if (vals.length === 0) return parseInt(cfg.DEFAULT, 10) || 90;
     const sum = vals.reduce((a, b) => a + b, 0);
     return Math.round(sum / vals.length);
+  },
+
+  /**
+   * Menghitung rata-rata waktu transit yang relevan & tersinkronisasi murni dengan data aktif di layar
+   */
+  computeRelevantAverageTransitTime(inTransitList, deliveredList, filterRoute) {
+    // 1. Jika rute disaring ke cabang tujuan tertentu, tampilkan SLA rute tersebut secara tepat
+    if (filterRoute && filterRoute.startsWith('to_')) {
+      const destCode = filterRoute.replace('to_', '').toUpperCase();
+      const dur = this.getTransitDurationForRoute('D661', destCode);
+      return `~${this.formatMinutesToHuman(dur)}`;
+    }
+    if (filterRoute && filterRoute.startsWith('from_')) {
+      const originCode = filterRoute.replace('from_', '').toUpperCase();
+      const dur = this.getTransitDurationForRoute(originCode, 'D660');
+      return `~${this.formatMinutesToHuman(dur)}`;
+    }
+
+    // 2. Jika ada unit yang aktif di jalan (in-transit), tampilkan rata-rata SLA target unit yang sedang jalan
+    if (Array.isArray(inTransitList) && inTransitList.length > 0) {
+      const sumTarget = inTransitList.reduce((acc, u) => acc + (u.targetDurationMins || 0), 0);
+      const avg = Math.round(sumTarget / inTransitList.length);
+      return `~${this.formatMinutesToHuman(avg)}`;
+    }
+
+    // 3. Jika belum ada unit in-transit, hitung rata-rata durasi perjalanan aktual unit yang telah tiba hari ini
+    const validDelivered = (deliveredList || []).filter(u => u.elapsedMins && u.elapsedMins > 0);
+    if (validDelivered.length > 0) {
+      const sumDelivered = validDelivered.reduce((acc, u) => acc + u.elapsedMins, 0);
+      const avg = Math.round(sumDelivered / validDelivered.length);
+      return `~${this.formatMinutesToHuman(avg)}`;
+    }
+
+    // 4. Default: Rata-rata dari matriks rute aktif
+    if (Array.isArray(this.transitRoutes) && this.transitRoutes.length > 0) {
+      const sum = this.transitRoutes.reduce((acc, r) => acc + (parseInt(r.duration, 10) || 0), 0);
+      return `~${this.formatMinutesToHuman(Math.round(sum / this.transitRoutes.length))}`;
+    }
+
+    return `~${this.formatMinutesToHuman(this.getAverageTransitMinutes())}`;
   },
 
   // Riwayat Pengiriman Notifikasi Laporan Email (Tersinkronisasi Nyata)
@@ -655,7 +804,7 @@ const AppState = {
 
         const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
         const originCode = (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase();
-        const targetDurationMins = this.getTransitDurationForBranch(destCode);
+        const targetDurationMins = this.getTransitDurationForRoute(originCode, destCode);
         const isDelayed = elapsed.diffMins > targetDurationMins;
         const diffFromTarget = Math.abs(elapsed.diffMins - targetDurationMins);
         const diffHuman = this.formatMinutesToHuman(diffFromTarget);
@@ -815,7 +964,7 @@ const AppState = {
         totalDelivered: delivered.length,
         totalDepartures: departures.length,
         urgentCount: inTransit.filter(u => u.isDelayed || u.isUrgent).length,
-        avgTransitTime: `~${this.formatMinutesToHuman(this.getAverageTransitMinutes())}`
+        avgTransitTime: this.computeRelevantAverageTransitTime(filteredTransit.length > 0 ? filteredTransit : inTransit, filteredDelivered.length > 0 ? filteredDelivered : delivered, filterRoute)
       }
     };
   },
@@ -1011,6 +1160,8 @@ const AppState = {
         } catch (e) {}
       }
 
+      this.initTransitRoutes();
+
       // Sanitasi ketat: Cegah data email fiktif lama mencemari state
       const hasFakeEmail = (str) => {
         const s = String(str || '').toLowerCase();
@@ -1131,6 +1282,7 @@ const AppState = {
       if (this.transitTimes) {
         localStorage.setItem('daihatsu_transit_times', JSON.stringify(this.transitTimes));
       }
+      this.saveTransitRoutesToStorage();
       if (Array.isArray(this.reportLogs)) {
         localStorage.setItem(CONFIG.CACHE_KEYS.REPORT_LOGS || 'daihatsu_report_logs_v8', JSON.stringify(this.reportLogs));
       }
