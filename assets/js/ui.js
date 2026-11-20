@@ -7730,9 +7730,9 @@ const UI = {
     } else {
       if (dailyDigestBadge) {
         dailyDigestBadge.textContent = '🛡️ Otoritas Admin';
-        dailyDigestBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200';
+        dailyDigestBadge.className = 'px-2.5 py-1 rounded-full text-[9.5px] font-black bg-blue-50 text-blue-700 border border-blue-200';
       }
-      if (schedDesktopBtn) schedDesktopBtn.classList.remove('hidden');
+      if (schedDesktopBtn) schedDesktopBtn.classList.add('hidden');
       if (digestToggle) {
         if (AppState.automationConfig) {
           digestToggle.checked = AppState.automationConfig.enabled !== false;
@@ -7802,6 +7802,37 @@ const UI = {
     if (inputSettings) {
       inputSettings.value = localStorage.getItem('daihatsu_direct_appscript_url') || '';
     }
+  },
+
+  /**
+   * Mengatur estimasi durasi perjalanan cabang dengan tombol stepper (+ / -)
+   * Memberikan kemudahan 1-sentuhan tanpa memicu keyboard virtual & tanpa shadow/cursor droplet biru
+   */
+  adjustTransitDuration(branchKey, delta) {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak mengubah standar durasi perjalanan.');
+      return;
+    }
+
+    const input = document.getElementById(`transitDuration_${branchKey}`);
+    if (!input) return;
+
+    let currentVal = parseInt(input.value, 10);
+    if (isNaN(currentVal) || currentVal <= 0) {
+      currentVal = parseInt(input.placeholder, 10) || 60;
+    }
+
+    let newVal = currentVal + delta;
+    if (newVal < 5) newVal = 5;
+    if (newVal > 1440) newVal = 1440;
+    input.value = newVal;
+
+    // Animasi visual halus pada input
+    input.classList.add('text-blue-600', 'scale-105');
+    setTimeout(() => {
+      input.classList.remove('text-blue-600', 'scale-105');
+    }, 200);
   },
 
   /**
@@ -9617,3 +9648,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.handleTargetEmailBranchChange = (b) => UI.handleTargetEmailBranchChange(b);
 window.saveTransitDurations = () => UI.saveTransitDurations();
+window.adjustTransitDuration = (b, d) => UI.adjustTransitDuration(b, d);
