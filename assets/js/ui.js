@@ -1350,16 +1350,16 @@ const UI = {
                       ${item.notes && item.notes !== '-' ? `<div class="italic text-slate-400 truncate">"${item.notes}"</div>` : ''}
                     </div>
 
-                    <!-- Ticket Action Footer -->
-                    <div class="pt-2 border-t border-slate-100 flex items-center gap-2">
-                      <button type="button" onclick="UI.openInTransitArrivalModal('${item.vin}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-1.5 px-2 text-[11px] font-black shadow-xs active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M5 13l4 4L19 7"/></svg>
-                        <span>Konfirmasi Tiba</span>
-                      </button>
+                    <!-- Status Penerimaan Fisik (Otomatis tercatat saat Security Cabang Tujuan Scan Unit Masuk) -->
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px]">
+                      <div class="flex items-center space-x-1.5 text-slate-500 font-semibold truncate min-w-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 animate-ping"></span>
+                        <span class="truncate">Menunggu Scan Masuk di <strong>${item.destinationCode}</strong></span>
+                      </div>
                       ${item.docPhoto ? `
-                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl py-1.5 px-2.5 text-[10.5px] font-extrabold border border-amber-300 transition cursor-pointer flex items-center gap-1" title="Lihat Foto Dokumen OKK">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                          <span>OKK</span>
+                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg py-1 px-2 text-[10px] font-extrabold border border-amber-200 transition cursor-pointer flex items-center gap-1 flex-shrink-0" title="Lihat Foto Dokumen OKK">
+                          <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                          <span>Foto OKK</span>
                         </button>
                       ` : ''}
                     </div>
