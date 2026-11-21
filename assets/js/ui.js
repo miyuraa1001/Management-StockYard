@@ -873,47 +873,54 @@ const UI = {
     const branchesView = document.getElementById('inventoryBranchesView');
     const tabCat = document.getElementById('invTabCatalogBtn');
     const tabBranch = document.getElementById('invTabBranchesBtn');
+    const catBadge = document.getElementById('invCatalogCountBadge');
+    const tabBranchIcon = document.getElementById('invTabBranchIcon');
+    const tabTransitBadge = document.getElementById('invTransitBadge');
 
     if (mode === 'branches') {
       if (catalogView) catalogView.classList.add('hidden');
       if (branchesView) branchesView.classList.remove('hidden');
+
+      // Inactive: Katalog Model (Teks abu-abu gelap dengan badge kontras tinggi, tidak hilang/ketimpa)
       if (tabCat) {
-        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
-        tabCat.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabCat.className = 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
+      if (catBadge) {
+        catBadge.className = 'px-1.5 py-0.5 rounded text-[9.5px] font-black bg-slate-200 text-slate-700 leading-none';
+      }
+
+      // Active: Radar OKK (Biru solid dengan teks & ikon putih jelas)
       if (tabBranch) {
-        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
-        tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabBranch.className = 'px-3.5 py-2 rounded-lg text-xs font-black bg-blue-600 text-white shadow-xs transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
-      const tabBranchIcon = document.getElementById('invTabBranchIcon');
       if (tabBranchIcon) {
-        tabBranchIcon.classList.remove('text-amber-500');
-        tabBranchIcon.classList.add('text-white');
+        tabBranchIcon.className = 'w-4 h-4 text-white flex-shrink-0 transition-colors';
       }
-      const tabTransitBadge = document.getElementById('invTransitBadge');
       if (tabTransitBadge) {
-        tabTransitBadge.className = 'px-1.5 py-0.5 rounded-full text-[9px] font-black bg-white/25 text-white backdrop-blur-xs leading-none';
+        tabTransitBadge.className = 'px-1.5 py-0.5 rounded text-[9px] font-black bg-white/25 text-white leading-none';
       }
       this.renderInventoryBranchesView();
     } else {
       if (catalogView) catalogView.classList.remove('hidden');
       if (branchesView) branchesView.classList.add('hidden');
+
+      // Active: Katalog Model (Biru solid dengan teks & badge putih jelas)
       if (tabCat) {
-        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
-        tabCat.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabCat.className = 'px-3.5 py-2 rounded-lg text-xs font-black bg-blue-600 text-white shadow-xs transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
+      if (catBadge) {
+        catBadge.className = 'px-1.5 py-0.5 rounded text-[9.5px] font-black bg-white/25 text-white leading-none';
+      }
+
+      // Inactive: Radar OKK (Teks abu-abu gelap dengan ikon oranye & badge transit OTW)
       if (tabBranch) {
-        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
-        tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabBranch.className = 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
-      const tabBranchIcon = document.getElementById('invTabBranchIcon');
       if (tabBranchIcon) {
-        tabBranchIcon.classList.remove('text-white');
-        tabBranchIcon.classList.add('text-amber-500');
+        tabBranchIcon.className = 'w-4 h-4 text-amber-500 flex-shrink-0 transition-colors';
       }
-      const tabTransitBadge = document.getElementById('invTransitBadge');
       if (tabTransitBadge) {
-        tabTransitBadge.className = 'px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white animate-pulse leading-none';
+        tabTransitBadge.className = 'px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white animate-pulse leading-none';
       }
       this.renderInventoryList();
     }
@@ -1063,33 +1070,17 @@ const UI = {
                     <span>LIVE RADAR</span>
                   </span>
                 </div>
-                <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
-                <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug line-clamp-2 sm:line-clamp-none">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
+                <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
               </div>
             </div>
 
-            <!-- Route Selector & Live Search -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-2 flex-shrink-0">
-              <!-- Route Dropdown Filter -->
-              <div class="relative w-full sm:w-auto">
-                <select id="invLogisticsRouteSelect" onchange="UI.setLogisticsRouteFilter(this.value)" class="w-full sm:w-52 bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
-                  <option value="all" ${currentRoute === 'all' ? 'selected' : ''}>🌐 Semua Rute (5 Cabang)</option>
-                  <option value="to_D660" ${currentRoute === 'to_D660' ? 'selected' : ''}>➔ Menuju D660 (Ahmad Yani)</option>
-                  <option value="to_D661" ${currentRoute === 'to_D661' ? 'selected' : ''}>➔ Menuju D661 (Bypass)</option>
-                  <option value="to_D662" ${currentRoute === 'to_D662' ? 'selected' : ''}>➔ Menuju D662 (Bandar Jaya)</option>
-                  <option value="to_D663" ${currentRoute === 'to_D663' ? 'selected' : ''}>➔ Menuju D663 (Kotabumi)</option>
-                  <option value="to_D664" ${currentRoute === 'to_D664' ? 'selected' : ''}>➔ Menuju D664 (Way Jepara)</option>
-                  <option value="from_D661" ${currentRoute === 'from_D661' ? 'selected' : ''}>🛫 Keluar dari D661 (Bypass)</option>
-                  <option value="from_D660" ${currentRoute === 'from_D660' ? 'selected' : ''}>🛫 Keluar dari D660 (Ahmad Yani)</option>
-                </select>
-              </div>
-
-              <!-- Quick Search Input -->
-              <div class="relative w-full sm:w-auto">
-                <input type="text" value="${searchQuery}" oninput="UI.setLogisticsSearch(this.value)" placeholder="Cari VIN, Model, Cabang..." class="w-full sm:w-48 bg-slate-50 border border-slate-200/90 rounded-xl pl-8 pr-6 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
-                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <!-- Quick Live Search Only (Dropdown Rute dihapus sesuai permintaan) -->
+            <div class="w-full lg:w-72 flex-shrink-0">
+              <div class="relative w-full">
+                <input type="text" value="${searchQuery}" oninput="UI.setLogisticsSearch(this.value)" placeholder="Cari VIN, Model, Cabang..." class="w-full bg-slate-50 border border-slate-200/90 rounded-xl pl-9 pr-7 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs transition">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 ${searchQuery ? `
-                  <button type="button" onclick="UI.setLogisticsSearch('')" class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold">×</button>
+                  <button type="button" onclick="UI.setLogisticsSearch('')" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">×</button>
                 ` : ''}
               </div>
             </div>
