@@ -213,10 +213,10 @@ const UI = {
 
     const filtered = (AppState.historyData || []).filter(item => {
       const parts = this.parseItemDate(item);
-      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
-      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
-      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = this.isBranchMatch(item.noBa, fBa);
+      const dateMatch = (fDate === 'all') || (String(parts.date) === String(fDate));
+      const monthMatch = (fMonth === 'all') || (String(parts.month) === String(fMonth));
+      const yearMatch = (fYear === 'all') || (String(parts.year) === String(fYear));
+      const baMatch = this.isBranchMatch(item.noBa || item.branch || item.location, fBa);
       return dateMatch && monthMatch && yearMatch && baMatch;
     });
 
@@ -628,9 +628,18 @@ const UI = {
       const sheetTotalOut = units.reduce((acc, u) => acc + (parseInt(u.totalOut, 10) || 0), 0);
       const sheetNetStock = Math.max(0, sheetTotalIn - sheetTotalOut);
 
-      const displayMasuk = hasRealHistory ? histMasuk : (sheetTotalIn || histMasuk);
-      const displayKeluar = hasRealHistory ? histKeluar : (sheetTotalOut || histKeluar);
-      const totalUnits = hasRealHistory ? netFromHistory : (sheetTotalIn > 0 || sheetTotalOut > 0 ? sheetNetStock : Math.max(sheetYardStock + unitInYard, netFromHistory));
+      const hasModelHistory = matchingHistory.length > 0;
+      let totalUnits = 0;
+      if (hasModelHistory) {
+        totalUnits = netFromHistory;
+        if (totalUnits === 0 && (sheetNetStock > 0 || sheetYardStock > 0)) {
+          totalUnits = Math.max(sheetNetStock, sheetYardStock);
+        }
+      } else {
+        totalUnits = Math.max(sheetNetStock, sheetYardStock, unitInYard);
+      }
+      const displayMasuk = hasModelHistory ? histMasuk : (sheetTotalIn || histMasuk);
+      const displayKeluar = hasModelHistory ? histKeluar : (sheetTotalOut || histKeluar);
 
       const latestIn = matchingHistory.find(h => h.type === 'Unit Masuk');
       const primaryUnit = units[0] || (latestIn ? { plate: latestIn.plate, vin: latestIn.vin, engine: latestIn.engine } : null);
@@ -869,9 +878,11 @@ const UI = {
       if (catalogView) catalogView.classList.add('hidden');
       if (branchesView) branchesView.classList.remove('hidden');
       if (tabCat) {
+        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
         tabCat.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
+        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
         tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       const tabBranchIcon = document.getElementById('invTabBranchIcon');
@@ -888,9 +899,11 @@ const UI = {
       if (catalogView) catalogView.classList.remove('hidden');
       if (branchesView) branchesView.classList.add('hidden');
       if (tabCat) {
+        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
         tabCat.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
+        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
         tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       const tabBranchIcon = document.getElementById('invTabBranchIcon');
@@ -1041,6 +1054,7 @@ const UI = {
               <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
+              <div class="min-w-0">
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board OKK</h3>
@@ -1049,6 +1063,7 @@ const UI = {
                     <span>LIVE RADAR</span>
                   </span>
                 </div>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
                 <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug line-clamp-2 sm:line-clamp-none">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
               </div>
             </div>
@@ -1089,6 +1104,7 @@ const UI = {
       kpiStrip.innerHTML = `
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <!-- KPI 1: In-Transit Aktif (Amber) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
           <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-amber-700 uppercase tracking-wider">Sedang Di Jalan</span>
@@ -1097,15 +1113,19 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-amber-950">${kanban.metrics.totalInTransit}</span>
+              <span class="text-xs font-bold text-amber-700">Unit OTW</span>
               <span class="text-xl sm:text-2xl font-black text-amber-950 leading-tight">${kanban.metrics.totalInTransit}</span>
               <span class="text-[11px] sm:text-xs font-bold text-amber-700">Unit OTW</span>
             </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
             <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Mutasi antar-cabang aktif</span>
             </div>
           </div>
 
           <!-- KPI 2: Tiba di Pool Tujuan (Emerald) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
           <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">Tiba di Pool</span>
@@ -1114,15 +1134,19 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-emerald-950">${kanban.metrics.totalDelivered}</span>
+              <span class="text-xs font-bold text-emerald-700">Unit Selesai</span>
               <span class="text-xl sm:text-2xl font-black text-emerald-950 leading-tight">${kanban.metrics.totalDelivered}</span>
               <span class="text-[11px] sm:text-xs font-bold text-emerald-700">Unit Selesai</span>
             </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
             <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Terkonfirmasi di tujuan</span>
             </div>
           </div>
 
           <!-- KPI 3: Estimasi Waktu Tempuh (Blue - Realtime Synchronized) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
           <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">Rata-rata Waktu</span>
@@ -1131,15 +1155,19 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-lg sm:text-xl font-black text-blue-950">${kanban.metrics.avgTransitTime}</span>
               <span class="text-lg sm:text-xl font-black text-blue-950 leading-tight">${kanban.metrics.avgTransitTime}</span>
               <span class="text-[10px] sm:text-[11px] font-bold text-blue-700">SLA Rute</span>
             </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
+              <span>SLA rute & perjalanan unit</span>
             <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Durasi perjalanan unit</span>
             </div>
           </div>
 
           <!-- KPI 4: Total Stok Fisik 5 Pool (Purple) -->
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
           <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-purple-700 uppercase tracking-wider">Jaringan Pool DSO</span>
@@ -1148,9 +1176,12 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
+              <span class="text-xl sm:text-2xl font-black text-purple-950">${multiBranch.totalActiveStock}</span>
+              <span class="text-xs font-bold text-purple-700">Unit Terparkir</span>
               <span class="text-xl sm:text-2xl font-black text-purple-950 leading-tight">${multiBranch.totalActiveStock}</span>
               <span class="text-[11px] sm:text-xs font-bold text-purple-700">Unit Parkir</span>
             </div>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
             <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Tersebar di 5 cabang</span>
             </div>
@@ -1163,28 +1194,38 @@ const UI = {
     const ribbonContainer = document.getElementById('invMiniBranchesRibbon');
     if (ribbonContainer) {
       ribbonContainer.innerHTML = `
+        <div class="bg-white/90 rounded-2xl p-2.5 sm:p-3 border border-white shadow-saas-card">
         <div class="bg-white/95 rounded-2xl p-2.5 sm:p-3.5 border border-slate-100 shadow-sm">
           <div class="flex items-center justify-between mb-2 px-1">
             <span class="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-wider">Stok Fisik & Radar Pool DSO:</span>
+            <span class="text-[9.5px] text-slate-400 font-semibold">Klik cabang untuk filter rute</span>
             <span class="text-[9px] sm:text-[9.5px] text-slate-400 font-semibold sm:hidden">👉 Geser pool</span>
             <span class="text-[9.5px] text-slate-400 font-semibold hidden sm:inline">Klik cabang untuk filter rute</span>
           </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 -mx-0.5 px-0.5 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-2">
             ${multiBranch.branches.map(b => {
               const isFiltered = currentRoute === `to_${b.code}`;
               const incoming = (kanban.inTransit || []).filter(u => u.destinationCode === b.code).length;
               return `
+                <div onclick="UI.setLogisticsRouteFilter('${isFiltered ? 'all' : `to_${b.code}`}')" class="px-2.5 py-2 rounded-xl border ${isFiltered ? 'border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/20' : 'border-slate-200/70 bg-slate-50/80 hover:bg-slate-100/70'} transition cursor-pointer flex items-center justify-between">
+                  <div class="min-w-0">
                 <div onclick="UI.setLogisticsRouteFilter('${isFiltered ? 'all' : `to_${b.code}`}')" class="min-w-[135px] sm:min-w-0 flex-1 px-3 py-2 rounded-xl border ${isFiltered ? 'border-blue-500 bg-blue-50/80 ring-2 ring-blue-500/20' : 'border-slate-200/80 bg-slate-50/90 hover:bg-slate-100/80'} transition cursor-pointer flex items-center justify-between flex-shrink-0 shadow-2xs">
                   <div class="min-w-0 pr-1">
                     <div class="flex items-center space-x-1">
+                      <span class="text-[9.5px] font-black ${isFiltered ? 'text-blue-700' : 'text-slate-800'}">${b.code}</span>
+                      <span class="text-[8.5px] text-slate-400 truncate max-w-[65px]">${b.shortName.split('(')[0]}</span>
                       <span class="text-[10px] font-black ${isFiltered ? 'text-blue-700' : 'text-slate-800'}">${b.code}</span>
                       <span class="text-[9px] text-slate-500 truncate max-w-[65px] font-medium">${b.shortName.split('(')[0]}</span>
                     </div>
+                    <div class="text-[11px] font-black ${b.stockCount > 0 ? 'text-slate-900' : 'text-slate-400'}">
+                      ${b.stockCount} <span class="text-[8.5px] font-semibold text-slate-400">Unit</span>
                     <div class="text-[11px] font-black ${b.stockCount > 0 ? 'text-slate-900' : 'text-slate-400'} mt-0.5">
                       ${b.stockCount} <span class="text-[9px] font-semibold text-slate-400">Unit</span>
                     </div>
                   </div>
                   ${incoming > 0 ? `
+                    <span class="px-1.5 py-0.5 rounded-full text-[8.5px] font-black bg-amber-500 text-white animate-pulse" title="${incoming} unit sedang dalam perjalanan menuju cabang ini">
                     <span class="px-1.5 py-0.5 rounded-full text-[8.5px] font-black bg-amber-500 text-white animate-pulse flex-shrink-0" title="${incoming} unit sedang dalam perjalanan menuju cabang ini">
                       +${incoming} OTW
                     </span>
@@ -1682,10 +1723,10 @@ const UI = {
     const baseFiltered = (AppState.historyData || []).filter(item => {
       const parts = this.parseItemDate(item);
 
-      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
-      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
-      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
-      const baMatch = this.isBranchMatch(item.noBa, fBa);
+      const dateMatch = (fDate === 'all') || (String(parts.date) === String(fDate));
+      const monthMatch = (fMonth === 'all') || (String(parts.month) === String(fMonth));
+      const yearMatch = (fYear === 'all') || (String(parts.year) === String(fYear));
+      const baMatch = this.isBranchMatch(item.noBa || item.branch || item.location, fBa);
 
       if (!dateMatch || !monthMatch || !yearMatch || !baMatch) return false;
 
@@ -4210,34 +4251,82 @@ const UI = {
     };
 
     const catalog = AppState.vehicleCatalog || [];
-    const { filtered: filteredHistory, fDate, fMonth, fYear } = (typeof this.getFilteredDashboardData === 'function')
+    const { filtered: filteredHistory, fDate, fMonth, fYear, fBa } = (typeof this.getFilteredDashboardData === 'function')
       ? this.getFilteredDashboardData()
-      : { filtered: AppState.historyData || [], fDate: 'all', fMonth: 'all', fYear: 'all' };
+      : { filtered: AppState.historyData || [], fDate: 'all', fMonth: 'all', fYear: 'all', fBa: 'all' };
     const isFiltered = (fDate !== 'all' || fMonth !== 'all' || fYear !== 'all');
 
-    // Tentukan sumber data riwayat mutasi aktif:
-    // 1. Jika filter tanggal aktif (misal Tgl 20 Oktober 2026), gunakan HANYA mutasi pada periode tersebut!
-    // 2. Jika "Semua Waktu", gunakan seluruh riwayat mutasi riil di database (tab HistoryMutasi).
-    const activeHistory = isFiltered ? (filteredHistory || []) : (AppState.historyData || []);
-
     const modelStats = catalog.map(cat => {
-      const matchingHistory = activeHistory.filter(h => {
-        if (!h || !h.model) return false;
-      if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
-        const userCode = AppState.getUserBranchCode();
-        if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
-      }
-        const hModel = String(h.model || '').toLowerCase();
-        if (hModel === cat.model.toLowerCase()) return true;
-        const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
-        return matched && matched.catalogId === cat.catalogId;
+      // 1. Ambil unit di tab Inventory spreadsheet
+      const units = (AppState.inventoryData || []).filter(u => {
+        if (!u) return false;
+        const uModel = String(u.model || u.name || '').toLowerCase();
+        if (uModel !== cat.model.toLowerCase()) {
+          const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(uModel) : null;
+          if (!matched || matched.catalogId !== cat.catalogId) return false;
+        }
+        if (!this.isBranchMatch(u.noBa || u.branch || u.location, fBa)) return false;
+        return true;
       });
 
-      const masuk = matchingHistory.filter(h => h.type === 'Unit Masuk').length;
-      const keluar = matchingHistory.filter(h => h.type === 'Unit Keluar').length;
-      
-      // Stok dihitung 100% murni dan nyata dari riwayat transaksi mutasi fisik di database (HistoryMutasi)
-      const count = Math.max(0, masuk - keluar);
+      const sheetTotalIn = units.reduce((acc, u) => acc + (parseInt(u.totalIn, 10) || 0), 0);
+      const sheetTotalOut = units.reduce((acc, u) => acc + (parseInt(u.totalOut, 10) || 0), 0);
+      const sheetNetStock = Math.max(0, sheetTotalIn - sheetTotalOut);
+      const sheetYardStock = units.reduce((acc, u) => acc + (parseInt(u.stockYard, 10) || 0), 0);
+      const unitInYard = units.filter(u => typeof u.stockYard !== 'number' && (u.status === 'In-Yard' || u.status === 'Tersedia' || !u.status)).length;
+
+      // 2. Ambil riwayat mutasi sepanjang waktu (all-time)
+      const allModelHistory = (AppState.historyData || []).filter(h => {
+        if (!h || !h.model) return false;
+        if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+          const userCode = AppState.getUserBranchCode();
+          if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+        }
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel !== cat.model.toLowerCase()) {
+          const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+          if (!matched || matched.catalogId !== cat.catalogId) return false;
+        }
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, fBa)) return false;
+        return true;
+      });
+
+      const allMasuk = allModelHistory.filter(h => h.type === 'Unit Masuk').length;
+      const allKeluar = allModelHistory.filter(h => h.type === 'Unit Keluar').length;
+      const netFromHistory = Math.max(0, allMasuk - allKeluar);
+
+      // 3. Ambil riwayat mutasi pada periode filter aktif
+      const periodHistory = (filteredHistory || []).filter(h => {
+        if (!h || !h.model) return false;
+        if (typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' && !AppState.isAdmin()) {
+          const userCode = AppState.getUserBranchCode();
+          if (!this.isBranchMatch(h.noBa || h.branch || h.location, userCode)) return false;
+        }
+        const hModel = String(h.model || '').toLowerCase();
+        if (hModel !== cat.model.toLowerCase()) {
+          const matched = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(hModel) : null;
+          if (!matched || matched.catalogId !== cat.catalogId) return false;
+        }
+        if (!this.isBranchMatch(h.noBa || h.branch || h.location, fBa)) return false;
+        return true;
+      });
+
+      const periodMasuk = periodHistory.filter(h => h.type === 'Unit Masuk').length;
+      const periodKeluar = periodHistory.filter(h => h.type === 'Unit Keluar').length;
+
+      // 4. Hitung stok fisik aktual model di pool yard
+      let count = 0;
+      if (allModelHistory.length > 0) {
+        count = netFromHistory;
+        if (count === 0 && (sheetNetStock > 0 || sheetYardStock > 0)) {
+          count = Math.max(sheetNetStock, sheetYardStock);
+        }
+      } else {
+        count = Math.max(sheetNetStock, sheetYardStock, unitInYard);
+      }
+
+      const displayMasuk = isFiltered ? periodMasuk : (allModelHistory.length > 0 ? allMasuk : sheetTotalIn);
+      const displayKeluar = isFiltered ? periodKeluar : (allModelHistory.length > 0 ? allKeluar : sheetTotalOut);
 
       return {
         catalogId: cat.catalogId,
@@ -4246,8 +4335,8 @@ const UI = {
         photo: cat.photo,
         color: modelColors[cat.model] || '#3b82f6',
         count: count,
-        masuk: masuk,
-        keluar: keluar
+        masuk: displayMasuk,
+        keluar: displayKeluar
       };
     });
 
@@ -4258,7 +4347,7 @@ const UI = {
     const distinctModelCount = modelsWithUnits.length;
 
     if (totalEl) totalEl.textContent = `${totalUnits} Unit`;
-    if (modelCountEl) modelCountEl.textContent = `${distinctModelCount} Model`;
+    if (modelCountEl) modelCountEl.textContent = totalUnits > 0 ? `${distinctModelCount} Model` : '13 Model';
 
     if (centerLabel) centerLabel.textContent = 'TOTAL';
     if (centerVal) centerVal.textContent = String(totalUnits);
@@ -4267,8 +4356,36 @@ const UI = {
     const bgTrack = `<path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />`;
 
     if (totalUnits === 0) {
-      svg.innerHTML = bgTrack;
-      this.updateDonutPreviewCard(null);
+      let offset = 0;
+      const segLen = 100 / modelStats.length;
+      const placeholderSegments = modelStats.map((item) => {
+        const segOffset = offset;
+        offset += segLen;
+        return `
+          <path class="donut-segment cursor-pointer transition-all duration-150 hover:opacity-100 opacity-60" 
+            stroke-dasharray="${segLen.toFixed(2)}, 100" 
+            stroke-dashoffset="-${segOffset.toFixed(2)}" 
+            stroke-width="6" 
+            stroke="${item.color}" 
+            fill="none"
+            data-model="${item.model}" 
+            data-units="0 Unit" 
+            data-percent="0%" 
+            data-color="${item.color}" 
+            data-filter="${item.model}" 
+            data-offset="${segOffset.toFixed(2)}" 
+            data-len="${segLen.toFixed(2)}"
+            data-photo="${item.photo}" 
+            data-category="${item.category}" 
+            data-masuk="${item.masuk}" 
+            data-keluar="${item.keluar}"
+            onmouseenter="showDonutCapsule(this, event)" 
+            onmousemove="moveDonutCapsule(this, event)"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        `;
+      }).join('');
+      svg.innerHTML = bgTrack + placeholderSegments;
+      this.updateDonutPreviewCard(modelStats[0]);
       return;
     }
 
@@ -4326,52 +4443,42 @@ const UI = {
     const prevBtn = document.getElementById('donutPreviewBtn');
 
     if (!item) {
-      if (prevDot) prevDot.style.backgroundColor = '#94a3b8';
-      if (prevCategory) prevCategory.textContent = 'Menunggu Data Unit';
-      if (prevBadge) {
-        prevBadge.textContent = '0%';
-        prevBadge.style.backgroundColor = '#94a3b8';
-      }
-      if (prevImg) {
-        prevImg.src = 'assets/images/Inventory_Gran Max Pick Up.jpeg';
-        prevImg.alt = 'Unit Daihatsu';
-      }
-      if (prevModel) prevModel.textContent = 'Belum Ada Unit';
-      if (prevBar) {
-        prevBar.style.width = '0%';
-        prevBar.style.backgroundColor = '#94a3b8';
-      }
-      if (prevUnits) prevUnits.textContent = '0 Unit';
-      if (prevMasuk) prevMasuk.textContent = 'Masuk 0';
-      if (prevKeluar) prevKeluar.textContent = 'Keluar 0';
-      if (prevMasukBtn) prevMasukBtn.onclick = () => this.filterHistoryTab('in');
-      if (prevKeluarBtn) prevKeluarBtn.onclick = () => this.filterHistoryTab('out');
-      if (prevBtn) {
-        prevBtn.innerHTML = `<span>Lihat Stok Unit</span><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
-        prevBtn.onclick = () => this.switchTab('inventory');
-      }
-      return;
+      const defaultCat = (AppState.vehicleCatalog && AppState.vehicleCatalog[0]) || {
+        model: 'Rocky e-Smart Hybrid',
+        category: 'Smart Hybrid SUV',
+        photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
+        color: '#10b981'
+      };
+      item = {
+        model: defaultCat.model,
+        category: defaultCat.category,
+        photo: defaultCat.photo,
+        color: defaultCat.color || '#3b82f6',
+        count: 0,
+        masuk: 0,
+        keluar: 0
+      };
     }
 
-    const total = AppState._totalDonutUnits || 1;
-    const pct = Math.round((item.count / total) * 100) + '%';
+    const total = AppState._totalDonutUnits || 0;
+    const pct = total > 0 && item.count > 0 ? (Math.round((item.count / total) * 100) + '%') : '0%';
 
-    if (prevDot) prevDot.style.backgroundColor = item.color;
-    if (prevCategory) prevCategory.textContent = item.category;
+    if (prevDot) prevDot.style.backgroundColor = item.color || '#3b82f6';
+    if (prevCategory) prevCategory.textContent = item.category || 'Kendaraan Daihatsu';
     if (prevBadge) {
       prevBadge.textContent = pct;
-      prevBadge.style.backgroundColor = item.color;
+      prevBadge.style.backgroundColor = item.color || '#3b82f6';
     }
     if (prevImg) {
-      prevImg.src = item.photo;
-      prevImg.alt = item.model;
+      prevImg.src = item.photo || 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg';
+      prevImg.alt = item.model || 'Daihatsu';
     }
-    if (prevModel) prevModel.textContent = item.model;
+    if (prevModel) prevModel.textContent = item.model || 'Model Daihatsu';
     if (prevBar) {
       prevBar.style.width = pct;
-      prevBar.style.backgroundColor = item.color;
+      prevBar.style.backgroundColor = item.color || '#3b82f6';
     }
-    if (prevUnits) prevUnits.textContent = `${item.count} Unit`;
+    if (prevUnits) prevUnits.textContent = `${item.count || 0} Unit`;
     if (prevMasuk) prevMasuk.textContent = `Masuk ${item.masuk || 0}`;
     if (prevKeluar) prevKeluar.textContent = `Keluar ${item.keluar || 0}`;
     if (prevMasukBtn) {
@@ -4381,6 +4488,7 @@ const UI = {
       prevKeluarBtn.onclick = () => this.filterHistoryByModelAndType(item.model, 'Unit Keluar');
     }
     if (prevBtn) {
+      prevBtn.innerHTML = `<span>Lihat Stok Unit</span><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
       prevBtn.onclick = () => this.filterInventoryByModel(item.model);
     }
   },
@@ -9582,9 +9690,9 @@ const UI = {
 
     const baseFiltered = branchModelHistory.filter(item => {
       const parts = this.parseItemDate(item);
-      const dateMatch = (fDate === 'all') || (parts.date === String(fDate));
-      const monthMatch = (fMonth === 'all') || (parts.month === String(fMonth));
-      const yearMatch = (fYear === 'all') || (parts.year === String(fYear));
+      const dateMatch = (fDate === 'all') || (String(parts.date) === String(fDate));
+      const monthMatch = (fMonth === 'all') || (String(parts.month) === String(fMonth));
+      const yearMatch = (fYear === 'all') || (String(parts.year) === String(fYear));
 
       if (!dateMatch || !monthMatch || !yearMatch) return false;
 

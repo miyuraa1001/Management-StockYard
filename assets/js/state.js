@@ -1338,8 +1338,16 @@ const AppState = {
       const sheetTotalIn = units.reduce((acc, u) => acc + (parseInt(u.totalIn, 10) || 0), 0);
       const sheetTotalOut = units.reduce((acc, u) => acc + (parseInt(u.totalOut, 10) || 0), 0);
       const sheetStock = Math.max(0, sheetTotalIn - sheetTotalOut);
-      const hasHistory = targetHistory.length > 0;
-      const modelStock = hasHistory ? netFromHistory : Math.max(sheetStock, sheetYardStock);
+      const hasModelHistory = matchingHistory.length > 0;
+      let modelStock = 0;
+      if (hasModelHistory) {
+        modelStock = netFromHistory;
+        if (modelStock === 0 && (sheetStock > 0 || sheetYardStock > 0)) {
+          modelStock = Math.max(sheetStock, sheetYardStock);
+        }
+      } else {
+        modelStock = Math.max(sheetStock, sheetYardStock, unitInYard);
+      }
 
       totalStokCount += modelStock;
       if (modelStock === 0) {

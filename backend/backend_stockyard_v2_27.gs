@@ -3366,25 +3366,6 @@ function normalizeDateToYmd(val) {
 
   return "";
 }
-    if (m) {
-      return indoMatch[3] + "-" + m + "-" + indoMatch[1].padStart(2, "0");
-    }
-  }
-
-  const slashMatch = str.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/);
-  if (slashMatch) {
-    return slashMatch[3] + "-" + slashMatch[2].padStart(2, "0") + "-" + slashMatch[1].padStart(2, "0");
-  }
-
-  try {
-    const d = new Date(str);
-    if (!isNaN(d.getTime())) {
-      return Utilities.formatDate(d, TIMEZONE, "yyyy-MM-dd");
-    }
-  } catch (e) {}
-
-  return "";
-}
 
 function getLatestMutationOrDummy(ss) {
   try {
