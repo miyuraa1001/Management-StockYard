@@ -8130,50 +8130,87 @@ const UI = {
 
     if (routes.length === 0) {
       container.innerHTML = `
-        <div class="sm:col-span-2 text-center py-6 px-4 bg-slate-50/80 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
-          Belum ada rute khusus. Sistem menggunakan standar durasi default (90 menit). Tambahkan rute baru di bawah.
+        <div class="sm:col-span-2 text-center py-6 px-4 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs shadow-2xs">
+          Belum ada rute khusus terdaftar. Sistem menggunakan patokan durasi default (90 menit). Tambahkan rute khusus di bawah.
         </div>
       `;
       return;
     }
 
-    const branchNames = {
-      D660: 'Ahmad Yani (Pusat)',
-      D661: 'Bypass / Sentra Hub',
-      D662: 'Bandar Jaya',
-      D663: 'Lampung Utara',
-      D664: 'Lampung Timur'
+    const branchDetails = {
+      D660: { name: 'Ahmad Yani', area: 'Pusat' },
+      D661: { name: 'Soekarno Hatta', area: 'Bypass' },
+      D662: { name: 'Bandar Jaya', area: 'Lampung Tengah' },
+      D663: { name: 'Lampung Utara', area: 'Kotabumi' },
+      D664: { name: 'Lampung Timur', area: 'Way Jepara' }
     };
 
     container.innerHTML = routes.map((r) => {
-      const oName = branchNames[r.origin] || r.origin;
-      const dName = branchNames[r.dest] || r.dest;
+      const oInfo = branchDetails[r.origin] || { name: r.origin, area: '' };
+      const dInfo = branchDetails[r.dest] || { name: r.dest, area: '' };
       const dur = parseInt(r.duration, 10) || 30;
 
-      return `
-        <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-2 hover:bg-slate-50 transition">
-          <div class="min-w-0 pr-1">
-            <div class="flex items-center space-x-1.5 text-xs font-black text-slate-800 truncate">
-              <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-mono">${r.origin}</span>
-              <span class="text-slate-400 font-black text-[10px]">➔</span>
-              <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono">${r.dest}</span>
-            </div>
-            <span class="text-[10px] text-slate-400 font-medium block truncate mt-0.5">${oName} ke ${dName}</span>
-          </div>
+      const durHours = Math.floor(dur / 60);
+      const durMins = dur % 60;
+      const durReadable = dur >= 60 
+        ? `${durHours} Jam ${durMins > 0 ? `${durMins} Mnt` : ''}` 
+        : `${dur} Menit`;
 
-          <div class="flex items-center space-x-1 flex-shrink-0">
-            <!-- Stepper Pill (Minus / Plus 15 Menit) -->
-            <div class="flex items-center space-x-1 bg-white p-1 rounded-2xl border border-slate-200/90 shadow-2xs">
-              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', -15)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-xs sm:text-sm flex items-center justify-center transition select-none cursor-pointer" title="Kurangi 15 Menit">－</button>
-              <span class="w-10 sm:w-12 text-center font-black text-xs text-slate-900 select-all">${dur}</span>
-              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', 15)" class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-90 text-blue-600 font-black text-xs sm:text-sm flex items-center justify-center transition select-none cursor-pointer" title="Tambah 15 Menit">＋</button>
-              <span class="text-[10px] font-bold text-slate-400 pr-1 select-none">Mnt</span>
+      return `
+        <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-2xs hover:border-blue-200 transition space-y-3">
+          <!-- Baris 1: Rute Visual Dari -> Ke + Tombol Hapus -->
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center space-x-2 min-w-0 flex-1">
+              <!-- Asal -->
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block leading-none">Dari Asal</span>
+                <div class="flex items-center space-x-1 mt-0.5">
+                  <span class="px-1.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-[10px] font-black font-mono border border-blue-200/80 leading-none">${r.origin}</span>
+                  <span class="text-xs font-black text-slate-900 truncate leading-tight">${oInfo.name}</span>
+                </div>
+                ${oInfo.area ? `<span class="text-[10px] text-slate-400 font-medium block truncate mt-0.5">${oInfo.area}</span>` : ''}
+              </div>
+
+              <!-- Panah Transit -->
+              <div class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-slate-50 text-blue-600 border border-slate-200/80 shadow-2xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </div>
+
+              <!-- Tujuan -->
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block leading-none">Ke Tujuan</span>
+                <div class="flex items-center space-x-1 mt-0.5">
+                  <span class="px-1.5 py-0.5 rounded-lg bg-amber-50 text-amber-800 text-[10px] font-black font-mono border border-amber-200/80 leading-none">${r.dest}</span>
+                  <span class="text-xs font-black text-slate-900 truncate leading-tight">${dInfo.name}</span>
+                </div>
+                ${dInfo.area ? `<span class="text-[10px] text-slate-400 font-medium block truncate mt-0.5">${dInfo.area}</span>` : ''}
+              </div>
             </div>
 
             <!-- Tombol Hapus Rute -->
-            <button type="button" onclick="UI.deleteTransitRoute('${r.origin}', '${r.dest}')" class="w-7 h-7 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 flex items-center justify-center transition cursor-pointer" title="Hapus Rute Ini">
+            <button type="button" onclick="UI.deleteTransitRoute('${r.origin}', '${r.dest}')" class="w-7 h-7 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 flex items-center justify-center transition cursor-pointer flex-shrink-0" title="Hapus rute khusus ini">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
+          </div>
+
+          <!-- Baris 2: Informasi SLA & Kontrol Stepper (+/- 15 Mnt) -->
+          <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 gap-2">
+            <div class="flex items-center space-x-2 min-w-0">
+              <div class="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100 shadow-2xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="min-w-0">
+                <span class="text-[9.5px] font-bold text-slate-400 block leading-tight">Target SLA</span>
+                <span class="text-xs font-black text-blue-700 leading-tight block">${durReadable}</span>
+              </div>
+            </div>
+
+            <!-- Stepper Sentuh yang Ramah Mobile -->
+            <div class="flex items-center space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-200/90 shadow-2xs flex-shrink-0">
+              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', -15)" class="w-7 h-7 rounded-lg bg-white hover:bg-slate-200 active:scale-90 text-slate-700 font-black text-xs flex items-center justify-center transition cursor-pointer shadow-2xs" title="Kurangi 15 Menit">－</button>
+              <span class="w-12 text-center font-black text-xs text-slate-800 font-mono">${dur} m</span>
+              <button type="button" onclick="UI.adjustRouteDuration('${r.origin}', '${r.dest}', 15)" class="w-7 h-7 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-90 text-white font-black text-xs flex items-center justify-center transition cursor-pointer shadow-2xs" title="Tambah 15 Menit">＋</button>
+            </div>
           </div>
         </div>
       `;
@@ -8351,6 +8388,32 @@ const UI = {
     }
     await this.autoSaveTransitRoutes(true);
     this.showToast('✨ Daftar rute berhasil dibersihkan dan tersimpan ke database (SystemConfig)!', 4000);
+  },
+
+  /**
+   * Set target durasi waktu tempuh rute baru dari tombol pill preset (30m, 45m, 60m, 90m, 120m)
+   */
+  setNewRouteDurationPreset(val) {
+    const inp = document.getElementById('newRouteDuration');
+    if (inp) {
+      inp.value = val;
+      inp.classList.add('text-blue-600', 'scale-105');
+      setTimeout(() => inp.classList.remove('text-blue-600', 'scale-105'), 200);
+    }
+  },
+
+  /**
+   * Mengatur nilai durasi rute baru pada form tambah rute (+/- 15 menit)
+   */
+  adjustNewRouteDurationInput(delta) {
+    const inp = document.getElementById('newRouteDuration');
+    if (!inp) return;
+    let v = (parseInt(inp.value, 10) || 60) + delta;
+    if (v < 5) v = 5;
+    if (v > 1440) v = 1440;
+    inp.value = v;
+    inp.classList.add('text-blue-600', 'scale-105');
+    setTimeout(() => inp.classList.remove('text-blue-600', 'scale-105'), 200);
   },
 
   /**
@@ -10182,3 +10245,5 @@ window.deleteTransitRoute = (o, d) => UI.deleteTransitRoute ? UI.deleteTransitRo
 window.clearAllTransitRoutes = () => UI.clearAllTransitRoutes ? UI.clearAllTransitRoutes() : null;
 window.renderTransitRoutesSettings = () => UI.renderTransitRoutesSettings ? UI.renderTransitRoutesSettings() : null;
 window.confirmManualExternalDelivery = (vin, model, destination) => UI.confirmManualExternalDelivery ? UI.confirmManualExternalDelivery(vin, model, destination) : null;
+window.setNewRouteDurationPreset = (v) => UI.setNewRouteDurationPreset ? UI.setNewRouteDurationPreset(v) : null;
+window.adjustNewRouteDurationInput = (d) => UI.adjustNewRouteDurationInput ? UI.adjustNewRouteDurationInput(d) : null;
