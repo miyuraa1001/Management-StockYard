@@ -96,6 +96,10 @@ const UI = {
       App.syncBackendData(true);
     }
 
+    if (typeof this.initCustomDropdowns === 'function') {
+      this.initCustomDropdowns();
+    }
+
     const vp = document.getElementById('appMainViewport');
     if (vp) vp.scrollTop = 0;
 
@@ -1503,7 +1507,7 @@ const UI = {
             <div class="pt-2 space-y-3">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-xs font-bold text-slate-600">Pilih Cabang:</span>
-                <select onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
+                <select id="invPhysicalStockFilterBa" onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
                   <option value="all" ${currentBranchStockFilter === 'all' ? 'selected' : ''}>Semua Cabang (5 Cabang)</option>
                   <option value="D660" ${currentBranchStockFilter === 'D660' ? 'selected' : ''}>D660 - Ahmad Yani</option>
                   <option value="D661" ${currentBranchStockFilter === 'D661' ? 'selected' : ''}>D661 - Soekarno Hatta</option>
@@ -1579,6 +1583,9 @@ const UI = {
           ` : ''}
         </div>
       `;
+      if (typeof this.initCustomDropdowns === 'function') {
+        this.initCustomDropdowns();
+      }
     }
   },
 
@@ -4968,12 +4975,28 @@ const UI = {
     });
 
     const selectIds = [
+      // 1. Dashboard Filters
+      'dashFilterDate',
+      'dashFilterMonth',
+      'dashFilterYear',
+      'dashFilterBa',
+      // 2. Inventory Filters
+      'invFilterBa',
+      'invPhysicalStockFilterBa',
+      // 3. Model Detail Filters
+      'modelFilterDate',
+      'modelFilterMonth',
+      'modelFilterYear',
+      'modelFilterBa',
+      // 4. History Filters
       'histFilterDate',
       'histFilterMonth',
       'histFilterYear',
-      'modelFilterDate',
-      'modelFilterMonth',
-      'modelFilterYear'
+      'histFilterBa',
+      // 5. Settings Rute & Target Email
+      'newRouteOrigin',
+      'newRouteDest',
+      'selectTargetEmailBranch'
     ];
 
     const nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
@@ -4994,16 +5017,19 @@ const UI = {
       }
       selectEl.dataset.customEnhanced = 'true';
 
-      const isCompactFilter = id.startsWith('histFilter') || id.startsWith('modelFilter') || id.startsWith('dashFilter');
+      const isCompactFilter = id.startsWith('histFilter') || id.startsWith('modelFilter') || id.startsWith('dashFilter') || id === 'invFilterBa' || id === 'invPhysicalStockFilterBa';
       const isDateGrid = id === 'histFilterDate' || id === 'modelFilterDate' || id === 'dashFilterDate';
       const isMonthGrid = id === 'histFilterMonth' || id === 'modelFilterMonth' || id === 'dashFilterMonth';
       const isYearFilter = id === 'histFilterYear' || id === 'modelFilterYear' || id === 'dashFilterYear';
+      const isBranchFilter = id.includes('FilterBa') || id.includes('Branch') || id.startsWith('newRoute');
 
       // Sembunyikan ikon panah SVG bawaan di sebelah select jika ada
       const parentEl = selectEl.parentElement;
-      if (parentEl && parentEl.classList.contains('relative')) {
+      if (parentEl) {
         const siblingSvg = parentEl.querySelector('svg');
         if (siblingSvg) siblingSvg.classList.add('hidden');
+        const siblingArrowBox = parentEl.querySelector('.pointer-events-none');
+        if (siblingArrowBox) siblingArrowBox.classList.add('hidden');
       }
 
       // Sembunyikan elemen <select> asli agar browser mobile tidak membuka native picker
@@ -5016,9 +5042,13 @@ const UI = {
       // Buat tombol trigger yang rapi untuk mobile & desktop (tidak terpotong "...")
       const triggerBtn = document.createElement('button');
       triggerBtn.type = 'button';
-      const baseTriggerClass = isCompactFilter
+      let baseTriggerClass = isCompactFilter
         ? 'w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold text-slate-700 flex items-center justify-between gap-1 shadow-2xs transition cursor-pointer focus:outline-none'
-        : 'w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 transition cursor-pointer focus:outline-none';
+        : 'w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition cursor-pointer focus:outline-none';
+
+      if (id === 'invFilterBa' || id === 'histFilterBa' || id === 'modelFilterBa') {
+        baseTriggerClass = 'w-full bg-amber-50/90 hover:bg-amber-100/80 border border-amber-200/90 rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs font-black text-amber-900 flex items-center justify-between gap-1 shadow-2xs transition cursor-pointer focus:outline-none';
+      }
       triggerBtn.className = baseTriggerClass;
 
       const triggerLabel = document.createElement('span');
@@ -5037,9 +5067,13 @@ const UI = {
       if (isDateGrid) {
         menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 w-[252px] sm:w-[268px] z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-2xl ring-1 ring-black/5';
       } else if (isMonthGrid) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-1/2 -translate-x-1/2 w-[232px] sm:w-[244px] z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-2xl ring-1 ring-black/5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 sm:left-1/2 sm:-translate-x-1/2 w-[232px] sm:w-[244px] z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-2xl ring-1 ring-black/5';
       } else if (isYearFilter) {
-        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 min-w-[132px] w-full z-50 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-2xl ring-1 ring-black/5';
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 sm:right-0 min-w-[132px] w-full z-50 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-2xl ring-1 ring-black/5';
+      } else if (id === 'dashFilterBa' || id === 'histFilterBa' || id === 'modelFilterBa' || id === 'newRouteDest') {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 right-0 w-[220px] sm:w-[250px] z-50 bg-white border border-slate-200 rounded-2xl py-2 px-1 max-h-60 overflow-y-auto shadow-2xl ring-1 ring-black/5';
+      } else if (isBranchFilter) {
+        menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 w-[220px] sm:w-[250px] z-50 bg-white border border-slate-200 rounded-2xl py-2 px-1 max-h-60 overflow-y-auto shadow-2xl ring-1 ring-black/5';
       } else {
         menu.className = 'custom-select-menu hidden absolute top-full mt-2 left-0 right-0 w-full z-50 bg-white border border-slate-200 rounded-2xl py-1.5 max-h-56 overflow-y-auto shadow-2xl ring-1 ring-black/5';
       }
@@ -5059,11 +5093,20 @@ const UI = {
         // Update label tombol trigger agar ringkas & tidak terpotong di layar mobile
         if (selectedOpt) {
           if (isDateGrid) {
-            triggerLabel.textContent = currentVal === 'all' ? 'Semua Tgl' : `Tgl ${selectedOpt.textContent}`;
+            triggerLabel.textContent = currentVal === 'all' ? 'Semua Tgl' : `Tgl ${currentVal}`;
           } else if (isMonthGrid) {
-            triggerLabel.textContent = currentVal === 'all' ? 'Semua Bln' : selectedOpt.textContent;
+            triggerLabel.textContent = currentVal === 'all' ? 'Semua Bln' : (shortMonths[currentVal] || selectedOpt.textContent);
           } else if (isYearFilter) {
             triggerLabel.textContent = currentVal === 'all' ? 'Semua Thn' : selectedOpt.textContent;
+          } else if (isBranchFilter) {
+            const raw = selectedOpt.textContent || '';
+            if (currentVal === 'all') {
+              triggerLabel.textContent = (id.startsWith('dashFilter') || id.startsWith('invFilter') || id.startsWith('histFilter') || id.startsWith('modelFilter')) ? 'Semua Cabang' : raw;
+            } else if (raw.includes(' — ')) {
+              triggerLabel.textContent = raw.split(' — ')[0];
+            } else {
+              triggerLabel.textContent = raw;
+            }
           } else {
             triggerLabel.textContent = selectedOpt.textContent;
           }
@@ -5107,7 +5150,7 @@ const UI = {
                 ? 'bg-blue-600 text-white font-black shadow-xs'
                 : 'bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold border border-slate-200/70'
             }`;
-            dayBtn.textContent = opt.textContent;
+            dayBtn.textContent = String(opt.value);
             dayBtn.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -5241,7 +5284,7 @@ const UI = {
         wrapper.classList.add('z-50');
 
         // Dynamically elevate parent card so no sibling card or transform stacking context can paint above it
-        const parentCard = wrapper.closest('.scroll-reveal, #viewDashboard > div, #viewHistory > div, #viewModelDetail > div');
+        const parentCard = wrapper.closest('.scroll-reveal, #viewDashboard > div, #viewHistory > div, #viewModelDetail > div, #dashBranchAdminWrapper, .modal-content, #modalSettings');
         if (parentCard) {
           parentCard.classList.add('filter-card-elevated');
           parentCard.style.zIndex = '45';
