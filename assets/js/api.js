@@ -500,16 +500,18 @@ const ApiService = {
           };
 
           // Sinkronisasi Matriks Rute Point-to-Point Antar-Cabang dari SystemConfig
-          if (c.TRANSIT_ROUTES_JSON) {
+          if (c.TRANSIT_ROUTES_JSON !== undefined && c.TRANSIT_ROUTES_JSON !== null && String(c.TRANSIT_ROUTES_JSON).trim() !== '') {
             try {
               const parsedRoutes = JSON.parse(c.TRANSIT_ROUTES_JSON);
-              if (Array.isArray(parsedRoutes) && parsedRoutes.length > 0) {
+              if (Array.isArray(parsedRoutes)) {
                 AppState.transitRoutes = parsedRoutes;
                 if (typeof AppState.saveTransitRoutesToStorage === 'function') {
                   AppState.saveTransitRoutesToStorage();
                 }
               }
-            } catch (e) {}
+            } catch (e) {
+              console.warn('[ApiService] Gagal parse TRANSIT_ROUTES_JSON:', e);
+            }
           }
           if (typeof AppState.saveToCache === 'function') {
             AppState.saveToCache();

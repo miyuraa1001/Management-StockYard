@@ -1855,7 +1855,12 @@
                   <div class="space-y-2">
                     <div class="flex items-center justify-between px-1">
                       <span class="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Daftar Rute Perjalanan Terdaftar:</span>
-                      <span id="transitRoutesCountBadge" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">0 Rute</span>
+                      <div class="flex items-center space-x-2">
+                        <button type="button" onclick="UI.clearAllTransitRoutes()" class="text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 active:scale-95 px-2 py-0.5 rounded-full border border-rose-200 transition cursor-pointer flex items-center space-x-1" title="Bersihkan seluruh daftar rute khusus">
+                          <span>🗑️</span><span>Bersihkan Semua</span>
+                        </button>
+                        <span id="transitRoutesCountBadge" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">0 Rute</span>
+                      </div>
                     </div>
                     <div id="transitRoutesListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <!-- Rendered dynamically by UI.renderTransitRoutesSettings -->

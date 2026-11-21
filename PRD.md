@@ -420,6 +420,11 @@ Sistem pengelola notifikasi bawaan Android (*Native Web Push & System Notificati
     - Cabang Pengirim (D661): Menerima notif `🏁 Unit Transit Tiba di Tujuan!`.
     - Cabang Penerima (D660): Menerima notif `✅ Unit OKK Berhasil Diterima di Pool!`.
 * `NotificationService.checkDelaysAndNotify()`: Memeriksa armada *In-Transit* yang melebihi estimasi durasi SLA rute dan memicu alarm keterlambatan.
+* `NotificationService.checkNewReportLogsAndNotify(reportLogs)`: Sinkronisasi realtime notifikasi laporan email harian terkirim dengan validasi ganda ketat:
+  - **Inisialisasi Cold-Start**: Menandai seluruh log laporan yang sudah ada di database sebagai *seen* saat pertama kali aplikasi dibuka agar riwayat lama tidak memicu notifikasi palsu.
+  - **Filter Status Sukses**: Hanya bereaksi terhadap log yang berstatus `SUCCESS` / `TERKIRIM` nyata dari server.
+  - **Uji Kebaruan Waktu (Freshness Check < 15 Menit)**: Membandingkan timestamp eksekusi laporan dengan jam perangkat saat ini. Notifikasi status bar HANYA ditembakkan jika laporan benar-benar baru dikirim dalam 15 menit terakhir, menjamin sinkronisasi 100% presisi dan bersamaan dengan masuknya email di Gmail (misal jam 08:31 WIB).
+  - **Persistensi `localStorage`**: Menyimpan ID laporan yang sudah dinotifikasikan (`daihatsu_seen_report_ids`) agar tidak terjadi notifikasi ganda saat aplikasi dibuka ulang.
 * `NotificationService.notifyDailyReport(reportLog)`: Memunculkan notifikasi status bar saat rekap harian PDF/Excel terkirim ke email manajemen.
 * `NotificationService.testNotification()`: Tombol uji coba instan untuk memverifikasi getaran dan visual status bar di ponsel petugas.
 

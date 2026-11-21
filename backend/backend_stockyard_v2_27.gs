@@ -209,7 +209,8 @@ function getSystemConfigData(ss) {
     TRANSIT_TIME_D661: "30",
     TRANSIT_TIME_D662: "90",
     TRANSIT_TIME_D663: "150",
-    TRANSIT_TIME_D664: "180"
+    TRANSIT_TIME_D664: "180",
+    TRANSIT_ROUTES_JSON: "[]"
   };
 
   if (!sheet) return config;
@@ -1491,7 +1492,8 @@ function menuInitSystemConfig() {
     TRANSIT_TIME_D661: "30",
     TRANSIT_TIME_D662: "90",
     TRANSIT_TIME_D663: "150",
-    TRANSIT_TIME_D664: "180"
+    TRANSIT_TIME_D664: "180",
+    TRANSIT_ROUTES_JSON: "[]"
   };
   updateSystemConfig(ss, defData);
   ui.alert("Berhasil", "✅ Parameter estimasi durasi perjalanan per cabang berhasil diinisialisasi pada tab SystemConfig.", ui.ButtonSet.OK);

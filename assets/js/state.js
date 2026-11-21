@@ -171,7 +171,7 @@ const AppState = {
       const stored = localStorage.getItem('daihatsu_transit_routes_matrix');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           this.transitRoutes = parsed;
           return;
         }
@@ -180,18 +180,7 @@ const AppState = {
 
     const defRoutes = (typeof CONFIG !== 'undefined' && Array.isArray(CONFIG.DEFAULT_TRANSIT_ROUTES))
       ? CONFIG.DEFAULT_TRANSIT_ROUTES
-      : [
-          { origin: 'D661', dest: 'D660', duration: 30, label: 'D661 (Bypass) ➔ D660 (Ahmad Yani)' },
-          { origin: 'D660', dest: 'D661', duration: 30, label: 'D660 (Ahmad Yani) ➔ D661 (Bypass)' },
-          { origin: 'D661', dest: 'D662', duration: 90, label: 'D661 (Bypass) ➔ D662 (Bandar Jaya)' },
-          { origin: 'D662', dest: 'D661', duration: 90, label: 'D662 (Bandar Jaya) ➔ D661 (Bypass)' },
-          { origin: 'D661', dest: 'D663', duration: 150, label: 'D661 (Bypass) ➔ D663 (Lampung Utara)' },
-          { origin: 'D663', dest: 'D661', duration: 150, label: 'D663 (Lampung Utara) ➔ D661 (Bypass)' },
-          { origin: 'D661', dest: 'D664', duration: 180, label: 'D661 (Bypass) ➔ D664 (Lampung Timur)' },
-          { origin: 'D664', dest: 'D661', duration: 180, label: 'D664 (Lampung Timur) ➔ D661 (Bypass)' },
-          { origin: 'D662', dest: 'D663', duration: 60, label: 'D662 (Bandar Jaya) ➔ D663 (Lampung Utara)' },
-          { origin: 'D663', dest: 'D662', duration: 60, label: 'D663 (Lampung Utara) ➔ D662 (Bandar Jaya)' }
-        ];
+      : [];
     this.transitRoutes = JSON.parse(JSON.stringify(defRoutes));
   },
 

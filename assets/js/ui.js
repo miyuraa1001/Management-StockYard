@@ -7985,12 +7985,48 @@ const UI = {
     if (typeof this.renderInventoryBranchesView === 'function') {
       this.renderInventoryBranchesView();
     }
+    // Sinkronisasi otomatis ke database Google Sheets (SystemConfig)
+    this.autoSaveTransitRoutes(false);
+  },
+
+  /**
+   * Timer debouncing auto-save untuk mencegah request berlebih saat tombol stepper diklik cepat
+   */
+  _transitSaveTimer: null,
+  async autoSaveTransitRoutes(showToastMsg = true) {
+    clearTimeout(this._transitSaveTimer);
+    return new Promise((resolve) => {
+      this._transitSaveTimer = setTimeout(async () => {
+        try {
+          const durations = {
+            D660: parseInt(document.getElementById('transitDuration_D660')?.value, 10) || AppState.transitTimes?.D660 || 45,
+            D661: parseInt(document.getElementById('transitDuration_D661')?.value, 10) || AppState.transitTimes?.D661 || 30,
+            D662: parseInt(document.getElementById('transitDuration_D662')?.value, 10) || AppState.transitTimes?.D662 || 90,
+            D663: parseInt(document.getElementById('transitDuration_D663')?.value, 10) || AppState.transitTimes?.D663 || 150,
+            D664: parseInt(document.getElementById('transitDuration_D664')?.value, 10) || AppState.transitTimes?.D664 || 180,
+            DEFAULT: parseInt(document.getElementById('transitDuration_DEFAULT')?.value, 10) || AppState.transitTimes?.DEFAULT || 90
+          };
+          const res = await ApiService.saveTransitDurations(durations, AppState.transitRoutes);
+          if (res && res.error) {
+            console.warn('[UI] Gagal auto-save durasi transit:', res.error);
+            if (showToastMsg) this.showToast('⚠️ Gagal sinkron ke database: ' + res.error, 4000);
+          } else {
+            console.log('[UI] Durasi rute berhasil tersinkronisasi ke Google Spreadsheet SystemConfig');
+            if (showToastMsg) this.showToast('☁️ Tersimpan & tersinkronisasi ke database SystemConfig!', 3000);
+          }
+          resolve(res);
+        } catch (e) {
+          console.error('[UI] Error auto-save transit routes:', e);
+          resolve({ error: e.message });
+        }
+      }, 500);
+    });
   },
 
   /**
    * Menambahkan rute antar cabang baru sesuka hati oleh Admin (Sistem Nambahin Sendiri)
    */
-  addNewTransitRoute() {
+  async addNewTransitRoute() {
     const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
     if (!isAdmin) {
       this.showToast('🔒 Akses Ditolak: Hanya Administrator DSO yang berhak menambah rute perjalanan.');
@@ -8021,13 +8057,14 @@ const UI = {
       this.renderInventoryBranchesView();
     }
 
-    this.showToast(`✅ Rute ${origin} ➔ ${dest} (${duration} Menit) berhasil ditambahkan! Silakan simpan untuk memperbarui database.`, 4500);
+    this.showToast(`✅ Rute ${origin} ➔ ${dest} (${duration} Menit) berhasil ditambahkan! Menyimpan ke database...`, 3000);
+    await this.autoSaveTransitRoutes(true);
   },
 
   /**
    * Menghapus rute antar cabang dari daftar
    */
-  deleteTransitRoute(origin, dest) {
+  async deleteTransitRoute(origin, dest) {
     const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
     if (!isAdmin) {
       this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak menghapus rute.');
@@ -8040,8 +8077,33 @@ const UI = {
       if (typeof this.renderInventoryBranchesView === 'function') {
         this.renderInventoryBranchesView();
       }
-      this.showToast(`🗑️ Rute ${origin} ➔ ${dest} telah dihapus.`, 3500);
+      this.showToast(`🗑️ Rute ${origin} ➔ ${dest} telah dihapus. Menyinkronkan...`, 2500);
+      await this.autoSaveTransitRoutes(true);
     }
+  },
+
+  /**
+   * Membersihkan seluruh rute transit khusus agar kembali bersih dari awal (0 Rute)
+   */
+  async clearAllTransitRoutes() {
+    const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : false;
+    if (!isAdmin) {
+      this.showToast('🔒 Akses Terbatas: Hanya Administrator DSO yang berhak membersihkan rute.');
+      return;
+    }
+
+    if (!confirm('Bersihkan seluruh rute khusus? Tampilan akan kembali bersih (0 rute terdaftar) dan seluruh perjalanan akan mengacu pada Standar Estimasi Umum (Default: 90 Menit).')) {
+      return;
+    }
+
+    AppState.transitRoutes = [];
+    AppState.saveTransitRoutesToStorage();
+    this.renderTransitRoutesSettings();
+    if (typeof this.renderInventoryBranchesView === 'function') {
+      this.renderInventoryBranchesView();
+    }
+    await this.autoSaveTransitRoutes(true);
+    this.showToast('✨ Daftar rute berhasil dibersihkan dan tersimpan ke database (SystemConfig)!', 4000);
   },
 
   /**
@@ -9870,4 +9932,5 @@ window.adjustTransitDuration = (b, d) => UI.adjustTransitDuration(b, d);
 window.adjustRouteDuration = (o, d, delta) => UI.adjustRouteDuration ? UI.adjustRouteDuration(o, d, delta) : null;
 window.addNewTransitRoute = () => UI.addNewTransitRoute ? UI.addNewTransitRoute() : null;
 window.deleteTransitRoute = (o, d) => UI.deleteTransitRoute ? UI.deleteTransitRoute(o, d) : null;
+window.clearAllTransitRoutes = () => UI.clearAllTransitRoutes ? UI.clearAllTransitRoutes() : null;
 window.renderTransitRoutesSettings = () => UI.renderTransitRoutesSettings ? UI.renderTransitRoutesSettings() : null;
