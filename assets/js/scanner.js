@@ -1679,6 +1679,9 @@ const ScannerService = {
 
     // Biarkan kolom Nama Petugas kosong (tidak di-autofill) agar petugas lapangan mengetik nama aslinya secara independen
     const officerInput = document.getElementById('inputOfficerName');
+    if (officerInput) {
+      officerInput.value = '';
+    }
     // Tidak melakukan autofill dari AppState.userProfile?.name agar guard shift mengisi nama sendiri
 
     // Jalankan validasi kelengkapan formulir mutasi ketat (strict validation)
