@@ -229,6 +229,16 @@ function getSystemConfigData(ss) {
 }
 
 function updateSystemConfig(ss, data) {
+  if (!ss) {
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    } catch (e) {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+    }
+  }
+  if (!data || typeof data !== "object") {
+    data = {};
+  }
   let sheet = ss.getSheetByName(TAB_CONFIG);
   if (!sheet) {
     sheet = ss.insertSheet(TAB_CONFIG);
@@ -3476,4 +3486,28 @@ function testKirimEmailSekarang() {
   Logger.log("[START] Memulai pengujian pengiriman email laporan rekapitulasi per cabang...");
   const res = triggerReportEmail();
   Logger.log("Hasil: " + JSON.stringify(res));
+}
+
+function testSystemConnection() {
+  Logger.log("=== PENGUJIAN KONEKSI GOOGLE SPREADSHEET & SYSTEM CONFIG ===");
+  try {
+    let ss;
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    } catch (e) {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+    }
+    if (!ss) {
+      throw new Error("Spreadsheet tidak dapat diakses dengan ID: " + SPREADSHEET_ID);
+    }
+    Logger.log("✅ Berhasil membuka Spreadsheet: " + ss.getName());
+    
+    const cfg = getSystemConfigData(ss);
+    Logger.log("✅ Berhasil membaca SystemConfig: " + JSON.stringify(cfg));
+    Logger.log("✅ Semua koneksi backend dan database berstatus SEHAT dan SIAP DIGUNAKAN!");
+    return { success: true, message: "Koneksi backend OK!" };
+  } catch (err) {
+    Logger.log("❌ Gagal pengujian koneksi: " + err.message);
+    return { success: false, error: err.message };
+  }
 }
