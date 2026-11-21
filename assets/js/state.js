@@ -650,10 +650,126 @@ const AppState = {
   },
 
   /**
+   * Helper: Temukan foto katalog resmi Daihatsu berdasarkan nama model
+   */
+  findCatalogPhoto(modelName) {
+    if (!modelName) return '';
+    const clean = String(modelName).toLowerCase();
+    const match = (this.vehicleCatalog || []).find(c => {
+      const catName = String(c.model || '').toLowerCase();
+      return clean.includes(catName) || catName.includes(clean);
+    });
+    return match?.photo || '';
+  },
+
+  /**
+   * Helper robust untuk mem-parsing tanggal & waktu keberangkatan/kedatangan mutasi
+   */
+  parseRecordDateTime(item, fallbackDate = new Date()) {
+    if (!item) return fallbackDate;
+
+    let hh = 8, mm = 0;
+    if (item.time) {
+      const match = String(item.time).match(/(\d{1,2})[:.](\d{1,2})/);
+      if (match) {
+        hh = parseInt(match[1], 10);
+        mm = parseInt(match[2], 10);
+      }
+    }
+
+    // 1. Cek timestamp ISO terlebih dahulu jika valid
+    if (item.timestamp) {
+      try {
+        const dt = new Date(item.timestamp);
+        if (!isNaN(dt.getTime())) return dt;
+      } catch (e) {}
+    }
+
+    // 2. Cek properti numerik year, month, day/date
+    const y = parseInt(item.year, 10);
+    const m = parseInt(item.month, 10);
+    const d = parseInt(item.day || item.date, 10);
+    if (!isNaN(y) && y > 2000 && !isNaN(m) && m >= 1 && m <= 12 && !isNaN(d) && d >= 1 && d <= 31) {
+      return new Date(y, m - 1, d, hh, mm, 0, 0);
+    }
+
+    // 3. Cek fullDateStr atau date string
+    const dateStr = String(item.fullDateStr || item.date || '').trim();
+    if (dateStr) {
+      // Format dd/mm/yyyy
+      if (dateStr.includes('/')) {
+        const p = dateStr.split('/');
+        if (p.length === 3) {
+          const parsedD = parseInt(p[0], 10);
+          const parsedM = parseInt(p[1], 10);
+          const parsedY = parseInt(p[2], 10);
+          if (!isNaN(parsedY) && !isNaN(parsedM) && !isNaN(parsedD)) {
+            return new Date(parsedY, parsedM - 1, parsedD, hh, mm, 0, 0);
+          }
+        }
+      }
+      // Format yyyy-mm-dd
+      if (dateStr.includes('-')) {
+        const p = dateStr.split('-');
+        if (p.length === 3 && p[0].length === 4) {
+          const parsedY = parseInt(p[0], 10);
+          const parsedM = parseInt(p[1], 10);
+          const parsedD = parseInt(p[2], 10);
+          if (!isNaN(parsedY) && !isNaN(parsedM) && !isNaN(parsedD)) {
+            return new Date(parsedY, parsedM - 1, parsedD, hh, mm, 0, 0);
+          }
+        }
+      }
+      // Format Nama Bulan Indonesia: "21 November 2026"
+      const p = dateStr.split(/\s+/);
+      if (p.length >= 3) {
+        const parsedD = parseInt(p[0], 10);
+        const monthNames = {
+          januari: 1, februari: 2, maret: 3, april: 4, mei: 5, juni: 6,
+          juli: 7, agustus: 8, september: 9, oktober: 10, november: 11, desember: 12
+        };
+        const parsedM = monthNames[p[1].toLowerCase()] || 1;
+        const parsedY = parseInt(p[2], 10);
+        if (!isNaN(parsedY) && !isNaN(parsedM) && !isNaN(parsedD)) {
+          return new Date(parsedY, parsedM - 1, parsedD, hh, mm, 0, 0);
+        }
+      }
+    }
+
+    // Fallback: hari ini pada jam keberangkatan
+    const fallback = new Date(fallbackDate.getTime());
+    fallback.setHours(hh, mm, 0, 0);
+    return fallback;
+  },
+
+  /**
+   * Helper menghitung selisih waktu operasional (menit, format teks jam/menit, urgensi > 24 jam)
+   */
+  calcRecordElapsed(item, endDate = new Date()) {
+    try {
+      const startDate = this.parseRecordDateTime(item, endDate);
+      const diffMs = endDate.getTime() - startDate.getTime();
+      const diffMins = Math.max(0, Math.floor(diffMs / 60000));
+      const days = Math.floor(diffMins / 1440);
+      const hours = Math.floor((diffMins % 1440) / 60);
+      const mins = diffMins % 60;
+
+      let human = '';
+      if (days > 0) human = `${days}h ${hours}j`;
+      else if (hours > 0) human = `${hours} Jam ${mins} Mnt`;
+      else if (mins > 0) human = `${mins} Menit`;
+      else human = 'Baru saja';
+
+      return { diffMins, human, isUrgent: diffMins >= 1440, startDate };
+    } catch (e) {
+      return { diffMins: 0, human: 'Baru saja', isUrgent: false, startDate: new Date() };
+    }
+  },
+
+  /**
    * Mengambil daftar kendaraan yang saat ini sedang dalam perjalanan (In-Transit OKK).
    * Kondisi: Transaksi terakhir dari VIN/Mesin adalah 'Unit Keluar' dengan dokumen 'OKK'.
-   * Begitu cabang penerima men-scan 'Unit Masuk' dengan dokumen 'OKK', status terakhirnya
-   * otomatis menjadi 'Unit Masuk' dan unit secara alami keluar dari radar in-transit!
+   * Menghitung status SLA secara real-time berdasarkan matriks rute atau pengaturan durasi.
    */
   getInTransitUnits() {
     const latestMap = new Map();
@@ -680,126 +796,19 @@ const AppState = {
       if (isKeluar && isOkk) {
         const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
         const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
-
-        inTransit.push({
-          id: item.id || `TRX-${key}`,
-          vin: item.vin || key,
-          engine: item.engine || '-',
-          model: item.model || 'Unit Daihatsu',
-          color: item.color || item.warna || '-',
-          originBranch: originBranch,
-          destinationBranch: destBranch,
-          departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
-          date: item.date || item.fullDateStr || '',
-          time: item.time || '',
-          officerName: item.officerName || item.pic || 'Petugas Keamanan',
-          pic: item.pic || item.officerName || 'Security',
-          unitPhoto: item.unitPhoto || item.unitPhotoUrl || '',
-          docPhoto: item.docPhoto || item.docPhotoUrl || '',
-          notes: item.notes || '-'
-        });
-      }
-    }
-    return inTransit;
-  },
-
-  /**
-   * Menyusun data komprehensif untuk Flight Board / Kanban Journey Logistik OKK Antar-Cabang (Opsi 2)
-   * Mengelompokkan perjalanan unit ke dalam 3 stage operasional:
-   * 1. departures: Pool Asal (Baru Keluar / Persiapan)
-   * 2. inTransit: Sedang Di Jalan (Boarding Pass / In-Transit Aktif)
-   * 3. delivered: Tiba di Tujuan (Selesai Diterima)
-   */
-  getLogisticsKanbanData(filterRoute = 'all', searchQuery = '') {
-    const history = this.historyData || [];
-    const query = String(searchQuery || '').trim().toLowerCase();
-
-    // Helper: Temukan foto katalog resmi Daihatsu jika unit belum ada upload foto
-    const findCatalogPhoto = (modelName) => {
-      if (!modelName) return '';
-      const clean = String(modelName).toLowerCase();
-      const match = (this.vehicleCatalog || []).find(c => {
-        const catName = String(c.model || '').toLowerCase();
-        return clean.includes(catName) || catName.includes(clean);
-      });
-      return match?.photo || '';
-    };
-
-    // Helper: Hitung selisih waktu operasional (menit, format teks X Jam Y Menit, urgensi > 24 jam)
-    const calcElapsed = (dateStr, timeStr, endDate = new Date()) => {
-      try {
-        let d = new Date();
-        if (dateStr) {
-          if (dateStr.includes('/')) {
-            const p = dateStr.split('/');
-            d.setFullYear(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
-          } else if (dateStr.includes('-')) {
-            const p = dateStr.split('-');
-            d.setFullYear(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-          }
-        }
-        if (timeStr && timeStr.includes(':')) {
-          const t = timeStr.split(':');
-          d.setHours(parseInt(t[0], 10), parseInt(t[1], 10), 0, 0);
-        }
-        const diffMs = endDate - d;
-        const diffMins = Math.max(0, Math.floor(diffMs / 60000));
-        const days = Math.floor(diffMins / 1440);
-        const hours = Math.floor((diffMins % 1440) / 60);
-        const mins = diffMins % 60;
-
-        let human = '';
-        if (days > 0) human = `${days}h ${hours}j`;
-        else if (hours > 0) human = `${hours} Jam ${mins} Mnt`;
-        else human = `${mins} Menit`;
-
-        return { diffMins, human, isUrgent: diffMins >= 1440, startDate: d };
-      } catch (e) {
-        return { diffMins: 0, human: 'Baru saja', isUrgent: false, startDate: new Date() };
-      }
-    };
-
-    // 1. Map transaksi terbaru per unit untuk mendeteksi unit yang saat ini aktif di jalan (In-Transit)
-    const latestMap = new Map();
-    const okkHistoryList = [];
-
-    for (let i = 0; i < history.length; i++) {
-      const item = history[i];
-      if (!item) continue;
-      const key = String(item.vin || item.chassis || item.engine || '').trim().toUpperCase();
-      if (!key || key === '-') continue;
-      if (!latestMap.has(key)) {
-        latestMap.set(key, item);
-      }
-      const docTypeStr = String(item.docType || '').trim().toUpperCase();
-      if (docTypeStr.includes('OKK')) {
-        okkHistoryList.push(item);
-      }
-    }
-
-    // A. STAGE 2: IN-TRANSIT (Sedang di Jalan)
-    const inTransit = [];
-    for (const [key, item] of latestMap.entries()) {
-      const typeStr = String(item.type || '').trim().toLowerCase();
-      const docTypeStr = String(item.docType || '').trim().toUpperCase();
-      const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
-      const isOkk = docTypeStr.includes('OKK');
-
-      if (isKeluar && isOkk) {
-        const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
-        const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
-        const elapsed = calcElapsed(item.date || item.fullDateStr, item.time);
-        const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
-
         const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
         const originCode = (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase();
         const targetDurationMins = this.getTransitDurationForRoute(originCode, destCode);
+
+        const elapsed = this.calcRecordElapsed(item);
         const isDelayed = elapsed.diffMins > targetDurationMins;
         const diffFromTarget = Math.abs(elapsed.diffMins - targetDurationMins);
         const diffHuman = this.formatMinutesToHuman(diffFromTarget);
         const etaStatus = isDelayed
           ? `⚠️ Melebihi Estimasi (+${diffHuman})`
           : `⏱️ On-Track (Sisa ~${diffHuman})`;
+
+        const photo = item.unitPhoto || item.unitPhotoUrl || this.findCatalogPhoto(item.model);
 
         inTransit.push({
           id: item.id || `TRX-${key}`,
@@ -829,6 +838,33 @@ const AppState = {
         });
       }
     }
+    return inTransit;
+  },
+
+  /**
+   * Menyusun data komprehensif untuk Flight Board / Kanban Journey Logistik OKK Antar-Cabang (Opsi 2)
+   * Mengelompokkan perjalanan unit ke dalam 3 stage operasional:
+   * 1. departures: Pool Asal (Baru Keluar / Persiapan)
+   * 2. inTransit: Sedang Di Jalan (Boarding Pass / In-Transit Aktif)
+   * 3. delivered: Tiba di Tujuan (Selesai Diterima)
+   */
+  getLogisticsKanbanData(filterRoute = 'all', searchQuery = '') {
+    const history = this.historyData || [];
+    const query = String(searchQuery || '').trim().toLowerCase();
+
+    // 1. Stage 2: IN-TRANSIT (Sedang di Jalan) - Menggunakan evaluasi real-time terpusat
+    const inTransit = this.getInTransitUnits();
+
+    // 2. Kumpulkan riwayat transaksi OKK untuk Stage 1 & Stage 3
+    const okkHistoryList = [];
+    for (let i = 0; i < history.length; i++) {
+      const item = history[i];
+      if (!item) continue;
+      const docTypeStr = String(item.docType || '').trim().toUpperCase();
+      if (docTypeStr.includes('OKK')) {
+        okkHistoryList.push(item);
+      }
+    }
 
     // B. STAGE 1: POOL ASAL (Baru Dikeluarkan / Antrean Keluar OKK)
     const departures = [];
@@ -844,8 +880,8 @@ const AppState = {
 
       const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
       const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
-      const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
-      const elapsed = calcElapsed(item.date || item.fullDateStr, item.time);
+      const photo = item.unitPhoto || item.unitPhotoUrl || this.findCatalogPhoto(item.model);
+      const elapsed = this.calcRecordElapsed(item);
 
       departures.push({
         id: item.id || `DEP-${key}`,
@@ -894,14 +930,14 @@ const AppState = {
       let originBranch = item.originBranch || (matchingDep ? (matchingDep.noBa || matchingDep.branch) : 'Sentra Pool D661');
 
       if (matchingDep) {
-        const arrDate = calcElapsed(item.date || item.fullDateStr, item.time).startDate;
-        const dur = calcElapsed(matchingDep.date || matchingDep.fullDateStr, matchingDep.time, arrDate);
+        const arrDate = this.parseRecordDateTime(item);
+        const dur = this.calcRecordElapsed(matchingDep, arrDate);
         if (dur.diffMins > 0) {
           transitDurationHuman = dur.human;
         }
       }
 
-      const photo = item.unitPhoto || item.unitPhotoUrl || findCatalogPhoto(item.model);
+      const photo = item.unitPhoto || item.unitPhotoUrl || this.findCatalogPhoto(item.model);
 
       delivered.push({
         id: item.id || `DEL-${key}`,

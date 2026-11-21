@@ -153,6 +153,16 @@ const App = {
         }
 
         console.log('[App] Berhasil sinkronisasi data dari Google Spreadsheet secara realtime');
+      } else {
+        // Meskipun data spreadsheet tidak berubah, waktu terus berjalan -> cek delay SLA secara real-time
+        if (typeof NotificationService !== 'undefined') {
+          NotificationService.checkDelaysAndNotify();
+        }
+      }
+
+      // Perbarui tampilan Flight Board & Radar jika pengguna sedang berada di tab sebaran cabang
+      if (AppState.currentTab === 'inventory' && typeof UI !== 'undefined' && UI._inventoryViewMode === 'branches' && typeof UI.renderInventoryBranchesView === 'function') {
+        UI.renderInventoryBranchesView();
       }
     } catch (err) {
       console.warn('[App] Gagal sinkronisasi ke server Google Apps Script:', err);

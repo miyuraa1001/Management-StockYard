@@ -83,17 +83,27 @@ const NotificationService = {
         if (event.data?.action === 'SWITCH_TAB' && event.data.tab) {
           if (typeof UI !== 'undefined' && typeof UI.switchTab === 'function') {
             UI.switchTab(event.data.tab);
+            if (event.data.tab === 'inventory' && event.data.mode === 'branch' && typeof UI.switchInventoryView === 'function') {
+              UI.switchInventoryView('branches');
+            }
           }
         }
       });
     }
 
-    // Jalankan pengecekan berkala keterlambatan SLA perjalanan unit in-transit (setiap 60 detik)
+    // Pengecekan awal keterlambatan SLA transit saat inisialisasi aplikasi
+    setTimeout(() => {
+      if (this.isGranted()) {
+        this.checkDelaysAndNotify();
+      }
+    }, 2000);
+
+    // Jalankan pengecekan berkala keterlambatan SLA perjalanan unit in-transit (setiap 30 detik)
     setInterval(() => {
       if (this.isGranted()) {
         this.checkDelaysAndNotify();
       }
-    }, 60000);
+    }, 30000);
 
     console.log('[NotificationService] Inisialisasi notifikasi Android siap. Izin saat ini:', this.getPermission());
   },
@@ -372,6 +382,17 @@ const NotificationService = {
     const isAdmin = typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : true;
     const userBranchCode = typeof AppState.getUserBranchCode === 'function' ? AppState.getUserBranchCode() : 'D660';
 
+    // Bersihkan unit yang sudah sampai di tujuan dari tracking notifikasi keterlambatan
+    const activeVins = new Set(inTransit.map(u => String(u.vin || '').toUpperCase()));
+    let delayMapCleaned = false;
+    for (const vin of this._notifiedDelayMap.keys()) {
+      if (!activeVins.has(vin.toUpperCase())) {
+        this._notifiedDelayMap.delete(vin);
+        delayMapCleaned = true;
+      }
+    }
+    if (delayMapCleaned) this._persistNotifiedDelays();
+
     inTransit.forEach(unit => {
       if (!unit || !unit.isDelayed) return;
 
@@ -382,10 +403,10 @@ const NotificationService = {
         if (!isOriginMatch && !isDestMatch) return; // Bukan urusan cabang ini
       }
 
-      // Hindari spam: jangan kirim berulang-ulang untuk VIN yang sama dalam rentang 30 menit
+      // Hindari spam: jangan kirim berulang-ulang untuk VIN yang sama dalam rentang 15 menit
       const lastNotified = this._notifiedDelayMap.get(unit.vin);
       const nowMs = Date.now();
-      if (lastNotified && (nowMs - lastNotified < 30 * 60 * 1000)) {
+      if (lastNotified && (nowMs - lastNotified < 15 * 60 * 1000)) {
         return;
       }
 
