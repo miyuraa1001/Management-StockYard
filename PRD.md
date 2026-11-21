@@ -423,7 +423,7 @@ Sistem pengelola notifikasi bawaan Android (*Native Web Push & System Notificati
 * `NotificationService.notifyDailyReport(reportLog)`: Memunculkan notifikasi status bar saat rekap harian PDF/Excel terkirim ke email manajemen.
 * `NotificationService.testNotification()`: Tombol uji coba instan untuk memverifikasi getaran dan visual status bar di ponsel petugas.
 
-### 6.8 Berkas `backend/backend_stockyard_v2_26.gs` (Google Apps Script Engine)
+### 6.8 Berkas `backend/backend_stockyard_v2_27.gs` (Google Apps Script Engine)
 Mesin komputasi awan serverless yang berjalan di Google Workspace:
 * `doGet(e)` / `doPost(e)`: Pintu gerbang API HTTP RESTful yang menangani routing aksi (*actions*): `getInitialData`, `recordMutation`, `updateConfig`, `updateProfile`, `updateBranchEmail`, `verifyCredentials`, `sendReportEmail`, dan `health`.
 * `getInitialData(ss)`: Mengekstrak seluruh data 5 sheet dalam format JSON teroptimasi.
@@ -436,8 +436,10 @@ Mesin komputasi awan serverless yang berjalan di Google Workspace:
 * `menuInitSystemConfig()`: Fungsi menu khusus Google Sheets untuk menginisialisasi parameter durasi dan jadwal secara otomatis dengan 1-klik.
 * `generateDailyPdfReport(ss, dateStr, branchFilter)`: Membangun dokumen laporan rekapitulasi PDF berkop resmi Astra Daihatsu 13 kolom dengan tanda tangan digital Security dan ADH/BM.
 * `generateDailyExcelReport(ss, dateStr, branchFilter)`: Membangun dokumen laporan rekapitulasi Excel (.xlsx) dengan visual foto unit tersemat rapi di sel.
-* `triggerReportEmail(ss, data)`: Mengirimkan laporan harian via Gmail API yang dipartisi secara eksklusif ke masing-masing cabang.
-* `sendDailyScheduledReport()`: Fungsi yang dipicu oleh time-driven cron trigger otomatis setiap pukul 08:00 WIB.
+* `triggerReportEmail(ss, data)`: Mengirimkan laporan harian via Gmail API yang dipartisi secara eksklusif ke masing-masing cabang:
+  - **Integritas Audit Periode H-1 (Kemarin)**: Secara ketat merekap operasional kemarin. Menghapus tuntas bug pengalihan ke hari ini jika kemarin 0 transaksi, sehingga data operasional hari ini yang belum selesai tidak akan pernah terkirim mendahului waktunya.
+  - **Status Nihil Mutasi**: Jika kemarin tidak terdapat pergerakan fisik unit (0 transaksi), sistem menerbitkan email resmi berstatus `NIHIL MUTASI` untuk periode kemarin.
+* `sendDailyScheduledReport()`: Fungsi yang dipicu oleh time-driven cron trigger otomatis setiap pukul 08:00 WIB untuk mengirimkan rekapitulasi operasional H-1 (Kemarin).
 * `uploadImageToDrive(folderId, base64Data, fileName, mimeType)`: Mengunggah file foto dari aplikasi langsung ke folder Google Drive perusahaan.
 * `deleteDriveFile(fileUrlOrId)`: Menghapus file foto lama di Google Drive secara otomatis saat foto profil diperbarui.
 

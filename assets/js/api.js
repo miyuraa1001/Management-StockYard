@@ -802,17 +802,21 @@ const ApiService = {
   /**
    * Memicu pengiriman laporan email nyata dari Google Apps Script ke target email penerima
    */
-  async triggerEmailReport(targetEmail = null) {
+  async triggerEmailReport(targetEmail = null, targetDate = null) {
     try {
       const email = targetEmail || AppState.automationConfig?.email || '';
-      let res = await this.request('triggerReportEmail', 'POST', { email: email, action: 'triggerReportEmail' });
+      const payload = { email: email, action: 'triggerReportEmail' };
+      if (targetDate) payload.targetDate = targetDate;
+      let res = await this.request('triggerReportEmail', 'POST', payload);
       if (res && (res.success || !res.error)) return res;
       
       // Fallback aliases
-      res = await this.request('sendReportEmail', 'POST', { email: email, action: 'sendReportEmail' });
+      payload.action = 'sendReportEmail';
+      res = await this.request('sendReportEmail', 'POST', payload);
       if (res && (res.success || !res.error)) return res;
 
-      res = await this.request('triggerManualReport', 'POST', { email: email, action: 'triggerManualReport' });
+      payload.action = 'triggerManualReport';
+      res = await this.request('triggerManualReport', 'POST', payload);
       return res;
     } catch (e) {
       console.error('[ApiService] Gagal memicu pengiriman laporan email:', e);

@@ -8968,13 +8968,19 @@ const UI = {
     }
     const targetEmail = branchEmails.join(', ');
 
+    // Hitung tanggal H-1 (Kemarin) secara eksplisit agar rekapitulasi harian selalu konsisten
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    const yesterdayYmd = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    const yesterdayDisplay = `${String(yesterday.getDate()).padStart(2, '0')}/${String(yesterday.getMonth() + 1).padStart(2, '0')}/${yesterday.getFullYear()}`;
+
     if (btn) btn.disabled = true;
     if (textEl) textEl.textContent = 'Mengirim...';
 
-    this.showToast(`⏳ Mengirimkan laporan email ke ${targetEmail}...`);
+    this.showToast(`⏳ Mengirimkan laporan rekapitulasi harian (${yesterdayDisplay}) ke ${targetEmail}...`);
 
     try {
-      const res = await ApiService.triggerEmailReport(targetEmail);
+      const res = await ApiService.triggerEmailReport(targetEmail, yesterdayYmd);
       const isSuccess = res && (res.success === true || !res.error);
 
       const timestampStr = res?.timestamp || (new Date().toLocaleString('id-ID', {
