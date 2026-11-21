@@ -4395,7 +4395,7 @@ const UI = {
     const distinctModelCount = modelsWithUnits.length;
 
     if (totalEl) totalEl.textContent = `${totalUnits} Unit`;
-    if (modelCountEl) modelCountEl.textContent = totalUnits > 0 ? `${distinctModelCount} Model` : '13 Model';
+    if (modelCountEl) modelCountEl.textContent = totalUnits > 0 ? `${distinctModelCount} Model` : '0 Model';
 
     if (centerLabel) centerLabel.textContent = 'TOTAL';
     if (centerVal) centerVal.textContent = String(totalUnits);
@@ -4405,8 +4405,19 @@ const UI = {
 
     if (totalUnits === 0) {
       svg.innerHTML = bgTrack;
+      const popup = document.getElementById('donutSegmentPopup');
+      if (popup) popup.classList.add('hidden');
+      const badge = document.getElementById('donutSwipeBadge');
+      if (badge) {
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span><span class="text-slate-400">Belum Ada Unit</span>`;
+      }
       this.updateDonutPreviewCard(null);
       return;
+    }
+
+    const badge = document.getElementById('donutSwipeBadge');
+    if (badge) {
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span><span>Geser Warna</span>`;
     }
 
     let cumulativeOffset = 0;
@@ -4485,6 +4496,12 @@ const UI = {
       if (prevUnits) prevUnits.textContent = '0 Unit';
       if (prevMasuk) prevMasuk.textContent = `Masuk ${item ? (item.masuk || 0) : 0}`;
       if (prevKeluar) prevKeluar.textContent = `Keluar ${item ? (item.keluar || 0) : 0}`;
+      if (prevMasukBtn) {
+        prevMasukBtn.onclick = () => this.switchTab('history');
+      }
+      if (prevKeluarBtn) {
+        prevKeluarBtn.onclick = () => this.switchTab('history');
+      }
       if (prevBtn) {
         prevBtn.innerHTML = `<span>Lihat Stok Unit</span><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
         prevBtn.onclick = () => this.switchTab('inventory');
