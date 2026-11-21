@@ -869,20 +869,38 @@ const UI = {
       if (catalogView) catalogView.classList.add('hidden');
       if (branchesView) branchesView.classList.remove('hidden');
       if (tabCat) {
-        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabCat.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
-        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+      }
+      const tabBranchIcon = document.getElementById('invTabBranchIcon');
+      if (tabBranchIcon) {
+        tabBranchIcon.classList.remove('text-amber-500');
+        tabBranchIcon.classList.add('text-white');
+      }
+      const tabTransitBadge = document.getElementById('invTransitBadge');
+      if (tabTransitBadge) {
+        tabTransitBadge.className = 'px-1.5 py-0.5 rounded-full text-[9px] font-black bg-white/25 text-white backdrop-blur-xs leading-none';
       }
       this.renderInventoryBranchesView();
     } else {
       if (catalogView) catalogView.classList.remove('hidden');
       if (branchesView) branchesView.classList.add('hidden');
       if (tabCat) {
-        tabCat.className = 'px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabCat.className = 'px-3 py-2 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
       if (tabBranch) {
-        tabBranch.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+        tabBranch.className = 'px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
+      }
+      const tabBranchIcon = document.getElementById('invTabBranchIcon');
+      if (tabBranchIcon) {
+        tabBranchIcon.classList.remove('text-white');
+        tabBranchIcon.classList.add('text-amber-500');
+      }
+      const tabTransitBadge = document.getElementById('invTransitBadge');
+      if (tabTransitBadge) {
+        tabTransitBadge.className = 'px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white animate-pulse leading-none';
       }
       this.renderInventoryList();
     }
@@ -1023,7 +1041,7 @@ const UI = {
               <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board OKK</h3>
                   <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
@@ -1031,7 +1049,7 @@ const UI = {
                     <span>LIVE RADAR</span>
                   </span>
                 </div>
-                <p class="text-[10px] sm:text-xs text-slate-400 font-medium mt-0.5 leading-tight truncate">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
+                <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug line-clamp-2 sm:line-clamp-none">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
               </div>
             </div>
 
@@ -1071,7 +1089,7 @@ const UI = {
       kpiStrip.innerHTML = `
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <!-- KPI 1: In-Transit Aktif (Amber) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-amber-700 uppercase tracking-wider">Sedang Di Jalan</span>
               <div class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center ${kanban.metrics.totalInTransit > 0 ? 'animate-pulse' : ''}">
@@ -1079,16 +1097,16 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
-              <span class="text-xl sm:text-2xl font-black text-amber-950">${kanban.metrics.totalInTransit}</span>
-              <span class="text-xs font-bold text-amber-700">Unit OTW</span>
+              <span class="text-xl sm:text-2xl font-black text-amber-950 leading-tight">${kanban.metrics.totalInTransit}</span>
+              <span class="text-[11px] sm:text-xs font-bold text-amber-700">Unit OTW</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Mutasi antar-cabang aktif</span>
             </div>
           </div>
 
           <!-- KPI 2: Tiba di Pool Tujuan (Emerald) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">Tiba di Pool</span>
               <div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -1096,16 +1114,16 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
-              <span class="text-xl sm:text-2xl font-black text-emerald-950">${kanban.metrics.totalDelivered}</span>
-              <span class="text-xs font-bold text-emerald-700">Unit Selesai</span>
+              <span class="text-xl sm:text-2xl font-black text-emerald-950 leading-tight">${kanban.metrics.totalDelivered}</span>
+              <span class="text-[11px] sm:text-xs font-bold text-emerald-700">Unit Selesai</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Terkonfirmasi di tujuan</span>
             </div>
           </div>
 
           <!-- KPI 3: Estimasi Waktu Tempuh (Blue - Realtime Synchronized) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">Rata-rata Waktu</span>
               <div class="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -1113,15 +1131,16 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
-              <span class="text-lg sm:text-xl font-black text-blue-950">${kanban.metrics.avgTransitTime}</span>
+              <span class="text-lg sm:text-xl font-black text-blue-950 leading-tight">${kanban.metrics.avgTransitTime}</span>
+              <span class="text-[10px] sm:text-[11px] font-bold text-blue-700">SLA Rute</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
-              <span>SLA rute & perjalanan unit</span>
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
+              <span>Durasi perjalanan unit</span>
             </div>
           </div>
 
           <!-- KPI 4: Total Stok Fisik 5 Pool (Purple) -->
-          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-white shadow-saas-card relative overflow-hidden flex flex-col justify-between">
+          <div class="bg-white/95 rounded-2xl p-3 sm:p-3.5 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[96px] sm:min-h-[104px]">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[9px] sm:text-[10px] font-extrabold text-purple-700 uppercase tracking-wider">Jaringan Pool DSO</span>
               <div class="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -1129,10 +1148,10 @@ const UI = {
               </div>
             </div>
             <div class="flex items-baseline space-x-1.5 mt-0.5">
-              <span class="text-xl sm:text-2xl font-black text-purple-950">${multiBranch.totalActiveStock}</span>
-              <span class="text-xs font-bold text-purple-700">Unit Terparkir</span>
+              <span class="text-xl sm:text-2xl font-black text-purple-950 leading-tight">${multiBranch.totalActiveStock}</span>
+              <span class="text-[11px] sm:text-xs font-bold text-purple-700">Unit Parkir</span>
             </div>
-            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400">
+            <div class="mt-1 flex items-center text-[9px] sm:text-[9.5px] font-semibold text-slate-400 truncate">
               <span>Tersebar di 5 cabang</span>
             </div>
           </div>
@@ -1144,28 +1163,29 @@ const UI = {
     const ribbonContainer = document.getElementById('invMiniBranchesRibbon');
     if (ribbonContainer) {
       ribbonContainer.innerHTML = `
-        <div class="bg-white/90 rounded-2xl p-2.5 sm:p-3 border border-white shadow-saas-card">
+        <div class="bg-white/95 rounded-2xl p-2.5 sm:p-3.5 border border-slate-100 shadow-sm">
           <div class="flex items-center justify-between mb-2 px-1">
             <span class="text-[10px] sm:text-xs font-black text-slate-700 uppercase tracking-wider">Stok Fisik & Radar Pool DSO:</span>
-            <span class="text-[9.5px] text-slate-400 font-semibold">Klik cabang untuk filter rute</span>
+            <span class="text-[9px] sm:text-[9.5px] text-slate-400 font-semibold sm:hidden">👉 Geser pool</span>
+            <span class="text-[9.5px] text-slate-400 font-semibold hidden sm:inline">Klik cabang untuk filter rute</span>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 -mx-0.5 px-0.5 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-2">
             ${multiBranch.branches.map(b => {
               const isFiltered = currentRoute === `to_${b.code}`;
               const incoming = (kanban.inTransit || []).filter(u => u.destinationCode === b.code).length;
               return `
-                <div onclick="UI.setLogisticsRouteFilter('${isFiltered ? 'all' : `to_${b.code}`}')" class="px-2.5 py-2 rounded-xl border ${isFiltered ? 'border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/20' : 'border-slate-200/70 bg-slate-50/80 hover:bg-slate-100/70'} transition cursor-pointer flex items-center justify-between">
-                  <div class="min-w-0">
+                <div onclick="UI.setLogisticsRouteFilter('${isFiltered ? 'all' : `to_${b.code}`}')" class="min-w-[135px] sm:min-w-0 flex-1 px-3 py-2 rounded-xl border ${isFiltered ? 'border-blue-500 bg-blue-50/80 ring-2 ring-blue-500/20' : 'border-slate-200/80 bg-slate-50/90 hover:bg-slate-100/80'} transition cursor-pointer flex items-center justify-between flex-shrink-0 shadow-2xs">
+                  <div class="min-w-0 pr-1">
                     <div class="flex items-center space-x-1">
-                      <span class="text-[9.5px] font-black ${isFiltered ? 'text-blue-700' : 'text-slate-800'}">${b.code}</span>
-                      <span class="text-[8.5px] text-slate-400 truncate max-w-[65px]">${b.shortName.split('(')[0]}</span>
+                      <span class="text-[10px] font-black ${isFiltered ? 'text-blue-700' : 'text-slate-800'}">${b.code}</span>
+                      <span class="text-[9px] text-slate-500 truncate max-w-[65px] font-medium">${b.shortName.split('(')[0]}</span>
                     </div>
-                    <div class="text-[11px] font-black ${b.stockCount > 0 ? 'text-slate-900' : 'text-slate-400'}">
-                      ${b.stockCount} <span class="text-[8.5px] font-semibold text-slate-400">Unit</span>
+                    <div class="text-[11px] font-black ${b.stockCount > 0 ? 'text-slate-900' : 'text-slate-400'} mt-0.5">
+                      ${b.stockCount} <span class="text-[9px] font-semibold text-slate-400">Unit</span>
                     </div>
                   </div>
                   ${incoming > 0 ? `
-                    <span class="px-1.5 py-0.5 rounded-full text-[8.5px] font-black bg-amber-500 text-white animate-pulse" title="${incoming} unit sedang dalam perjalanan menuju cabang ini">
+                    <span class="px-1.5 py-0.5 rounded-full text-[8.5px] font-black bg-amber-500 text-white animate-pulse flex-shrink-0" title="${incoming} unit sedang dalam perjalanan menuju cabang ini">
                       +${incoming} OTW
                     </span>
                   ` : ''}
