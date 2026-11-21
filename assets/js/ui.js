@@ -889,7 +889,7 @@ const UI = {
         catBadge.className = 'px-1.5 py-0.5 rounded text-[9.5px] font-black bg-slate-200 text-slate-700 leading-none';
       }
 
-      // Active: Radar OKK (Biru solid dengan teks & ikon putih jelas)
+      // Active: In-Transit (Biru solid dengan teks & ikon putih jelas)
       if (tabBranch) {
         tabBranch.className = 'px-3.5 py-2 rounded-lg text-xs font-black bg-blue-600 text-white shadow-xs transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
@@ -912,7 +912,7 @@ const UI = {
         catBadge.className = 'px-1.5 py-0.5 rounded text-[9.5px] font-black bg-white/25 text-white leading-none';
       }
 
-      // Inactive: Radar OKK (Teks abu-abu gelap dengan ikon oranye & badge transit OTW)
+      // Inactive: In-Transit (Teks abu-abu gelap dengan ikon oranye & badge transit OTW)
       if (tabBranch) {
         tabBranch.className = 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap';
       }
@@ -1063,13 +1063,13 @@ const UI = {
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board OKK</h3>
+                  <h3 class="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">Radar Logistik & Flight Board In-Transit</h3>
                   <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/80">
                     <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
                     <span>LIVE RADAR</span>
                   </span>
                 </div>
-                <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung</p>
+                <p class="text-[10.5px] sm:text-xs text-slate-500 font-medium mt-1 leading-snug">Monitoring real-time pergerakan unit mobil antar 5 pool Astra Daihatsu DSO Lampung & pengiriman luar Lampung</p>
               </div>
             </div>
 
@@ -1306,20 +1306,20 @@ const UI = {
                 <div class="bg-white rounded-2xl border ${item.isUrgent ? 'border-rose-400 ring-2 ring-rose-300 shadow-rose-100' : 'border-amber-200/90'} shadow-sm overflow-hidden transition space-y-0">
                   
                   <!-- Top Flight Route Strip (Boarding Pass Notch) -->
-                  <div class="bg-gradient-to-r ${item.isUrgent ? 'from-rose-500 to-amber-600' : 'from-slate-900 via-slate-800 to-blue-900'} text-white px-3.5 py-2 flex items-center justify-between text-xs">
+                  <div class="bg-gradient-to-r ${item.isUrgent ? 'from-rose-500 to-amber-600' : (item.isExternal ? 'from-indigo-900 via-indigo-800 to-slate-900' : 'from-slate-900 via-slate-800 to-blue-900')} text-white px-3.5 py-2 flex items-center justify-between text-xs">
                     <div class="flex items-center space-x-1.5 min-w-0">
                       <span class="px-1.5 py-0.5 rounded bg-white/20 font-black text-[10px]">${item.originCode}</span>
                       <span class="text-[9.5px] text-slate-300 font-bold truncate max-w-[70px]">${item.originBranch.split('-')[1] || item.originBranch}</span>
                     </div>
 
                     <div class="flex items-center space-x-1 px-1 flex-shrink-0 text-amber-300">
-                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                      <span class="w-1.5 h-1.5 rounded-full ${item.isExternal ? 'bg-indigo-400' : 'bg-amber-400'} animate-ping"></span>
                       <span class="text-[10px] tracking-widest font-black">➔</span>
                     </div>
 
                     <div class="flex items-center space-x-1.5 min-w-0 justify-end text-right">
-                      <span class="text-[9.5px] text-amber-200 font-bold truncate max-w-[70px]">${item.destinationBranch.split('-')[1] || item.destinationBranch}</span>
-                      <span class="px-1.5 py-0.5 rounded bg-amber-400 text-slate-900 font-black text-[10px]">${item.destinationCode}</span>
+                      <span class="text-[9.5px] ${item.isExternal ? 'text-indigo-200' : 'text-amber-200'} font-bold truncate max-w-[95px]">${item.isExternal ? (item.destinationBranch.replace('Luar Lampung', '').replace(/[()]/g, '').trim() || 'Luar Lampung') : (item.destinationBranch.split('-')[1] || item.destinationBranch)}</span>
+                      <span class="px-1.5 py-0.5 rounded ${item.isExternal ? 'bg-indigo-400 text-slate-900' : 'bg-amber-400 text-slate-900'} font-black text-[10px]">${item.isExternal ? 'LUAR' : item.destinationCode}</span>
                     </div>
                   </div>
 
@@ -1375,19 +1375,29 @@ const UI = {
                       ${item.notes && item.notes !== '-' ? `<div class="italic text-slate-400 truncate">"${item.notes}"</div>` : ''}
                     </div>
 
-                    <!-- Status Penerimaan Fisik (Otomatis tercatat saat Security Cabang Tujuan Scan Unit Masuk) -->
+                    <!-- Status Penerimaan Fisik -->
                     <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px]">
-                      <div class="flex items-center space-x-1.5 text-slate-500 font-semibold truncate min-w-0">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 animate-ping"></span>
-                        <span class="truncate">Menunggu Scan Masuk di <strong>${item.destinationCode}</strong></span>
+                      <div class="flex items-center space-x-1.5 ${item.isExternal ? 'text-indigo-700' : 'text-slate-500'} font-semibold truncate min-w-0">
+                        <span class="w-1.5 h-1.5 rounded-full ${item.isExternal ? 'bg-indigo-500' : 'bg-blue-500'} flex-shrink-0 animate-ping"></span>
+                        <span class="truncate">${item.isExternal ? `Tujuan: <strong>${item.destinationBranch}</strong>` : `Menunggu Scan Masuk di <strong>${item.destinationCode}</strong>`}</span>
                       </div>
                       ${item.docPhoto ? `
-                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg py-1 px-2 text-[10px] font-extrabold border border-amber-200 transition cursor-pointer flex items-center gap-1 flex-shrink-0" title="Lihat Foto Dokumen OKK">
+                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg py-1 px-2 text-[10px] font-extrabold border border-amber-200 transition cursor-pointer flex items-center gap-1 flex-shrink-0" title="Lihat Foto Dokumen ${item.docType || 'OKK'}">
                           <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                          <span>Foto OKK</span>
+                          <span>Foto ${item.docType || 'OKK'}</span>
                         </button>
                       ` : ''}
                     </div>
+
+                    <!-- Tombol Validasi Manual Admin Khusus Pengiriman Luar Lampung -->
+                    ${item.isExternal ? `
+                      <div class="mt-2.5 pt-2 border-t border-indigo-100">
+                        <button type="button" onclick="UI.confirmManualExternalDelivery('${item.vin}', '${item.model}', '${(item.destinationBranch || 'Luar Lampung').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white rounded-xl py-2 px-3 text-xs font-black shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                          <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                          <span>Validasi Selesai (Unit Telah Diterima)</span>
+                        </button>
+                      </div>
+                    ` : ''}
                   </div>
                 </div>
               `).join('')}
@@ -1569,6 +1579,80 @@ const UI = {
           ` : ''}
         </div>
       `;
+    }
+  },
+
+  /**
+   * Validasi Manual Admin untuk penerimaan unit yang dikirim ke luar Lampung (OKK / SPPDC).
+   * Memindahkan unit dari status In-Transit ke Tiba di Tujuan (Delivered).
+   */
+  async confirmManualExternalDelivery(vin, model, destination) {
+    const cleanVin = (vin || '').trim().toUpperCase();
+    if (!cleanVin) return;
+
+    const destLabel = destination || 'Luar Lampung';
+    const conf = confirm(`Konfirmasi Penerimaan Fisik (Unit Luar Lampung):\n\nModel: ${model || 'Unit Daihatsu'}\nNo. Rangka: ${cleanVin}\nTujuan: ${destLabel}\n\nApakah unit kendaraan ini sudah resmi sampai dan diterima oleh pihak tujuan/eksternal?`);
+    if (!conf) return;
+
+    try {
+      this.showToast('Memproses validasi penerimaan unit...', 'info');
+
+      const now = new Date();
+      const currentUser = (typeof AppState !== 'undefined' && AppState.user) ? AppState.user : { name: 'Admin DSO', branch: 'Sentra Lampung • Astra Daihatsu DSO Lampung' };
+      const lastExit = (AppState && AppState.historyData ? AppState.historyData : []).find(h => (h.vin || '').toUpperCase() === cleanVin && (h.type || '').includes('Keluar'));
+
+      const pad = n => String(n).padStart(2, '0');
+      const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+      const completionRecord = {
+        id: 'MUT_' + Date.now(),
+        timestamp: now.toISOString(),
+        date: dateStr,
+        time: timeStr,
+        fullDateStr: dateStr,
+        vin: cleanVin,
+        engine: lastExit?.engine || '-',
+        model: model || (lastExit ? lastExit.model : 'Unit Daihatsu'),
+        color: (lastExit ? lastExit.color : '') || 'Standard',
+        type: 'Unit Masuk',
+        docType: lastExit?.docType || 'OKK',
+        branch: destLabel,
+        noBa: destLabel,
+        destinationBranch: destLabel,
+        notes: `Selesai diterima di ${destLabel} (Validasi Manual Admin DSO)`,
+        sender: currentUser.name || 'Admin DSO',
+        officerName: currentUser.name || 'Admin DSO',
+        pic: currentUser.name || 'Admin DSO',
+        deliveredAt: now.toISOString(),
+        adminValidated: true
+      };
+
+      if (AppState && AppState.historyData) {
+        AppState.historyData.unshift(completionRecord);
+        if (typeof StorageService !== 'undefined' && StorageService.saveLocalData) {
+          StorageService.saveLocalData(AppState.historyData);
+        }
+      }
+
+      if (typeof ApiService !== 'undefined' && ApiService.saveMutation) {
+        ApiService.saveMutation(completionRecord).catch(err => console.warn('Sync manual external delivery warning:', err));
+      }
+
+      this.showToast('✅ Berhasil divalidasi! Unit telah berstatus Tiba di Tujuan.', 'success');
+
+      if (typeof this.renderInventoryBranchesView === 'function') {
+        this.renderInventoryBranchesView();
+      }
+      if (typeof this.renderHistoryList === 'function') {
+        this.renderHistoryList();
+      }
+      if (typeof this.updateDashboardKpis === 'function') {
+        this.updateDashboardKpis();
+      }
+    } catch (err) {
+      console.error('Error confirming external delivery:', err);
+      this.showToast('Gagal memvalidasi penerimaan: ' + err.message, 'error');
     }
   },
   filterInventory() {
@@ -4317,39 +4401,11 @@ const UI = {
     if (centerVal) centerVal.textContent = String(totalUnits);
     if (centerSub) centerSub.textContent = 'Unit';
 
-    const bgTrack = `<path class="text-slate-100" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />`;
+    const bgTrack = `<path class="text-slate-200" stroke-width="6" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />`;
 
     if (totalUnits === 0) {
-      let offset = 0;
-      const segLen = 100 / modelStats.length;
-      const placeholderSegments = modelStats.map((item) => {
-        const segOffset = offset;
-        offset += segLen;
-        return `
-          <path class="donut-segment cursor-pointer transition-all duration-150 hover:opacity-100 opacity-60" 
-            stroke-dasharray="${segLen.toFixed(2)}, 100" 
-            stroke-dashoffset="-${segOffset.toFixed(2)}" 
-            stroke-width="6" 
-            stroke="${item.color}" 
-            fill="none"
-            data-model="${item.model}" 
-            data-units="0 Unit" 
-            data-percent="0%" 
-            data-color="${item.color}" 
-            data-filter="${item.model}" 
-            data-offset="${segOffset.toFixed(2)}" 
-            data-len="${segLen.toFixed(2)}"
-            data-photo="${item.photo}" 
-            data-category="${item.category}" 
-            data-masuk="${item.masuk}" 
-            data-keluar="${item.keluar}"
-            onmouseenter="showDonutCapsule(this, event)" 
-            onmousemove="moveDonutCapsule(this, event)"
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-        `;
-      }).join('');
-      svg.innerHTML = bgTrack + placeholderSegments;
-      this.updateDonutPreviewCard(modelStats[0]);
+      svg.innerHTML = bgTrack;
+      this.updateDonutPreviewCard(null);
       return;
     }
 
@@ -4406,25 +4462,36 @@ const UI = {
     const prevKeluarBtn = document.getElementById('donutPreviewKeluarBtn');
     const prevBtn = document.getElementById('donutPreviewBtn');
 
-    if (!item) {
-      const defaultCat = (AppState.vehicleCatalog && AppState.vehicleCatalog[0]) || {
-        model: 'Rocky e-Smart Hybrid',
-        category: 'Smart Hybrid SUV',
-        photo: 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg',
-        color: '#10b981'
-      };
-      item = {
-        model: defaultCat.model,
-        category: defaultCat.category,
-        photo: defaultCat.photo,
-        color: defaultCat.color || '#3b82f6',
-        count: 0,
-        masuk: 0,
-        keluar: 0
-      };
+    const total = AppState._totalDonutUnits || 0;
+
+    // Jika total stok kosong (0 Unit): Tampilkan kondisi netral tanpa warna
+    if (!item || total === 0 || !item.count || item.count === 0) {
+      if (prevDot) prevDot.style.backgroundColor = '#94a3b8';
+      if (prevCategory) prevCategory.textContent = 'Menunggu Data Unit';
+      if (prevBadge) {
+        prevBadge.textContent = '0%';
+        prevBadge.style.backgroundColor = '#e2e8f0';
+        prevBadge.style.color = '#64748b';
+      }
+      if (prevImg) {
+        prevImg.src = (item && item.photo) || 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+        prevImg.alt = 'Belum Ada Unit';
+      }
+      if (prevModel) prevModel.textContent = 'Belum Ada Unit';
+      if (prevBar) {
+        prevBar.style.width = '0%';
+        prevBar.style.backgroundColor = '#cbd5e1';
+      }
+      if (prevUnits) prevUnits.textContent = '0 Unit';
+      if (prevMasuk) prevMasuk.textContent = `Masuk ${item ? (item.masuk || 0) : 0}`;
+      if (prevKeluar) prevKeluar.textContent = `Keluar ${item ? (item.keluar || 0) : 0}`;
+      if (prevBtn) {
+        prevBtn.innerHTML = `<span>Lihat Stok Unit</span><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
+        prevBtn.onclick = () => this.switchTab('inventory');
+      }
+      return;
     }
 
-    const total = AppState._totalDonutUnits || 0;
     const pct = total > 0 && item.count > 0 ? (Math.round((item.count / total) * 100) + '%') : '0%';
 
     if (prevDot) prevDot.style.backgroundColor = item.color || '#3b82f6';
@@ -4432,6 +4499,7 @@ const UI = {
     if (prevBadge) {
       prevBadge.textContent = pct;
       prevBadge.style.backgroundColor = item.color || '#3b82f6';
+      prevBadge.style.color = '#ffffff';
     }
     if (prevImg) {
       prevImg.src = item.photo || 'assets/images/Inventory_Rocky e-Smart Hybrid.jpeg';
@@ -5394,7 +5462,8 @@ const UI = {
         { value: 'D661 - Soekarno Hatta', title: 'D661 - Soekarno Hatta', subtitle: 'Sentra Pool Distribusi & Bengkel Bypass', badge: 'D661', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🏗️' },
         { value: 'D662 - Bandar Jaya', title: 'D662 - Bandar Jaya', subtitle: 'Cabang Operasional Lampung Tengah', badge: 'D662', badgeClass: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🏢' },
         { value: 'D663 - Lampung Utara', title: 'D663 - Lampung Utara', subtitle: 'Cabang Operasional Kotabumi & Sekitarnya', badge: 'D663', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '🏢' },
-        { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' }
+        { value: 'D664 - Lampung Timur', title: 'D664 - Lampung Timur', subtitle: 'Cabang Operasional Way Jepara & Sekitarnya', badge: 'D664', badgeClass: 'bg-purple-100 text-purple-800 border-purple-200', icon: '🏢' },
+        { value: 'Luar Lampung', title: 'Luar Lampung / Eksternal (Ketik Tujuan)', subtitle: 'Pengiriman unit ke luar Lampung (Jakarta, HO Sunter, dsb.)', badge: 'LUAR', badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🚚' }
       ];
 
       // Strict filter: sembunyikan cabang pengirim/asal agar operator tidak bisa memilih cabang asal sebagai tujuan
@@ -5696,7 +5765,18 @@ const UI = {
       const triggerText = document.getElementById('triggerDestinationBranchText');
       if (triggerText) triggerText.textContent = label || value;
       const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
-      if (triggerBadge) triggerBadge.textContent = (value.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+      if (triggerBadge) triggerBadge.textContent = value.toUpperCase().includes('LUAR') ? 'LUAR' : (value.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+
+      const boxCustom = document.getElementById('boxCustomDestination');
+      if (boxCustom) {
+        if (value.toLowerCase().includes('luar')) {
+          boxCustom.classList.remove('hidden');
+          const inputCustom = document.getElementById('inputCustomDestination');
+          if (inputCustom) setTimeout(() => inputCustom.focus(), 150);
+        } else {
+          boxCustom.classList.add('hidden');
+        }
+      }
     } else if (type === 'carModel') {
       const el = document.getElementById('inputCarModel');
       if (el) el.value = value;
@@ -5799,7 +5879,16 @@ const UI = {
       const triggerText = document.getElementById('triggerDestinationBranchText');
       if (triggerText) triggerText.textContent = destVal;
       const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
-      if (triggerBadge) triggerBadge.textContent = (destVal.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+      if (triggerBadge) triggerBadge.textContent = destVal.toUpperCase().includes('LUAR') ? 'LUAR' : (destVal.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+
+      const boxCustom = document.getElementById('boxCustomDestination');
+      if (boxCustom) {
+        if (destVal.toLowerCase().includes('luar')) {
+          boxCustom.classList.remove('hidden');
+        } else {
+          boxCustom.classList.add('hidden');
+        }
+      }
     }
 
     // 1. Doc Type
@@ -10026,3 +10115,4 @@ window.addNewTransitRoute = () => UI.addNewTransitRoute ? UI.addNewTransitRoute(
 window.deleteTransitRoute = (o, d) => UI.deleteTransitRoute ? UI.deleteTransitRoute(o, d) : null;
 window.clearAllTransitRoutes = () => UI.clearAllTransitRoutes ? UI.clearAllTransitRoutes() : null;
 window.renderTransitRoutesSettings = () => UI.renderTransitRoutesSettings ? UI.renderTransitRoutesSettings() : null;
+window.confirmManualExternalDelivery = (vin, model, destination) => UI.confirmManualExternalDelivery ? UI.confirmManualExternalDelivery(vin, model, destination) : null;

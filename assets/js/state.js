@@ -792,13 +792,16 @@ const AppState = {
       const docTypeStr = String(item.docType || '').trim().toUpperCase();
       const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
       const isOkk = docTypeStr.includes('OKK');
+      const isSppdc = docTypeStr.includes('SPPDC');
+      const destBranch = String(item.destinationBranch || item.destination || item.cabangTujuan || '').trim();
+      const isExternal = Boolean(destBranch.toLowerCase().includes('luar') || (!destBranch.match(/D66[0-4]/i) && destBranch && destBranch !== '-'));
+      const isCandidate = isKeluar && (isOkk || (isSppdc && isExternal));
 
-      if (isKeluar && isOkk) {
+      if (isCandidate) {
         const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
-        const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
-        const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
         const originCode = (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase();
-        const targetDurationMins = this.getTransitDurationForRoute(originCode, destCode);
+        const destCode = isExternal ? 'LUAR' : (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
+        const targetDurationMins = isExternal ? 1440 : this.getTransitDurationForRoute(originCode, destCode);
 
         const elapsed = this.calcRecordElapsed(item);
         const isDelayed = elapsed.diffMins > targetDurationMins;
@@ -818,8 +821,10 @@ const AppState = {
           color: item.color || item.warna || '-',
           originBranch: originBranch,
           originCode: originCode,
-          destinationBranch: destBranch,
+          destinationBranch: destBranch || (isExternal ? 'Luar Lampung' : 'D660 - Ahmad Yani'),
           destinationCode: destCode,
+          isExternal: isExternal,
+          docType: item.docType || (isOkk ? 'OKK' : 'SPPDC'),
           departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
           date: item.date || item.fullDateStr || '',
           time: item.time || '',
@@ -831,7 +836,7 @@ const AppState = {
           elapsedMins: elapsed.diffMins,
           elapsedHuman: elapsed.human,
           targetDurationMins: targetDurationMins,
-          targetDurationHuman: this.formatMinutesToHuman(targetDurationMins),
+          targetDurationHuman: isExternal ? '24 Jam (Luar Kota)' : this.formatMinutesToHuman(targetDurationMins),
           isDelayed: isDelayed,
           isUrgent: isDelayed || elapsed.isUrgent,
           etaStatus: etaStatus
@@ -842,7 +847,7 @@ const AppState = {
   },
 
   /**
-   * Menyusun data komprehensif untuk Flight Board / Kanban Journey Logistik OKK Antar-Cabang (Opsi 2)
+   * Menyusun data komprehensif untuk Flight Board / Kanban Journey Logistik In-Transit (Opsi 2)
    * Mengelompokkan perjalanan unit ke dalam 3 stage operasional:
    * 1. departures: Pool Asal (Baru Keluar / Persiapan)
    * 2. inTransit: Sedang Di Jalan (Boarding Pass / In-Transit Aktif)
@@ -855,21 +860,26 @@ const AppState = {
     // 1. Stage 2: IN-TRANSIT (Sedang di Jalan) - Menggunakan evaluasi real-time terpusat
     const inTransit = this.getInTransitUnits();
 
-    // 2. Kumpulkan riwayat transaksi OKK untuk Stage 1 & Stage 3
-    const okkHistoryList = [];
+    // 2. Kumpulkan riwayat transaksi untuk Stage 1 & Stage 3 (OKK & Pengiriman Luar Lampung)
+    const transitHistoryList = [];
     for (let i = 0; i < history.length; i++) {
       const item = history[i];
       if (!item) continue;
       const docTypeStr = String(item.docType || '').trim().toUpperCase();
-      if (docTypeStr.includes('OKK')) {
-        okkHistoryList.push(item);
+      const dest = String(item.destinationBranch || item.destination || item.cabangTujuan || '').trim();
+      const typeStr = String(item.type || '').trim().toLowerCase();
+      const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
+      if (docTypeStr.includes('OKK') || (isKeluar && dest && dest !== '-' && !dest.toLowerCase().includes('customer'))) {
+        transitHistoryList.push(item);
+      } else if (item.notes && item.notes.toLowerCase().includes('luar lampung')) {
+        transitHistoryList.push(item);
       }
     }
 
-    // B. STAGE 1: POOL ASAL (Baru Dikeluarkan / Antrean Keluar OKK)
+    // B. STAGE 1: POOL ASAL (Baru Dikeluarkan / Antrean Keluar)
     const departures = [];
     const seenDepKeys = new Set();
-    for (const item of okkHistoryList) {
+    for (const item of transitHistoryList) {
       const typeStr = String(item.type || '').trim().toLowerCase();
       const isKeluar = typeStr.includes('keluar') || typeStr === 'out';
       if (!isKeluar) continue;
@@ -882,6 +892,8 @@ const AppState = {
       const destBranch = item.destinationBranch || item.destination || item.cabangTujuan || 'D660 - Ahmad Yani';
       const photo = item.unitPhoto || item.unitPhotoUrl || this.findCatalogPhoto(item.model);
       const elapsed = this.calcRecordElapsed(item);
+      const isExternal = Boolean(destBranch.toLowerCase().includes('luar') || !destBranch.match(/D66[0-4]/i));
+      const destCode = isExternal ? 'LUAR' : (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
 
       departures.push({
         id: item.id || `DEP-${key}`,
@@ -892,7 +904,8 @@ const AppState = {
         originBranch: originBranch,
         originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
         destinationBranch: destBranch,
-        destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+        destinationCode: destCode,
+        isExternal: isExternal,
         departedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
         date: item.date || item.fullDateStr || '',
         time: item.time || '',
@@ -905,12 +918,12 @@ const AppState = {
       if (departures.length >= 15) break;
     }
 
-    // C. STAGE 3: TIBA DI TUJUAN (Delivered OKK Terkonfirmasi)
+    // C. STAGE 3: TIBA DI TUJUAN (Delivered Terkonfirmasi / Validasi Manual Selesai)
     const delivered = [];
     const seenDelKeys = new Set();
-    for (const item of okkHistoryList) {
+    for (const item of transitHistoryList) {
       const typeStr = String(item.type || '').trim().toLowerCase();
-      const isMasuk = typeStr.includes('masuk') || typeStr === 'in';
+      const isMasuk = typeStr.includes('masuk') || typeStr === 'in' || (item.notes && item.notes.toLowerCase().includes('selesai diterima'));
       if (!isMasuk) continue;
 
       const key = String(item.vin || item.engine || item.id || '').toUpperCase();
@@ -918,15 +931,17 @@ const AppState = {
       seenDelKeys.add(key);
 
       const destBranch = item.noBa || item.branch || item.location || 'D660 - Ahmad Yani';
+      const isExternal = Boolean(destBranch.toLowerCase().includes('luar') || !destBranch.match(/D66[0-4]/i));
+      const destCode = isExternal ? 'LUAR' : (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
       
       // Temukan mutasi keluar sebelumnya untuk menghitung durasi perjalanan
-      const matchingDep = okkHistoryList.find(prev => {
+      const matchingDep = transitHistoryList.find(prev => {
         const prevKey = String(prev.vin || prev.engine || '').toUpperCase();
         const prevType = String(prev.type || '').toLowerCase();
         return prevKey === key && (prevType.includes('keluar') || prevType === 'out');
       });
 
-      let transitDurationHuman = 'Terverifikasi';
+      let transitDurationHuman = isExternal ? 'Selesai (Tiba di Luar Lampung)' : 'Terverifikasi';
       let originBranch = item.originBranch || (matchingDep ? (matchingDep.noBa || matchingDep.branch) : 'Sentra Pool D661');
 
       if (matchingDep) {
@@ -948,7 +963,8 @@ const AppState = {
         originBranch: originBranch,
         originCode: (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase(),
         destinationBranch: destBranch,
-        destinationCode: (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase(),
+        destinationCode: destCode,
+        isExternal: isExternal,
         arrivedAt: item.fullDateStr ? `${item.fullDateStr} ${item.time || ''}` : (item.date ? `${item.date} ${item.time || ''}` : '-'),
         receiverName: item.officerName || item.pic || 'Petugas Penerima',
         transitDuration: transitDurationHuman,

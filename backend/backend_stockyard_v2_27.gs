@@ -101,7 +101,12 @@ function formatBranchLabel(rawBa) {
     return "Sentra Lampung • Astra Daihatsu DSO Lampung";
   }
 
-  return "D660 - Ahmad Yani";
+  // 3. Jangan ubah jika tujuan adalah Luar Lampung / Eksternal / Kota Lain
+  if (lower.includes("luar lampung") || lower.includes("luar") || lower.includes("jakarta") || lower.includes("palembang") || lower.includes("bandung") || lower.includes("sunter") || lower.includes("eksternal")) {
+    return str;
+  }
+
+  return str || "D660 - Ahmad Yani";
 }
 
 function getApiSecretToken(ss) {

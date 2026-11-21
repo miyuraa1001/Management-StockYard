@@ -213,12 +213,23 @@ const App = {
     const notes = (document.getElementById('inputKeterangan')?.value || '').trim();
     const hasUnitPhoto = !!AppState.uploadedUnitPhotoUrl;
     const hasDocPhoto = !!AppState.uploadedDocPhotoUrl;
-    const isOkkExit = mutationType === 'Unit Keluar' && docType === 'OKK';
+    const isExitWithDestination = mutationType === 'Unit Keluar' && (docType === 'OKK' || docType === 'SPPDC');
     const destBranchInput = (document.getElementById('inputDestinationBranch')?.value || '').trim();
-    const destinationBranch = isOkkExit ? (destBranchInput || 'D661 - Soekarno Hatta') : '-';
+    const customDest = (document.getElementById('inputCustomDestination')?.value || '').trim();
+    
+    let destinationBranch = '-';
+    if (isExitWithDestination) {
+      if (docType === 'SPPDC') {
+        destinationBranch = customDest ? `Luar Lampung (${customDest})` : 'Luar Lampung';
+      } else if (destBranchInput.toLowerCase().includes('luar')) {
+        destinationBranch = customDest ? `Luar Lampung (${customDest})` : 'Luar Lampung';
+      } else {
+        destinationBranch = destBranchInput || 'D661 - Soekarno Hatta';
+      }
+    }
 
     // Strict validation: wajib kolom terisi lengkap (tidak boleh ada yang kosong)
-    if (!vin || !engine || !mutationType || !model || !carColor || !officerName || !noBa || !docType || !hasUnitPhoto || !hasDocPhoto || !notes || (isOkkExit && !destinationBranch)) {
+    if (!vin || !engine || !mutationType || !model || !carColor || !officerName || !noBa || !docType || !hasUnitPhoto || !hasDocPhoto || !notes || (isExitWithDestination && !destinationBranch)) {
       let missingFields = [];
       if (!vin) missingFields.push('Nomor VIN');
       if (!engine) missingFields.push('Nomor Mesin');
@@ -228,7 +239,10 @@ const App = {
       if (!officerName) missingFields.push('Nama Petugas Lapangan');
       if (!noBa) missingFields.push('Cabang');
       if (!docType) missingFields.push('Jenis Dokumen');
-      if (isOkkExit && !destinationBranch) missingFields.push('Cabang Tujuan');
+      if (isExitWithDestination && !destinationBranch) missingFields.push('Tujuan Pengiriman');
+      if (isExitWithDestination && (docType === 'SPPDC' || destBranchInput.toLowerCase().includes('luar')) && !customDest) {
+        missingFields.push('Kota / Pihak Tujuan Luar Lampung');
+      }
       if (!hasUnitPhoto) missingFields.push('Foto Fisik Unit');
       if (!hasDocPhoto) missingFields.push('Foto Dokumen');
       if (!notes) missingFields.push('Catatan Kondisi');
@@ -237,14 +251,24 @@ const App = {
       return;
     }
 
-    // Strict validation: Cabang Tujuan Pengiriman tidak boleh sama dengan Cabang Asal
-    if (isOkkExit) {
-      const originCode = (noBa.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
-      const destCode = (destinationBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
-      if (originCode && destCode && originCode === destCode) {
-        UI.showToast(`⚠️ Cabang Tujuan (${destCode}) tidak boleh sama dengan Cabang Asal (${originCode})!`, 5000);
+    // Strict validation: Cabang Tujuan Pengiriman tidak boleh sama dengan Cabang Asal jika sesama DSO Lampung
+    if (isExitWithDestination) {
+      const isExternal = destinationBranch.toLowerCase().includes('luar');
+      if (isExternal && !customDest) {
+        UI.showToast(`⚠️ Harap tuliskan nama kota / pihak penerima di Luar Lampung!`, 4500);
         this.resetSubmitMutationButton();
+        const customInput = document.getElementById('inputCustomDestination');
+        if (customInput) customInput.focus();
         return;
+      }
+      if (!isExternal) {
+        const originCode = (noBa.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+        const destCode = (destinationBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+        if (originCode && destCode && originCode === destCode) {
+          UI.showToast(`⚠️ Cabang Tujuan (${destCode}) tidak boleh sama dengan Cabang Asal (${originCode})!`, 5000);
+          this.resetSubmitMutationButton();
+          return;
+        }
       }
     }
 
@@ -388,6 +412,8 @@ const App = {
     const destBranchEl = document.getElementById('inputDestinationBranch');
     const curOriginCode = ((noBaEl ? noBaEl.value : '') || (AppState.getUserBranchCode ? AppState.getUserBranchCode() : '')).match(/D66[0-4]/i)?.[0]?.toUpperCase() || '';
     if (destBranchEl) destBranchEl.value = curOriginCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta';
+    const customDestEl = document.getElementById('inputCustomDestination');
+    if (customDestEl) customDestEl.value = '';
     const docTypeEl = document.getElementById('inputMutationDocType');
     if (docTypeEl) docTypeEl.value = 'SPPDC';
     if (typeof window.onMutationDocTypeChanged === 'function') {
@@ -604,11 +630,14 @@ window.checkMutationFormCompleteness = function() {
   }
 
   // 2. Evaluasi Kolom Wajib
-  const isOkkExit = mutationType === 'Unit Keluar' && docType === 'OKK';
+  const isExitWithDestination = mutationType === 'Unit Keluar' && (docType === 'OKK' || docType === 'SPPDC');
   const destBranch = (document.getElementById('inputDestinationBranch')?.value || '').trim();
+  const customDest = (document.getElementById('inputCustomDestination')?.value || '').trim();
+  const isExternalDest = docType === 'SPPDC' || destBranch.toLowerCase().includes('luar');
   const originCode = (noBa.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
   const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
-  const isSameBranchError = isOkkExit && originCode && destCode && (originCode === destCode);
+  const isSameBranchError = isExitWithDestination && !isExternalDest && originCode && destCode && (originCode === destCode);
+  const isMissingCustomDest = isExitWithDestination && isExternalDest && !customDest;
 
   const missing = [];
   if (!cleanVin) missing.push('Nomor VIN');
@@ -619,12 +648,13 @@ window.checkMutationFormCompleteness = function() {
   if (!officerName) missing.push('Nama Petugas Lapangan');
   if (!noBa) missing.push('Cabang');
   if (!docType) missing.push('Jenis Dokumen');
-  if (isOkkExit && !destBranch) missing.push('Cabang Tujuan');
+  if (isExitWithDestination && !destBranch) missing.push('Tujuan Pengiriman');
+  if (isMissingCustomDest) missing.push('Detail Kota Tujuan Luar Lampung');
   if (!hasUnitPhoto) missing.push('Foto Fisik Unit');
   if (!hasDocPhoto) missing.push('Foto Dokumen');
   if (!notes) missing.push('Catatan Kondisi');
 
-  const totalRequired = isOkkExit ? 12 : 11;
+  const totalRequired = isExitWithDestination ? (isExternalDest ? 13 : 12) : 11;
   const isFormComplete = missing.length === 0;
 
   if (!submitBtn) return isFormComplete && isCycleValid && !isSameBranchError;
@@ -670,44 +700,78 @@ window.checkMutationFormCompleteness = function() {
 
 /**
  * Handler reaktif ketika jenis dokumen atau jenis mutasi berubah:
- * Menampilkan / menyembunyikan input Cabang Tujuan Pengiriman khusus Unit Keluar + OKK
+ * Menampilkan / menyembunyikan input Cabang Tujuan Pengiriman khusus Unit Keluar (OKK & SPPDC)
  */
 window.onMutationDocTypeChanged = function() {
   const docType = (document.getElementById('inputMutationDocType')?.value || 'SPPDC').trim();
   const mutationType = (document.getElementById('inputMutationType')?.value || 'Unit Masuk').trim();
   const boxDest = document.getElementById('boxDestinationBranch');
+  const boxCustom = document.getElementById('boxCustomDestination');
+  const badgeDest = document.getElementById('badgeDestinationBranch');
+  const hintDest = document.getElementById('hintDestinationBranch');
+  const destEl = document.getElementById('inputDestinationBranch');
+  const triggerText = document.getElementById('triggerDestinationBranchText');
+  const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
 
   if (typeof AppState !== 'undefined') AppState.selectedDocType = docType;
   const labelEl = document.getElementById('docPhotoCardLabel');
   if (labelEl) labelEl.textContent = `Foto Dokumen (${docType})`;
 
-  if (mutationType === 'Unit Keluar' && docType === 'OKK') {
+  if (mutationType === 'Unit Keluar' && (docType === 'OKK' || docType === 'SPPDC')) {
     if (boxDest) boxDest.classList.remove('hidden');
 
-    // Pastikan cabang tujuan tidak sama dengan cabang asal pengirim
-    const originBranchVal = (document.getElementById('inputNoBa')?.value || (AppState && AppState.getUserBranch ? AppState.getUserBranch() : '') || '').trim();
-    const originCode = (originBranchVal.match(/D66[0-4]/i)?.[0] || (AppState && AppState.getUserBranchCode ? AppState.getUserBranchCode() : '') || '').toUpperCase();
-    const destEl = document.getElementById('inputDestinationBranch');
-    if (destEl) {
-      let curDest = (destEl.value || '').trim();
-      if (!curDest || (originCode && curDest.toUpperCase().includes(originCode))) {
-        const fallbacks = [
-          'D660 - Ahmad Yani',
-          'D661 - Soekarno Hatta',
-          'D662 - Bandar Jaya',
-          'D663 - Lampung Utara',
-          'D664 - Lampung Timur'
-        ].filter(b => !b.toUpperCase().includes(originCode));
-        const newDest = fallbacks[0] || (originCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta');
-        destEl.value = newDest;
-        const triggerText = document.getElementById('triggerDestinationBranchText');
-        if (triggerText) triggerText.textContent = newDest;
-        const triggerBadge = document.getElementById('triggerDestinationBranchBadge');
-        if (triggerBadge) triggerBadge.textContent = (newDest.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+    if (docType === 'SPPDC') {
+      // SPPDC Unit Keluar: Khusus pengiriman unit ke luar Lampung
+      if (badgeDest) {
+        badgeDest.textContent = 'PENGIRIMAN LUAR LAMPUNG';
+        badgeDest.className = 'text-[9px] font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200';
+      }
+      if (hintDest) {
+        hintDest.textContent = 'SPPDC Unit Keluar ditujukan untuk pengiriman ke luar provinsi Lampung. Tulis detail kota / pihak penerima di bawah.';
+      }
+      if (destEl) destEl.value = 'Luar Lampung';
+      if (triggerText) triggerText.textContent = 'Luar Lampung / Eksternal';
+      if (triggerBadge) triggerBadge.textContent = 'LUAR';
+      if (boxCustom) boxCustom.classList.remove('hidden');
+    } else {
+      // OKK Unit Keluar: Antar-cabang DSO Lampung atau Luar Lampung
+      if (badgeDest) {
+        badgeDest.textContent = 'TRANSFER ANTAR-CABANG';
+        badgeDest.className = 'text-[9px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200';
+      }
+      if (hintDest) {
+        hintDest.textContent = 'Pilih cabang penerima unit mutasi DSO Lampung atau opsi Luar Lampung.';
+      }
+
+      const curVal = destEl ? (destEl.value || '') : '';
+      if (curVal.toLowerCase().includes('luar')) {
+        if (boxCustom) boxCustom.classList.remove('hidden');
+      } else {
+        if (boxCustom) boxCustom.classList.add('hidden');
+        // Pastikan cabang tujuan tidak sama dengan cabang asal pengirim
+        const originBranchVal = (document.getElementById('inputNoBa')?.value || (AppState && AppState.getUserBranch ? AppState.getUserBranch() : '') || '').trim();
+        const originCode = (originBranchVal.match(/D66[0-4]/i)?.[0] || (AppState && AppState.getUserBranchCode ? AppState.getUserBranchCode() : '') || '').toUpperCase();
+        if (destEl) {
+          let curDest = (destEl.value || '').trim();
+          if (!curDest || (originCode && curDest.toUpperCase().includes(originCode))) {
+            const fallbacks = [
+              'D660 - Ahmad Yani',
+              'D661 - Soekarno Hatta',
+              'D662 - Bandar Jaya',
+              'D663 - Lampung Utara',
+              'D664 - Lampung Timur'
+            ].filter(b => !b.toUpperCase().includes(originCode));
+            const newDest = fallbacks[0] || (originCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta');
+            destEl.value = newDest;
+            if (triggerText) triggerText.textContent = newDest;
+            if (triggerBadge) triggerBadge.textContent = (newDest.match(/D66[0-4]/i)?.[0] || 'TUJUAN').toUpperCase();
+          }
+        }
       }
     }
   } else {
     if (boxDest) boxDest.classList.add('hidden');
+    if (boxCustom) boxCustom.classList.add('hidden');
   }
 
   if (typeof window.checkMutationFormCompleteness === 'function') {
