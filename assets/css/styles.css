@@ -428,9 +428,13 @@ body::before {
   z-index: 100 !important;
 }
 
+.custom-select-menu {
+  z-index: 110 !important;
+}
+
 .filter-card-elevated {
   position: relative !important;
-  z-index: 45 !important;
+  z-index: 60 !important;
 }
 
 

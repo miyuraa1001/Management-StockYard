@@ -5283,11 +5283,18 @@ const UI = {
         wrapper.classList.remove('z-10');
         wrapper.classList.add('z-50');
 
-        // Dynamically elevate parent card so no sibling card or transform stacking context can paint above it
-        const parentCard = wrapper.closest('.scroll-reveal, #viewDashboard > div, #viewHistory > div, #viewModelDetail > div, #dashBranchAdminWrapper, .modal-content, #modalSettings');
-        if (parentCard) {
-          parentCard.classList.add('filter-card-elevated');
-          parentCard.style.zIndex = '45';
+        // Dynamically elevate all ancestor elements up to the view section or modal dialog
+        let curr = wrapper.parentElement;
+        while (curr && curr !== document.body && curr.id !== 'appMainViewport') {
+          curr.classList.add('filter-card-elevated');
+          curr.style.zIndex = '60';
+          if (curr.id && curr.id.startsWith('view')) {
+            break;
+          }
+          if (curr.classList && (curr.classList.contains('modal-content') || curr.id === 'modalSettings')) {
+            break;
+          }
+          curr = curr.parentElement;
         }
 
         triggerBtn.classList.add('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
@@ -5306,11 +5313,10 @@ const UI = {
         menu.classList.add('hidden');
         wrapper.classList.remove('z-50');
         wrapper.classList.add('z-10');
-        const parentCard = wrapper.closest('.filter-card-elevated');
-        if (parentCard) {
-          parentCard.classList.remove('filter-card-elevated');
-          parentCard.style.zIndex = '';
-        }
+        document.querySelectorAll('.filter-card-elevated').forEach(c => {
+          c.classList.remove('filter-card-elevated');
+          c.style.zIndex = '';
+        });
         triggerBtn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/15', 'bg-white');
         triggerArrow.style.transform = 'rotate(0deg)';
       };
