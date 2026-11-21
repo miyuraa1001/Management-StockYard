@@ -294,9 +294,13 @@ flowchart TD
   - Menampilkan jadwal kirim laporan dan target email terdaftar.
   - Akun Security mendapati item ini terkunci dengan lencana `🔒 Terkunci` dan sakelar toggle dinonaktifkan (`disabled`).
   - Hanya Admin DSO yang dapat mengklik tombol "Ubah Jadwal", mengedit jam pengiriman, atau mengubah target email.
-* **Durasi Perjalanan Cabang SLA (Hidden untuk Security)**:
-  - Kartu ini **disembunyikan sepenuhnya** dari akun Security.
-  - Hanya Admin DSO yang dapat melihat dan menentukan estimasi durasi tempuh unit menuju masing-masing cabang (`DEFAULT`, `D660`, `D661`, `D662`, `D663`, `D664`) yang tersimpan di sheet `SystemConfig`.
+* **Durasi Perjalanan Cabang SLA & Matriks Rute Dinamis (Hidden untuk Security, Otoritas Penuh Admin DSO)**:
+  - Kartu ini **disembunyikan sepenuhnya** dari akun Security dan hanya dapat diakses oleh Admin DSO.
+  - **Matriks Rute Dinamis Asal ➔ Tujuan**: Memungkinkan penetapan estimasi SLA durasi perjalanan spesifik untuk setiap pasangan cabang (contoh: dari D661 ke D660 = 45 menit, D661 ke D662 = 90 menit).
+  - **Kontrol Stepper Taktil**: Dilengkapi tombol sentuh cepat (+/- 5 menit dan +/- 15 menit) untuk memudahkan penyesuaian SLA tanpa mengetik manual.
+  - **Penambahan Rute Baru Mandiri**: Admin dapat dengan bebas menambahkan rute baru melalui formulir `+ Tambah Rute Antar Cabang Baru` (misal D661 ke D663 atau D662 ke D664) dan sistem langsung mengintegrasikannya ke Radar OKK dan Google Spreadsheet (`SystemConfig`).
+  - **Penghapusan Rute**: Rute kustom dapat dihapus secara instan dengan tombol hapus tempat sampah merah.
+  - **Sinkronisasi Otomatis**: Seluruh perubahan matriks rute tersinkronisasi instan ke tab `SystemConfig` (`TRANSIT_ROUTES_JSON`) dan cache offline.
 * **Status Koneksi Cloud & Database (Hidden untuk Security)**:
   - Kartu ini **disembunyikan sepenuhnya** dari akun Security.
   - Hanya Admin DSO yang dapat memeriksa status ping dan latensi server Apps Script / Drive.
@@ -337,6 +341,12 @@ Pusat manajemen state reaktif aplikasi (*Single Source of Truth*):
 * `AppState.inventoryData`: Array data stok unit fisik aktual di yard.
 * `AppState.historyData`: Array seluruh transaksi mutasi yang pernah dicatat.
 * `AppState.transitTimes`: Objek durasi perjalanan per cabang yang tersinkronisasi dari `SystemConfig`.
+* `AppState.transitRoutes`: Array matriks rute point-to-point dinamis antar-cabang (`originCode`, `destinationCode`, `durationMinutes`, `label`).
+* `AppState.initTransitRoutes()`: Menginisialisasi dan memulihkan matriks rute perjalanan dari `localStorage` atau `DEFAULT_TRANSIT_ROUTES`.
+* `AppState.getTransitDurationForRoute(origin, dest)`: Menghitung durasi SLA spesifik rute dari cabang asal ke cabang tujuan (contoh: D661 ke D660 = 45 mnt), dengan fallback ke durasi cabang tujuan atau default 90 menit.
+* `AppState.setTransitRoute(origin, dest, minutes)`: Menambah atau memperbarui estimasi durasi rute point-to-point tertentu.
+* `AppState.removeTransitRoute(index)`: Menghapus rute kustom dari matriks rute.
+* `AppState.computeRelevantAverageTransitTime(activeUnits)`: Menghitung rata-rata SLA durasi perjalanan secara dinamis dan akurat berdasarkan armada yang sedang *In-Transit* atau matriks rute aktif (bukan angka statis).
 * `AppState.userProfile`: Profil pengguna yang sedang login saat ini.
 * `AppState.isAdmin()`: Mengembalikan nilai boolean `true` jika user adalah Admin DSO (ADH/BM).
 * `AppState.getUserBranch()` / `AppState.getUserBranchCode()`: Mengambil nama dan kode cabang pengguna saat ini.
@@ -376,7 +386,11 @@ Pengendali antarmuka pengguna, visualisasi data, dan pembuat laporan:
 * `UI.openEditScheduleModal()`: Membuka modal pengaturan jam pengiriman laporan (diproteksi khusus Admin DSO).
 * `UI.openEditTargetEmailModal()`: Membuka modal pengaturan target email penerima laporan (diproteksi khusus Admin DSO).
 * `UI.toggleDailyDigestSetting(isChecked)`: Mengaktifkan/menonaktifkan sakelar bot daily digest (diproteksi khusus Admin DSO).
-* `UI.saveTransitDurations()`: Mengambil nilai 6 input durasi cabang dan menyimpannya ke `SystemConfig` via `ApiService`.
+* `UI.saveTransitDurations()`: Mengambil nilai matriks rute perjalanan dan durasi cabang, menyimpannya ke `SystemConfig` via `ApiService`, dan memperbarui cache offline.
+* `UI.renderTransitDurationSettings()`: Merender daftar interaktif matriks rute point-to-point di menu Settings, lengkap dengan stepper pills (+/- 5 dan +/- 15 menit), tombol hapus rute, dan kartu tambah rute baru.
+* `UI.adjustTransitDurationInput(routeId, deltaMinutes)`: Menambah atau mengurangi durasi SLA menit suatu rute dengan umpan balik visual instan.
+* `UI.deleteTransitRouteRow(index)`: Menghapus rute transit kustom dari antarmuka Settings dan state aplikasi.
+* `UI.addNewTransitRoute()`: Menambahkan kombinasi rute baru (misal D661 ke D662) secara mandiri oleh Admin tanpa perlu merombak kode.
 * `UI.syncSettingsPreferences()`: Menyinkronkan seluruh tampilan halaman Pengaturan:
   - Mematikan sakelar dan mengunci form Otomatisasi Laporan untuk akun Security.
   - Menyembunyikan kartu Durasi Perjalanan Cabang untuk akun Security.
@@ -501,6 +515,7 @@ Lapisan pengaman kredensial dan gateway reverse proxy:
 | **C** | `Deskripsi` | Teks | `Estimasi durasi tempuh D662 (menit)` | Catatan fungsional parameter |
 
 #### Daftar Kunci Parameter di `SystemConfig`:
+* `TRANSIT_ROUTES_JSON`: Representasi string JSON dari matriks rute perjalanan dinamis point-to-point antar-cabang (`originCode`, `destinationCode`, `durationMinutes`, `label`).
 * `DAILY_DIGEST_ENABLED`: `true` / `false` (Status aktifasi bot laporan otomatis jam 08:00 WIB).
 * `DAILY_DIGEST_TIME`: `08:00` (Jadwal pengiriman laporan rekapitulasi harian).
 * `TRANSIT_TIME_DEFAULT`: `90` (Estimasi durasi default antar cabang jika rute khusus belum diset - dalam menit).
