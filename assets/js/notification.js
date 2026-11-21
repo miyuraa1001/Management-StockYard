@@ -166,7 +166,7 @@ const NotificationService = {
     const notifOptions = {
       body: options.body || '',
       icon: options.icon || './assets/icons/icon-apk.png',
-      badge: options.badge || './assets/icons/icon-apk.png',
+      badge: options.badge || './assets/icons/badge-icon.png',
       image: options.image || undefined,
       tag: options.tag || 'daihatsu-alert-' + Date.now(),
       renotify: options.renotify !== false,
@@ -254,6 +254,8 @@ const NotificationService = {
     let notifTag = `mutasi-${record.id || vin}`;
     let notifTab = 'history';
     let vibratePattern = [150, 100, 150];
+    const unitPhotoThumbnail = record.modelPhoto || record.unitPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(model) : '') || './assets/icons/icon-apk.png';
+    const displayBranch = originCode || branchLabel.split('-')[0].trim() || 'D660';
 
     // SKENARIO 1: Pengiriman Transit Antar-Cabang (Unit Keluar + OKK)
     if (!isMasuk && isOkk) {
@@ -262,18 +264,18 @@ const NotificationService = {
       
       if (!isAdmin && userBranchCode === destCode) {
         // Bagi Petugas di Cabang Penerima (misal D660):
-        title = `📍 Unit OTW Menuju Cabang Anda!`;
-        body = `Unit ${model} (${vin}) sedang dikirim dari ${originCode || branchLabel} menuju cabang Anda (${destCode}). Siapkan gerbang penerimaan!`;
-        vibratePattern = [300, 150, 300, 150, 300]; // Getar lebih tegas agar security sigap di gerbang
+        title = `📍 Unit OTW ke ${destCode}: ${model}`;
+        body = `VIN: ${vin} dari ${originCode || 'Asal'}\nMohon bersiap di pos gerbang penerimaan.`;
+        vibratePattern = [300, 150, 300, 150, 300];
       } else if (!isAdmin && userBranchCode === originCode) {
         // Bagi Petugas di Cabang Pengirim (misal D661):
-        title = `🚛 Unit Dalam Perjalanan (Transit OKK)`;
-        body = `Unit ${model} (${vin}) resmi diberangkatkan menuju ${destCode || destBranch}.\nStatus: Dalam Perjalanan (Radar In-Transit).`;
+        title = `🚛 Unit Berangkat: ${model}`;
+        body = `VIN: ${vin} menuju ${destCode || 'Tujuan'}\nStatus: Dalam perjalanan (Radar OKK).`;
         vibratePattern = [200, 100, 200];
       } else {
         // Bagi Administrator DSO (Akses Sentral):
-        title = `🚛 Mutasi OKK Antar-Cabang (${originCode || 'Asal'} ➔ ${destCode || 'Tujuan'})`;
-        body = `Unit ${model} (${vin}) diberangkatkan oleh ${officer} dari ${originCode} menuju ${destCode}. Pantau di Radar Logistik OKK.`;
+        title = `🚛 Mutasi OKK: ${originCode || 'Asal'} ➔ ${destCode || 'Tujuan'}`;
+        body = `${model} (${vin})\nPetugas: ${officer} • Menuju ${destCode || 'Tujuan'}.`;
         vibratePattern = [200, 100, 200];
       }
     }
@@ -282,21 +284,21 @@ const NotificationService = {
       notifTag = `arrival-${vin}-${Date.now()}`;
 
       if (!isAdmin && userBranchCode === originCode) {
-        // Bagi Petugas Cabang Pengirim (mendapat konfirmasi bahwa unit yang dikirim sudah sampai):
-        title = `🏁 Unit Transit Tiba di Tujuan!`;
-        body = `Unit ${model} (${vin}) yang Anda kirim dari ${originCode} telah diverifikasi tiba oleh petugas ${destCode || branchLabel}.`;
+        // Bagi Petugas Cabang Pengirim (konfirmasi unit tiba):
+        title = `🏁 Unit Tiba di ${destCode || 'Tujuan'}: ${model}`;
+        body = `VIN: ${vin} telah sampai dan diverifikasi dengan aman.`;
         notifTab = 'inventory';
         vibratePattern = [200, 100, 200];
       } else if (!isAdmin && userBranchCode === destCode) {
         // Bagi Petugas Cabang Penerima:
-        title = `✅ Unit OKK Berhasil Diterima di Pool!`;
-        body = `Unit ${model} (${vin}) dari ${originCode || 'asal'} resmi diverifikasi masuk database ${branchLabel}. Stok fisik bertambah.`;
+        title = `✅ Unit Diterima di Pool: ${model}`;
+        body = `VIN: ${vin} dari ${originCode || 'Asal'}\nResmi diverifikasi masuk oleh ${officer}.`;
         notifTab = 'history';
         vibratePattern = [150, 100, 150];
       } else {
         // Bagi Admin DSO:
-        title = `✅ OKK Selesai: Tiba di ${destCode || branchLabel}`;
-        body = `Unit ${model} (${vin}) dari ${originCode || 'Asal'} resmi tiba dan diverifikasi masuk. Mutasi transit selesai.`;
+        title = `✅ OKK Selesai: Tiba di ${destCode || branchLabel.split('-')[0].trim()}`;
+        body = `${model} (${vin}) dari ${originCode || 'Asal'} resmi diverifikasi.`;
         notifTab = 'history';
         vibratePattern = [150, 100, 150];
       }
@@ -304,12 +306,12 @@ const NotificationService = {
     // SKENARIO 3: Mutasi Standar Harian (Unit Masuk / Keluar biasa SPPDC / BSTKB)
     else {
       if (isMasuk) {
-        title = `🚘 Unit Masuk Berhasil Tersimpan`;
-        body = `${branchLabel} • ${model} (${vin})\nDokumen: ${docType} • Petugas: ${officer}\n✓ Tersimpan di Google Spreadsheet & Drive`;
+        title = `🚘 Unit Masuk: ${model}`;
+        body = `VIN: ${vin} • ${displayBranch}\nDokumen ${docType} • Petugas: ${officer}`;
         vibratePattern = [150, 100, 150];
       } else {
-        title = `🚛 Unit Keluar Berhasil Tersimpan`;
-        body = `${branchLabel} • ${model} (${vin})\nDokumen: ${docType} • Petugas: ${officer}\n✓ Tersimpan di Google Spreadsheet & Drive`;
+        title = `🚛 Unit Keluar: ${model}`;
+        body = `VIN: ${vin} • ${displayBranch}\nDokumen ${docType} • Petugas: ${officer}`;
         vibratePattern = [200, 100, 200, 100];
       }
       notifTag = `mutasi-${record.id || vin}`;
@@ -318,6 +320,8 @@ const NotificationService = {
 
     this.show(title, {
       body: body,
+      icon: unitPhotoThumbnail,
+      badge: './assets/icons/badge-icon.png',
       tag: notifTag,
       tab: notifTab,
       data: { url: './', tab: notifTab, id: record.id },
@@ -413,11 +417,14 @@ const NotificationService = {
       this._notifiedDelayMap.set(unit.vin, nowMs);
       this._persistNotifiedDelays();
 
-      const title = `⚠️ Peringatan Keterlambatan OKK!`;
-      const body = `Unit ${unit.model} (${unit.vin}) melebihi SLA transit menuju ${unit.destinationBranch.split('-')[1] || unit.destinationBranch}.\n${unit.etaStatus} • Tolong hubungi pengemudi/pos tujuan.`;
+      const title = `⚠️ Keterlambatan Transit: ${unit.model}`;
+      const body = `VIN: ${unit.vin} menuju ${unit.destinationCode || unit.destinationBranch.split('-')[0].trim()} (${unit.elapsedHuman})\n${unit.etaStatus} • Harap hubungi pengemudi/pos.`;
+      const unitPhoto = unit.unitPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(unit.model) : '') || './assets/icons/icon-apk.png';
 
       this.show(title, {
         body: body,
+        icon: unitPhoto,
+        badge: './assets/icons/badge-icon.png',
         tag: `delay-${unit.vin}`,
         tab: 'inventory',
         data: { url: './', tab: 'inventory', mode: 'branch' },
@@ -438,11 +445,13 @@ const NotificationService = {
       this._persistSeenReports();
     }
 
-    const title = `📊 Rekapitulasi Mutasi Harian Terkirim!`;
-    const body = `Laporan harian (${reportLog.totalUnits || 0} Unit: ${reportLog.masuk || 0} Masuk, ${reportLog.keluar || 0} Keluar) resmi terkirim ke email target. Berkas PDF & Excel telah tersinkronisasi.`;
+    const title = `📊 Rekap Mutasi Harian Terkirim`;
+    const body = `Total ${reportLog.totalUnits || 0} Unit (${reportLog.masuk || 0} Masuk, ${reportLog.keluar || 0} Keluar)\nLaporan PDF & Excel berhasil terkirim ke email manajemen.`;
 
     this.show(title, {
       body: body,
+      icon: './assets/icons/icon-apk.png',
+      badge: './assets/icons/badge-icon.png',
       tag: `report-${reportLog.id || Date.now()}`,
       tab: 'settings',
       data: { url: './', tab: 'settings' },
