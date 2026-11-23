@@ -153,12 +153,12 @@ const ScannerService = {
         UI.showToast(`📋 Berhasil menempel VIN: ${clean}`);
       }
     } catch (e) {
-      const val = prompt('Tempel atau ketik nomor VIN:');
-      if (val) {
-        const clean = val.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const input = document.getElementById('scanVinInput');
-        if (input) input.value = clean;
-        this.syncVinEngine();
+      const input = document.getElementById('scanVinInput');
+      if (input) {
+        input.focus();
+        if (typeof UI !== 'undefined' && UI.showToast) {
+          UI.showToast('ℹ️ Akses clipboard dibatasi. Silakan ketik atau tempel VIN pada kolom input.');
+        }
       }
     }
   },
@@ -177,12 +177,12 @@ const ScannerService = {
         UI.showToast(`📋 Berhasil menempel No. Mesin: ${clean}`);
       }
     } catch (e) {
-      const val = prompt('Tempel atau ketik No. Mesin:');
-      if (val) {
-        const clean = val.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
-        const input = document.getElementById('scanEngineInput');
-        if (input) input.value = clean;
-        this.syncVinEngine();
+      const input = document.getElementById('scanEngineInput');
+      if (input) {
+        input.focus();
+        if (typeof UI !== 'undefined' && UI.showToast) {
+          UI.showToast('ℹ️ Akses clipboard dibatasi. Silakan ketik atau tempel No. Mesin pada kolom input.');
+        }
       }
     }
   },

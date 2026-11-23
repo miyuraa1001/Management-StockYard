@@ -1591,16 +1591,53 @@ const UI = {
 
   /**
    * Validasi Manual Admin untuk penerimaan unit yang dikirim ke luar Lampung (OKK / SPPDC).
-   * Memindahkan unit dari status In-Transit ke Tiba di Tujuan (Delivered).
+   * Membuka modal konfirmasi kustom Astra Daihatsu (bukan popup bawaan browser).
    */
-  async confirmManualExternalDelivery(vin, model, destination) {
+  confirmManualExternalDelivery(vin, model, destination) {
     const cleanVin = (vin || '').trim().toUpperCase();
     if (!cleanVin) return;
 
     const destLabel = destination || 'Luar Lampung';
-    const conf = confirm(`Konfirmasi Penerimaan Fisik (Unit Luar Lampung):\n\nModel: ${model || 'Unit Daihatsu'}\nNo. Rangka: ${cleanVin}\nTujuan: ${destLabel}\n\nApakah unit kendaraan ini sudah resmi sampai dan diterima oleh pihak tujuan/eksternal?`);
-    if (!conf) return;
+    const modelLabel = model || 'Unit Daihatsu';
 
+    const modal = document.getElementById('modalExternalDeliveryConfirm');
+    if (!modal) {
+      // Fallback eksekusi langsung jika elemen modal belum siap
+      this.executeManualExternalDelivery(cleanVin, modelLabel, destLabel);
+      return;
+    }
+
+    const modelEl = document.getElementById('extDeliveryModalModel');
+    const vinEl = document.getElementById('extDeliveryModalVin');
+    const destEl = document.getElementById('extDeliveryModalDest');
+    const confirmBtn = document.getElementById('extDeliveryConfirmBtn');
+
+    if (modelEl) modelEl.textContent = modelLabel;
+    if (vinEl) vinEl.textContent = cleanVin;
+    if (destEl) destEl.textContent = destLabel;
+
+    if (confirmBtn) {
+      confirmBtn.onclick = () => {
+        this.closeExternalDeliveryModal();
+        this.executeManualExternalDelivery(cleanVin, modelLabel, destLabel);
+      };
+    }
+
+    modal.classList.remove('hidden');
+  },
+
+  /**
+   * Menutup modal konfirmasi penerimaan eksternal
+   */
+  closeExternalDeliveryModal() {
+    const modal = document.getElementById('modalExternalDeliveryConfirm');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  /**
+   * Eksekusi pencatatan penerimaan fisik unit eksternal / luar Lampung
+   */
+  async executeManualExternalDelivery(cleanVin, model, destLabel) {
     try {
       this.showToast('Memproses validasi penerimaan unit...', 'info');
 
@@ -3512,7 +3549,7 @@ const UI = {
 
     const printWindow = existingWindow || window.open('', '_blank');
     if (!printWindow) {
-      alert('Izinkan pop-up di browser Anda untuk mengunduh laporan PDF.');
+      this.showToast('⚠️ Izinkan pop-up di browser Anda untuk mengunduh laporan PDF.', 'warning');
       return;
     }
 
@@ -8345,6 +8382,83 @@ const UI = {
     await this.autoSaveTransitRoutes(true);
   },
 
+  _genericConfirmResolver: null,
+
+  /**
+   * Dialog Konfirmasi Kustom Universal Astra Daihatsu (Pengganti confirm() bawaan browser)
+   * Mengembalikan Promise<boolean> sehingga dapat di-await: const ok = await UI.showConfirm({...});
+   */
+  showConfirm({
+    title = 'Konfirmasi Tindakan',
+    message = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+    confirmText = 'Ya, Lanjutkan',
+    cancelText = 'Batal',
+    type = 'danger' // 'danger' | 'warning' | 'primary' | 'success'
+  } = {}) {
+    return new Promise((resolve) => {
+      this._genericConfirmResolver = resolve;
+      const modal = document.getElementById('genericConfirmModal');
+      const titleEl = document.getElementById('genericConfirmTitle');
+      const msgEl = document.getElementById('genericConfirmMessage');
+      const okBtn = document.getElementById('genericConfirmOkBtn');
+      const cancelBtn = document.getElementById('genericConfirmCancelBtn');
+      const iconContainer = document.getElementById('genericConfirmIconContainer');
+
+      if (!modal) {
+        return resolve(true);
+      }
+
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+      if (cancelBtn) cancelBtn.textContent = cancelText;
+
+      if (okBtn) {
+        okBtn.textContent = confirmText;
+        okBtn.className = 'py-3 px-3 text-white text-xs font-black rounded-2xl shadow-lg active:scale-95 transition cursor-pointer ';
+        if (type === 'danger') {
+          okBtn.className += 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30';
+        } else if (type === 'warning') {
+          okBtn.className += 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/30';
+        } else if (type === 'success') {
+          okBtn.className += 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30';
+        } else {
+          okBtn.className += 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/30';
+        }
+      }
+
+      if (iconContainer) {
+        if (type === 'danger') {
+          iconContainer.className = 'w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto flex items-center justify-center border-2 border-rose-100 shadow-2xs';
+          iconContainer.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+        } else if (type === 'warning') {
+          iconContainer.className = 'w-16 h-16 rounded-3xl bg-amber-50 text-amber-500 mx-auto flex items-center justify-center border-2 border-amber-100 shadow-2xs';
+          iconContainer.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+        } else if (type === 'success') {
+          iconContainer.className = 'w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center border-2 border-emerald-100 shadow-2xs';
+          iconContainer.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+        } else {
+          iconContainer.className = 'w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center border-2 border-blue-100 shadow-2xs';
+          iconContainer.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+        }
+      }
+
+      modal.classList.remove('hidden');
+    });
+  },
+
+  /**
+   * Menutup Generic Confirm Modal
+   */
+  closeGenericConfirm(result = false) {
+    const modal = document.getElementById('genericConfirmModal');
+    if (modal) modal.classList.add('hidden');
+    if (typeof this._genericConfirmResolver === 'function') {
+      const resolver = this._genericConfirmResolver;
+      this._genericConfirmResolver = null;
+      resolver(!!result);
+    }
+  },
+
   /**
    * Menghapus rute antar cabang dari daftar
    */
@@ -8355,7 +8469,15 @@ const UI = {
       return;
     }
 
-    if (confirm(`Hapus rute khusus ${origin} ➔ ${dest}? Rute ini akan kembali menggunakan durasi default.`)) {
+    const confirmed = await this.showConfirm({
+      title: 'Hapus Rute Khusus?',
+      message: `Hapus rute khusus ${origin} ➔ ${dest}? Rute ini akan kembali menggunakan durasi default.`,
+      confirmText: 'Ya, Hapus Rute',
+      cancelText: 'Batal',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       AppState.removeTransitRoute(origin, dest);
       this.renderTransitRoutesSettings();
       if (typeof this.renderInventoryBranchesView === 'function') {
@@ -8376,7 +8498,15 @@ const UI = {
       return;
     }
 
-    if (!confirm('Bersihkan seluruh rute khusus? Tampilan akan kembali bersih (0 rute terdaftar) dan seluruh perjalanan akan mengacu pada Standar Estimasi Umum (Default: 90 Menit).')) {
+    const confirmed = await this.showConfirm({
+      title: 'Bersihkan Seluruh Rute?',
+      message: 'Bersihkan seluruh rute khusus? Tampilan akan kembali bersih (0 rute terdaftar) dan seluruh perjalanan akan mengacu pada Standar Estimasi Umum (Default: 90 Menit).',
+      confirmText: 'Ya, Bersihkan Semua',
+      cancelText: 'Batal',
+      type: 'danger'
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -10245,5 +10375,8 @@ window.deleteTransitRoute = (o, d) => UI.deleteTransitRoute ? UI.deleteTransitRo
 window.clearAllTransitRoutes = () => UI.clearAllTransitRoutes ? UI.clearAllTransitRoutes() : null;
 window.renderTransitRoutesSettings = () => UI.renderTransitRoutesSettings ? UI.renderTransitRoutesSettings() : null;
 window.confirmManualExternalDelivery = (vin, model, destination) => UI.confirmManualExternalDelivery ? UI.confirmManualExternalDelivery(vin, model, destination) : null;
+window.closeExternalDeliveryModal = () => UI.closeExternalDeliveryModal ? UI.closeExternalDeliveryModal() : null;
+window.closeGenericConfirm = (r) => UI.closeGenericConfirm ? UI.closeGenericConfirm(r) : null;
+window.showConfirm = (opts) => UI.showConfirm ? UI.showConfirm(opts) : Promise.resolve(true);
 window.setNewRouteDurationPreset = (v) => UI.setNewRouteDurationPreset ? UI.setNewRouteDurationPreset(v) : null;
 window.adjustNewRouteDurationInput = (d) => UI.adjustNewRouteDurationInput ? UI.adjustNewRouteDurationInput(d) : null;

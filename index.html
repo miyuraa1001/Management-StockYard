@@ -3586,6 +3586,87 @@
       </div>
     </div>
 
+    <!-- Modal Konfirmasi Penerimaan Unit Luar Lampung (Custom Modal Keren & Elegan Astra Daihatsu) -->
+    <div id="modalExternalDeliveryConfirm" class="fixed inset-0 z-[95] bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-all duration-200" onclick="if(event.target === this) UI.closeExternalDeliveryModal()">
+      <div class="bg-white rounded-[28px] max-w-sm w-full shadow-2xl border border-white/60 overflow-hidden text-center p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <!-- Top Icon with Glow -->
+        <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
+          <div class="absolute inset-0 rounded-3xl bg-emerald-400/20 animate-ping"></div>
+          <div class="relative w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center border-2 border-emerald-100 shadow-sm">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+
+        <!-- Title & Subtitle -->
+        <div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 mb-1.5">
+            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Validasi Fisik Eksternal
+          </span>
+          <h3 class="text-base font-black text-slate-900 leading-tight">Konfirmasi Penerimaan Unit</h3>
+          <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Pengiriman unit ke luar Lampung / cabang eksternal</p>
+        </div>
+
+        <!-- Detail Unit Card -->
+        <div class="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/80 text-left space-y-2 text-xs">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-500 font-medium text-[11px]">Model Unit:</span>
+            <span class="text-slate-900 font-black text-right truncate" id="extDeliveryModalModel">-</span>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-500 font-medium text-[11px]">No. Rangka:</span>
+            <span class="font-mono text-slate-900 font-bold bg-white px-2 py-0.5 rounded-lg border border-slate-200 text-[11px] tracking-wide" id="extDeliveryModalVin">-</span>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-500 font-medium text-[11px]">Tujuan:</span>
+            <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 text-[11px]" id="extDeliveryModalDest">-</span>
+          </div>
+        </div>
+
+        <!-- Confirmation Prompt -->
+        <p class="text-[11.5px] text-slate-600 leading-relaxed px-1">
+          Apakah unit kendaraan ini sudah <strong class="text-slate-800">resmi sampai dan diterima</strong> oleh pihak tujuan/eksternal? Status unit akan otomatis diubah menjadi <strong class="text-emerald-700">Tiba di Tujuan</strong>.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <button type="button" onclick="UI.closeExternalDeliveryModal()" class="py-3 px-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 text-xs font-bold rounded-2xl active:scale-95 transition cursor-pointer">
+            Batal
+          </button>
+          <button type="button" id="extDeliveryConfirmBtn" class="py-3 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black rounded-2xl shadow-lg shadow-emerald-600/25 active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>Ya, Diterima</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generic Custom Confirm Modal (Pengganti confirm() bawaan browser) -->
+    <div id="genericConfirmModal" class="fixed inset-0 z-[95] bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-all duration-200" onclick="if(event.target === this) UI.closeGenericConfirm(false)">
+      <div class="bg-white rounded-[28px] max-w-sm w-full shadow-2xl border border-white/60 overflow-hidden text-center p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <!-- Icon Container -->
+        <div id="genericConfirmIconContainer" class="w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto flex items-center justify-center border-2 border-rose-100 shadow-2xs">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+
+        <!-- Title & Message -->
+        <div>
+          <h3 id="genericConfirmTitle" class="text-base font-black text-slate-900 leading-tight">Konfirmasi Tindakan</h3>
+          <p id="genericConfirmMessage" class="text-xs text-slate-500 mt-2 leading-relaxed">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <button type="button" id="genericConfirmCancelBtn" onclick="UI.closeGenericConfirm(false)" class="py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-2xl active:scale-95 transition cursor-pointer">
+            Batal
+          </button>
+          <button type="button" id="genericConfirmOkBtn" onclick="UI.closeGenericConfirm(true)" class="py-3 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-2xl shadow-lg shadow-rose-600/30 active:scale-95 transition cursor-pointer">
+            Ya, Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Panduan Instalasi Khusus iPhone (iOS Safari) -->
     <div id="iosInstallModal" onclick="if(event.target === this) closeIOSInstallModal()" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300">
       <div class="bg-white rounded-t-[32px] sm:rounded-[32px] max-w-sm sm:max-w-md w-full shadow-2xl border border-white/60 overflow-hidden p-6 space-y-4">
@@ -3737,13 +3818,13 @@
   </div>
 
   <!-- Modular Scripts Architecture -->
-  <script src="assets/js/config.js?v=20261121-04"></script>
-  <script src="assets/js/state.js?v=20261123-01"></script>
-  <script src="assets/js/api.js?v=20261123-01"></script>
-  <script src="assets/js/notification.js?v=20261123-01"></script>
-  <script src="assets/js/scanner.js?v=20261123-01"></script>
-  <script src="assets/js/ui.js?v=20261123-01"></script>
-  <script src="assets/js/app.js?v=20261123-01"></script>
+  <script src="assets/js/config.js?v=20261123-02"></script>
+  <script src="assets/js/state.js?v=20261123-02"></script>
+  <script src="assets/js/api.js?v=20261123-02"></script>
+  <script src="assets/js/notification.js?v=20261123-02"></script>
+  <script src="assets/js/scanner.js?v=20261123-02"></script>
+  <script src="assets/js/ui.js?v=20261123-02"></script>
+  <script src="assets/js/app.js?v=20261123-02"></script>
 
   <!-- ======================================================== -->
   <!-- Progressive Web App (PWA): Service Worker & Install Logic -->
@@ -3855,7 +3936,7 @@
         if (typeof UI !== 'undefined' && UI.showToast) {
           UI.showToast('✅ Anda sedang menggunakan aplikasi Stockyard dalam mode layar utama (Standalone App).');
         } else {
-          alert('✅ Anda sedang menggunakan aplikasi Stockyard dalam mode layar utama.');
+          console.log('[PWA] Mode standalone aktif.');
         }
         return;
       }
@@ -3890,7 +3971,7 @@
         if (typeof UI !== 'undefined' && UI.showToast) {
           UI.showToast(desktopMsg, 5000);
         } else {
-          alert(desktopMsg);
+          console.log('[PWA]', desktopMsg);
         }
       }
     };
@@ -3906,7 +3987,7 @@
       if (typeof UI !== 'undefined' && UI.showToast) {
         UI.showToast('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda. Silakan periksa beranda HP Anda.', 5000);
       } else {
-        alert('🎉 Berhasil! Aplikasi Stockyard sudah terpasang di layar utama HP Anda.');
+        console.log('[PWA] Berhasil dipasang di layar utama.');
       }
     });
   </script>
