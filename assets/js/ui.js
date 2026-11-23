@@ -1215,7 +1215,7 @@ const UI = {
           <!-- ========================================== -->
           <!-- KOLOM 1: POOL ASAL (BARU DIKELUARKAN)       -->
           <!-- ========================================== -->
-          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-full">
+          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-auto lg:h-full">
             <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 flex-shrink-0">
               <div class="flex items-center space-x-2.5">
                 <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -1229,7 +1229,7 @@ const UI = {
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-600 text-white shadow-2xs">${kanban.departures.length}</span>
             </div>
 
-            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-0 lg:min-h-[520px] max-h-[700px]">
               ${kanban.departures.length === 0 ? `
                 <div class="text-center py-16 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1.5 my-auto">
                   <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2 shadow-2xs">
@@ -1289,7 +1289,7 @@ const UI = {
           <!-- ========================================== -->
           <!-- KOLOM 2: SEDANG DI JALAN (IN-TRANSIT OKK)   -->
           <!-- ========================================== -->
-          <div class="bg-amber-50/25 rounded-[26px] p-3.5 sm:p-4.5 border-2 border-amber-300/80 shadow-saas-card flex flex-col h-full relative">
+          <div class="bg-amber-50/25 rounded-[26px] p-3.5 sm:p-4.5 border-2 border-amber-300/80 shadow-saas-card flex flex-col h-auto lg:h-full relative">
             <div class="flex items-center justify-between pb-3 border-b border-amber-200/80 mb-3 flex-shrink-0">
               <div class="flex items-center space-x-2.5">
                 <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
@@ -1306,7 +1306,7 @@ const UI = {
             </div>
 
             <!-- List Cards Column 2 (Flight Ticket / Boarding Pass Style) -->
-            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-0 lg:min-h-[520px] max-h-[700px]">
               ${kanban.inTransit.length === 0 ? `
                 <div class="text-center py-16 px-4 bg-white/85 rounded-2xl border border-dashed border-amber-300 text-amber-900 text-xs space-y-1.5 my-auto">
                   <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 shadow-2xs">
@@ -1430,7 +1430,7 @@ const UI = {
           <!-- ========================================== -->
           <!-- KOLOM 3: TIBA DI TUJUAN (DELIVERED SELESAI) -->
           <!-- ========================================== -->
-          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-full">
+          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-auto lg:h-full">
             <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 flex-shrink-0">
               <div class="flex items-center space-x-2.5">
                 <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -1444,7 +1444,7 @@ const UI = {
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white shadow-2xs">${kanban.delivered.length}</span>
             </div>
 
-            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-0 lg:min-h-[520px] max-h-[700px]">
               ${kanban.delivered.length === 0 ? `
                 <div class="text-center py-16 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1.5 my-auto">
                   <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2 shadow-2xs">
