@@ -3,8 +3,8 @@
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk (PRD), Arsitektur Sistem, Katalog Fitur Menyeluruh & Direktori Kode Program  
 > **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Wilayah (DSO Lampung), Admin Head / Branch Manager (ADH/BM), Supervisor Logistik, Tim Security On-Duty Cabang (D660–D664), System Architect, & Tim Pengembang  
-> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.11 Terverifikasi Penuh*)  
-> **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664)  
+> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.27 PRO Enterprise PWA v1.7.1 Terverifikasi Penuh*)  
+> **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664 serta Rute Distribusi Luar Lampung)  
 
 ---
 
@@ -13,39 +13,43 @@
 ### 1.1 Latar Belakang & Visi Transformasi Digital
 Operasional penanganan, pengawasan fisik, dan mutasi unit kendaraan di area pool logistik dan StockYard Astra Daihatsu Sales Operation (DSO) Area Lampung memerlukan kecepatan pemrosesan tinggi, pencatatan fisik bebas human error, dan pelacakan audit legal yang transparan (*audit-ready*). 
 
-Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop v1.7.1)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
 
-### 1.2 Pilar Keunggulan Sistem
+### 1.2 Pilar Keunggulan Sistem (v2.27 PRO Enterprise)
 1. **Arsitektur Multi-Cabang Resmi (DSO Lampung & 5 Cabang D660–D664)**: Pengawasan sentral oleh Admin DSO Lampung sekaligus isolasi data (*data isolation*) untuk petugas Security cabang sesuai lokasi penugasan resmi.
 2. **Akun Security Universal per Cabang (Bebas NPK)**: Kredensial login cabang bersifat universal untuk setiap regu *Security on-duty*, sehingga pergantian giliran jaga berjalan lancar tanpa kendala birokrasi input NPK perorangan.
-3. **Radar OKK & Logistics Flight Board Realtime**: Visualisasi status armada yang sedang bergerak (*In-Transit / OTW*) antar cabang, estimasi waktu tempuh (ETA), status ketepatan waktu (*On-Track* vs *Melebihi Estimasi*), rute asal ➔ tujuan, serta durasi perjalanan live.
-4. **Penyederhanaan Form & Kecepatan Mutasi (< 15 Detik per Unit)**: Peniadaan input nama driver pihak ketiga menghilangkan antrean gerbang pool. Petugas cukup fokus memindai VIN, memilih cabang tujuan, dan memotret fisik unit serta dokumen resmi (SPPDC/BSTKB/OKK).
-5. **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem memblokir pemindaian berulang untuk unit yang sama melalui alarm multi-sensor seketika di lapangan (audio 1760Hz, getaran haptik, dan kunci visual).
-6. **Keamanan Akses Tingkat Enterprise (Hardened Security Layer)**: Kredensial akun terlindungi penuh tanpa *hardcoded password* di browser. Dilengkapi proteksi anti *brute-force* (kunci akun 60 detik setelah 3 kali salah PIN/password).
-7. **Sinkronisasi Database 17 Kolom & Auto-Reconcile Stok**: Pencatatan mutasi lengkap 17 kolom (termasuk rute tujuan). Tab `Inventory` menggunakan formula presisi (Col D: Total Masuk, Col E: Total Keluar, Net Stock = Masuk - Keluar) dengan tombol rekonsiliasi otomatis 1-klik di Google Sheets.
-8. **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
-9. **Sinkronisasi Tab Cloud `ReportLogs` Realtime**: Setiap aktivitas pengiriman laporan harian (otomatis maupun manual via tombol "Kirim Laporan") tercatat ke tab `ReportLogs` dan tersinkronisasi 100% ke modal notifikasi aplikasi.
-10. **Pengaturan Durasi SLA Dinamis per Cabang (Admin-Only)**: Manajemen DSO dapat mengatur rata-rata durasi waktu tempuh perjalanan unit antar cabang (`TRANSIT_TIME_*`) langsung dari halaman Pengaturan yang tercatat resmi di tab database `SystemConfig`.
+3. **Radar OKK & Logistics Flight Board Realtime (3-Kolom Kanban Simetris)**: Visualisasi status armada yang sedang bergerak (*In-Transit / OTW*) antar cabang dan ke Luar Lampung, estimasi waktu tempuh (ETA), status ketepatan waktu (*On-Track* vs *Melebihi Estimasi*), rute asal ➔ tujuan, serta durasi perjalanan live dengan tata letak desktop simetris sejajar (*items-stretch*).
+4. **Dukungan Distribusi Luar Lampung & SLA Kustom (SPPDC Eksternal)**: Dukungan pengiriman unit ke luar provinsi Lampung (Palembang, Jakarta, Bandung, dll.) dengan input kota tujuan dinamis dan penentuan target SLA waktu tempuh (1 Hari, 2 Hari, dll.).
+5. **Modal Konfirmasi Pengiriman Luar Lampung (Custom Astra Daihatsu Modal)**: Penyelesaian siklus unit keluar ke luar Lampung melalui tombol *Validasi Selesai (Unit Telah Diterima)* yang menggunakan dialog modal konfirmasi elegan Astra Daihatsu (bebas dari popup bawaan browser yang kaku).
+6. **Lencana Asal & Tujuan Pengiriman Standar Astra Daihatsu**: Tampilan kolom Cabang pada seluruh tabel (Riwayat Mutasi, Modal Detail Model, dan Ekspor PDF/Excel) menyajikan lencana bertumpuk: Cabang Asal (`🟡 D661 - Soekarno Hatta`) dan Lencana Tujuan Pengiriman (`➔ Tujuan: D660 – Ahmad Yani` atau `➔ Tujuan: Luar Lampung (Palembang)`) dengan styling biru lembut anti-wrap.
+7. **Tabel Rinci Stok Fisik Parkir di Pool Yard (Anti-Wrap Responsive)**: Panel drawer inventaris stok fisik mobil riil di yard dengan toolbar pemilih cabang terpadu, counter unit, dan tabel lebar minimum (`min-w-[880px]`) yang tidak terhimpit pada layar mobile maupun desktop.
+8. **Proteksi Konkurensi 5 Lapis & Atomic Lock Server (`LockService`)**: Jaminan nol bentrokan data (*zero race condition / zero lost update*) saat banyak petugas di berbagai pos cabang memindai dan menyimpan mutasi pada detik yang bersamaan.
+9. **Nol Risiko Data Ganda (*Zero Duplicate Entry*)**: Sistem memblokir pemindaian berulang untuk unit yang sama melalui alarm multi-sensor seketika di lapangan (audio 1760Hz, getaran haptik, dan kunci visual).
+10. **Keamanan Akses Tingkat Enterprise (Hardened Security Layer)**: Kredensial akun terlindungi penuh tanpa *hardcoded password* di browser. Dilengkapi proteksi anti *brute-force* (kunci akun 60 detik setelah 3 kali salah PIN/password).
+11. **Sinkronisasi Database 17 Kolom & Auto-Reconcile Stok**: Pencatatan mutasi lengkap 17 kolom (termasuk rute tujuan). Tab `Inventory` menggunakan formula presisi (Col D: Total Masuk, Col E: Total Keluar, Net Stock = Masuk - Keluar) dengan tombol rekonsiliasi otomatis 1-klik di Google Sheets.
+12. **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
+13. **Desain UI Minimalis & Bersih**: Penghapusan kartu footer yang bulky dan digantikan dengan *single-line minimalist copyright* yang elegan dan profesional di seluruh halaman aplikasi.
 
 ---
 
-## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru (v2.11)
+## 2. Perbandingan: Cara Kerja Konvensional vs. Sistem Baru (v2.27)
 
-| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard (v2.11) |
+| Aspek Operasional | Cara Konvensional (Sebelumnya) | Menggunakan Sistem Management StockYard (v2.27 PRO) |
 | :--- | :--- | :--- |
 | **Pencatatan Nomor Rangka (VIN)** | Dicatat manual di kertas surat jalan atau diketik di Excel. Sering terjadi salah baca angka `0` dan huruf `O`, atau `1` dan `I`. | **Pemindaian Otomatis via Kamera Smartphone**. Dual-engine (Barcode + Tesseract OCR) mengekstrak 17 digit VIN dan nomor mesin dengan normalisasi ISO. |
 | **Menghadapi Stiker Kaca Bertumpuk** | Petugas bingung karena stiker kaca Daihatsu memiliki 5-7 baris barcode bertumpuk (nomor DO, PO, suku cadang, VIN, mesin). | **Filter Cerdas Otomatis (`smartFilterBarcodes`)**. Kamera langsung mengunci VIN berawalan `MHK...` serta membuang kode pabrik yang tidak relevan. |
 | **Identitas Petugas Security** | Diikat ke NPK perorangan sehingga sulit saat ganti shift atau petugas piket berganti. | **Universal Branch Account Login**. Login fleksibel per cabang untuk seluruh security bertugas tanpa perlu input NPK perorangan. |
 | **Pencatatan Sopir / Driver** | Mengetik nama supir pihak ketiga yang sering berganti dan memperlambat antrean gerbang pool. | **Disederhanakan (Bebas Input Driver)**. Sistem fokus pada verifikasi unit, rute cabang tujuan, dan bukti fisik dokumen serah terima. |
-| **Pelacakan Mobil di Jalan (Antar Cabang)** | Mengandalkan telepon / WhatsApp manual untuk mengetahui apakah mobil sudah berangkat atau sampai di cabang tujuan. | **Radar OKK & Logistics Flight Board**. Kanban live menampilkan unit *In-Transit* lengkap dengan timer jalan, SLA durasi rute, deteksi keterlambatan real-time, dan status otomatis berpindah tiba di tujuan saat security cabang penerima men-scan barcode Unit Masuk (murni verifikasi fisik tanpa tombol bypass). |
+| **Pelacakan Mobil Antar Cabang & Luar Lampung** | Mengandalkan telepon / WhatsApp manual untuk mengetahui apakah mobil sudah berangkat atau sampai di cabang tujuan / luar kota. | **Radar OKK & Logistics Flight Board (3 Kolom Kanban Simetris)**. Menampilkan unit *In-Transit* lengkap dengan timer jalan, SLA durasi rute, deteksi keterlambatan real-time, dukungan rute Luar Lampung dengan SLA khusus, serta verifikasi fisik kedatangan. |
+| **Penyelesaian Unit Keluar ke Luar Lampung** | Tidak ada sistem penutupan siklus karena penerima di luar Lampung tidak memiliki akun cabang DSO. | **Validasi Selesai (Unit Telah Diterima)** via Modal Elegan Astra Daihatsu untuk menyelesaikan unit eksternal secara resmi tanpa popup browser bawaan. |
+| **Pencegahan Bentrok Simpan Bersamaan (Concurrency)** | Rawan data tertimpa atau selisih stok jika ada 2 petugas menyimpan unit bersamaan di jam sibuk. | **Proteksi Konkurensi 5 Lapis (Client Mutex + Server `LockService`)**. Google Apps Script mengantrekan request dan mengunci transaksi secara atomik sehingga data 100% konsisten. |
 | **Pencegahan Unit Terinput Dua Kali** | Baru ketahuan saat ada selisih stok fisik bulanan (*stock opname*). | **Pencegahan Real-Time di Lapangan**. Jika unit sudah tercatat, aplikasi seketika mengunci layar merah, menyalakan alarm nada rendah, dan menolak penyimpanan. |
 | **Keamanan Autentikasi Pengguna** | Password tersimpan pada kode aplikasi front-end, rentan dibongkar via DevTools / Inspect Element. | **Server-First Hardened Auth**. Verifikasi kredensial terisolasi ke Apps Script tanpa ekspos password, plus proteksi *brute-force lockout* 60 detik (3 salah coba). |
 | **Sinkronisasi Stok di Database** | Total masuk dan keluar rentan salah hitung manual pada spreadsheet. | **Kalkulasi Matematis Presisi & Auto-Reconcile**. Col D (Total Masuk) dan Col E (Total Keluar) terpisah tegas. Tersedia menu 1-klik di Google Sheets untuk sinkronisasi ulang instan. |
 | **Arsip Bukti Foto Fisik & Dokumen** | Foto tersimpan di galeri WhatsApp petugas lapangan, sering terhapus, buram, atau membebani memori ponsel. | **Terunggah Otomatis ke Google Drive Resmi**. Foto unit & dokumen (SPPDC / BSTKB / OKK) terhubung langsung dengan nomor rangka kendaraan dan dapat diakses dari laporan. |
-| **Pengelolaan Foto Profil User** | Foto lama menumpuk di cloud storage hingga menghabiskan kuota Google Drive. | **Lifecycle Cleanup Otomatis**. Saat foto profil diperbarui, sistem mengunggah foto baru dan otomatis menghapus foto lama dari Google Drive. |
-| **Format Laporan Harian Eksekutif** | Format Excel dan PDF sering kali berbeda susunan kolom, tanpa logo resmi, dan tanpa foto visual. | **100% Identik Berlogo Daihatsu**: PDF dan Excel memiliki susunan kolom seragam, kop Astra resmi, rute tujuan, status terverifikasi, dan visual thumbnail tersemat rapi di sel. |
+| **Format Laporan Harian Eksekutif** | Format Excel dan PDF sering kali berbeda susunan kolom, tanpa logo resmi, dan tanpa foto visual. | **100% Identik Berlogo Daihatsu**: PDF dan Excel memiliki susunan kolom seragam, kop Astra resmi, lencana cabang asal & tujuan, status terverifikasi, dan visual thumbnail tersemat rapi di sel. |
 | **Distribusi Laporan Harian ke Cabang** | Satu file rekap dikirim massal; cabang melihat data unit cabang lain yang bukan wewenangnya. | **Distribusi Partisi Eksklusif**: Admin DSO menerima rekap 5 cabang (master), sedangkan tiap cabang (D660–D664) hanya menerima file mutasi eksklusif cabangnya. |
-| **Pengaturan Konfigurasi Parameter** | Nilai SLA dan jadwal hardcoded di dalam source code skrip. | **Tercatat Terpusat di `SystemConfig` Sheet**: Parameter SLA perjalanan cabang dan jadwal otomasi tersimpan di Google Sheets dan dapat diatur langsung oleh Admin. |
+| **Tampilan Tabel Stok Fisik di Pool** | Teks sering terpotong dan terhimpit di layar ponsel (*bad text wrapping*). | **Tabel Responsif Anti-Wrap (`min-w-[880px]`)**: Layout lega dengan badge monospace, foto resmi katalog, tombol salin VIN cepat, dan toolbar pemilih cabang. |
 
 ---
 
@@ -222,29 +226,52 @@ flowchart TD
 3. **Diagram Donat Distribusi Model & Interactive Preview Card**: Diagram donat visual komposisi armada yang terhubung langsung dengan kartu preview model interaktif (menampilkan foto resmi mobil, tipe varian, total unit, dan status stok).
 4. **Feed Aktivitas Mutasi Terkini (Live Feed)**: Menampilkan 5 transaksi mutasi mutakhir secara realtime dengan badge status masuk/keluar, rute asal ➔ tujuan, nomor VIN, model, dan waktu pencatatan.
 
-### 5.3 Manajemen Inventaris & Radar OKK Logistik (Flight Board)
-1. **Dua Mode Tampilan**:
+### 5.3 Manajemen Inventaris, Radar OKK Logistik (Flight Board) & Tabel Stok Fisik Pool Yard
+1. **Dua Mode Tampilan Utama**:
    - **Tab Katalog 13 Model**: Menampilkan seluruh jajaran model Daihatsu lengkap dengan rincian stok masuk, keluar, dan unit tersedia di pool.
    - **Tab Sebaran Cabang & Radar OKK**: Menampilkan ringkasan unit fisik di 5 cabang resmi serta **Kanban Radar OKK In-Transit** (khusus pengawasan admin DSO).
-2. **Fitur Radar OKK / Logistics Flight Board**:
-   - Kartu unit yang sedang bergerak (*OTW*) antar cabang.
-   - Timer durasi perjalanan live yang menghitung menit dan jam sejak unit keluar.
-   - Indikator SLA dan Status ETA dinamis:
-     - `⏱️ On-Track (~Xm lagi)` jika durasi perjalanan masih dalam batas SLA.
-     - `⚠️ Melebihi Estimasi (+Ym)` dengan aksen merah berkedip jika perjalanan melebihi rata-rata durasi cabang.
-   - Indikator rute asal ke cabang tujuan (`D660 ➔ D662`).
-   - Tombol 1-klik untuk konfirmasi penerimaan unit di cabang tujuan saat unit telah tiba.
-3. **Header Statistik Kategori**: Ringkasan armada keluarga/LCGC, SUV/Crossover, dan armada niaga komersial.
-4. **Halaman Khusus Rincian Model (*Drill-Down*)**: Banner spesifikasi kendaraan, kartu ringkasan stok model, filter tanggal khusus tipe tersebut, dan tabel unit terdaftar.
+2. **Fitur Radar OKK / Logistics Flight Board (3-Kolom Kanban Simetris)**:
+   - Tata letak desktop 3 kolom sejajar (*items-stretch*) dengan kesamaan garis dasar bawah (*baseline alignment*):
+     - **Kolom 1: Pool Asal** — Unit yang baru dicatat keluar dari pool cabang asal.
+     - **Kolom 2: Sedang Di Jalan (In-Transit)** — Unit yang sedang aktif bergerak menuju cabang penerima atau ke Luar Lampung.
+     - **Kolom 3: Tiba di Tujuan** — Unit yang telah selesai diverifikasi masuk pool cabang penerima atau divalidasi tiba di luar Lampung.
+   - **Format Tiket Boarding Pass Logistik**:
+     - Menampilkan kode cabang asal, panah transit, kota/cabang tujuan, serta lencana rute (`D66X` warna amber atau `LUAR` warna indigo).
+     - Timer durasi perjalanan live (*elapsed time*) yang menghitung menit dan jam sejak unit keluar.
+     - Indikator SLA dan Status ETA dinamis:
+       - `⏱️ On-Track (~Xm lagi)` jika durasi perjalanan masih dalam batas SLA.
+       - `⚠️ Melebihi Estimasi (+Ym)` dengan aksen merah berkedip jika perjalanan melebihi rata-rata durasi cabang atau target SLA hari luar Lampung.
+   - **Validasi Selesai Pengiriman Luar Lampung (Custom Astra Daihatsu Modal)**:
+     - Karena penerima di luar provinsi Lampung (Palembang, Jakarta, dll.) tidak berada di ekosistem login security DSO Lampung, unit eksternal dilengkapi tombol hijau *Validasi Selesai (Unit Telah Diterima)*.
+     - Menekan tombol ini memunculkan **Modal Konfirmasi Kustom Astra Daihatsu** bertema elegan (`#modalExternalDeliveryConfirm`), menampilkan nomor VIN, model kendaraan, dan rute tujuan untuk menyelesaikan siklus transit secara resmi tanpa popup bawaan browser (`confirm()`) yang kaku.
+3. **Tabel Rinci Stok Fisik Parkir di Pool Yard (Anti-Wrap Responsive)**:
+   - Panel drawer inventaris stok fisik mobil riil yang parkir di area pool yard.
+   - Dilengkapi toolbar pemilihan cabang pool yard (`#invPhysicalStockFilterBa`), indikator geser horizontal (*Geser ↔*), dan badge counter unit fisik.
+   - Tabel lebar minimum proporsional (`min-w-[880px]`) dengan perlindungan anti-wrap (`whitespace-nowrap`):
+     - **No.** — Nomor urut monospace (`#1`, `#2`, ...).
+     - **Kendaraan** — Thumbnail foto resmi katalog 13 model, nama model tebal, kategori segmen, dan badge warna mobil.
+     - **No. Rangka (VIN) & Mesin** — Tag VIN monospace tebal dengan tombol salin cepat 1-klik (`copyVinToClipboard`) dan nomor mesin.
+     - **Cabang Lokasi** — Lencana resmi Astra Daihatsu dalam satu baris utuh (`🟡 D660 - Ahmad Yani`).
+     - **Waktu Masuk** — Format tanggal dan jam kedatangan rapi disertai ikon jam.
+     - **Dokumen** — Lencana dokumen resmi (`OKK` amber, `BSTKB` emerald, `SPPDC` blue).
+     - **Petugas Penerima** — Avatar inisial lingkaran, nama petugas, dan cabang security.
+     - **Foto Fisik** — Thumbnail foto fisik mobil di yard yang dapat diklik untuk memperbesar (*preview lightbox*).
+4. **Header Statistik Kategori**: Ringkasan armada keluarga/LCGC, SUV/Crossover, dan armada niaga komersial.
+5. **Halaman Khusus Rincian Model (*Drill-Down*)**: Banner spesifikasi kendaraan, kartu ringkasan stok model, filter tanggal khusus tipe tersebut, dan tabel unit terdaftar lengkap dengan lencana cabang asal & tujuan.
 
 ### 5.4 Riwayat Mutasi & Ekspor Laporan Komprehensif
-1. **Tabel Log Mutasi Terintegrasi**: Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, Cabang Asal, **Cabang Tujuan (Badge Rute)**, Jenis Dokumen (SPPDC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
+1. **Tabel Log Mutasi Terintegrasi dengan Lencana Asal & Tujuan**:
+   - Catatan kronologis mutasi dengan rincian: Waktu, ID Transaksi, VIN, Nomor Mesin, Model Mobil, Tipe Mutasi, Petugas Security, **Cabang Asal & Tujuan Pengiriman**, Jenis Dokumen (SPPDC / BSTKB / OKK), Foto Fisik Unit, Foto Dokumen, dan Catatan Lapangan.
+   - **Format Lencana Cabang Asal & Tujuan Pengiriman Bertumpuk (`renderBranchWithDestination`)**:
+     - Lencana Atas: Cabang Asal (`🟡 D661 - Soekarno Hatta`) dalam warna krem amber dengan dot kuning.
+     - Lencana Bawah: Tujuan Pengiriman (`➔ Tujuan: D660 – Ahmad Yani` untuk mutasi antar cabang OKK, atau `➔ Tujuan: Luar Lampung (Palembang)` untuk mutasi keluar provinsi SPPDC) dalam warna biru lembut berbingkai tipis (`bg-blue-50 border-blue-200 text-blue-700`).
+     - Unit Masuk hanya menampilkan cabang penerima tanpa lencana tujuan.
 2. **Filter Rentang Kalender & Pencarian Global**: Menyesuaikan audit harian, mingguan, bulanan, serta pencarian instan nomor rangka, nomor mesin, atau model.
 3. **Empat Metode Ekspor Resmi**:
-   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel seragam, kolom rute tujuan, dan 2 pengesahan tanda tangan resmi: `SECURITY` dan `ADH / BM`.
-   - **Ekspor Excel (.xlsx Murni) Berfoto**: Dihasilkan via `ExcelJS` langsung di browser, menyematkan visual foto unit & dokumen ke dalam sel tabel secara proporsional, border rapi, badge rute tujuan, dan tanda tangan resmi.
+   - **Ekspor PDF Berkop Resmi**: Dokumen PDF landscape berlogo Daihatsu, format kode form `ADM-YARD-BA-01`, tabel seragam, kolom cabang asal dan tujuan (`➔ Tujuan: ...`), dan 2 pengesahan tanda tangan resmi: `SECURITY` dan `ADH / BM`.
+   - **Ekspor Excel (.xlsx Murni) Berfoto**: Dihasilkan via `ExcelJS` langsung di browser, menyematkan visual foto unit & dokumen ke dalam sel tabel secara proporsional, border rapi, keterangan rute cabang asal & tujuan, dan tanda tangan resmi.
    - **Cetak Langsung (*Print-Ready*)**: Tata letak ramah cetak A4 tanpa elemen UI browser.
-   - **Email Rekapitulasi Terjadwal & On-Demand (Backend v2.24)**: Pengiriman otomatis pukul 08:00 WIB dan manual via tombol "Kirim Laporan" dengan lampiran PDF & Excel yang dipartisi eksklusif per cabang.
+   - **Email Rekapitulasi Terjadwal & On-Demand (Backend v2.27)**: Pengiriman otomatis pukul 08:00 WIB dan manual via tombol "Kirim Laporan" dengan lampiran PDF & Excel yang dipartisi eksklusif per cabang.
 
 ### 5.5 Pemindai Kamera Cepat & Formulir Ringkas
 * **Tahap 1: Viewport Kamera & Deteksi Cerdas**:
@@ -256,10 +283,14 @@ flowchart TD
   - Pilihan radio: **Unit Masuk** atau **Unit Keluar**.
   - Dropdown 13 Model Resmi Kendaraan Daihatsu.
   - Dropdown Cabang Asal (Otomatis terkunci ke cabang penugasan petugas).
-  - Dropdown Cabang Tujuan (Aktif saat scan Unit Keluar dengan dokumen OKK untuk memicu Radar OKK. Pilihan opsi secara dinamis menyaring dan menyembunyikan cabang asal, serta validasi form memblokir pengiriman jika cabang asal dan cabang tujuan sama).
+  - **Dukungan Rute Antar-Cabang (OKK) & Rute Luar Lampung (SPPDC)**:
+    - **Mutasi Antar-Cabang (OKK)**: Dropdown Cabang Tujuan otomatis menyaring dan menyembunyikan cabang asal untuk mencegah salah pilih (validasi form memblokir pengiriman jika cabang asal dan cabang tujuan sama).
+    - **Mutasi Luar Lampung (SPPDC)**: Saat memilih tujuan Luar Lampung, formulir secara dinamis memunculkan kolom input teks:
+      - **Kota / Pihak Tujuan Luar Lampung**: Wajib diisi (misal: *Palembang*, *Jakarta*, *Bandung*, dll.).
+      - **Target Waktu Tempuh SLA Luar Lampung**: Pilihan durasi perjalanan (misal: *1 Hari / 24 Jam*, *2 Hari / 48 Jam*, *3 Hari / 72 Jam*).
   - Dropdown Dokumen Resmi: **SPPDC**, **BSTKB**, atau **OKK**.
   - Dua slot foto wajib: Foto Fisik Mobil dan Foto Dokumen (SPPDC / BSTKB / OKK).
-  - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar.
+  - Kolom catatan kondisi lapangan & tombol simpan berindikator kompresi gambar otomatis.
 
 ### 5.6 Pusat Notifikasi & Sistem Pemberitahuan Android (`NotificationService` & `ReportLogs`)
 * **Integrasi Penuh Status Bar & Notifikasi Sistem Android**:
@@ -665,6 +696,12 @@ flowchart TD
    - Admin DSO Lampung memegang hak pengawasan menyeluruh terhadap 5 cabang.
 4. **Manajemen Penyimpanan Google Drive Otomatis**:
    - Mengunggah foto profil baru memicu penghapusan foto profil lama secara otomatis untuk mencegah penumpukan sampah digital dan menjaga kuota penyimpanan cloud perusahaan.
+5. **Proteksi Konkurensi & Mutex Atomik Server (Multi-Layer Concurrency Control)**:
+   - **Client-Side Mutex Lock**: Saat tombol *Simpan & Verifikasi* ditekan, sistem langsung mengaktifkan kunci `_isSavingMutation = true`, menonaktifkan tombol (`disabled`, `pointer-events-none`), dan menampilkan animasi spinner untuk mencegah klik ganda (*anti-double submission*).
+   - **Optimistic Deduplication**: Pengecekan riwayat lokal dalam selang waktu 20 detik untuk mencegah duplikasi entri di memori browser.
+   - **Antrean Atomik Database Google Sheets**: Penulisan baris mutasi menggunakan `sheet.appendRow()` yang secara native mengantrekan request sehingga tidak ada baris yang tertimpa (*no row overwrite*).
+   - **Server-Side Mutex Lock (`LockService.getScriptLock()`)**: Di tingkat backend Google Apps Script, proses perekaman mutasi dan pembaruan counter stok katalog (`updateInventoryStock`) diproteksi dengan kunci skrip atomik (antrean hingga 30 detik) guna menjamin konsistensi data mutlak tanpa *race condition* atau *lost update*.
+   - **Validasi Siklus Logika Terakhir (*Last-State Validation*)**: Server memverifikasi status terakhir unit; jika ada dua request bersamaan untuk aksi yang sama pada unit yang sama, request kedua otomatis ditolak dengan pesan kesalahan yang jelas.
 
 ---
 
@@ -676,4 +713,4 @@ Dokumen spesifikasi produk dan cetak biru arsitektur sistem ini merupakan pandua
 * **Pusat Operasional:** Pool StockYard Sentra Lampung (Astra Daihatsu DSO Lampung)  
 * **Cabang Terdaftar:** D660 (Ahmad Yani), D661 (Soekarno Hatta), D662 (Bandar Jaya), D663 (Lampung Utara), D664 (Tulang Bawang)  
 * **Email Dukungan Resmi:** `admin.logistics@daihatsu.co.id`  
-* **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.11 Enterprise Edition — Terverifikasi Penuh*)  
+* **Status Dokumen:** Disetujui untuk Operasional Penuh (*Versi 2.27 PRO Enterprise Edition PWA v1.7.1 — Terverifikasi Penuh*)  
