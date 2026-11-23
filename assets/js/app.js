@@ -216,13 +216,17 @@ const App = {
     const isExitWithDestination = mutationType === 'Unit Keluar' && (docType === 'OKK' || docType === 'SPPDC');
     const destBranchInput = (document.getElementById('inputDestinationBranch')?.value || '').trim();
     const customDest = (document.getElementById('inputCustomDestination')?.value || '').trim();
+    const isExternalDest = docType === 'SPPDC' || destBranchInput.toLowerCase().includes('luar');
+    const externalSlaHours = parseInt(document.getElementById('inputExternalSlaHours')?.value, 10) || 24;
+    const externalSlaLabel = (document.getElementById('inputExternalSlaLabel')?.value || '1 Hari').trim();
+    const externalSlaTag = `SLA ${externalSlaLabel}`;
     
     let destinationBranch = '-';
     if (isExitWithDestination) {
       if (docType === 'SPPDC') {
-        destinationBranch = customDest ? `Luar Lampung (${customDest})` : 'Luar Lampung';
+        destinationBranch = customDest ? `Luar Lampung (${customDest} • ${externalSlaTag})` : `Luar Lampung (${externalSlaTag})`;
       } else if (destBranchInput.toLowerCase().includes('luar')) {
-        destinationBranch = customDest ? `Luar Lampung (${customDest})` : 'Luar Lampung';
+        destinationBranch = customDest ? `Luar Lampung (${customDest} • ${externalSlaTag})` : `Luar Lampung (${externalSlaTag})`;
       } else {
         destinationBranch = destBranchInput || 'D661 - Soekarno Hatta';
       }
@@ -354,6 +358,7 @@ const App = {
       destinationBranch: destinationBranch,
       destination: destinationBranch,
       cabangTujuan: destinationBranch,
+      slaHours: isExternalDest ? externalSlaHours : null,
       targetEmail: (AppState.getBranchTargetEmails(noBa) || []).join(', ')
     };
 
@@ -414,6 +419,9 @@ const App = {
     if (destBranchEl) destBranchEl.value = curOriginCode === 'D661' ? 'D660 - Ahmad Yani' : 'D661 - Soekarno Hatta';
     const customDestEl = document.getElementById('inputCustomDestination');
     if (customDestEl) customDestEl.value = '';
+    if (typeof window.setExternalSlaPreset === 'function') {
+      window.setExternalSlaPreset(24, '1 Hari');
+    }
     const docTypeEl = document.getElementById('inputMutationDocType');
     if (docTypeEl) docTypeEl.value = 'SPPDC';
     if (typeof window.onMutationDocTypeChanged === 'function') {
@@ -781,6 +789,33 @@ window.onMutationDocTypeChanged = function() {
 
 // Alias kompatibilitas
 window.validateMutationFormDuplication = window.checkMutationFormCompleteness;
+
+/**
+ * Mengubah target SLA rute luar Lampung saat tombol preset hari ditekan (1 Hari, 2 Hari, 3 Hari, 4 Hari)
+ */
+window.setExternalSlaPreset = function(hours, label) {
+  const inputHours = document.getElementById('inputExternalSlaHours');
+  const inputLabel = document.getElementById('inputExternalSlaLabel');
+  const preview = document.getElementById('labelExternalSlaPreview');
+
+  if (inputHours) inputHours.value = hours;
+  if (inputLabel) inputLabel.value = label;
+  if (preview) preview.textContent = `${label} (${hours} Jam)`;
+
+  const buttons = document.querySelectorAll('#groupExternalSlaPills .btn-external-sla');
+  buttons.forEach(btn => {
+    const btnHours = parseInt(btn.dataset.slaHours, 10);
+    if (btnHours === hours) {
+      btn.className = 'btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-indigo-600 text-white border-indigo-700 shadow-xs';
+      const sub = btn.querySelector('span:last-child');
+      if (sub) sub.className = 'text-[8.5px] font-normal opacity-85';
+    } else {
+      btn.className = 'btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-white text-indigo-900 border-indigo-200 hover:bg-indigo-100/70';
+      const sub = btn.querySelector('span:last-child');
+      if (sub) sub.className = 'text-[8.5px] font-normal text-indigo-500';
+    }
+  });
+};
 
 // Jalankan aplikasi saat dokumen siap
 document.addEventListener('DOMContentLoaded', () => {

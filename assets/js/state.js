@@ -274,12 +274,19 @@ const AppState = {
   },
 
   /**
-   * Format menit ke representasi manusiawi (e.g. 90 -> '1 Jam 30 Mnt')
+   * Format menit ke representasi manusiawi (e.g. 90 -> '1 Jam 30 Mnt', 2880 -> '2 Hari')
    */
   formatMinutesToHuman(totalMinutes) {
     const mins = Math.max(0, parseInt(totalMinutes, 10) || 0);
-    const hours = Math.floor(mins / 60);
-    const remMins = mins % 60;
+    const days = Math.floor(mins / 1440);
+    const remMinsAfterDays = mins % 1440;
+    const hours = Math.floor(remMinsAfterDays / 60);
+    const remMins = remMinsAfterDays % 60;
+
+    if (days > 0) {
+      if (hours > 0) return `${days} Hari ${hours} Jam`;
+      return `${days} Hari`;
+    }
     if (hours > 0 && remMins > 0) return `${hours} Jam ${remMins} Mnt`;
     if (hours > 0) return `${hours} Jam`;
     return `${remMins} Menit`;
@@ -801,7 +808,24 @@ const AppState = {
         const originBranch = item.noBa || item.branch || item.location || 'D661 - Soekarno Hatta';
         const originCode = (originBranch.match(/D66[0-4]/i)?.[0] || 'D661').toUpperCase();
         const destCode = isExternal ? 'LUAR' : (destBranch.match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase();
-        const targetDurationMins = isExternal ? 1440 : this.getTransitDurationForRoute(originCode, destCode);
+        
+        let targetDurationMins = 1440;
+        if (isExternal) {
+          if (item.slaHours && parseInt(item.slaHours, 10) > 0) {
+            targetDurationMins = parseInt(item.slaHours, 10) * 60;
+          } else {
+            const textToSearch = `${destBranch} ${item.notes || ''}`;
+            const dayMatch = textToSearch.match(/SLA\s*(\d+)\s*Hari/i);
+            const hourMatch = textToSearch.match(/SLA\s*(\d+)\s*(?:Jam|h)/i);
+            if (dayMatch && dayMatch[1]) {
+              targetDurationMins = parseInt(dayMatch[1], 10) * 24 * 60;
+            } else if (hourMatch && hourMatch[1]) {
+              targetDurationMins = parseInt(hourMatch[1], 10) * 60;
+            }
+          }
+        } else {
+          targetDurationMins = this.getTransitDurationForRoute(originCode, destCode);
+        }
 
         const elapsed = this.calcRecordElapsed(item);
         const isDelayed = elapsed.diffMins > targetDurationMins;
@@ -836,7 +860,7 @@ const AppState = {
           elapsedMins: elapsed.diffMins,
           elapsedHuman: elapsed.human,
           targetDurationMins: targetDurationMins,
-          targetDurationHuman: isExternal ? '24 Jam (Luar Kota)' : this.formatMinutesToHuman(targetDurationMins),
+          targetDurationHuman: this.formatMinutesToHuman(targetDurationMins),
           isDelayed: isDelayed,
           isUrgent: isDelayed || elapsed.isUrgent,
           etaStatus: etaStatus

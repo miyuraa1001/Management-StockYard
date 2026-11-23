@@ -2872,16 +2872,52 @@
               </button>
 
               <!-- Input Detail Luar Lampung (Muncul jika pilih 'Luar Lampung' atau jika Dokumen = SPPDC Keluar) -->
-              <div id="boxCustomDestination" class="hidden mt-2 p-2.5 rounded-2xl border border-indigo-200 bg-indigo-50/50">
-                <div class="flex items-center justify-between mb-1">
-                  <label for="inputCustomDestination" class="text-[10.5px] font-bold text-indigo-900 uppercase tracking-wider block flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span>Kota / Pihak Penerima Luar Lampung</span>
-                  </label>
-                  <span class="text-[9px] font-black text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">WAJIB</span>
+              <div id="boxCustomDestination" class="hidden mt-2 p-3 rounded-2xl border border-indigo-200 bg-indigo-50/60 space-y-2.5">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label for="inputCustomDestination" class="text-[10.5px] font-bold text-indigo-900 uppercase tracking-wider block flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      <span>Kota / Pihak Penerima Luar Lampung</span>
+                    </label>
+                    <span class="text-[9px] font-black text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">WAJIB</span>
+                  </div>
+                  <input type="text" id="inputCustomDestination" oninput="if(typeof checkMutationFormCompleteness==='function') checkMutationFormCompleteness()" placeholder="Ketik tujuan (contoh: Palembang, Jakarta, DSO Bandung, PT Logistik)..." class="w-full bg-white border border-indigo-200/90 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
+                  <span class="text-[9.5px] text-indigo-600 font-medium mt-1 block">Tulis nama kota tujuan luar provinsi atau pihak penerima unit.</span>
                 </div>
-                <input type="text" id="inputCustomDestination" oninput="if(typeof checkMutationFormCompleteness==='function') checkMutationFormCompleteness()" placeholder="Ketik tujuan (contoh: Jakarta, HO Sunter, DSO Bandung, PT Logistik)..." class="w-full bg-white border border-indigo-200/90 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs">
-                <span class="text-[9.5px] text-indigo-600 font-medium mt-1 block">Tulis nama kota, kantor HO, atau pihak penerima di luar Lampung. Admin dapat memvalidasi manual saat unit telah tiba.</span>
+
+                <!-- Target Estimasi Waktu Tempuh SLA Luar Lampung (Pill Presets) -->
+                <div class="pt-2 border-t border-indigo-200/70">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[10px] font-black uppercase tracking-wider text-indigo-950 flex items-center gap-1">
+                      <span>⏱️ Target Estimasi Waktu Tempuh (SLA)</span>
+                    </label>
+                    <span id="labelExternalSlaPreview" class="text-[10px] font-black text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full border border-indigo-200">1 Hari (24 Jam)</span>
+                  </div>
+
+                  <!-- Quick Preset Pills (1 Hari, 2 Hari, 3 Hari, 4 Hari) -->
+                  <div class="grid grid-cols-4 gap-1.5" id="groupExternalSlaPills">
+                    <button type="button" onclick="setExternalSlaPreset(24, '1 Hari')" data-sla-hours="24" class="btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-indigo-600 text-white border-indigo-700 shadow-xs">
+                      <span>1 Hari</span>
+                      <span class="text-[8.5px] font-normal opacity-85">24 Jam</span>
+                    </button>
+                    <button type="button" onclick="setExternalSlaPreset(48, '2 Hari')" data-sla-hours="48" class="btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-white text-indigo-900 border-indigo-200 hover:bg-indigo-100/70">
+                      <span>2 Hari</span>
+                      <span class="text-[8.5px] font-normal text-indigo-500">48 Jam</span>
+                    </button>
+                    <button type="button" onclick="setExternalSlaPreset(72, '3 Hari')" data-sla-hours="72" class="btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-white text-indigo-900 border-indigo-200 hover:bg-indigo-100/70">
+                      <span>3 Hari</span>
+                      <span class="text-[8.5px] font-normal text-indigo-500">72 Jam</span>
+                    </button>
+                    <button type="button" onclick="setExternalSlaPreset(96, '4 Hari')" data-sla-hours="96" class="btn-external-sla py-1.5 px-1 rounded-xl text-[10.5px] font-black border transition cursor-pointer flex flex-col items-center justify-center bg-white text-indigo-900 border-indigo-200 hover:bg-indigo-100/70">
+                      <span>4 Hari</span>
+                      <span class="text-[8.5px] font-normal text-indigo-500">96 Jam</span>
+                    </button>
+                  </div>
+
+                  <!-- Hidden Input to store selected SLA in Hours (Default 24) -->
+                  <input type="hidden" id="inputExternalSlaHours" value="24">
+                  <input type="hidden" id="inputExternalSlaLabel" value="1 Hari">
+                </div>
               </div>
 
               <span id="hintDestinationBranch" class="text-[9.5px] text-amber-600/90 font-medium mt-1 block">Pilih cabang penerima unit mutasi DSO Lampung atau Luar Lampung.</span>
@@ -3702,12 +3738,12 @@
 
   <!-- Modular Scripts Architecture -->
   <script src="assets/js/config.js?v=20261121-04"></script>
-  <script src="assets/js/state.js?v=20261121-04"></script>
-  <script src="assets/js/api.js?v=20261121-04"></script>
-  <script src="assets/js/notification.js?v=20261121-04"></script>
-  <script src="assets/js/scanner.js?v=20261121-07"></script>
-  <script src="assets/js/ui.js?v=20261121-07"></script>
-  <script src="assets/js/app.js?v=20261121-07"></script>
+  <script src="assets/js/state.js?v=20261123-01"></script>
+  <script src="assets/js/api.js?v=20261123-01"></script>
+  <script src="assets/js/notification.js?v=20261123-01"></script>
+  <script src="assets/js/scanner.js?v=20261123-01"></script>
+  <script src="assets/js/ui.js?v=20261123-01"></script>
+  <script src="assets/js/app.js?v=20261123-01"></script>
 
   <!-- ======================================================== -->
   <!-- Progressive Web App (PWA): Service Worker & Install Logic -->
