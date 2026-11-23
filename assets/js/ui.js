@@ -1206,70 +1206,79 @@ const UI = {
       `;
     }
 
-    // 5. Render 3-Column Logistics Flight Kanban Board
+    // 5. Render 3-Column Logistics Flight Kanban Board (Desktop Balanced & Symmetrical)
     const kanbanContainer = document.getElementById('invKanbanBoardContainer');
     if (kanbanContainer) {
       kanbanContainer.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5.5 items-stretch">
           
           <!-- ========================================== -->
           <!-- KOLOM 1: POOL ASAL (BARU DIKELUARKAN)       -->
           <!-- ========================================== -->
-          <div class="bg-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border border-slate-200/80 shadow-saas-card space-y-3">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
-              <div class="flex items-center space-x-2">
-                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-full">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 flex-shrink-0">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 </div>
                 <div>
                   <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Pool Asal</h4>
-                  <p class="text-[9.5px] text-slate-400 font-medium">Baru keluar dari cabang asal</p>
+                  <p class="text-[10px] text-slate-400 font-medium">Baru keluar dari cabang asal</p>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-600 text-white shadow-2xs">${kanban.departures.length}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-600 text-white shadow-2xs">${kanban.departures.length}</span>
             </div>
 
-            <div class="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
               ${kanban.departures.length === 0 ? `
-                <div class="text-center py-10 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1">
-                  <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                <div class="text-center py-16 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1.5 my-auto">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2 shadow-2xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
                   </div>
-                  <span class="font-bold text-slate-600 block">Antrean Keberangkatan Bersih</span>
-                  <p class="text-[10px] text-slate-400">Belum ada unit yang dikeluarkan dari pool asal.</p>
+                  <span class="font-extrabold text-slate-700 block text-xs">Antrean Keberangkatan Bersih</span>
+                  <p class="text-[10.5px] text-slate-400">Belum ada unit yang dikeluarkan dari pool asal.</p>
                 </div>
               ` : kanban.departures.map(item => `
-                <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-blue-300 transition space-y-2">
-                  <div class="flex items-center justify-between text-[10px]">
-                    <span class="font-black px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[130px]">
-                      📍 ${item.originCode}
+                <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/90 shadow-2xs hover:border-blue-300 hover:shadow-xs transition space-y-2.5">
+                  <div class="flex items-center justify-between text-[10.5px]">
+                    <span class="font-black px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[140px] sm:max-w-[170px] flex items-center gap-1">
+                      <span>📍</span>
+                      <span>${item.originBranch ? (item.originBranch.split('-')[1] || item.originBranch) : item.originCode}</span>
                     </span>
-                    <span class="font-bold text-slate-400">🕒 ${item.departedAt}</span>
+                    <span class="font-bold text-slate-400 flex items-center gap-1">
+                      <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>${item.departedAt}</span>
+                    </span>
                   </div>
 
-                  <div class="flex items-center space-x-2.5">
-                    <div class="w-12 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-14 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-2xs">
                       ${item.unitPhoto ? `
                         <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
                       ` : `
-                        <span class="text-[8px] font-bold text-slate-400">MOBIL</span>
+                        <span class="text-[8.5px] font-bold text-slate-400">DAIHATSU</span>
                       `}
                     </div>
                     <div class="min-w-0 flex-1">
-                      <h5 class="text-xs font-black text-slate-900 truncate leading-tight">${item.model}</h5>
-                      <div class="flex items-center gap-1.5 mt-0.5">
-                        <span class="text-[10px] font-mono font-bold text-slate-600 truncate">${item.vin}</span>
-                        ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1 rounded truncate">${item.color}</span>` : ''}
+                      <h5 class="text-xs sm:text-sm font-black text-slate-900 truncate leading-tight">${item.model}</h5>
+                      <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span onclick="UI.copyVinToClipboard('${item.vin}')" class="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded-lg border border-slate-200/80 cursor-pointer flex items-center gap-1 transition" title="Klik untuk Salin VIN">
+                          <span>${item.vin}</span>
+                          <svg class="w-2.5 h-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </span>
+                        ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200 truncate">${item.color}</span>` : ''}
                       </div>
                     </div>
                   </div>
 
-                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10.5px]">
-                    <div class="text-slate-500 truncate min-w-0">
-                      Tujuan: <strong class="text-slate-800">${item.destinationCode}</strong>
+                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <div class="text-slate-600 truncate min-w-0 flex items-center gap-1">
+                      <span class="text-slate-400 text-[10px]">Tujuan:</span>
+                      <strong class="text-slate-800 font-bold truncate">${item.destinationCode}</strong>
                     </div>
-                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 flex-shrink-0">
-                      ${item.officerName.split(' ')[0]}
+                    <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 flex-shrink-0 flex items-center gap-1">
+                      <span>👤</span>
+                      <span>${(item.officerName || 'Operator').split(' ')[0]}</span>
                     </span>
                   </div>
                 </div>
@@ -1280,26 +1289,26 @@ const UI = {
           <!-- ========================================== -->
           <!-- KOLOM 2: SEDANG DI JALAN (IN-TRANSIT OKK)   -->
           <!-- ========================================== -->
-          <div class="bg-gradient-to-b from-amber-500/10 via-amber-500/5 to-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border-2 border-amber-300 shadow-saas-card space-y-3 relative">
-            <div class="flex items-center justify-between pb-2.5 border-b border-amber-200/80">
-              <div class="flex items-center space-x-2">
-                <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <div class="bg-amber-50/25 rounded-[26px] p-3.5 sm:p-4.5 border-2 border-amber-300/80 shadow-saas-card flex flex-col h-full relative">
+            <div class="flex items-center justify-between pb-3 border-b border-amber-200/80 mb-3 flex-shrink-0">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
+                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <div>
                   <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Sedang Di Jalan (In-Transit)</h4>
-                  <p class="text-[9.5px] text-amber-700 font-semibold">Aktif bergerak menuju cabang penerima</p>
+                  <p class="text-[10px] text-amber-700 font-semibold">Aktif bergerak menuju cabang penerima</p>
                 </div>
               </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-black bg-amber-500 text-white shadow-sm animate-pulse">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white shadow-sm animate-pulse">
                 ${kanban.inTransit.length} OTW
               </span>
             </div>
 
             <!-- List Cards Column 2 (Flight Ticket / Boarding Pass Style) -->
-            <div class="space-y-3 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
               ${kanban.inTransit.length === 0 ? `
-                <div class="text-center py-12 px-4 bg-white/80 rounded-2xl border border-dashed border-amber-300 text-amber-900 text-xs space-y-1.5">
+                <div class="text-center py-16 px-4 bg-white/85 rounded-2xl border border-dashed border-amber-300 text-amber-900 text-xs space-y-1.5 my-auto">
                   <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 shadow-2xs">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                   </div>
@@ -1307,30 +1316,30 @@ const UI = {
                   <p class="text-[11px] text-slate-500">Tidak ada unit di jalan saat ini (0 In-Transit). Seluruh unit terverifikasi aman di pool masing-masing.</p>
                 </div>
               ` : kanban.inTransit.map(item => `
-                <div class="bg-white rounded-2xl border ${item.isUrgent ? 'border-rose-400 ring-2 ring-rose-300 shadow-rose-100' : 'border-amber-200/90'} shadow-sm overflow-hidden transition space-y-0">
+                <div class="bg-white rounded-2xl border ${item.isUrgent ? 'border-rose-400 ring-2 ring-rose-300 shadow-rose-100' : 'border-amber-200/90'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden space-y-0">
                   
                   <!-- Top Flight Route Strip (Boarding Pass Notch) -->
-                  <div class="bg-gradient-to-r ${item.isUrgent ? 'from-rose-500 to-amber-600' : (item.isExternal ? 'from-indigo-900 via-indigo-800 to-slate-900' : 'from-slate-900 via-slate-800 to-blue-900')} text-white px-3.5 py-2 flex items-center justify-between text-xs">
+                  <div class="bg-gradient-to-r ${item.isUrgent ? 'from-rose-500 to-amber-600' : (item.isExternal ? 'from-indigo-900 via-indigo-800 to-slate-900' : 'from-slate-900 via-slate-800 to-blue-900')} text-white px-3.5 py-2.5 flex items-center justify-between text-xs">
                     <div class="flex items-center space-x-1.5 min-w-0">
-                      <span class="px-1.5 py-0.5 rounded bg-white/20 font-black text-[10px]">${item.originCode}</span>
-                      <span class="text-[9.5px] text-slate-300 font-bold truncate max-w-[70px]">${item.originBranch.split('-')[1] || item.originBranch}</span>
+                      <span class="px-1.5 py-0.5 rounded bg-white/20 font-black text-[10px] tracking-wide">${item.originCode}</span>
+                      <span class="text-[10px] text-slate-300 font-bold truncate max-w-[110px] sm:max-w-[150px]">${item.originBranch.split('-')[1] || item.originBranch}</span>
                     </div>
 
-                    <div class="flex items-center space-x-1 px-1 flex-shrink-0 text-amber-300">
+                    <div class="flex items-center space-x-1 px-1.5 flex-shrink-0 text-amber-300">
                       <span class="w-1.5 h-1.5 rounded-full ${item.isExternal ? 'bg-indigo-400' : 'bg-amber-400'} animate-ping"></span>
-                      <span class="text-[10px] tracking-widest font-black">➔</span>
+                      <span class="text-[11px] tracking-widest font-black">➔</span>
                     </div>
 
                     <div class="flex items-center space-x-1.5 min-w-0 justify-end text-right">
-                      <span class="text-[9.5px] ${item.isExternal ? 'text-indigo-200' : 'text-amber-200'} font-bold truncate max-w-[95px]">${item.isExternal ? (item.destinationBranch.replace('Luar Lampung', '').replace(/[()]/g, '').trim() || 'Luar Lampung') : (item.destinationBranch.split('-')[1] || item.destinationBranch)}</span>
-                      <span class="px-1.5 py-0.5 rounded ${item.isExternal ? 'bg-indigo-400 text-slate-900' : 'bg-amber-400 text-slate-900'} font-black text-[10px]">${item.isExternal ? 'LUAR' : item.destinationCode}</span>
+                      <span class="text-[10px] ${item.isExternal ? 'text-indigo-200' : 'text-amber-200'} font-bold truncate max-w-[130px] sm:max-w-[170px]">${item.isExternal ? (item.destinationBranch.replace('Luar Lampung', '').replace(/[()]/g, '').trim() || 'Luar Lampung') : (item.destinationBranch.split('-')[1] || item.destinationBranch)}</span>
+                      <span class="px-1.5 py-0.5 rounded ${item.isExternal ? 'bg-indigo-400 text-slate-900' : 'bg-amber-400 text-slate-900'} font-black text-[10px] tracking-wide">${item.isExternal ? 'LUAR' : item.destinationCode}</span>
                     </div>
                   </div>
 
                   <!-- Ticket Body -->
                   <div class="p-3.5 space-y-3">
                     <div class="flex items-start space-x-3">
-                      <div class="w-16 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      <div class="w-16 h-13 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-2xs">
                         ${item.unitPhoto ? `
                           <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
                         ` : `
@@ -1341,52 +1350,62 @@ const UI = {
                         <div class="flex items-start justify-between gap-1">
                           <h5 class="text-xs sm:text-sm font-black text-slate-900 leading-tight truncate">${item.model}</h5>
                         </div>
-                        <div class="flex items-center gap-1.5 mt-1">
-                          <span onclick="UI.copyVinToClipboard('${item.vin}')" class="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200/80 cursor-pointer flex items-center gap-1" title="Klik untuk Salin VIN">
+                        <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          <span onclick="UI.copyVinToClipboard('${item.vin}')" class="text-[10.5px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-lg border border-slate-200/80 cursor-pointer flex items-center gap-1 transition" title="Klik untuk Salin VIN">
                             <span>${item.vin}</span>
                             <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                           </span>
-                          ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 truncate">${item.color}</span>` : ''}
+                          ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 truncate">${item.color}</span>` : ''}
                         </div>
                       </div>
                     </div>
 
                     <!-- Real-time Journey Elapsed Timer & SLA Status -->
-                    <div class="rounded-xl p-2 border ${item.isDelayed ? 'bg-rose-50/90 border-rose-200 text-rose-950' : 'bg-amber-50/80 border-amber-200/70 text-amber-950'} flex flex-col gap-1 text-xs">
-                      <div class="flex items-center justify-between">
+                    <div class="rounded-xl p-2.5 border ${item.isDelayed ? 'bg-rose-50/90 border-rose-200 text-rose-950' : 'bg-amber-50/80 border-amber-200/70 text-amber-950'} flex flex-col gap-1.5 text-xs">
+                      <div class="flex items-center justify-between gap-1">
                         <div class="flex items-center space-x-1.5 min-w-0">
                           <span class="w-2 h-2 rounded-full ${item.isDelayed ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse flex-shrink-0"></span>
-                          <span class="text-[10.5px] font-bold truncate">⏱️ <strong>${item.elapsedHuman}</strong> di Perjalanan</span>
+                          <span class="text-[11px] font-bold truncate">⏱️ <strong>${item.elapsedHuman}</strong> di Perjalanan</span>
                         </div>
-                        <span class="text-[9.5px] font-semibold text-slate-500 flex-shrink-0">SLA: ~${item.targetDurationHuman || (item.targetDurationMins + ' Mnt')}</span>
+                        <span class="text-[9.5px] font-extrabold px-2 py-0.5 rounded-md ${item.isDelayed ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-900 border border-amber-200'} flex-shrink-0">SLA: ~${item.targetDurationHuman || (item.targetDurationMins + ' Mnt')}</span>
                       </div>
                       <div class="flex items-center justify-between pt-1 border-t ${item.isDelayed ? 'border-rose-200/60' : 'border-amber-200/60'} text-[10px]">
-                        <span class="font-extrabold ${item.isDelayed ? 'text-rose-700' : 'text-emerald-700'}">${item.etaStatus || 'Sesuai Jadwal'}</span>
-                        <span class="text-[9px] text-slate-400">Berangkat ${item.time || item.departedAt}</span>
+                        <span class="font-extrabold ${item.isDelayed ? 'text-rose-700' : 'text-emerald-700'} flex items-center gap-1">
+                          <span>${item.isDelayed ? '⚠️' : '✅'}</span>
+                          <span>${item.etaStatus || 'Sesuai Jadwal'}</span>
+                        </span>
+                        <span class="text-[9.5px] text-slate-500 font-medium">Berangkat ${item.time || item.departedAt}</span>
                       </div>
                     </div>
 
                     ${item.isUrgent ? `
-                      <div class="bg-rose-50 rounded-xl p-2 border border-rose-200 text-[10px] font-bold text-rose-800 flex items-center gap-1.5 animate-pulse">
+                      <div class="bg-rose-50 rounded-xl p-2.5 border border-rose-200 text-[10.5px] font-bold text-rose-800 flex items-center gap-1.5 animate-pulse">
                         <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span>${item.isDelayed ? `Perhatian: Perjalanan telah melebihi target durasi SLA (${item.targetDurationMins} mnt). Harap hubungi ${item.destinationBranch.split('-')[1] || item.destinationBranch}.` : 'Perhatian: Unit telah > 24 jam dalam transit. Harap konfirmasi ke cabang tujuan.'}</span>
                       </div>
                     ` : ''}
 
                     <!-- Dispatcher PIC & Notes -->
-                    <div class="text-[10px] text-slate-500 space-y-0.5">
-                      <div>Petugas Pengirim: <strong class="text-slate-800">${item.officerName}</strong></div>
-                      ${item.notes && item.notes !== '-' ? `<div class="italic text-slate-400 truncate">"${item.notes}"</div>` : ''}
+                    <div class="text-[10.5px] text-slate-600 bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 space-y-1">
+                      <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-[10px]">Petugas Pengirim:</span>
+                        <strong class="text-slate-800 font-bold">${item.officerName}</strong>
+                      </div>
+                      ${item.notes && item.notes !== '-' ? `
+                        <div class="text-[10px] text-slate-500 italic border-t border-slate-200/50 pt-1 leading-snug">
+                          &ldquo;${item.notes}&rdquo;
+                        </div>
+                      ` : ''}
                     </div>
 
                     <!-- Status Penerimaan Fisik -->
-                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px]">
-                      <div class="flex items-center space-x-1.5 ${item.isExternal ? 'text-indigo-700' : 'text-slate-500'} font-semibold truncate min-w-0">
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[10.5px]">
+                      <div class="flex items-center space-x-1.5 ${item.isExternal ? 'text-indigo-700' : 'text-slate-600'} font-semibold min-w-0 flex-1">
                         <span class="w-1.5 h-1.5 rounded-full ${item.isExternal ? 'bg-indigo-500' : 'bg-blue-500'} flex-shrink-0 animate-ping"></span>
-                        <span class="truncate">${item.isExternal ? `Tujuan: <strong>${item.destinationBranch}</strong>` : `Menunggu Scan Masuk di <strong>${item.destinationCode}</strong>`}</span>
+                        <span class="text-[10.5px] leading-snug break-words">${item.isExternal ? `Tujuan: <strong class="text-indigo-900">${item.destinationBranch}</strong>` : `Menuju: <strong class="text-slate-900">${item.destinationCode}</strong>`}</span>
                       </div>
                       ${item.docPhoto ? `
-                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg py-1 px-2 text-[10px] font-extrabold border border-amber-200 transition cursor-pointer flex items-center gap-1 flex-shrink-0" title="Lihat Foto Dokumen ${item.docType || 'OKK'}">
+                        <button type="button" onclick="openImagePreviewModal('${item.docPhoto}')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg py-1 px-2.5 text-[10px] font-extrabold border border-amber-200 transition cursor-pointer flex items-center gap-1 flex-shrink-0 shadow-2xs active:scale-95" title="Lihat Foto Dokumen ${item.docType || 'OKK'}">
                           <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                           <span>Foto ${item.docType || 'OKK'}</span>
                         </button>
@@ -1396,7 +1415,7 @@ const UI = {
                     <!-- Tombol Validasi Manual Admin Khusus Pengiriman Luar Lampung -->
                     ${item.isExternal ? `
                       <div class="mt-2.5 pt-2 border-t border-indigo-100">
-                        <button type="button" onclick="UI.confirmManualExternalDelivery('${item.vin}', '${item.model}', '${(item.destinationBranch || 'Luar Lampung').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white rounded-xl py-2 px-3 text-xs font-black shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <button type="button" onclick="UI.confirmManualExternalDelivery('${item.vin}', '${item.model}', '${(item.destinationBranch || 'Luar Lampung').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white rounded-xl py-2.5 px-3 text-xs font-black shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
                           <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                           <span>Validasi Selesai (Unit Telah Diterima)</span>
                         </button>
@@ -1411,65 +1430,79 @@ const UI = {
           <!-- ========================================== -->
           <!-- KOLOM 3: TIBA DI TUJUAN (DELIVERED SELESAI) -->
           <!-- ========================================== -->
-          <div class="bg-slate-50/90 rounded-[24px] p-3.5 sm:p-4 border border-slate-200/80 shadow-saas-card space-y-3">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
-              <div class="flex items-center space-x-2">
-                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
+          <div class="bg-slate-50/90 rounded-[26px] p-3.5 sm:p-4.5 border border-slate-200/80 shadow-saas-card flex flex-col h-full">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 flex-shrink-0">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"/></svg>
                 </div>
                 <div>
                   <h4 class="text-xs sm:text-sm font-black text-slate-900 leading-tight">Tiba di Tujuan</h4>
-                  <p class="text-[9.5px] text-slate-400 font-medium">Selesai diverifikasi masuk pool</p>
+                  <p class="text-[10px] text-slate-400 font-medium">Selesai diverifikasi masuk pool</p>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-emerald-600 text-white shadow-2xs">${kanban.delivered.length}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white shadow-2xs">${kanban.delivered.length}</span>
             </div>
 
-            <div class="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 hide-scrollbar">
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-[380px] lg:min-h-[520px] max-h-[700px]">
               ${kanban.delivered.length === 0 ? `
-                <div class="text-center py-10 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1">
-                  <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="text-center py-16 px-4 bg-white/70 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs space-y-1.5 my-auto">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2 shadow-2xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   </div>
-                  <span class="font-bold text-slate-600 block">Belum Ada Unit Tiba</span>
-                  <p class="text-[10px] text-slate-400">Unit masuk dengan dokumen OKK akan dicatat di kolom ini.</p>
+                  <span class="font-extrabold text-slate-700 block text-xs">Belum Ada Unit Tiba</span>
+                  <p class="text-[10.5px] text-slate-400">Unit masuk dengan dokumen OKK akan dicatat di kolom ini.</p>
                 </div>
-              ` : kanban.delivered.map(item => `
-                <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-2xs hover:border-emerald-300 transition space-y-2">
-                  <div class="flex items-center justify-between text-[10px]">
-                    <span class="font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 truncate max-w-[140px]">
-                      🏁 Tiba: ${item.destinationCode}
-                    </span>
-                    <span class="font-bold text-slate-400">🕒 ${item.arrivedAt}</span>
-                  </div>
-
-                  <div class="flex items-center space-x-2.5">
-                    <div class="w-12 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                      ${item.unitPhoto ? `
-                        <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
-                      ` : `
-                        <span class="text-[8px] font-bold text-slate-400">MOBIL</span>
-                      `}
+              ` : `
+                ${kanban.delivered.map(item => `
+                  <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/90 shadow-2xs hover:border-emerald-300 hover:shadow-xs transition space-y-2.5">
+                    <div class="flex items-center justify-between text-[10.5px]">
+                      <span class="font-black px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 truncate max-w-[150px] sm:max-w-[180px] flex items-center gap-1">
+                        <span>🏁</span>
+                        <span>Tiba: ${item.destinationBranch ? (item.destinationBranch.split('-')[1] || item.destinationBranch) : item.destinationCode}</span>
+                      </span>
+                      <span class="font-bold text-slate-400 flex items-center gap-1">
+                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>${item.arrivedAt}</span>
+                      </span>
                     </div>
-                    <div class="min-w-0 flex-1">
-                      <h5 class="text-xs font-black text-slate-900 truncate leading-tight">${item.model}</h5>
-                      <div class="flex items-center gap-1.5 mt-0.5">
-                        <span class="text-[10px] font-mono font-bold text-slate-600 truncate">${item.vin}</span>
-                        ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1 rounded truncate">${item.color}</span>` : ''}
+
+                    <div class="flex items-center space-x-3">
+                      <div class="w-14 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-2xs">
+                        ${item.unitPhoto ? `
+                          <img src="${item.unitPhoto}" alt="${item.model}" class="w-full h-full object-cover">
+                        ` : `
+                          <span class="text-[8.5px] font-bold text-slate-400">DAIHATSU</span>
+                        `}
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <h5 class="text-xs sm:text-sm font-black text-slate-900 truncate leading-tight">${item.model}</h5>
+                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span onclick="UI.copyVinToClipboard('${item.vin}')" class="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded-lg border border-slate-200/80 cursor-pointer flex items-center gap-1 transition" title="Klik untuk Salin VIN">
+                            <span>${item.vin}</span>
+                            <svg class="w-2.5 h-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          </span>
+                          ${item.color && item.color !== '-' ? `<span class="text-[9px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-200 truncate">${item.color}</span>` : ''}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                    <span class="font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      ⏱️ ${item.transitDuration}
-                    </span>
-                    <span class="text-slate-500 truncate min-w-0 text-right">
-                      Penerima: <strong class="text-slate-700">${item.receiverName.split(' ')[0]}</strong>
-                    </span>
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <span class="font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200/90 flex items-center gap-1 text-[10.5px]">
+                        <span>⏱️</span>
+                        <span>${item.transitDuration || 'Tepat Waktu'}</span>
+                      </span>
+                      <span class="text-slate-500 truncate min-w-0 text-right text-[10.5px] flex items-center gap-1 justify-end">
+                        <span>👤</span>
+                        <span>Penerima: <strong class="text-slate-800 font-bold">${(item.receiverName || 'Operator').split(' ')[0]}</strong></span>
+                      </span>
+                    </div>
                   </div>
+                `).join('')}
+                <div class="text-center py-2.5 text-[10px] text-slate-400 font-medium">
+                  ✓ Seluruh unit tiba telah diverifikasi aman di pool tujuan
                 </div>
-              `).join('')}
+              `}
             </div>
           </div>
 
