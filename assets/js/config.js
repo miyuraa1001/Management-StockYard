@@ -116,23 +116,28 @@ const CONFIG = {
   formatBranch(ba) {
     if (!ba) return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
     const s = String(ba).trim();
-    // 1. Cek kode resmi D660 s/d D664
+    if (!s || s === '-') return '-';
+    const lower = s.toLowerCase();
+    // 1. Jika rute Luar Lampung / Eksternal, jangan ubah menjadi Sentra Lampung
+    if (lower.includes('luar') || lower.includes('eksternal') || lower.includes('external')) {
+      return s;
+    }
+    // 2. Cek kode resmi D660 s/d D664
     const matchCode = s.match(/D66[0-4]/i);
     if (matchCode) {
       const code = matchCode[0].toUpperCase();
       const match = this.BRANCH_LIST.find(b => b.code === code);
       if (match) return match.label;
     }
-    // 2. Cek nama spesifik cabang
-    const lower = s.toLowerCase();
+    // 3. Cek nama spesifik cabang
     if (lower.includes('ahmad yani') || lower.includes('yani')) return 'D660 - Ahmad Yani';
     if (lower.includes('soekarno') || lower.includes('hatta')) return 'D661 - Soekarno Hatta';
     if (lower.includes('bandar jaya') || lower.includes('jaya')) return 'D662 - Bandar Jaya';
     if (lower.includes('lampung utara') || lower.includes('kotabumi')) return 'D663 - Lampung Utara';
     if (lower.includes('lampung timur')) return 'D664 - Lampung Timur';
     if (lower.includes('sentra') || lower.includes('dso')) return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
-    // 3. Default resmi jika nama umum entitas ('Astra Daihatsu DSO Lampung')
-    return 'Sentra Lampung • Astra Daihatsu DSO Lampung';
+    // 4. Jika teks berupa kota atau label cabang kustom lainnya, pertahankan aslinya
+    return s || 'Sentra Lampung • Astra Daihatsu DSO Lampung';
   },
 
   OPERATOR_NAME: 'ADMIN HEAD / BRANCH MANAGER',

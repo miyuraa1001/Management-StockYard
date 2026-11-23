@@ -186,6 +186,101 @@ const UI = {
   },
 
   /**
+   * Render HTML Badge Cabang Asal dan Tujuan Pengiriman (Antar-Cabang & Luar Lampung)
+   * Sesuai standar desain visual mutasi Astra Daihatsu
+   */
+  renderBranchWithDestination(item) {
+    if (!item) return '';
+    const originBranch = this.formatBranchName(item.noBa || item.branch || item.location);
+    let rawDest = String(item.destinationBranch || item.destination || item.cabangTujuan || item.tujuan || item.targetBranch || item.destBranch || '').trim();
+    
+    // Fallback: deteksi tujuan dari catatan/notes jika rawDest kosong
+    if (!rawDest || rawDest === '-') {
+      const notesStr = String(item.notes || item.keterangan || '');
+      if (notesStr.toLowerCase().includes('luar lampung')) {
+        const matchLuar = notesStr.match(/luar lampung\s*(?:\([^)]+\)|[^\n\r,.]*)/i);
+        rawDest = matchLuar ? matchLuar[0].trim() : 'Luar Lampung';
+      } else {
+        const matchTujuan = notesStr.match(/tujuan[:\s-]+([^,\n\r.]+)/i);
+        if (matchTujuan && matchTujuan[1]) {
+          rawDest = matchTujuan[1].trim();
+        }
+      }
+    }
+
+    const originCode = (String(item.noBa || item.branch || item.location || '').match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const destCode = (rawDest.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const isKeluar = String(item.type || item.status || '').toLowerCase().includes('keluar');
+    const hasDestination = Boolean(rawDest && rawDest !== '-' && (!originCode || !destCode || originCode !== destCode) && (isKeluar || item.docType === 'OKK' || rawDest.toLowerCase().includes('luar')));
+
+    let destHtml = '';
+    if (hasDestination) {
+      let cleanDest = rawDest.replace(/\s*•\s*SLA[^)]*/i, '').replace(/\(\s*\)/g, '').trim();
+      const isExternal = cleanDest.toLowerCase().includes('luar') || (!cleanDest.match(/D66[0-4]/i) && !this.formatBranchName(cleanDest).startsWith('D66'));
+      let displayDest = cleanDest;
+      if (isExternal) {
+        if (!displayDest.toLowerCase().includes('luar')) {
+          displayDest = `Luar Lampung (${displayDest})`;
+        }
+      } else {
+        displayDest = this.formatBranchName(cleanDest);
+      }
+
+      destHtml = `
+        <div class="mt-1 inline-flex items-center space-x-1 text-[9.5px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg shadow-2xs max-w-full" title="Tujuan Pengiriman: ${rawDest}">
+          <span class="text-blue-600 font-bold flex-shrink-0">➔</span>
+          <span class="truncate">Tujuan: ${displayDest}</span>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="flex flex-col items-start min-w-0">
+        <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs" title="Cabang Asal: ${originBranch}">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+          <span>${originBranch}</span>
+        </div>
+        ${destHtml}
+      </div>
+    `;
+  },
+
+  /**
+   * Format teks cabang asal & tujuan pengiriman untuk ekspor PDF / Excel
+   */
+  getBranchWithDestinationText(item) {
+    if (!item) return '-';
+    let branchName = this.formatBranchName(item.noBa || item.branch || item.location);
+    let rawDest = String(item.destinationBranch || item.destination || item.cabangTujuan || item.tujuan || item.targetBranch || item.destBranch || '').trim();
+    if (!rawDest || rawDest === '-') {
+      const notesStr = String(item.notes || item.keterangan || '');
+      if (notesStr.toLowerCase().includes('luar lampung')) {
+        const matchLuar = notesStr.match(/luar lampung\s*(?:\([^)]+\)|[^\n\r,.]*)/i);
+        rawDest = matchLuar ? matchLuar[0].trim() : 'Luar Lampung';
+      } else {
+        const matchTujuan = notesStr.match(/tujuan[:\s-]+([^,\n\r.]+)/i);
+        if (matchTujuan && matchTujuan[1]) rawDest = matchTujuan[1].trim();
+      }
+    }
+    const originCode = (String(item.noBa || item.branch || item.location || '').match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const destCode = (rawDest.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const isKeluar = String(item.type || item.status || '').toLowerCase().includes('keluar');
+    const hasDest = Boolean(rawDest && rawDest !== '-' && (!originCode || !destCode || originCode !== destCode) && (isKeluar || item.docType === 'OKK' || rawDest.toLowerCase().includes('luar')));
+    if (hasDest) {
+      let cleanDest = rawDest.replace(/\s*•\s*SLA[^)]*/i, '').replace(/\(\s*\)/g, '').trim();
+      const isExternal = cleanDest.toLowerCase().includes('luar') || (!cleanDest.match(/D66[0-4]/i) && !this.formatBranchName(cleanDest).startsWith('D66'));
+      let displayDest = cleanDest;
+      if (isExternal) {
+        if (!displayDest.toLowerCase().includes('luar')) displayDest = `Luar Lampung (${displayDest})`;
+      } else {
+        displayDest = this.formatBranchName(cleanDest);
+      }
+      branchName += `\n➔ Tujuan: ${displayDest}`;
+    }
+    return branchName;
+  },
+
+  /**
    * Pengecekan kecocokan filter cabang (mendukung kode "D660", nama cabang, atau gabungan)
    */
   isBranchMatch(itemBa, filterBa) {
@@ -536,10 +631,41 @@ const UI = {
                   <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider select-none">VIN</span>
                   <span class="font-extrabold text-slate-800 truncate">${item.vin || '-'}</span>
                 </span>
-                <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Cabang: ${this.formatBranchName(item.noBa)}">
+                <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Cabang Asal: ${this.formatBranchName(item.noBa)}">
                   <span class="text-[7px] text-amber-600 font-bold uppercase">Cabang:</span>
                   <span>${this.formatBranchName(item.noBa)}</span>
                 </span>
+                ${(() => {
+                  let rawDest = String(item.destinationBranch || item.destination || item.cabangTujuan || item.tujuan || item.targetBranch || item.destBranch || '').trim();
+                  if (!rawDest || rawDest === '-') {
+                    const notesStr = String(item.notes || item.keterangan || '');
+                    if (notesStr.toLowerCase().includes('luar lampung')) {
+                      const matchLuar = notesStr.match(/luar lampung\s*(?:\([^)]+\)|[^\n\r,.]*)/i);
+                      rawDest = matchLuar ? matchLuar[0].trim() : 'Luar Lampung';
+                    } else {
+                      const matchTujuan = notesStr.match(/tujuan[:\s-]+([^,\n\r.]+)/i);
+                      if (matchTujuan && matchTujuan[1]) rawDest = matchTujuan[1].trim();
+                    }
+                  }
+                  const originCode = (String(item.noBa || item.branch || '').match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+                  const destCode = (rawDest.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+                  const isKel = String(item.type || '').toLowerCase().includes('keluar');
+                  if (!rawDest || rawDest === '-' || (originCode && destCode && originCode === destCode) || (!isKel && item.docType !== 'OKK' && !rawDest.toLowerCase().includes('luar'))) return '';
+                  let cleanDest = rawDest.replace(/\s*•\s*SLA[^)]*/i, '').replace(/\(\s*\)/g, '').trim();
+                  const isExt = cleanDest.toLowerCase().includes('luar') || (!cleanDest.match(/D66[0-4]/i) && !this.formatBranchName(cleanDest).startsWith('D66'));
+                  let disp = cleanDest;
+                  if (isExt) {
+                    if (!disp.toLowerCase().includes('luar')) disp = `Luar Lampung (${disp})`;
+                  } else {
+                    disp = this.formatBranchName(cleanDest);
+                  }
+                  return `
+                    <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[8px] sm:text-[8.5px] font-black truncate flex-shrink-0" title="Tujuan Pengiriman: ${rawDest}">
+                      <span class="text-blue-600 font-bold">➔</span>
+                      <span>${disp}</span>
+                    </span>
+                  `;
+                })()}
               </div>
               <span class="inline-flex items-center space-x-0.5 text-[8.5px] sm:text-[9.5px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70 flex-shrink-0 leading-none">
                 <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -2065,18 +2191,9 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: Cabang (TERPISAH) -->
+          <!-- Kolom 5: Cabang (Asal & Tujuan Pengiriman) -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
-            <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
-              <span>${this.formatBranchName(item.noBa || item.branch)}</span>
-            </div>
-            ${(item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) ? `
-              <div class="mt-1 flex items-center space-x-1 text-[9px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                <span>➔</span>
-                <span class="truncate">Tujuan: ${this.formatBranchName(item.destinationBranch)}</span>
-              </div>
-            ` : ''}
+            ${this.renderBranchWithDestination(item)}
           </td>
 
           <!-- Kolom 6: No. Rangka (VIN) & Mesin -->
@@ -2632,10 +2749,7 @@ const UI = {
       const isMasuk = item.type === 'Unit Masuk';
       if (isMasuk) totalMasuk++; else totalKeluar++;
 
-      let branchName = this.formatBranchName(item.noBa || item.branch);
-      if (item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) {
-        branchName += `\n➔ Tujuan: ${this.formatBranchName(item.destinationBranch)}`;
-      }
+      let branchName = this.getBranchWithDestinationText(item);
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
@@ -3249,10 +3363,7 @@ const UI = {
       const isMasuk = item.type === 'Unit Masuk';
       if (isMasuk) masukCount++; else keluarCount++;
 
-      let branchName = this.formatBranchName(item.noBa || item.branch);
-      if (item.docType === 'OKK' && item.destinationBranch && item.destinationBranch !== '-' && item.destinationBranch !== (item.noBa || item.branch)) {
-        branchName += `\n➔ Tujuan: ${this.formatBranchName(item.destinationBranch)}`;
-      }
+      let branchName = this.getBranchWithDestinationText(item);
 
       let timeFormatted = item.time || '08:00';
       timeFormatted = timeFormatted.replace(/\s*WIB/i, '').trim();
@@ -10229,12 +10340,9 @@ const UI = {
             </div>
           </td>
 
-          <!-- Kolom 5: Cabang -->
+          <!-- Kolom 5: Cabang (Asal & Tujuan Pengiriman) -->
           <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
-            <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs" title="Cabang: ${this.formatBranchName(item.noBa || item.branch || item.location)}">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
-              <span>${this.formatBranchName(item.noBa || item.branch || item.location)}</span>
-            </div>
+            ${this.renderBranchWithDestination(item)}
           </td>
 
           <!-- Kolom 6: No. Rangka & Mesin -->
