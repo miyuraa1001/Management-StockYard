@@ -1645,97 +1645,190 @@ const UI = {
         : (multiBranch.branches.find(b => b.code === currentBranchStockFilter)?.name || currentBranchStockFilter);
 
       activeUnitsContainer.innerHTML = `
-        <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-3.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100 cursor-pointer select-none" onclick="UI.togglePhysicalStockTable()">
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-xs sm:text-sm md:text-base font-black text-slate-900 tracking-tight">Tabel Rinci Stok Fisik Parkir di Pool Yard</h3>
-                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-50 text-blue-700 border border-blue-200">${activeUnits.length} Unit</span>
+        <div class="bg-white/95 rounded-[24px] p-4 sm:p-5 border border-white shadow-saas-card space-y-4">
+          <!-- Header Bar: Judul, Counter, Filter Aktif & Tombol Buka/Tutup -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 cursor-pointer select-none" onclick="UI.togglePhysicalStockTable()">
+            <div class="flex items-start sm:items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200/80 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
               </div>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Filter aktif: <strong class="text-slate-700">${branchLabel}</strong> • Klik untuk ${this._isPhysicalStockOpen ? 'menyembunyikan' : 'membuka'} tabel lengkap</p>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">Tabel Rinci Stok Fisik Parkir di Pool Yard</h3>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200/90 shadow-2xs">${activeUnits.length} Unit Fisik</span>
+                </div>
+                <p class="text-[11px] text-slate-400 font-medium mt-0.5">
+                  Filter aktif: <strong class="text-slate-700 font-bold">${branchLabel}</strong> &bull; Klik untuk ${this._isPhysicalStockOpen ? 'menyembunyikan' : 'membuka'} tabel lengkap
+                </p>
+              </div>
             </div>
 
-            <div class="flex items-center space-x-2">
-              <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center space-x-1.5 shadow-2xs transition">
+            <div class="flex items-center space-x-2 self-end sm:self-center">
+              <button type="button" class="px-3.5 py-1.5 rounded-xl ${this._isPhysicalStockOpen ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'} font-black text-xs flex items-center gap-1.5 shadow-2xs transition cursor-pointer">
                 <span>${this._isPhysicalStockOpen ? 'Tutup Tabel ▲' : 'Buka Tabel Lengkap ▼'}</span>
               </button>
             </div>
           </div>
 
           ${this._isPhysicalStockOpen ? `
-            <div class="pt-2 space-y-3">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-bold text-slate-600">Pilih Cabang:</span>
-                <select id="invPhysicalStockFilterBa" onchange="UI.filterBranchActiveUnits(this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs">
-                  <option value="all" ${currentBranchStockFilter === 'all' ? 'selected' : ''}>Semua Cabang (5 Cabang)</option>
-                  <option value="D660" ${currentBranchStockFilter === 'D660' ? 'selected' : ''}>D660 - Ahmad Yani</option>
-                  <option value="D661" ${currentBranchStockFilter === 'D661' ? 'selected' : ''}>D661 - Soekarno Hatta</option>
-                  <option value="D662" ${currentBranchStockFilter === 'D662' ? 'selected' : ''}>D662 - Bandar Jaya</option>
-                  <option value="D663" ${currentBranchStockFilter === 'D663' ? 'selected' : ''}>D663 - Lampung Utara</option>
-                  <option value="D664" ${currentBranchStockFilter === 'D664' ? 'selected' : ''}>D664 - Lampung Timur</option>
-                </select>
+            <div class="pt-1 space-y-3.5">
+              <!-- Toolbar Filter Cabang & Indikator Horizontal Scroll -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl bg-slate-50/90 border border-slate-200/80">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+                  <span class="text-xs font-black text-slate-800">Filter Lokasi Pool Yard:</span>
+                  <span class="text-[11px] font-medium text-slate-400 hidden md:inline">&mdash; Menampilkan unit fisik parkir di area pool</span>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                  <div class="relative w-full sm:w-auto">
+                    <select id="invPhysicalStockFilterBa" onchange="UI.filterBranchActiveUnits(this.value)" class="w-full sm:w-64 bg-white border border-slate-300 rounded-xl pl-3 pr-8 py-1.5 text-xs font-extrabold text-slate-800 shadow-2xs focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer appearance-none transition">
+                      <option value="all" ${currentBranchStockFilter === 'all' ? 'selected' : ''}>🏢 Semua Cabang (5 Cabang)</option>
+                      <option value="D660" ${currentBranchStockFilter === 'D660' ? 'selected' : ''}>🟡 D660 - Ahmad Yani</option>
+                      <option value="D661" ${currentBranchStockFilter === 'D661' ? 'selected' : ''}>🟡 D661 - Soekarno Hatta</option>
+                      <option value="D662" ${currentBranchStockFilter === 'D662' ? 'selected' : ''}>🟡 D662 - Bandar Jaya</option>
+                      <option value="D663" ${currentBranchStockFilter === 'D663' ? 'selected' : ''}>🟡 D663 - Lampung Utara</option>
+                      <option value="D664" ${currentBranchStockFilter === 'D664' ? 'selected' : ''}>🟡 D664 - Lampung Timur</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                  </div>
+                  <span class="inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-1 rounded-lg flex-shrink-0 sm:hidden">
+                    <span>Geser</span>
+                    <span>&harr;</span>
+                  </span>
+                </div>
               </div>
 
               ${activeUnits.length === 0 ? `
-                <div class="text-center py-8 text-slate-400 text-xs">
-                  Tidak ada unit mobil fisik yang tercatat aktif parkir di cabang ini saat ini.
+                <div class="text-center py-10 px-4 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                  </div>
+                  <p class="text-xs sm:text-sm font-extrabold text-slate-700">Tidak ada unit mobil fisik yang tercatat aktif parkir di cabang ini</p>
+                  <p class="text-[11px] text-slate-400 mt-1">Seluruh unit mungkin telah termutasi keluar atau silakan pilih cabang lain pada filter.</p>
                 </div>
               ` : `
-                <div class="overflow-x-auto hide-scrollbar">
-                  <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr class="border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-50/80">
-                        <th class="py-2.5 px-3 rounded-l-xl">Kendaraan</th>
-                        <th class="py-2.5 px-3">No. Rangka (VIN) & Mesin</th>
-                        <th class="py-2.5 px-3">Cabang Lokasi</th>
-                        <th class="py-2.5 px-3">Waktu Masuk</th>
-                        <th class="py-2.5 px-3">Dokumen</th>
-                        <th class="py-2.5 px-3">Petugas</th>
-                        <th class="py-2.5 px-3 text-center rounded-r-xl">Foto</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                      ${activeUnits.map(unit => `
-                        <tr class="hover:bg-slate-50/70 transition">
-                          <td class="py-2.5 px-3">
-                            <div class="font-extrabold text-slate-900">${unit.model}</div>
-                            ${unit.color && unit.color !== '-' ? `
-                              <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 inline-block mt-0.5">${unit.color}</span>
-                            ` : ''}
-                          </td>
-                          <td class="py-2.5 px-3">
-                            <div class="font-mono font-bold text-slate-800 text-[11px]">${unit.vin}</div>
-                            ${unit.engine && unit.engine !== '-' ? `<div class="font-mono text-[10px] text-slate-400">ENG: ${unit.engine}</div>` : ''}
-                          </td>
-                          <td class="py-2.5 px-3">
-                            <span class="font-extrabold text-slate-800 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200 text-[10.5px]">
-                              ${unit.branch}
-                            </span>
-                          </td>
-                          <td class="py-2.5 px-3 text-[11px] text-slate-600">
-                            ${unit.arrivedAt}
-                          </td>
-                          <td class="py-2.5 px-3">
-                            <span class="font-black text-[9.5px] px-2 py-0.5 rounded-md ${unit.docType === 'OKK' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
-                              ${unit.docType}
-                            </span>
-                          </td>
-                          <td class="py-2.5 px-3 text-[11px] text-slate-700 font-medium">
-                            ${unit.officerName || unit.pic}
-                          </td>
-                          <td class="py-2.5 px-3 text-center">
-                            <div class="flex items-center justify-center gap-1">
-                              ${unit.unitPhoto ? `
-                                <button type="button" onclick="openImagePreviewModal('${unit.unitPhoto}')" class="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-400 transition" title="Foto Unit">
-                                  <img src="${unit.unitPhoto}" alt="Foto" class="w-full h-full object-cover">
-                                </button>
-                              ` : '<span class="text-slate-300">-</span>'}
-                            </div>
-                          </td>
+                <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-2xs bg-white">
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs min-w-[880px]">
+                      <thead>
+                        <tr class="border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider bg-slate-50">
+                          <th class="py-3 pl-4 pr-2 text-center w-12 border-r border-slate-200">No</th>
+                          <th class="py-3 px-3 border-r border-slate-200 min-w-[210px]">Kendaraan</th>
+                          <th class="py-3 px-3 border-r border-slate-200 min-w-[170px]">No. Rangka (VIN) & Mesin</th>
+                          <th class="py-3 px-3 border-r border-slate-200 min-w-[180px]">Cabang Lokasi</th>
+                          <th class="py-3 px-3 border-r border-slate-200 min-w-[160px]">Waktu Masuk</th>
+                          <th class="py-3 px-3 border-r border-slate-200 text-center min-w-[95px]">Dokumen</th>
+                          <th class="py-3 px-3 border-r border-slate-200 min-w-[150px]">Petugas Penerima</th>
+                          <th class="py-3 px-3 text-center min-w-[85px]">Foto Fisik</th>
                         </tr>
-                      `).join('')}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100">
+                        ${activeUnits.map((unit, idx) => {
+                          const catalogItem = AppState.getModelCatalogItem ? AppState.getModelCatalogItem(unit.model) : null;
+                          const catalogPhotoSrc = catalogItem ? catalogItem.photo : 'assets/images/Inventory_Gran Max Pick Up.jpeg';
+                          const branchFormatted = this.formatBranchName(unit.branch);
+                          return `
+                            <tr class="hover:bg-blue-50/40 transition">
+                              <!-- Col 1: No. -->
+                              <td class="py-3 pl-4 pr-2 text-center align-middle whitespace-nowrap border-r border-slate-200 font-mono text-[10px] font-extrabold text-slate-400">
+                                #${idx + 1}
+                              </td>
+
+                              <!-- Col 2: Kendaraan -->
+                              <td class="py-3 px-3 align-middle border-r border-slate-200">
+                                <div class="flex items-center space-x-2.5">
+                                  <div onclick="openImagePreviewModal('${catalogPhotoSrc}')" class="w-10 h-7 rounded-md bg-white border border-slate-200/80 p-0.5 flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs hover:border-blue-400 transition" title="Foto Resmi ${unit.model}">
+                                    <img src="${catalogPhotoSrc}" alt="${unit.model}" loading="lazy" decoding="async" class="w-full h-full object-contain">
+                                  </div>
+                                  <div class="min-w-0">
+                                    <div class="text-xs font-black text-slate-900 truncate">${unit.model}</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                      <span class="text-[10px] font-semibold text-slate-400 truncate">
+                                        ${catalogItem ? catalogItem.category : 'Unit Daihatsu'}
+                                      </span>
+                                      ${unit.color && unit.color !== '-' ? `
+                                        <span class="inline-block px-1.5 py-0.2 rounded text-[8.5px] font-black bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap" title="Warna: ${unit.color}">${unit.color}</span>
+                                      ` : ''}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <!-- Col 3: VIN & Mesin -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+                                <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-900">
+                                  <span>${unit.vin}</span>
+                                  <button type="button" onclick="UI.copyVinToClipboard('${unit.vin}')" class="text-slate-400 hover:text-blue-600 transition cursor-pointer" title="Salin VIN">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                  </button>
+                                </div>
+                                ${unit.engine && unit.engine !== '-' ? `
+                                  <div class="text-[9.5px] font-mono text-slate-500 mt-0.5 whitespace-nowrap">
+                                    ENG: <span class="font-bold text-slate-700">${unit.engine}</span>
+                                  </div>
+                                ` : ''}
+                              </td>
+
+                              <!-- Col 4: Cabang Lokasi (Astra Daihatsu Badge - Anti Wrap) -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+                                <div class="inline-flex items-center space-x-1.5 font-mono text-[10px] text-amber-900 bg-amber-50 border border-amber-200/90 px-2.5 py-1 rounded-lg font-black shadow-2xs whitespace-nowrap" title="Lokasi Pool: ${branchFormatted}">
+                                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+                                  <span>${branchFormatted}</span>
+                                </div>
+                              </td>
+
+                              <!-- Col 5: Waktu Masuk (Format Jam & Tanggal - Anti Wrap) -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+                                <div class="inline-flex items-center space-x-1.5 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80 font-mono text-[10.5px] font-extrabold text-slate-800 whitespace-nowrap">
+                                  <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                  <span>${unit.arrivedAt || '-'}</span>
+                                </div>
+                              </td>
+
+                              <!-- Col 6: Dokumen -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap text-center border-r border-slate-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[9.5px] font-black border shadow-2xs whitespace-nowrap ${unit.docType === 'OKK' ? 'bg-amber-50 text-amber-800 border-amber-300' : (unit.docType === 'BSTKB' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-blue-50 text-blue-800 border-blue-200')}">
+                                  ${unit.docType || 'SPPDC'}
+                                </span>
+                              </td>
+
+                              <!-- Col 7: Petugas Penerima -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap border-r border-slate-200">
+                                <div class="flex items-center space-x-1.5">
+                                  <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                                    ${((unit.officerName || unit.pic || 'P').charAt(0)).toUpperCase()}
+                                  </span>
+                                  <div class="min-w-0">
+                                    <div class="text-[11px] font-extrabold text-slate-800 truncate max-w-[130px]" title="${unit.officerName || unit.pic}">
+                                      ${unit.officerName || unit.pic || 'Petugas'}
+                                    </div>
+                                    <div class="text-[9.5px] font-semibold text-slate-400 truncate">
+                                      Security &mdash; ${(String(unit.branch || 'D660').match(/D66[0-4]/i)?.[0] || 'D660').toUpperCase()}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <!-- Col 8: Foto Fisik -->
+                              <td class="py-3 px-3 align-middle whitespace-nowrap text-center">
+                                ${unit.unitPhoto && !unit.unitPhoto.includes('placeholder') ? `
+                                  <div onclick="openImagePreviewModal('${unit.unitPhoto}')" class="group/thumb relative w-10 h-8 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 mx-auto cursor-pointer shadow-2xs hover:border-blue-500 hover:ring-2 hover:ring-blue-400/40 transition" title="Klik untuk memperbesar Foto Fisik Unit">
+                                    <img src="${unit.unitPhoto}" alt="Foto Unit" loading="lazy" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-200">
+                                    <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[7px] font-bold text-center py-0.2">Fisik</span>
+                                  </div>
+                                ` : `
+                                  <span class="inline-block px-2 py-0.5 rounded text-[8.5px] font-bold bg-slate-100 text-slate-400 border border-slate-200 select-none">No Photo</span>
+                                `}
+                              </td>
+                            </tr>
+                          `;
+                        }).join('')}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               `}
             </div>
