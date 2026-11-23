@@ -933,212 +933,226 @@ function doPost(e) {
     }
 
     if (action === "recordMutation" || action === "addMutation" || action === "saveMutation") {
-      const sheetHistory = ss.getSheetByName(TAB_HISTORY) || createHistorySheet(ss);
-      
-      const trxId = data.id || ("MUT-" + Utilities.formatDate(new Date(), TIMEZONE, "yyyyMMdd-HHmmss"));
-      const now = new Date();
-      const dateObj = (data.timestamp) ? new Date(data.timestamp) : now;
-      const formattedDateStr = (data.fullDateStr && data.fullDateStr.includes(" ")) 
-        ? data.fullDateStr 
-        : formatIndonesianDate(dateObj);
-      const timeStr = data.time || Utilities.formatDate(now, TIMEZONE, "HH:mm 'WIB'");
-      const isoStr = data.timestamp || now.toISOString();
-
-      // Prioritaskan cabang resmi (D660 - Ahmad Yani dst)
-      const rawBranchInput = data.noBa || data.no_ba || data.cabang || data.branch || data.location || "D660 - Ahmad Yani";
-      const branchName = formatBranchLabel(rawBranchInput);
-      const targetVin = String(data.vin || data.chassis || "").trim().toUpperCase();
-      const targetEngine = String(data.engine || "").trim().toUpperCase();
-      const targetType = String(data.type || "Unit Masuk").trim();
-      const normalizedTargetType = targetType.toLowerCase().includes("masuk") ? "Unit Masuk" : "Unit Keluar";
-
-      // Cek Idempotensi & Validasi Status Transaksi Terakhir (Last-State Multi-Branch Cycle Validation)
-      const lastRow = sheetHistory.getLastRow();
-      if (lastRow > 1) {
-        const historyValues = sheetHistory.getDataRange().getValues();
-        const headerRow = historyValues[0].map(h => String(h || "").toLowerCase().trim());
-        
-        const colIdxVin = headerRow.findIndex(h => h.includes("rangka") || h.includes("vin"));
-        const colIdxEngine = headerRow.findIndex(h => h.includes("mesin") || h.includes("engine"));
-        const colIdxType = headerRow.findIndex(h => h.includes("jenis") || h.includes("type"));
-        const colIdxBranch = headerRow.findIndex(h => h.includes("cabang") || h.includes("ba") || h.includes("lokasi"));
-        const colIdxTrxId = headerRow.findIndex(h => h.includes("id mutasi") || h.includes("id"));
-
-        let lastMutation = null;
-        for (let r = historyValues.length - 1; r >= 1; r--) {
-          const rowTrxId = String(historyValues[r][colIdxTrxId !== -1 ? colIdxTrxId : 0] || "").trim();
-          const rowVin = String(historyValues[r][colIdxVin !== -1 ? colIdxVin : 5] || "").trim().toUpperCase();
-          const rowEngine = String(historyValues[r][colIdxEngine !== -1 ? colIdxEngine : 6] || "").trim().toUpperCase();
-          const rowRawType = String(historyValues[r][colIdxType !== -1 ? colIdxType : 7] || "").trim();
-          const rowType = rowRawType.toLowerCase().includes("masuk") ? "Unit Masuk" : "Unit Keluar";
-          const rowBranch = formatBranchLabel(String(historyValues[r][colIdxBranch !== -1 ? colIdxBranch : 9] || ""));
-
-          // 1. Cek Exact Duplicate Idempotency (ID Transaksi sama persis)
-          if (rowTrxId && rowTrxId === trxId) {
-            Logger.log("Idempotent hit: " + trxId);
-            return createJsonResponse({
-              success: true,
-              transactionId: rowTrxId,
-              isDuplicatePrevented: true,
-              message: "Data mutasi telah tersimpan sebelumnya (idempotent)",
-              timestamp: now.toISOString()
-            });
-          }
-
-          // Cek apakah baris ini adalah unit yang sama (VIN atau No Mesin cocok)
-          const isSameUnit = (targetVin && targetVin !== "-" && rowVin === targetVin) ||
-                             (targetEngine && targetEngine !== "-" && rowEngine === targetEngine);
-
-          if (isSameUnit && !lastMutation) {
-            lastMutation = {
-              trxId: rowTrxId,
-              type: rowType,
-              branch: rowBranch,
-              rawType: rowRawType
-            };
-            break;
-          }
-        }
-
-        // Terapkan Aturan Siklus Antar-Cabang Berdasarkan Last State:
-        // Unit hanya ditolak jika status terakhirnya sama dengan aksi baru di cabang yang sama
-        if (lastMutation) {
-          if (lastMutation.branch === branchName && lastMutation.type === normalizedTargetType) {
-            const statusMsg = normalizedTargetType === "Unit Masuk" ? "SUDAH MASUK" : "SUDAH KELUAR";
-            Logger.log("Blokir mutasi duplikat: " + targetVin + " " + statusMsg + " di " + branchName);
-            return createJsonResponse({
-              success: false,
-              isDuplicatePrevented: true,
-              error: "Unit (" + targetVin + ") tercatat " + statusMsg + " di cabang " + branchName + ". Silakan lakukan aksi " + (normalizedTargetType === "Unit Masuk" ? "Unit Keluar" : "Unit Masuk") + " terlebih dahulu.",
-              lastState: lastMutation,
-              timestamp: now.toISOString()
-            }, 400);
-          }
-        }
-      }
-      
-      let unitPhotoUrl = data.unitPhoto || "";
-      if (unitPhotoUrl.startsWith("data:image")) {
-        unitPhotoUrl = saveBase64ImageToDrive(unitPhotoUrl, "UNIT_" + trxId);
-      }
-      let docPhotoUrl = data.docPhoto || "";
-      if (docPhotoUrl.startsWith("data:image")) {
-        docPhotoUrl = saveBase64ImageToDrive(docPhotoUrl, "DOC_" + trxId);
+      // Concurrency Lock: Kunci atomik tingkat server (Mutex) untuk mencegah race condition & bentrok saat request bersamaan
+      const lock = LockService.getScriptLock();
+      const hasLock = lock.tryLock(30000); // Tunggu giliran antrean hingga 30 detik
+      if (!hasLock) {
+        return createJsonResponse({
+          success: false,
+          error: "Server sedang memproses transaksi bersamaan dari pos lain. Silakan coba kembali dalam beberapa detik."
+        }, 429);
       }
 
-      const docType = (data.docType || data.doc_type || data.doctype || "SPP DC").toUpperCase().trim();
-      const carColor = String(data.color || data.warna || data.carColor || data.warnaMobil || "-").trim();
-      const officerName = String(data.officerName || data.namaPetugas || data.officer || "").trim();
-      let picSecurity = String(data.pic || "").trim();
-      // Sanitasi PIC Security: Pastikan mencatat identitas pos/cabang security (misal: "D660 - Ahmad Yani" / "D661 - Soekarno Hatta")
-      // dan TIDAK menduplikasi nama personal petugas lapangan (misal: "Rico")
-      if (!picSecurity || (officerName && picSecurity.toLowerCase() === officerName.toLowerCase()) || picSecurity.toLowerCase() === "petugas lapangan") {
-        picSecurity = branchName || (data.noBa ? formatBranchLabel(data.noBa) : "Petugas Security");
-      }
-      const fullOfficerPic = officerName ? (officerName + " (" + picSecurity + ")") : picSecurity;
-      const rawDestBranch = data.destinationBranch || data.destination || data.cabangTujuan || "";
-      const destinationBranch = rawDestBranch ? formatBranchLabel(rawDestBranch) : "-";
-
-      // Deteksi dinamis header sheet HistoryMutasi untuk kompatibilitas mutlak
-      let historyHeaders = [];
-      if (sheetHistory.getLastRow() >= 1 && sheetHistory.getLastColumn() >= 1) {
-        historyHeaders = sheetHistory.getRange(1, 1, 1, sheetHistory.getLastColumn()).getValues()[0].map(h => String(h || "").toLowerCase().trim());
-      }
-      const hasColorCol = historyHeaders.some(h => h.includes("warna"));
-      const hasOfficerCol = historyHeaders.some(h => h.includes("nama petugas") || h.includes("petugas lapangan"));
-      const hasNpkColumn = historyHeaders.some(h => h.includes("npk"));
-
-      let rowData = [];
-      if (hasColorCol || hasOfficerCol) {
-        // Struktur 17 Kolom Modern PRO V2.25 (Termasuk Cabang Tujuan OKK)
-        rowData = [
-          trxId,
-          isoStr,
-          formattedDateStr,
-          timeStr,
-          data.model || "Unknown Model",
-          carColor,
-          data.vin || data.chassis || "-",
-          data.engine || "-",
-          data.type || "Unit Masuk",
-          officerName || "Petugas Lapangan", // Kolom J: Nama Petugas Lapangan (e.g. "Rico")
-          picSecurity,                        // Kolom K: PIC Security (e.g. "D660 - Ahmad Yani" / "D661 - Soekarno Hatta")
-          branchName,                         // Kolom L: Cabang / Kode BA
-          data.notes || "-",
-          docType,
-          unitPhotoUrl,
-          docPhotoUrl,
-          destinationBranch
-        ];
-      } else {
-        // Format 14 Kolom Kompatibel (Simpan nama petugas pada kolom PIC)
-        rowData = [
-          trxId,
-          isoStr,
-          formattedDateStr,
-          timeStr,
-          data.model || "Unknown Model",
-          data.vin || data.chassis || "-",
-          data.engine || "-",
-          data.type || "Unit Masuk",
-          fullOfficerPic
-        ];
-        if (hasNpkColumn) {
-          rowData.push("-");
-        }
-        rowData.push(
-          branchName,
-          data.notes || "-",
-          docType,
-          unitPhotoUrl,
-          docPhotoUrl,
-          destinationBranch
-        );
-      }
-
-      sheetHistory.appendRow(rowData);
-
-      const newStock = updateInventoryStock(ss, data.model, data.type);
-
-      // Kirim Notifikasi Realtime Threading: Otomatis ke Cabang Terkait + Tembusan Admin DSO Lampung
-      let mailResult = null;
       try {
-        mailResult = sendRealtimeMutationThreadNotification(ss, {
-          id: trxId,
-          type: data.type || "Unit Masuk",
-          model: data.model || "Unknown Model",
-          color: carColor,
-          vin: data.vin || data.chassis || "-",
-          engine: data.engine || "-",
-          officerName: officerName,
-          pic: data.pic || "Petugas Security",
-          location: branchName,
-          destination: destinationBranch,
-          destinationBranch: destinationBranch,
-          notes: data.notes || "-",
-          docType: docType,
-          time: timeStr,
-          date: formattedDateStr,
+        const sheetHistory = ss.getSheetByName(TAB_HISTORY) || createHistorySheet(ss);
+        
+        const trxId = data.id || ("MUT-" + Utilities.formatDate(new Date(), TIMEZONE, "yyyyMMdd-HHmmss"));
+        const now = new Date();
+        const dateObj = (data.timestamp) ? new Date(data.timestamp) : now;
+        const formattedDateStr = (data.fullDateStr && data.fullDateStr.includes(" ")) 
+          ? data.fullDateStr 
+          : formatIndonesianDate(dateObj);
+        const timeStr = data.time || Utilities.formatDate(now, TIMEZONE, "HH:mm 'WIB'");
+        const isoStr = data.timestamp || now.toISOString();
+
+        // Prioritaskan cabang resmi (D660 - Ahmad Yani dst)
+        const rawBranchInput = data.noBa || data.no_ba || data.cabang || data.branch || data.location || "D660 - Ahmad Yani";
+        const branchName = formatBranchLabel(rawBranchInput);
+        const targetVin = String(data.vin || data.chassis || "").trim().toUpperCase();
+        const targetEngine = String(data.engine || "").trim().toUpperCase();
+        const targetType = String(data.type || "Unit Masuk").trim();
+        const normalizedTargetType = targetType.toLowerCase().includes("masuk") ? "Unit Masuk" : "Unit Keluar";
+
+        // Cek Idempotensi & Validasi Status Transaksi Terakhir (Last-State Multi-Branch Cycle Validation)
+        const lastRow = sheetHistory.getLastRow();
+        if (lastRow > 1) {
+          const historyValues = sheetHistory.getDataRange().getValues();
+          const headerRow = historyValues[0].map(h => String(h || "").toLowerCase().trim());
+          
+          const colIdxVin = headerRow.findIndex(h => h.includes("rangka") || h.includes("vin"));
+          const colIdxEngine = headerRow.findIndex(h => h.includes("mesin") || h.includes("engine"));
+          const colIdxType = headerRow.findIndex(h => h.includes("jenis") || h.includes("type"));
+          const colIdxBranch = headerRow.findIndex(h => h.includes("cabang") || h.includes("ba") || h.includes("lokasi"));
+          const colIdxTrxId = headerRow.findIndex(h => h.includes("id mutasi") || h.includes("id"));
+
+          let lastMutation = null;
+          for (let r = historyValues.length - 1; r >= 1; r--) {
+            const rowTrxId = String(historyValues[r][colIdxTrxId !== -1 ? colIdxTrxId : 0] || "").trim();
+            const rowVin = String(historyValues[r][colIdxVin !== -1 ? colIdxVin : 5] || "").trim().toUpperCase();
+            const rowEngine = String(historyValues[r][colIdxEngine !== -1 ? colIdxEngine : 6] || "").trim().toUpperCase();
+            const rowRawType = String(historyValues[r][colIdxType !== -1 ? colIdxType : 7] || "").trim();
+            const rowType = rowRawType.toLowerCase().includes("masuk") ? "Unit Masuk" : "Unit Keluar";
+            const rowBranch = formatBranchLabel(String(historyValues[r][colIdxBranch !== -1 ? colIdxBranch : 9] || ""));
+
+            // 1. Cek Exact Duplicate Idempotency (ID Transaksi sama persis)
+            if (rowTrxId && rowTrxId === trxId) {
+              Logger.log("Idempotent hit: " + trxId);
+              return createJsonResponse({
+                success: true,
+                transactionId: rowTrxId,
+                isDuplicatePrevented: true,
+                message: "Data mutasi telah tersimpan sebelumnya (idempotent)",
+                timestamp: now.toISOString()
+              });
+            }
+
+            // Cek apakah baris ini adalah unit yang sama (VIN atau No Mesin cocok)
+            const isSameUnit = (targetVin && targetVin !== "-" && rowVin === targetVin) ||
+                               (targetEngine && targetEngine !== "-" && rowEngine === targetEngine);
+
+            if (isSameUnit && !lastMutation) {
+              lastMutation = {
+                trxId: rowTrxId,
+                type: rowType,
+                branch: rowBranch,
+                rawType: rowRawType
+              };
+              break;
+            }
+          }
+
+          // Terapkan Aturan Siklus Antar-Cabang Berdasarkan Last State:
+          // Unit hanya ditolak jika status terakhirnya sama dengan aksi baru di cabang yang sama
+          if (lastMutation) {
+            if (lastMutation.branch === branchName && lastMutation.type === normalizedTargetType) {
+              const statusMsg = normalizedTargetType === "Unit Masuk" ? "SUDAH MASUK" : "SUDAH KELUAR";
+              Logger.log("Blokir mutasi duplikat: " + targetVin + " " + statusMsg + " di " + branchName);
+              return createJsonResponse({
+                success: false,
+                isDuplicatePrevented: true,
+                error: "Unit (" + targetVin + ") tercatat " + statusMsg + " di cabang " + branchName + ". Silakan lakukan aksi " + (normalizedTargetType === "Unit Masuk" ? "Unit Keluar" : "Unit Masuk") + " terlebih dahulu.",
+                lastState: lastMutation,
+                timestamp: now.toISOString()
+              }, 400);
+            }
+          }
+        }
+        
+        let unitPhotoUrl = data.unitPhoto || "";
+        if (unitPhotoUrl.startsWith("data:image")) {
+          unitPhotoUrl = saveBase64ImageToDrive(unitPhotoUrl, "UNIT_" + trxId);
+        }
+        let docPhotoUrl = data.docPhoto || "";
+        if (docPhotoUrl.startsWith("data:image")) {
+          docPhotoUrl = saveBase64ImageToDrive(docPhotoUrl, "DOC_" + trxId);
+        }
+
+        const docType = (data.docType || data.doc_type || data.doctype || "SPP DC").toUpperCase().trim();
+        const carColor = String(data.color || data.warna || data.carColor || data.warnaMobil || "-").trim();
+        const officerName = String(data.officerName || data.namaPetugas || data.officer || "").trim();
+        let picSecurity = String(data.pic || "").trim();
+        // Sanitasi PIC Security: Pastikan mencatat identitas pos/cabang security (misal: "D660 - Ahmad Yani" / "D661 - Soekarno Hatta")
+        // dan TIDAK menduplikasi nama personal petugas lapangan (misal: "Rico")
+        if (!picSecurity || (officerName && picSecurity.toLowerCase() === officerName.toLowerCase()) || picSecurity.toLowerCase() === "petugas lapangan") {
+          picSecurity = branchName || (data.noBa ? formatBranchLabel(data.noBa) : "Petugas Security");
+        }
+        const fullOfficerPic = officerName ? (officerName + " (" + picSecurity + ")") : picSecurity;
+        const rawDestBranch = data.destinationBranch || data.destination || data.cabangTujuan || "";
+        const destinationBranch = rawDestBranch ? formatBranchLabel(rawDestBranch) : "-";
+
+        // Deteksi dinamis header sheet HistoryMutasi untuk kompatibilitas mutlak
+        let historyHeaders = [];
+        if (sheetHistory.getLastRow() >= 1 && sheetHistory.getLastColumn() >= 1) {
+          historyHeaders = sheetHistory.getRange(1, 1, 1, sheetHistory.getLastColumn()).getValues()[0].map(h => String(h || "").toLowerCase().trim());
+        }
+        const hasColorCol = historyHeaders.some(h => h.includes("warna"));
+        const hasOfficerCol = historyHeaders.some(h => h.includes("nama petugas") || h.includes("petugas lapangan"));
+        const hasNpkColumn = historyHeaders.some(h => h.includes("npk"));
+
+        let rowData = [];
+        if (hasColorCol || hasOfficerCol) {
+          // Struktur 17 Kolom Modern PRO V2.25 (Termasuk Cabang Tujuan OKK)
+          rowData = [
+            trxId,
+            isoStr,
+            formattedDateStr,
+            timeStr,
+            data.model || "Unknown Model",
+            carColor,
+            data.vin || data.chassis || "-",
+            data.engine || "-",
+            data.type || "Unit Masuk",
+            officerName || "Petugas Lapangan", // Kolom J: Nama Petugas Lapangan (e.g. "Rico")
+            picSecurity,                        // Kolom K: PIC Security (e.g. "D660 - Ahmad Yani" / "D661 - Soekarno Hatta")
+            branchName,                         // Kolom L: Cabang / Kode BA
+            data.notes || "-",
+            docType,
+            unitPhotoUrl,
+            docPhotoUrl,
+            destinationBranch
+          ];
+        } else {
+          // Format 14 Kolom Kompatibel (Simpan nama petugas pada kolom PIC)
+          rowData = [
+            trxId,
+            isoStr,
+            formattedDateStr,
+            timeStr,
+            data.model || "Unknown Model",
+            data.vin || data.chassis || "-",
+            data.engine || "-",
+            data.type || "Unit Masuk",
+            fullOfficerPic
+          ];
+          if (hasNpkColumn) {
+            rowData.push("-");
+          }
+          rowData.push(
+            branchName,
+            data.notes || "-",
+            docType,
+            unitPhotoUrl,
+            docPhotoUrl,
+            destinationBranch
+          );
+        }
+
+        sheetHistory.appendRow(rowData);
+
+        const newStock = updateInventoryStock(ss, data.model, data.type);
+
+        // Kirim Notifikasi Realtime Threading: Otomatis ke Cabang Terkait + Tembusan Admin DSO Lampung
+        let mailResult = null;
+        try {
+          mailResult = sendRealtimeMutationThreadNotification(ss, {
+            id: trxId,
+            type: data.type || "Unit Masuk",
+            model: data.model || "Unknown Model",
+            color: carColor,
+            vin: data.vin || data.chassis || "-",
+            engine: data.engine || "-",
+            officerName: officerName,
+            pic: data.pic || "Petugas Security",
+            location: branchName,
+            destination: destinationBranch,
+            destinationBranch: destinationBranch,
+            notes: data.notes || "-",
+            docType: docType,
+            time: timeStr,
+            date: formattedDateStr,
+            unitPhotoUrl: unitPhotoUrl,
+            docPhotoUrl: docPhotoUrl,
+            newStock: newStock
+          });
+        } catch (mailErr) {
+          Logger.log("Peringatan notifikasi email mutasi: " + mailErr.toString());
+          mailResult = { success: false, error: mailErr.toString() };
+        }
+
+        return createJsonResponse({
+          success: true,
+          transactionId: trxId,
+          newStock: newStock,
           unitPhotoUrl: unitPhotoUrl,
           docPhotoUrl: docPhotoUrl,
-          newStock: newStock
+          docType: docType,
+          destinationBranch: destinationBranch,
+          mailStatus: mailResult,
+          timestamp: now.toISOString()
         });
-      } catch (mailErr) {
-        Logger.log("Peringatan notifikasi email mutasi: " + mailErr.toString());
-        mailResult = { success: false, error: mailErr.toString() };
+      } finally {
+        lock.releaseLock();
       }
-
-      return createJsonResponse({
-        success: true,
-        transactionId: trxId,
-        newStock: newStock,
-        unitPhotoUrl: unitPhotoUrl,
-        docPhotoUrl: docPhotoUrl,
-        docType: docType,
-        destinationBranch: destinationBranch,
-        mailStatus: mailResult,
-        timestamp: now.toISOString()
-      });
     }
 
     return createJsonResponse({ error: "Action tidak dikenali: " + action }, 400);
