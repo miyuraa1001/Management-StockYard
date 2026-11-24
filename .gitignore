@@ -22,5 +22,9 @@ Thumbs.db
 *.pdf
 
 # Google Apps Script backend scripts (never commit to repo)
+backend/
 *.gs
 *.gas
+
+# Workspace files
+*.code-workspace
