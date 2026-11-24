@@ -198,19 +198,61 @@ const NotificationService = {
   },
 
   /**
-   * Notifikasi Scan Unit Masuk / Keluar Baru & Transit Antar-Cabang (OKK)
-   * Filter RBAC & Skenario:
-   * 1. Mutasi Scan Masuk/Keluar biasa (SPPDC/BSTKB):
-   *    - Admin: Menerima mutasi seluruh cabang.
-   *    - Security: Hanya menerima mutasi untuk cabangnya sendiri.
-   * 2. Transit Antar-Cabang (OKK Keluar / OTW):
-   *    - Cabang Asal (misal D661): Menerima notif "Unit Dalam Perjalanan (Transit OKK)"
-   *    - Cabang Tujuan (misal D660): Menerima notif "Unit OTW Menuju Cabang Anda!"
-   *    - Admin DSO: Menerima notif "Mutasi OKK Antar-Cabang (D661 -> D660)"
-   * 3. Kedatangan Transit (OKK Masuk di Pos Tujuan):
-   *    - Cabang Penerima (D660): Menerima notif "Unit OKK Berhasil Diterima di Pool!"
-   *    - Cabang Pengirim (D661): Menerima notif "Unit Transit Tiba di Tujuan!"
-   *    - Admin DSO: Menerima notif "OKK Selesai: Tiba di D660"
+   * Resolusi Thumbnail Foto Notifikasi Seragam & Konsisten:
+   * Prioritas 1: Foto fisik dokumentasi asli security / laporan mutasi lapangan (unitPhoto)
+   * Prioritas 2: Foto katalog resmi sistem sesuai model kendaraan (modelPhoto / findCatalogPhoto)
+   * Fallback: Icon APK Stockyard
+   */
+  resolveUnitPhoto(record, modelName) {
+    if (!record) return './assets/icons/icon-apk.png';
+    const isClean = (url) => {
+      if (!url || typeof url !== 'string') return false;
+      const s = url.trim();
+      return s !== '' && s !== '-' && s !== 'null' && s !== 'undefined' && !s.includes('placeholder');
+    };
+
+    // 1. Prioritas Utama: Foto fisik dokumentasi asli security
+    if (isClean(record.unitPhoto)) {
+      const u = record.unitPhoto.trim();
+      // Bila merupakan base64 (upload kamera security), blob, atau URL Google Drive / hosting
+      if (u.startsWith('data:image') || u.startsWith('blob:') || u.includes('google') || u.includes('lh3') || u.startsWith('http')) {
+        return u;
+      }
+      // Jika bukan path katalog sistem, gunakan
+      if (!u.includes('Inventory_') && !u.includes('assets/images/')) {
+        return u;
+      }
+    }
+
+    // 2. Fallback seragam: Foto katalog resmi sistem sesuai model
+    if (isClean(record.modelPhoto)) {
+      return record.modelPhoto.trim();
+    }
+    if (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function') {
+      const catPhoto = AppState.findCatalogPhoto(modelName || record.model);
+      if (isClean(catPhoto)) return catPhoto.trim();
+    }
+
+    // 3. Fallback terakhir: Icon aplikasi APK
+    return './assets/icons/icon-apk.png';
+  },
+
+  /**
+   * Notifikasi Scan Unit Masuk / Keluar Baru, Antar-Cabang (OKK), & Pengiriman Luar Lampung
+   * Filter RBAC & Skenario Lengkap:
+   * 1. Luar Lampung Tiba / Selesai Diterima:
+   *    - Admin & Cabang Asal: Menerima notif "🏁 Unit Tiba di Tujuan: [Model]"
+   * 2. Luar Lampung Berangkat / Keluar:
+   *    - Admin & Cabang Asal: Menerima notif "🚛 Pengiriman ke [Tujuan]: [Model]"
+   * 3. Transit Antar-Cabang (OKK Keluar / OTW):
+   *    - Cabang Asal: Menerima notif "Unit Berangkat (Radar OKK)"
+   *    - Cabang Tujuan: Menerima notif "Unit OTW Menuju Cabang Anda!"
+   *    - Admin DSO: Menerima notif "Mutasi OKK: Asal -> Tujuan"
+   * 4. Kedatangan Transit (OKK Masuk di Pos Tujuan):
+   *    - Cabang Penerima: Menerima notif "Unit Diterima di Pool!"
+   *    - Cabang Pengirim: Menerima notif "Unit Tiba di Tujuan!"
+   *    - Admin DSO: Menerima notif "OKK Selesai: Tiba di Tujuan"
+   * 5. Mutasi Standar Harian (SPPDC/BSTKB)
    */
   notifyMutation(record) {
     if (!record || !this.isGranted()) return;
@@ -218,8 +260,9 @@ const NotificationService = {
     const isAdmin = typeof AppState !== 'undefined' && typeof AppState.isAdmin === 'function' ? AppState.isAdmin() : true;
     const userBranchCode = typeof AppState !== 'undefined' && typeof AppState.getUserBranchCode === 'function' ? AppState.getUserBranchCode() : 'D660';
     const recBranch = record.noBa || record.branch || record.location || '';
-    const destBranch = record.destinationBranch || record.destination || '';
-    const originCode = (recBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
+    const destBranch = record.destinationBranch || record.destination || record.cabangTujuan || '';
+    const originBranch = record.originBranch || '';
+    const originCode = (recBranch.match(/D66[0-4]/i)?.[0] || (originBranch.match(/D66[0-4]/i)?.[0] || '')).toUpperCase();
     const destCode = (destBranch.match(/D66[0-4]/i)?.[0] || '').toUpperCase();
 
     const type = record.type || record.mutationType || 'Unit Masuk';
@@ -228,12 +271,45 @@ const NotificationService = {
     const isOkk = docType === 'OKK';
     const model = record.model || 'Unit Kendaraan';
     const vin = record.vin || '-';
-    const officer = record.officerName || record.pic || 'Petugas Lapangan';
+    const officer = record.officerName || record.pic || record.sender || 'Petugas Lapangan';
     const branchLabel = record.noBa || record.branch || 'Stockyard';
+    const displayBranch = originCode || branchLabel.split('-')[0].trim() || 'D660';
+
+    // Evaluasi Pengiriman Luar Lampung / Destinasi Eksternal
+    const isLuarLampung = (str) => {
+      if (!str || typeof str !== 'string') return false;
+      const s = str.toLowerCase();
+      return s.includes('luar lampung') || s.includes('luar') || s.includes('palembang') || s.includes('jakarta') || s.includes('bengkulu') || s.includes('jambi') || s.includes('serang') || s.includes('bandung');
+    };
+
+    const isExternalArrival = Boolean(
+      record.isExternalArrival ||
+      (record.adminValidated && (isLuarLampung(destBranch) || isLuarLampung(recBranch) || (record.notes && isLuarLampung(record.notes)))) ||
+      (isMasuk && (isLuarLampung(destBranch) || isLuarLampung(recBranch) || (record.notes && record.notes.toLowerCase().includes('selesai diterima'))))
+    );
+
+    const isExternalExit = Boolean(
+      !isMasuk && (isLuarLampung(destBranch) || isLuarLampung(recBranch) || (destBranch && !destCode && destBranch.trim() !== ''))
+    );
+
+    // Format Nama Kota / Destinasi Bersih
+    let cleanDest = destBranch || recBranch || 'Luar Lampung';
+    let targetCity = 'Luar Lampung';
+    const cityMatch = cleanDest.match(/\(([^)]+)\)/);
+    if (cityMatch && cityMatch[1]) {
+      targetCity = cityMatch[1].trim();
+    } else {
+      const parts = cleanDest.replace(/Luar Lampung\s*[-–:]?\s*/i, '').trim();
+      targetCity = parts || cleanDest;
+    }
 
     // Evaluasi Otorisasi & Peran
     if (!isAdmin) {
-      if (isOkk) {
+      if (isExternalArrival || isExternalExit) {
+        // Pada mutasi Luar Lampung: cabang asal pengirim menerima update
+        const isOriginMatch = originCode && originCode === userBranchCode;
+        if (!isOriginMatch) return;
+      } else if (isOkk) {
         // Pada mutasi OKK, libatkan cabang asal MAUPUN cabang tujuan
         const isOriginMatch = originCode && originCode === userBranchCode;
         const isDestMatch = destCode && destCode === userBranchCode;
@@ -254,11 +330,26 @@ const NotificationService = {
     let notifTag = `mutasi-${record.id || vin}`;
     let notifTab = 'history';
     let vibratePattern = [150, 100, 150];
-    const unitPhotoThumbnail = record.modelPhoto || record.unitPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(model) : '') || './assets/icons/icon-apk.png';
-    const displayBranch = originCode || branchLabel.split('-')[0].trim() || 'D660';
+    const unitPhotoThumbnail = this.resolveUnitPhoto(record, model);
 
-    // SKENARIO 1: Pengiriman Transit Antar-Cabang (Unit Keluar + OKK)
-    if (!isMasuk && isOkk) {
+    // SKENARIO 1: Konfirmasi Unit Tiba di Luar Lampung / Selesai Diterima (Validasi Admin / Sistem)
+    if (isExternalArrival) {
+      title = `🏁 Unit Tiba di ${targetCity}: ${model}`;
+      body = `VIN: ${vin} • Tujuan: ${cleanDest}\nUnit resmi diterima & selesai diverifikasi (${officer}).`;
+      notifTag = `arrival-ext-${vin}-${Date.now()}`;
+      notifTab = 'history';
+      vibratePattern = [200, 100, 200];
+    }
+    // SKENARIO 2: Pengiriman Unit Keluar ke Luar Lampung
+    else if (isExternalExit) {
+      title = `🚛 Pengiriman ke ${targetCity}: ${model}`;
+      body = `VIN: ${vin} dari ${displayBranch}\nStatus: Dalam perjalanan ke ${targetCity} • Petugas: ${officer}`;
+      notifTag = `exit-ext-${vin}-${Date.now()}`;
+      notifTab = 'inventory';
+      vibratePattern = [200, 100, 200, 100];
+    }
+    // SKENARIO 3: Pengiriman Transit Antar-Cabang (Unit Keluar + OKK)
+    else if (!isMasuk && isOkk) {
       notifTab = 'inventory';
       notifTag = `transit-${vin}-${Date.now()}`;
       
@@ -279,7 +370,7 @@ const NotificationService = {
         vibratePattern = [200, 100, 200];
       }
     }
-    // SKENARIO 2: Penerimaan Transit Tiba (Unit Masuk + OKK)
+    // SKENARIO 4: Penerimaan Transit Tiba (Unit Masuk + OKK)
     else if (isMasuk && isOkk) {
       notifTag = `arrival-${vin}-${Date.now()}`;
 
@@ -303,7 +394,7 @@ const NotificationService = {
         vibratePattern = [150, 100, 150];
       }
     }
-    // SKENARIO 3: Mutasi Standar Harian (Unit Masuk / Keluar biasa SPPDC / BSTKB)
+    // SKENARIO 5: Mutasi Standar Harian (Unit Masuk / Keluar biasa SPPDC / BSTKB)
     else {
       if (isMasuk) {
         title = `🚘 Unit Masuk: ${model}`;
@@ -419,7 +510,7 @@ const NotificationService = {
 
       const title = `⚠️ Keterlambatan Transit: ${unit.model}`;
       const body = `VIN: ${unit.vin} menuju ${unit.destinationCode || unit.destinationBranch.split('-')[0].trim()} (${unit.elapsedHuman})\n${unit.etaStatus} • Harap hubungi pengemudi/pos.`;
-      const unitPhoto = unit.unitPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(unit.model) : '') || './assets/icons/icon-apk.png';
+      const unitPhoto = this.resolveUnitPhoto(unit, unit.model);
 
       this.show(title, {
         body: body,

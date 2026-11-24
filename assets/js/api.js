@@ -335,7 +335,8 @@ const ApiService = {
               time: correctedTime || item.time || '08:00',
               fullDateStr: dateStr,
               unitPhoto: formatDriveThumb(item.unitPhoto),
-              docPhoto: formatDriveThumb(item.docPhoto)
+              docPhoto: formatDriveThumb(item.docPhoto),
+              modelPhoto: item.modelPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(normModel) : '')
             };
           });
 

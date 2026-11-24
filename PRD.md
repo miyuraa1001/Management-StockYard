@@ -3,7 +3,7 @@
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk (PRD), Arsitektur Sistem, Katalog Fitur Menyeluruh & Direktori Kode Program  
 > **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Wilayah (DSO Lampung), Admin Head / Branch Manager (ADH/BM), Supervisor Logistik, Tim Security On-Duty Cabang (D660–D664), System Architect, & Tim Pengembang  
-> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.27 PRO Enterprise PWA v1.7.1 Terverifikasi Penuh*)  
+> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.27 PRO Enterprise PWA v1.7.2 Terverifikasi Penuh*)  
 > **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664 serta Rute Distribusi Luar Lampung)  
 
 ---
@@ -13,7 +13,7 @@
 ### 1.1 Latar Belakang & Visi Transformasi Digital
 Operasional penanganan, pengawasan fisik, dan mutasi unit kendaraan di area pool logistik dan StockYard Astra Daihatsu Sales Operation (DSO) Area Lampung memerlukan kecepatan pemrosesan tinggi, pencatatan fisik bebas human error, dan pelacakan audit legal yang transparan (*audit-ready*). 
 
-Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop v1.7.1)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop v1.7.2)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
 
 ### 1.2 Pilar Keunggulan Sistem (v2.27 PRO Enterprise)
 1. **Arsitektur Multi-Cabang Resmi (DSO Lampung & 5 Cabang D660–D664)**: Pengawasan sentral oleh Admin DSO Lampung sekaligus isolasi data (*data isolation*) untuk petugas Security cabang sesuai lokasi penugasan resmi.
@@ -29,6 +29,11 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi pro
 11. **Sinkronisasi Database 17 Kolom & Auto-Reconcile Stok**: Pencatatan mutasi lengkap 17 kolom (termasuk rute tujuan). Tab `Inventory` menggunakan formula presisi (Col D: Total Masuk, Col E: Total Keluar, Net Stock = Masuk - Keluar) dengan tombol rekonsiliasi otomatis 1-klik di Google Sheets.
 12. **Otomasi Laporan Harian Terjadwal Tepat Pukul 08:00 WIB**: Rekap mutasi 24 jam terakhir dalam format **PDF & Excel (.xlsx murni)** berkop resmi Astra Daihatsu dikompilasi dan dikirim otomatis ke email manajemen DSO serta dipartisi eksklusif ke masing-masing cabang.
 13. **Desain UI Minimalis & Bersih**: Penghapusan kartu footer yang bulky dan digantikan dengan *single-line minimalist copyright* yang elegan dan profesional di seluruh halaman aplikasi.
+14. **Standarisasi Seragam Notifikasi Android Native (PWA v1.7.2)**:
+   - **Thumbnail Foto Seragam**: Prioritas utama selalu menggunakan **Foto Dokumentasi Fisik Security (`unitPhoto`)** dari laporan mutasi nyata. Apabila foto fisik tidak diunggah, sistem otomatis melakukan fallback bersih ke **Foto Katalog Resmi Kendaraan (`modelPhoto`)**, dan terakhir ke icon aplikasi. Menghilangkan inkonsistensi visual antara entri pemindaian lokal dan data sinkronisasi Google Sheets.
+   - **Notifikasi Spesifik Luar Lampung**:
+     - *Kedatangan Unit*: Judul `🏁 Unit Tiba di [Kota/Tujuan]: [Model]` dengan body `VIN: ... • Tujuan: ...\nUnit resmi diterima & selesai diverifikasi (Validasi Admin DSO)`. Menghapus kerancuan label "Unit Masuk" untuk kendaraan yang telah sampai di luar Lampung.
+     - *Keberangkatan Unit*: Judul `🚛 Pengiriman ke [Kota/Tujuan]: [Model]` dengan body rincian cabang asal dan status perjalanan.
 
 ---
 

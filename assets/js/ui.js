@@ -1916,12 +1916,17 @@ const UI = {
         branch: destLabel,
         noBa: destLabel,
         destinationBranch: destLabel,
+        originBranch: lastExit?.branch || lastExit?.noBa || 'Sentra Lampung',
         notes: `Selesai diterima di ${destLabel} (Validasi Manual Admin DSO)`,
         sender: currentUser.name || 'Admin DSO',
         officerName: currentUser.name || 'Admin DSO',
         pic: currentUser.name || 'Admin DSO',
         deliveredAt: now.toISOString(),
-        adminValidated: true
+        adminValidated: true,
+        isExternalArrival: true,
+        unitPhoto: lastExit?.unitPhoto || '',
+        modelPhoto: lastExit?.modelPhoto || (typeof AppState !== 'undefined' && typeof AppState.findCatalogPhoto === 'function' ? AppState.findCatalogPhoto(model || lastExit?.model) : ''),
+        docPhoto: lastExit?.docPhoto || ''
       };
 
       if (AppState && AppState.historyData) {
@@ -1933,6 +1938,11 @@ const UI = {
 
       if (typeof ApiService !== 'undefined' && ApiService.saveMutation) {
         ApiService.saveMutation(completionRecord).catch(err => console.warn('Sync manual external delivery warning:', err));
+      }
+
+      // Pemicu Notifikasi Android Realtime untuk Kedatangan Unit Luar Lampung
+      if (typeof NotificationService !== 'undefined' && typeof NotificationService.notifyMutation === 'function') {
+        NotificationService.notifyMutation(completionRecord);
       }
 
       this.showToast('✅ Berhasil divalidasi! Unit telah berstatus Tiba di Tujuan.', 'success');
