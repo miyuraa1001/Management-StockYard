@@ -54,21 +54,33 @@ const NotificationService = {
       }
     } catch (e) {}
 
-    // Inisialisasi awal ID mutasi dari AppState saat ini (Tandai riwayat awal sebagai sudah dilihat)
+    // Inisialisasi awal ID mutasi dari AppState saat ini (Tandai riwayat lama lebih dari 2 jam sebagai sudah dilihat)
     if (typeof AppState !== 'undefined' && Array.isArray(AppState.historyData)) {
+      const nowMs = Date.now();
+      const twoHoursMs = 2 * 60 * 60 * 1000;
       AppState.historyData.forEach(h => {
         if (h && (h.id || h.vin)) {
-          this._seenHistoryIds.add(h.id || `${h.vin}_${h.type}_${h.timestamp}`);
+          const itemTime = h.timestamp ? new Date(h.timestamp).getTime() : 0;
+          if (itemTime > 0 && (nowMs - itemTime > twoHoursMs)) {
+            this._seenHistoryIds.add(h.id || `${h.vin}_${h.type}_${h.timestamp}`);
+          }
         }
       });
       this._persistSeenMutations();
     }
 
-    // Inisialisasi awal ID laporan dari AppState saat ini (Tandai log laporan lama sebagai sudah dilihat)
+    // Inisialisasi awal ID laporan dari AppState saat ini (Hanya tandai laporan lama lebih dari 24 jam sebagai sudah dilihat)
     if (typeof AppState !== 'undefined' && Array.isArray(AppState.reportLogs)) {
+      const nowMs = Date.now();
+      const twentyFourHoursMs = 24 * 60 * 60 * 1000;
       AppState.reportLogs.forEach(r => {
         if (r && r.id) {
-          this._seenReportIds.add(r.id);
+          let rTime = 0;
+          if (r.timestampIso) rTime = new Date(r.timestampIso).getTime();
+          else if (r.timestamp) rTime = Date.parse(r.timestamp);
+          if (rTime > 0 && (nowMs - rTime > twentyFourHoursMs)) {
+            this._seenReportIds.add(r.id);
+          }
         }
       });
       this._persistSeenReports();
@@ -426,18 +438,8 @@ const NotificationService = {
   checkNewMutationsAndNotify(historyList) {
     if (!Array.isArray(historyList) || !this.isGranted() || historyList.length === 0) return;
 
-    // Jika ini inisialisasi awal (set masih kosong), tandai seluruh riwayat yang ada sebagai sudah dilihat
-    if (this._seenHistoryIds.size === 0) {
-      historyList.forEach(item => {
-        const key = item.id || `${item.vin}_${item.type}_${item.timestamp}`;
-        this._seenHistoryIds.add(key);
-      });
-      this._persistSeenMutations();
-      return;
-    }
-
     const now = Date.now();
-    const maxAgeMs = 15 * 60 * 1000; // 15 menit batas kadaluarsa notifikasi
+    const maxAgeMs = 2 * 60 * 60 * 1000; // 2 jam toleransi untuk mutasi yang terjadi saat aplikasi di background
 
     // Ambil 5 transaksi terbaru
     const recent = historyList.slice(0, 5);
@@ -446,7 +448,7 @@ const NotificationService = {
       if (!this._seenHistoryIds.has(key)) {
         this._seenHistoryIds.add(key);
 
-        // Validasi waktu kejadian: Abaikan jika transaksi terjadi lebih dari 15 menit lalu
+        // Validasi waktu kejadian: Abaikan jika transaksi terjadi lebih dari 2 jam lalu
         let itemTimeMs = 0;
         if (item.timestamp) {
           const t = new Date(item.timestamp).getTime();
@@ -552,39 +554,32 @@ const NotificationService = {
 
   /**
    * Pengecekan report logs baru dari backend
-   * Validasi realtime ketat (Freshness check) agar tidak memunculkan notifikasi palsu saat awal buka aplikasi.
+   * Menampilkan notifikasi rekapitulasi harian email ke perangkat
    */
   checkNewReportLogsAndNotify(reportLogs) {
     if (!Array.isArray(reportLogs) || !this.isGranted() || reportLogs.length === 0) return;
 
-    // Jika ini inisialisasi awal (set masih kosong), tandai seluruh report log yang ada sebagai sudah dilihat
-    if (this._seenReportIds.size === 0) {
-      reportLogs.forEach(r => {
-        if (r && r.id) this._seenReportIds.add(r.id);
-      });
-      this._persistSeenReports();
-      return;
-    }
-
     const latest = reportLogs[0];
     if (!latest || !latest.id) return;
 
-    // Lewati jika sudah pernah dinotifikasikan
-    if (this._seenReportIds.has(latest.id)) return;
-
-    // Tandai langsung ke set & localStorage agar tidak terpicu ganda
-    this._seenReportIds.add(latest.id);
-    this._persistSeenReports();
-
-    // Filter status: HANYA notifikasi jika pengiriman email berstatus SUCCESS
+    // Filter status: HANYA notifikasi jika pengiriman email berstatus SUCCESS atau TERKIRIM
     const status = String(latest.status || '').toUpperCase();
     if (status !== 'SUCCESS' && status !== 'TERKIRIM') {
       return;
     }
 
-    // VALIDASI REALTIME KETAT (Freshness Check):
-    // Notifikasi mobile HANYA BOLEH ditembakkan jika laporan benar-benar baru dikirim dalam 15 menit terakhir!
-    // Mencegah log riwayat lama (kemarin atau jam lalu) memicu notifikasi palsu saat aplikasi baru dibuka.
+    // Cek apakah ID laporan ini sudah pernah dinotifikasikan di perangkat ini
+    const lastNotifiedKey = 'daihatsu_last_notified_report_id';
+    let lastNotifiedId = null;
+    try {
+      lastNotifiedId = localStorage.getItem(lastNotifiedKey);
+    } catch (e) {}
+
+    if (lastNotifiedId === latest.id || this._seenReportIds.has(latest.id)) {
+      return; // Laporan ini sudah pernah dinotifikasikan di HP ini
+    }
+
+    // Validasi Waktu: Pastikan laporan harian dikirim dalam rentang 24 jam terakhir (hari ini)
     let logTimeMs = 0;
     if (latest.timestampIso) {
       const t = new Date(latest.timestampIso).getTime();
@@ -595,17 +590,26 @@ const NotificationService = {
     }
 
     const now = Date.now();
-    const maxAgeMs = 15 * 60 * 1000; // 15 menit batas waktu realtime
+    const maxAgeMs = 24 * 60 * 60 * 1000; // 24 jam batas toleransi laporan harian hari ini
 
     if (logTimeMs > 0) {
       const ageMs = Math.abs(now - logTimeMs);
       if (ageMs > maxAgeMs) {
-        console.log(`[NotificationService] Report log ${latest.id} dilewati karena data lama (${Math.round(ageMs / 60000)} menit lalu).`);
+        // Laporan sudah kedaluwarsa lebih dari 24 jam, lewati dan tandai
+        this._seenReportIds.add(latest.id);
+        this._persistSeenReports();
         return;
       }
     }
 
-    // Eksekusi notifikasi realtime jika benar-benar baru terkirim
+    // Tandai langsung ke set & localStorage agar tidak memicu notifikasi ganda
+    this._seenReportIds.add(latest.id);
+    this._persistSeenReports();
+    try {
+      localStorage.setItem(lastNotifiedKey, latest.id);
+    } catch (e) {}
+
+    // Eksekusi notifikasi rekapitulasi laporan harian ke status bar
     this.notifyDailyReport(latest);
   },
 

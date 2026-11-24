@@ -119,7 +119,7 @@ const App = {
     if (this._realtimeTimer) clearInterval(this._realtimeTimer);
     const intervalMs = (window.CONFIG && CONFIG.REALTIME_SYNC_INTERVAL) ? CONFIG.REALTIME_SYNC_INTERVAL : 15000;
     this._realtimeTimer = setInterval(() => {
-      if (AppState.isOnline && !AppState.isLoading && !document.hidden) {
+      if (AppState.isOnline && !AppState.isLoading) {
         this.syncBackendData(true);
       }
     }, intervalMs);

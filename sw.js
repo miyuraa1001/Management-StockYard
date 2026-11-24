@@ -9,7 +9,7 @@
  * 4. Otomatis membersihkan cache versi lama saat pembaruan dideploy
  */
 
-const CACHE_NAME = 'stockyard-pwa-v1.7.2';
+const CACHE_NAME = 'stockyard-pwa-v1.7.3';
 
 // Daftar aset inti App Shell untuk pre-caching
 const STATIC_ASSETS = [
@@ -188,5 +188,51 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+/**
+ * 5. LIFECYCLE: PUSH NOTIFICATION (Background Server Push)
+ * Menerima payload push dari Web Push API / Google FCM saat aplikasi tertutup
+ */
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'Pemberitahuan Stockyard', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || '🚘 Pembaruan Stockyard Daihatsu';
+  const options = {
+    body: data.body || 'Terdapat pergerakan mutasi atau laporan baru di Stockyard.',
+    icon: data.icon || './assets/icons/icon-apk.png',
+    badge: './assets/icons/badge-icon.png',
+    image: data.image || undefined,
+    tag: data.tag || 'stockyard-push-' + Date.now(),
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: data.data || { url: './', tab: data.tab || 'dashboard' }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+/**
+ * 6. LIFECYCLE: PERIODIC BACKGROUND SYNC
+ * Penjadwalan sinkronisasi berkala di latar belakang saat didukung browser Android
+ */
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'stockyard-periodic-sync') {
+    event.waitUntil(
+      fetch('./index.html')
+        .then((res) => res.text())
+        .catch((err) => console.log('[SW] Periodic sync check:', err))
+    );
+  }
+});
+
 
 

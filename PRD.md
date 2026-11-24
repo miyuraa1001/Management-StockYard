@@ -3,7 +3,7 @@
 
 > **Klasifikasi:** Dokumen Resmi Spesifikasi Produk (PRD), Arsitektur Sistem, Katalog Fitur Menyeluruh & Direktori Kode Program  
 > **Sasaran Pembaca:** Manajemen Astra Daihatsu, Kepala Wilayah (DSO Lampung), Admin Head / Branch Manager (ADH/BM), Supervisor Logistik, Tim Security On-Duty Cabang (D660–D664), System Architect, & Tim Pengembang  
-> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.27 PRO Enterprise PWA v1.7.2 Terverifikasi Penuh*)  
+> **Status Dokumen:** Siap Operasional (*Production-Ready Enterprise Edition — Versi 2.27 PRO Enterprise PWA v1.7.3 Terverifikasi Penuh*)  
 > **Cakupan Wilayah:** Sentra Distribusi & Manajemen StockYard Area Lampung (DSO Lampung & 5 Cabang Resmi: D660, D661, D662, D663, D664 serta Rute Distribusi Luar Lampung)  
 
 ---
@@ -13,7 +13,7 @@
 ### 1.1 Latar Belakang & Visi Transformasi Digital
 Operasional penanganan, pengawasan fisik, dan mutasi unit kendaraan di area pool logistik dan StockYard Astra Daihatsu Sales Operation (DSO) Area Lampung memerlukan kecepatan pemrosesan tinggi, pencatatan fisik bebas human error, dan pelacakan audit legal yang transparan (*audit-ready*). 
 
-Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop v1.7.2)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
+Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi proses konvensional berbasis kertas dan spreadsheet manual menjadi **ekosistem aplikasi web enterprise modern berbasis Progressive Web App (PWA Mobile & Desktop v1.7.3)**. Sistem terhubung secara realtime dengan infrastruktur komputasi awan Google Workspace (Google Sheets, Google Drive, Gmail API) melalui serverless reverse proxy Vercel berkeamanan tinggi dengan enkripsi SSL/TLS 256-bit.
 
 ### 1.2 Pilar Keunggulan Sistem (v2.27 PRO Enterprise)
 1. **Arsitektur Multi-Cabang Resmi (DSO Lampung & 5 Cabang D660–D664)**: Pengawasan sentral oleh Admin DSO Lampung sekaligus isolasi data (*data isolation*) untuk petugas Security cabang sesuai lokasi penugasan resmi.
@@ -34,6 +34,11 @@ Sistem **Management StockYard (Astra Daihatsu DSO Lampung)** mentransformasi pro
    - **Notifikasi Spesifik Luar Lampung**:
      - *Kedatangan Unit*: Judul `🏁 Unit Tiba di [Kota/Tujuan]: [Model]` dengan body `VIN: ... • Tujuan: ...\nUnit resmi diterima & selesai diverifikasi (Validasi Admin DSO)`. Menghapus kerancuan label "Unit Masuk" untuk kendaraan yang telah sampai di luar Lampung.
      - *Keberangkatan Unit*: Judul `🚛 Pengiriman ke [Kota/Tujuan]: [Model]` dengan body rincian cabang asal dan status perjalanan.
+15. **Sistem Notifikasi Latar Belakang & Sinkronisasi Laporan Harian (PWA v1.7.3)**:
+   - **Solusi Notifikasi Rekap Harian Tanpa Batas 15 Menit**: Penghapusan pembatalan notifikasi sepihak (15 menit). Menggunakan sistem pelacak ID unik per laporan (`daihatsu_last_notified_report_id`) dan toleransi 24 jam penuh. Pengguna dijamin menerima notifikasi rekap harian jam 08:00 WIB kapan pun membuka aplikasi pada hari tersebut tanpa pernah terlewat.
+   - **Toleransi Mutasi Latar Belakang 2 Jam**: Peningkatan jendela mutasi dari 15 menit ke 2 jam untuk mutasi yang terjadi saat aplikasi berada di latar belakang.
+   - **Pondasi Web Push & Background Sync Service Worker**: Service Worker (`sw.js`) dilengkapi event listener `push` untuk menyambut integrasi Google FCM dan `periodicsync` untuk sinkronisasi otomatis latar belakang.
+   - **Sinkronisasi Latar Tanpa Hambatan Layar**: Penghapusan blokade `!document.hidden` sehingga timer tetap melakukan sinkronisasi saat aplikasi diminimalkan.
 
 ---
 
